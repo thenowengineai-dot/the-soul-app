@@ -12,6 +12,7 @@ import {
   CharacterDetailModal, 
   MOCK_CHARACTERS, 
   CATEGORIES, 
+  fetchPublishedCharacters,
   type Character 
 } from '../../characters'
 import type { HomeViewProps, GenderType, SortType } from '../types'
@@ -51,8 +52,31 @@ function HomeView({
   const [activeSort, setActiveSort] = useState<SortType>(null);
   const [isGenderOpen, setIsGenderOpen] = useState<boolean>(false);
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
+  const [characters, setCharacters] = useState<Character[]>(MOCK_CHARACTERS);
 
   const genderDropdownRef = useRef<HTMLDivElement>(null);
+
+  // ดึงข้อมูลตัวละครจริงจาก Backend (Supabase) และผสานเข้ากับ Mockup เพื่อให้หน้าแรกสมบูรณ์ที่สุด
+  useEffect(() => {
+    let isMounted = true;
+    fetchPublishedCharacters()
+      .then((realChars) => {
+        if (!isMounted) return;
+        if (realChars && realChars.length > 0) {
+          const realIds = new Set(realChars.map((c) => String(c.id)));
+          const remainingMocks = MOCK_CHARACTERS.filter((c) => !realIds.has(String(c.id)));
+          // นำตัวละครจริงขึ้นอันดับแรก (เช่น มาฮิโระ, ใบส้ม) ตามด้วย Mock Characters เพื่อคงความหนาแน่นของฟีด
+          setCharacters([...realChars, ...remainingMocks]);
+        }
+      })
+      .catch((err) => {
+        console.warn('Failed to fetch published characters, using local mock data:', err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Click outside listener for gender dropdown
   useEffect(() => {
@@ -188,7 +212,7 @@ function HomeView({
             title="สินค้าใหม่"
             emoji="✨"
             subtitle="แชทบอทล่าสุดที่พร้อมพูดคุยกับคุณ"
-            characters={MOCK_CHARACTERS.slice(0, 8)}
+            characters={characters.slice(0, 8)}
             onCardClick={handleCardClick}
           />
 
@@ -197,7 +221,7 @@ function HomeView({
             title="เทรนด์ประจำสัปดาห์"
             emoji="⚡"
             subtitle="ตัวละครยอดนิยมที่มีผู้สนทนามากที่สุด"
-            characters={MOCK_CHARACTERS.slice(8, 16)}
+            characters={characters.slice(8, 16)}
             onCardClick={handleCardClick}
           />
 
@@ -207,15 +231,16 @@ function HomeView({
             emoji="🔥"
             subtitle="คัดสรรพิเศษเพื่อบทสนทนาที่ตรงใจคุณ"
             characters={[
-              { ...MOCK_CHARACTERS[13], id: 'rec-1' },
-              { ...MOCK_CHARACTERS[14], id: 'rec-2' },
-              { ...MOCK_CHARACTERS[11], id: 'rec-3' },
-              { ...MOCK_CHARACTERS[7],  id: 'rec-4' },
-              { ...MOCK_CHARACTERS[4],  id: 'rec-5' },
-              { ...MOCK_CHARACTERS[0],  id: 'rec-6' },
-              { ...MOCK_CHARACTERS[9],  id: 'rec-7' },
-              { ...MOCK_CHARACTERS[15], id: 'rec-8' }
-            ]}
+              ...(characters.length > 16 ? characters.slice(16, 24) : []),
+              { ...(characters[1] || MOCK_CHARACTERS[1]), id: 'rec-1' },
+              { ...(characters[0] || MOCK_CHARACTERS[0]), id: 'rec-2' },
+              { ...MOCK_CHARACTERS[13], id: 'rec-3' },
+              { ...MOCK_CHARACTERS[14], id: 'rec-4' },
+              { ...MOCK_CHARACTERS[11], id: 'rec-5' },
+              { ...MOCK_CHARACTERS[7],  id: 'rec-6' },
+              { ...MOCK_CHARACTERS[4],  id: 'rec-7' },
+              { ...MOCK_CHARACTERS[9],  id: 'rec-8' }
+            ].slice(0, 8)}
             onCardClick={handleCardClick}
           />
         </div>

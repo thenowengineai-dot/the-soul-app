@@ -4,3 +4,4 @@ export { default as CharacterDetailModal } from './components/CharacterDetailMod
 export { default as SliderNavButton } from './components/SliderNavButton'
 export * from './types'
 export * from './mockData'
+export * from './api'

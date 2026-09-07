@@ -36,17 +36,30 @@ from fastapi.middleware.cors import CORSMiddleware
 # ดึง Router จากไฟล์ api/routes.py มาใช้งาน
 from api.routes import router as api_router
 
+# 🛡️ SMART CORS CONFIGURATION (ยืดหยุ่น & ปลอดภัยสูง)
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "*")
+if allowed_origins_env == "*":
+    cors_origins = ["*"]
+else:
+    cors_origins = [orig.strip() for orig in allowed_origins_env.split(",") if orig.strip()]
+
+# 🛡️ CONDITIONAL SWAGGER DOCS (ซ่อนโครงสร้าง API บน Production ป้องกันคู่แข่งส่อง)
+is_production = os.getenv("ENVIRONMENT", "development").lower() == "production"
+
 app = FastAPI(
-    title="New AI Character Engine", 
-    description="ระบบ Game Engine สมัยใหม่ที่ขับเคลื่อนด้วย Multi-Agent System",
-    version="2.0.0"
+    title="The Soul AI Character Engine", 
+    description="ระบบ Game Engine สมัยใหม่ที่ขับเคลื่อนด้วย Multi-Agent System & Unified Round",
+    version="2.0.0",
+    docs_url=None if is_production else "/docs",
+    redoc_url=None if is_production else "/redoc",
+    openapi_url=None if is_production else "/openapi.json"
 )
 
-# ตั้งค่า CORS อนุญาตให้ Frontend ยิง API เข้ามาได้
+# ตั้งค่า CORS ป้องกันเว็บแปลกปลอมยิงเข้าหา API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=cors_origins,
+    allow_credentials=True if cors_origins != ["*"] else False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

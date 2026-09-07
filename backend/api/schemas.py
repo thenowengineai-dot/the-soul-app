@@ -273,19 +273,25 @@ class ChatRequest(BaseModel):
     """
     session_id: str = Field(
         ...,
+        min_length=1,
+        max_length=100,
         description="ID ของเซฟเกม (Save Slot) ที่กำลังเล่นอยู่"
     )
     user_id: str = Field(
         default="player_01", 
+        max_length=100,
         description="UUID ของผู้เล่นที่ได้จาก Supabase"
     )
     character_id: str = Field(
         default="may",
+        max_length=100,
         description="Codename ของตัวละคร (เช่น 'may')"
     )
     message: str = Field(
         ..., 
-        description="ข้อความแชทล่าสุดจากผู้เล่น"
+        min_length=1,
+        max_length=2000,
+        description="ข้อความแชทล่าสุดจากผู้เล่น (จำกัดความยาวเพื่อความปลอดภัยและประสิทธิภาพสูงสุด)"
     )
     history: Optional[List[Dict[str, Any]]] = Field(
         default=[],

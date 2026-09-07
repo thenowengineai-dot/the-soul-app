@@ -201,9 +201,11 @@ async def get_world_data(world_id: str):
 @router.get("/telemetry")
 async def get_telemetry():
     """
-    Endpoint สำหรับให้ God's Eye Dashboard ดึงข้อมูลไปแสดงผลแบบ Real-time
-    พิกัดที่เรียกใช้: http://127.0.0.1:8000/api/telemetry
+    Endpoint สำหรับดึงข้อมูล Telemetry เฉพาะในโหมด Development
     """
+    if os.getenv("ENVIRONMENT", "development").lower() == "production":
+        raise HTTPException(status_code=403, detail="Telemetry endpoint is disabled in production.")
+        
     file_path = "data/telemetry.json"
     
     # ถ้ายังไม่เคยคุยกันเลย (ยังไม่มีไฟล์) ให้ส่งสถานะ 404 กลับไปบอกหน้าบ้าน

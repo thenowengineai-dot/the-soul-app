@@ -186,36 +186,65 @@ export const MOCK_HUD_MAP: Record<number | string, CharacterHudData> = {
 }
 
 export function getCharacterHudData(chat?: ChatConversation): CharacterHudData {
-  if (!chat) return MOCK_HUD_MAP[1];
-  if (MOCK_HUD_MAP[chat.id]) {
-    return MOCK_HUD_MAP[chat.id];
+  if (!chat) {
+    return {
+      characterId: 'unknown',
+      name: 'ไม่ระบุ',
+      gender: 'หญิง',
+      age: '20 ปี',
+      role: 'ตัวละครหลัก',
+      avatar: '',
+      image: '',
+      pose: 'ยืน/นั่งอิสระตามบริบท',
+      outfit: 'ชุดเริ่มต้น',
+      relationship: {
+        label: 'ความสัมพันธ์',
+        status: 'เริ่มต้นทำความรู้จัก',
+        current: 0,
+        max: 100,
+      },
+      desire: {
+        label: 'ความปรารถนา',
+        status: 'ยังไม่มีความปรารถนา',
+        current: 0,
+        max: 100,
+      },
+      environment: {
+        time: '14:00 น.',
+        location: 'สถานที่นัดพบ',
+        weather: 'ปกติ แจ่มใส',
+      },
+    }
   }
+
+  const env = chat.initialEnvironment || {
+    time: '14:00 น.',
+    location: 'สถานที่นัดพบ',
+    weather: 'ปกติ แจ่มใส',
+  }
+
   return {
     characterId: chat.id,
     name: chat.name,
-    gender: "หญิง",
-    age: "20 ปี",
-    role: "ตัวละครหลัก",
+    gender: 'หญิง',
+    age: '20 ปี',
+    role: 'ตัวละครหลัก',
     avatar: chat.avatar,
-    image: chat.avatar,
-    pose: "ยืนมองด้วยสายตาอ่อนโยน",
-    outfit: "ชุดลำลองประจำวัน",
+    image: chat.image || chat.avatar,
+    pose: chat.initialPose || 'ยืน/นั่งอิสระตามบริบท',
+    outfit: chat.initialOutfit || 'ชุดเริ่มต้น',
     relationship: {
-      label: "ความสัมพันธ์",
-      status: "กำลังทำความรู้จัก",
-      current: 50,
+      label: 'ความสัมพันธ์',
+      status: 'เริ่มต้นทำความรู้จัก',
+      current: 0,
       max: 100,
     },
     desire: {
-      label: "ความปรารถนา",
-      status: "อยากคุยด้วยนานขึ้น",
-      current: 40,
+      label: 'ความปรารถนา',
+      status: 'ยังไม่มีความปรารถนา',
+      current: 0,
       max: 100,
     },
-    environment: {
-      time: "20:00 น. (ช่วงค่ำ)",
-      location: "สถานที่พบปะ",
-      weather: "ท้องฟ้าโปร่ง อากาศเย็น",
-    },
-  };
+    environment: env,
+  }
 }

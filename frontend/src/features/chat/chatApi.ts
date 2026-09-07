@@ -24,6 +24,12 @@ export interface StartSessionResponse {
     scene_id: string
     beat_id: string
     stance: string
+    current_outfit?: string
+    environment?: {
+      time: string
+      location: string
+      weather: string
+    }
   }
   message: string
 }

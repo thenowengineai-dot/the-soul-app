@@ -149,6 +149,8 @@ export function ChatRoom({
             actor_posture: newSess.initial_state.a_pos,
             player_posture: newSess.initial_state.p_pos,
             stance: newSess.initial_state.stance,
+            current_outfit: newSess.initial_state.current_outfit,
+            environment: newSess.initial_state.environment,
           })
         }
       }

@@ -17,6 +17,13 @@ export interface SupabaseCampaignRaw {
   background_story?: string[] | string
   core_stats?: Record<string, number>
   stats?: Record<string, number>
+  initial_environment?: {
+    time: string
+    location: string
+    weather: string
+  }
+  initial_outfit?: string
+  initial_pose?: string
   memories?: unknown[]
   comments?: unknown[]
 }
@@ -127,6 +134,10 @@ export function transformSupabaseCharacter(
     storyIntroduction: storyIntroduction || undefined,
     stats,
     events,
+    initialEnvironment: item.initial_environment,
+    initialOutfit: item.initial_outfit,
+    initialPose: item.initial_pose,
+    defaultWorld: item.default_world || item.id,
   };
 }
 

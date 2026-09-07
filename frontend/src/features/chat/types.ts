@@ -20,8 +20,17 @@ export interface ChatConversation {
   verified?: boolean
   locked?: boolean
   avatar: string
+  image?: string
   color?: string
   statusMessage?: string
+  defaultWorld?: string
+  initialEnvironment?: {
+    time: string
+    location: string
+    weather: string
+  }
+  initialOutfit?: string
+  initialPose?: string
 }
 
 // ----------------------------------------------------------------------
@@ -125,6 +134,12 @@ export interface ChatRoomProps {
     dominance_state?: string
     affection?: number
     desire?: number
+    current_outfit?: string
+    environment?: {
+      time: string
+      location: string
+      weather: string
+    }
   }) => void
 }
 

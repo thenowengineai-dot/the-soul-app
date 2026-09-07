@@ -39,6 +39,14 @@ export interface Character {
   storyIntroduction?: string
   stats?: CharacterStat[]
   events?: CharacterEvent[]
+  initialEnvironment?: {
+    time: string
+    location: string
+    weather: string
+  }
+  initialOutfit?: string
+  initialPose?: string
+  defaultWorld?: string
 }
 
 export interface CharacterCardProps {

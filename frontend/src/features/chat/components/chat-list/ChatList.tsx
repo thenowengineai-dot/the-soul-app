@@ -2,14 +2,13 @@ import { useState } from 'react'
 import ChatListHeader from './ChatListHeader'
 import ChatSearchBox from './ChatSearchBox'
 import ChatItem from './ChatItem'
-import { MOCK_CHATS } from '../../mockData'
 import type { ChatListProps } from '../../types'
 
 export type { ChatListProps }
 
 export function ChatList({ 
   onBackToHome, 
-  chats = MOCK_CHATS, 
+  chats = [], 
   selectedChatId, 
   onSelectChat, 
   isOpen = true,
@@ -40,14 +39,22 @@ export function ChatList({
 
           {/* List of Chats */}
           <div className="pt-1 pb-2">
-            {filteredChats.map(chat => (
-              <ChatItem 
-                key={chat.id} 
-                {...chat} 
-                isActive={selectedChatId === chat.id}
-                onClick={() => onSelectChat?.(chat)} 
-              />
-            ))}
+            {filteredChats.length > 0 ? (
+              filteredChats.map(chat => (
+                <ChatItem 
+                  key={chat.id} 
+                  {...chat} 
+                  isActive={selectedChatId === chat.id}
+                  onClick={() => onSelectChat?.(chat)} 
+                />
+              ))
+            ) : (
+              <div className="py-12 px-4 text-center select-none">
+                <p className="text-[13px] text-app-secondary/60 font-light">
+                  ไม่มีบทสนทนาอื่น
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

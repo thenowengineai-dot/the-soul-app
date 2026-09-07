@@ -197,11 +197,12 @@ async def get_published_campaigns():
     db = DatabaseCore()
     published_chars = []
     try:
-        # 🌟 [CRITICAL FIX] Join กับ genesis_characters ด้วย
-        response = await db._request("GET", "genesis_campaigns", params={"select": "id, name, character_data, genesis_characters(*)", "status": "eq.published"})
+        # 🌟 [CRITICAL FIX] Join กับ genesis_characters และดึง world_data ด้วย
+        response = await db._request("GET", "genesis_campaigns", params={"select": "id, name, character_data, world_data, genesis_characters(*)", "status": "eq.published"})
         if response:
             for row in response:
                 char_data = row.get("character_data", {})
+                world_data = row.get("world_data") or {}
                 
                 # พยายามดึงข้อมูลจาก genesis_characters
                 genesis_char = row.get("genesis_characters")
@@ -216,6 +217,30 @@ async def get_published_campaigns():
                 if char_data.get("reference_urls"):
                     photos.extend(char_data.get("reference_urls"))
 
+                starting_state = world_data.get("starting_state", {})
+                initial_scene = world_data.get("initial_scene", {})
+                appearance_data = char_data.get("appearance", {})
+                raw_wardrobe = appearance_data.get("wardrobe") or char_data.get("wardrobe", {})
+                
+                initial_outfit = "ชุดเริ่มต้น"
+                if isinstance(raw_wardrobe, dict) and raw_wardrobe:
+                    first_val = list(raw_wardrobe.values())[0]
+                    initial_outfit = ", ".join(first_val) if isinstance(first_val, list) else str(first_val)
+                elif isinstance(raw_wardrobe, list) and raw_wardrobe:
+                    first_item = raw_wardrobe[0]
+                    if isinstance(first_item, dict):
+                        items = first_item.get("items", ["ชุดเริ่มต้น"])
+                        initial_outfit = ", ".join(items) if isinstance(items, list) else str(items)
+                    elif isinstance(first_item, str):
+                        initial_outfit = first_item
+
+                initial_env = {
+                    "time": starting_state.get("initial_time") or initial_scene.get("time") or "14:00 น.",
+                    "location": starting_state.get("initial_location") or initial_scene.get("location") or world_data.get("world_name") or "สถานที่นัดพบ",
+                    "weather": starting_state.get("initial_weather") or initial_scene.get("weather") or "ปกติ แจ่มใส",
+                }
+                initial_pose = starting_state.get("initial_a_pos") or "ยืน/นั่งอิสระตามบริบท"
+
                 published_chars.append({
                     "id": row["id"],
                     "name": char_data.get("name", "Unknown"),
@@ -228,6 +253,9 @@ async def get_published_campaigns():
                     "background_story": char_data.get("background_story", []),
                     "core_stats": char_data.get("core_stats", {}),
                     "stats": char_data.get("core_stats", {}),
+                    "initial_environment": initial_env,
+                    "initial_outfit": initial_outfit,
+                    "initial_pose": initial_pose,
                     "memories": [],
                     "comments": []
                 })
@@ -683,19 +711,52 @@ async def start_session_endpoint(request: StartSessionRequest, background_tasks:
         redis_cache = RedisHotCache()
         redis_cache.clear_session(session_id)
 
-        # 3. 🚀 เซ็ตค่าสถานะเริ่มต้น (Live State) ลงใน Redis
+        # 3. 🚀 ดึงข้อมูลเริ่มต้นจาก World Data ใน Supabase
+        db = DatabaseCore()
+        target_world = world_id or character_id
+        campaign = await db.get_published_campaign(target_world) if target_world else None
+        
+        world_data = (campaign.get("world_data") if campaign else {}) or {}
+        starting_state = world_data.get("starting_state", {})
+        initial_scene = world_data.get("initial_scene", {})
+        char_data = (campaign.get("character_data") if campaign else {}) or {}
+        appearance_data = char_data.get("appearance", {})
+        raw_wardrobe = appearance_data.get("wardrobe") or char_data.get("wardrobe", {})
+        
+        initial_outfit = "ชุดเริ่มต้น"
+        if isinstance(raw_wardrobe, dict) and raw_wardrobe:
+            first_val = list(raw_wardrobe.values())[0]
+            initial_outfit = ", ".join(first_val) if isinstance(first_val, list) else str(first_val)
+        elif isinstance(raw_wardrobe, list) and raw_wardrobe:
+            first_item = raw_wardrobe[0]
+            if isinstance(first_item, dict):
+                items = first_item.get("items", ["ชุดเริ่มต้น"])
+                initial_outfit = ", ".join(items) if isinstance(items, list) else str(items)
+            elif isinstance(first_item, str):
+                initial_outfit = first_item
+
+        initial_env = {
+            "time": starting_state.get("initial_time") or initial_scene.get("time") or "14:00 น.",
+            "location": starting_state.get("initial_location") or initial_scene.get("location") or world_data.get("world_name") or "สถานที่นัดพบ",
+            "weather": starting_state.get("initial_weather") or initial_scene.get("weather") or "ปกติ แจ่มใส",
+        }
+        initial_a_pos = starting_state.get("initial_a_pos") or "ยืน/นั่งอิสระตามบริบท"
+        initial_p_pos = starting_state.get("initial_p_pos") or "ยืน/นั่งอิสระตามบริบท"
+
         init_state = {
-            "affection": 10,
-            "desire": 5,
-            "a_pos": "ยืน/นั่งอิสระตามบริบท",
-            "p_pos": "ยืน/นั่งอิสระตามบริบท",
-            "scene_id": "scene_opening",
-            "beat_id": "beat_01",
-            "stance": "neutral"
+            "affection": 0,
+            "desire": 0,
+            "a_pos": initial_a_pos,
+            "p_pos": initial_p_pos,
+            "current_outfit": initial_outfit,
+            "scene_id": starting_state.get("scene_id") or "scene_opening",
+            "beat_id": starting_state.get("beat_id") or "beat_01",
+            "stance": "neutral",
+            "environment": initial_env
         }
         redis_cache.save_live_state(session_id, init_state)
 
-        logger.info(f"✅ [NEW GAME READY] Session {session_id} created successfully on Neon & Redis")
+        logger.info(f"✅ [NEW GAME READY] Session {session_id} created successfully on Neon & Redis (Affection: 0, Desire: 0, Outfit: '{initial_outfit}')")
 
         if request.trigger_initial_vo:
             background_tasks.add_task(
@@ -714,6 +775,9 @@ async def start_session_endpoint(request: StartSessionRequest, background_tasks:
             "character_id": character_id,
             "world_id": world_id,
             "initial_state": init_state,
+            "initial_environment": initial_env,
+            "initial_outfit": initial_outfit,
+            "initial_pose": initial_a_pos,
             "message": "New game session created on Neon Postgres & Redis."
         }
     except Exception as e:

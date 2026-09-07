@@ -45,24 +45,40 @@ function ChatView({
     dominance_state?: string
     affection?: number
     desire?: number
+    current_outfit?: string
+    environment?: {
+      time: string
+      location: string
+      weather: string
+    }
   }) => {
     setLiveHudData(prev => {
       const updated = { ...prev }
       if (data.actor_posture && data.actor_posture !== 'คงท่าเดิม' && data.actor_posture !== 'null') {
         updated.pose = data.actor_posture
       }
+      if (data.current_outfit && data.current_outfit !== 'คงชุดเดิม' && data.current_outfit !== 'null') {
+        updated.outfit = data.current_outfit
+      }
+      if (data.environment) {
+        updated.environment = {
+          time: data.environment.time || prev.environment.time,
+          location: data.environment.location || prev.environment.location,
+          weather: data.environment.weather || prev.environment.weather,
+        }
+      }
       if (data.affection !== undefined) {
         updated.relationship = {
           ...prev.relationship,
           current: Math.min(prev.relationship.max, Math.max(0, data.affection)),
-          status: data.affection >= 70 ? 'ผูกพันอย่างลึกซึ้ง' : (data.affection >= 40 ? 'คุ้นเคยและสบายใจ' : 'กำลังทำความรู้จัก'),
+          status: data.affection >= 70 ? 'ผูกพันอย่างลึกซึ้ง' : (data.affection >= 40 ? 'คุ้นเคยและสบายใจ' : (data.affection > 0 ? 'กำลังทำความรู้จัก' : 'เริ่มต้นทำความรู้จัก')),
         }
       }
       if (data.desire !== undefined) {
         updated.desire = {
           ...prev.desire,
           current: Math.min(prev.desire.max, Math.max(0, data.desire)),
-          status: data.desire >= 70 ? 'โหยหาสัมผัสแนบชิด' : (data.desire >= 40 ? 'ใจเต้นแรงเมื่อสบตา' : 'อยากคุยด้วยนานขึ้น'),
+          status: data.desire >= 70 ? 'โหยหาสัมผัสแนบชิด' : (data.desire >= 40 ? 'ใจเต้นแรงเมื่อสบตา' : (data.desire > 0 ? 'อยากคุยด้วยนานขึ้น' : 'ยังไม่มีความปรารถนา')),
         }
       }
       return updated
@@ -73,7 +89,7 @@ function ChatView({
     <div className="flex-1 h-screen overflow-hidden flex relative">
       <ChatList 
         onBackToHome={onBackToHome} 
-        chats={MOCK_CHATS}
+        chats={selectedChat ? [selectedChat] : []}
         selectedChatId={selectedChat.id}
         onSelectChat={handleSelectChat} 
         isOpen={isChatListOpen}

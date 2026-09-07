@@ -41,7 +41,12 @@ function App() {
         unread: false,
         verified: true,
         avatar: char.image || (char.images && char.images[0]) || '',
+        image: char.image || (char.images && char.images[0]) || '',
         statusMessage: char.quote,
+        initialEnvironment: char.initialEnvironment,
+        initialOutfit: char.initialOutfit,
+        initialPose: char.initialPose,
+        defaultWorld: char.defaultWorld,
       });
     }
     setCurrentView('chat');

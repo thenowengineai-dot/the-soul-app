@@ -5,7 +5,6 @@ import os
 import sys
 import random
 import re
-import httpx # 🌟 [NEW] นำเข้า httpx สำหรับยิงสัญญาณ Broadcast ข้ามอากาศ
 from typing import Dict, Any, List, AsyncGenerator, Optional
 
 from loguru import logger
@@ -354,87 +353,6 @@ class GamePipeline:
         
         async def response_generator():
             nonlocal active_event_id, active_event_phase, active_beat_id, is_sandbox_locked, is_new_phase, current_stance, tension_gauge, player_posture, actor_posture, sandbox_turn_count, beat_turn_count, current_dominance_state, current_action_lock, current_outfit, chaos_level, affection_val, desire_val, contact_points_list, shatter_count, peaceful_turns_count, current_scene_vibe, current_stage_level, pronouns_override, nicknames_override
-
-            # 🌟 [NEW] ฟังก์ชันส่งสัญญาณวิทยุ Broadcast เข้า Supabase Realtime โดยตรง
-            async def broadcast_telemetry(source: str, msg: str, severity: str = "info", extra_data: dict = None):
-                try:
-                    # พยายามดึง Key จาก Environment (กัปตันสามารถตั้งใน .env หรือ Terminal ได้)
-                    # หรือถ้าไม่มีให้ fallback ดึงจาก DatabaseCore
-                    url_base = os.environ.get("SUPABASE_URL", getattr(self.db, 'supabase_url', None))
-                    key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", os.environ.get("SUPABASE_ANON_KEY", getattr(self.db, 'supabase_key', None)))
-                    
-                    if not url_base or not key: return
-
-                    url = f"{url_base}/realtime/v1/api/broadcast"
-                    headers = {
-                        "apikey": key,
-                        "Authorization": f"Bearer {key}",
-                        "Content-Type": "application/json"
-                    }
-                    # 🌟 [FIX] บังคับให้วิทยุส่งค่าเปอเซ็นต์ (0-100) เสมอ ไม่ว่าใครจะเป็นคนยิง
-                    current_max = character_data.get("max_desire", 1000)
-                    safe_desire_percent = int((desire_val / current_max) * 100) if current_max > 0 else 0
-
-                    # 🔍 [NEW] พยายามหา max_turns ของ Beat ปัจจุบัน เพื่อส่งให้ Dashboard โชว์ระเบิดเวลา
-                    current_beat_max_turns = 999
-                    if active_event_id and active_event_phase and active_beat_id:
-                        try:
-                            _event_data = world_data_json.get("story_events", {}).get(active_event_id, {})
-                            if not _event_data:
-                                for op in world_data_json.get("opening_scenarios", []):
-                                    if op.get("id") == active_event_id:
-                                        _event_data = op
-                                        break
-                            _scene = next((s for s in _event_data.get("scenes", []) if s.get("scene_id") == active_event_phase), {})
-                            _beats = _scene.get("beats", [])
-                            _curr_beat = next((b for b in _beats if b.get("beat_id") == active_beat_id), {})
-                            current_beat_max_turns = _curr_beat.get("pacing_control", {}).get("max_turns", 999)
-                        except: pass
-
-                    payload = {
-                        "ts": time.time(),
-                        "user_id": user_id,
-                        "char_id": character_id,
-                        "source": source,
-                        "msg": msg,
-                        "severity": severity,
-                        "turn_id": sandbox_turn_count + beat_turn_count,
-                        "affection": affection_val,
-                        "desire": safe_desire_percent,
-                        "tension": tension_gauge,
-                        "chaos": chaos_level,
-                        "p_pos": player_posture,
-                        "a_pos": actor_posture,
-                        "action_lock": current_action_lock,
-                        "dom_state": current_dominance_state,
-                        "contact_points": json.dumps(contact_points_list, ensure_ascii=False),
-                        "outfit": current_outfit,
-                        "stance": current_stance,
-                        "phase_id": active_event_phase,
-                        "beat_id": active_beat_id,
-                        "sb_turns": sandbox_turn_count,
-                        "beat_turns": beat_turn_count,        # 🌟 [NEW] ตัวนับรอบเฉพาะในบีต
-                        "max_turns": current_beat_max_turns   # 🌟 [NEW] ขีดจำกัดเวลา (999=ไม่มีจำกัด)
-                    }
-                    if extra_data:
-                        payload.update(extra_data)
-
-                    body = {
-                        "messages": [{
-                            "topic": "telemetry-stream", # 🚨 ช่องวิทยุนี้แหละที่ React จะมาดักฟัง
-                            "event": "log_update",
-                            "payload": payload
-                        }]
-                    }
-                    async with httpx.AsyncClient() as client:
-                        # ยิงแล้วทิ้ง ไม่รอผลลัพธ์นานเกิน 1 วินาที เพื่อไม่ให้ AI สะดุด
-                        await client.post(url, headers=headers, json=body, timeout=1.0)
-                except Exception as e:
-                    pass # ทำงานเงียบๆ หากส่งวิทยุไม่สำเร็จจะไม่แสดง Error กวนใจกัปตัน
-
-            # 📡 1. สัญญาณแรก: บอกว่ารับข้อความแล้ว
-            asyncio.create_task(broadcast_telemetry("DB_CORE", f"ดึงข้อมูล User และ World Bible สมบูรณ์", "info", {"user_input": user_message}))
-            
             if active_event_id and active_event_phase and not active_beat_id:
                 try:
                     _event_data = world_data_json.get("story_events", {}).get(active_event_id, {})
@@ -449,7 +367,6 @@ class GamePipeline:
                     forced_chaos = active_phase_data.get("forced_chaos_level")
                     if forced_chaos:
                         chaos_level = forced_chaos # Overwrite ทับค่าเดิมทันที
-                        asyncio.create_task(broadcast_telemetry("PIPELINE", f"⚡ บังคับเปลี่ยน Chaos Level เป็น: {chaos_level}", "info"))
                     
                     b_list = active_phase_data.get("beats", [])
                     if b_list: active_beat_id = b_list[0].get("beat_id")
@@ -555,7 +472,6 @@ class GamePipeline:
                     })
                     
             else:
-                asyncio.create_task(broadcast_telemetry("PIPELINE", "กำลังสอดแนมสถานการณ์ (Evaluator)...", "warning"))
                 eval_result = await self.evaluator.evaluate_interaction(evaluator_prompt=evaluator_prompt)
                 
                 if getattr(eval_result, "memory_extracted", None):
@@ -596,12 +512,10 @@ class GamePipeline:
             pronouns_update = getattr(eval_result, "pronouns_update", None)
             if pronouns_update:
                 pronouns_override = pronouns_update
-                asyncio.create_task(broadcast_telemetry("PIPELINE", f"🔄 อัปเดตสรรพนามใหม่ตามบริบท: {pronouns_override}", "info"))
                 
             nicknames_update = getattr(eval_result, "nicknames_update", None)
             if nicknames_update:
                 nicknames_override = nicknames_update
-                asyncio.create_task(broadcast_telemetry("PIPELINE", f"🔄 อัปเดตชื่อเล่นใหม่ตามบริบท: {nicknames_override}", "info"))
             elif affection_val >= affection_cap:
                 affection_val = affection_cap # ถ้ายังไม่ปลดล็อก ก็อั้นไว้ที่เดิม
 
@@ -609,7 +523,6 @@ class GamePipeline:
             new_inside_joke = getattr(eval_result, "new_inside_joke", None)
             if new_inside_joke:
                 current_inside_jokes.append(new_inside_joke)
-                asyncio.create_task(broadcast_telemetry("PIPELINE", f"📝 บันทึกมุกวงในใหม่: {new_inside_joke}", "success"))
             
             # 🌟 [FIX] THE DESIRE PHYSICS (สมการความปรารถนาคุมด้วย Python)
             max_desire = character_data.get("max_desire", 1000)
@@ -667,8 +580,6 @@ class GamePipeline:
                 shatter_count = max(0, shatter_count - 3)
                 peaceful_turns_count = 0
 
-            asyncio.create_task(broadcast_telemetry("EVALUATOR", f"วิเคราะห์เจตนาสำเร็จ (Aff: {affection_val}, Des: {desire_percentage}%)", "success" if getattr(eval_result, 'desire_delta', 0) > 0 else "info", {"desire": desire_percentage}))
-
             event_cancelled = False
             pacing_control_triggered = False
             current_override_resolution = None
@@ -684,7 +595,6 @@ class GamePipeline:
                 if beat_action == "golden_interrupt":
                     eval_result.affection_delta = getattr(eval_result, "affection_delta", 0) + 2
                     eval_result.desire_delta = getattr(eval_result, "desire_delta", 0) + 5
-                    asyncio.create_task(broadcast_telemetry("PIPELINE", "🌟 [THE GOLDEN ROUTE] ทะลวงสคริปต์นอกบทได้สมบูรณ์แบบ!", "success"))
                 matched_path = getattr(eval_result, "matched_path", None)
                 
                 try:
@@ -710,7 +620,6 @@ class GamePipeline:
                             matched_path = pacing_control_data.get("matched_path")
                             current_override_resolution = pacing_control_data.get("inevitable_consequence")
                             pacing_control_triggered = True
-                            asyncio.create_task(broadcast_telemetry("PIPELINE", f"⏱️ หมดเวลาลีลา! บังคับสับสวิตช์ Pacing Control (Beat: {active_beat_id})", "warning"))
                 except Exception as e:
                     pass
                 
@@ -742,11 +651,9 @@ class GamePipeline:
                             beat_turn_count = 0
                             if transition_bridge:
                                 logger.info(f"🌉 \033[93m[DIRECTOR BRIDGE]\033[0m: ทำงานสำหรับ Scene {active_event_phase}")
-                            asyncio.create_task(broadcast_telemetry("DEBUG", f"🛠️ [TRANSITION] สับรางสำเร็จ! Scene: {active_event_phase} | Beat: {active_beat_id}", "info"))
                     except Exception as e:
                         error_msg = str(e)
                         logger.error(f"❌ [TRANSITION FAILED] {error_msg}")
-                        asyncio.create_task(broadcast_telemetry("ERROR", f"🚨 Transition พังทลาย แต่บังคับเล่นต่อในบีตเดิม: {error_msg}", "error"))
                         beat_action = "chaos_escalation"
 
             if not event_cancelled and active_event_id:
@@ -835,7 +742,6 @@ class GamePipeline:
             # 🚀 5. รันคู่ขนาน: DIRECTOR vs ACTOR
             # ==================================================
             logger.info("🕒 🔀 [PIPELINE] Building Prompts & Spawning Concurrent Tasks...")
-            asyncio.create_task(broadcast_telemetry("PIPELINE", "กำลังเรียก Director และ Actor คู่ขนาน...", "warning"))
 
             async def timed_director():
                 res = await self.director.analyze_scene(director_prompt=director_prompt)
@@ -856,7 +762,6 @@ class GamePipeline:
                     if getattr(director_out, "voice_over", None):
                         director_out.voice_over = " ".join(re.sub(r'\[.*?\]|\(.*?\)', '', director_out.voice_over).split())
                         yield f"data: {json.dumps({'type': 'voice_over', 'content': director_out.voice_over}, ensure_ascii=False)}\n\n"
-                        asyncio.create_task(broadcast_telemetry("DIRECTOR", f"เซ็ตบรรยากาศสำเร็จ (Chaos: {chaos_level})", "info", {"vo": director_out.voice_over}))
                     yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'director', 'response': director_out.model_dump()}, ensure_ascii=False)}\n\n"
                     
                     # 🌟 [SYNC]: พอ Director คายข้อมูลเสร็จ ถ้า Actor รออยู่แล้ว ให้คาย Actor ตามทันที!
@@ -894,8 +799,6 @@ class GamePipeline:
                         if "[FORCED]" in str(new_p_pos).upper():
                             player_posture = new_p_pos
 
-                    asyncio.create_task(broadcast_telemetry("ACTOR", f"สวมบทบาทสำเร็จ (A_POS: '{actor_posture}', DOM: {current_dominance_state})", "critical" if desire_percentage >= 100 else "success", {"thinking": getattr(actor_out, "thinking", ""), "response_sequence": [s.model_dump() for s in actor_out.response_sequence]}))
-
             yield f"data: {json.dumps({'system_event': 'physics_update', 'stance': current_stance, 'tension': tension_gauge, 'player_posture': player_posture, 'actor_posture': actor_posture, 'dominance_state': current_dominance_state, 'action_lock': current_action_lock, 'contact_points': contact_points_list, 'current_outfit': current_outfit}, ensure_ascii=False)}\n\n"
             yield f"data: {json.dumps({'system_event': 'turn_sync', 'beat_turn_count': beat_turn_count}, ensure_ascii=False)}\n\n"
 
@@ -932,7 +835,6 @@ class GamePipeline:
             }
                 
 
-            asyncio.create_task(broadcast_telemetry("DEBUG", f"🛠️ [DB SAVE] กำลังบันทึกลงฐานข้อมูล: Phase={active_event_phase}, Beat={active_beat_id}", "warning"))
             await self.db.update_session_state(session_id, update_payload)
             
             # ==================================================
@@ -993,10 +895,6 @@ class GamePipeline:
             except Exception as r_sync_err:
                 logger.warning(f"⚠️ [REDIS HOT CACHE] Failed to sync cache: {r_sync_err}")
 
-
-            # 📡 7. สัญญาณสุดท้าย: จบเทิร์น
-            asyncio.create_task(broadcast_telemetry("SYSTEM", "จบเทิร์นสมบูรณ์ พร้อมรับคำสั่งถัดไป", "info"))
-            
             total_elapsed = time.time() - turn_start_time
             logger.info(f"🕒 ✅ [PIPELINE] Turn Complete | Total Latency: {total_elapsed:.2f}s")
 

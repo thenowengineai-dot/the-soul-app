@@ -196,32 +196,6 @@ async def get_world_data(world_id: str):
 
 
 # ==========================================
-# 👁️ [NEW ENGINE 5.5] GOD'S EYE TELEMETRY ENDPOINT
-# ==========================================
-@router.get("/telemetry")
-async def get_telemetry():
-    """
-    Endpoint สำหรับดึงข้อมูล Telemetry เฉพาะในโหมด Development
-    """
-    if os.getenv("ENVIRONMENT", "development").lower() == "production":
-        raise HTTPException(status_code=403, detail="Telemetry endpoint is disabled in production.")
-        
-    file_path = "data/telemetry.json"
-    
-    # ถ้ายังไม่เคยคุยกันเลย (ยังไม่มีไฟล์) ให้ส่งสถานะ 404 กลับไปบอกหน้าบ้าน
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="ยังไม่มีข้อมูล Telemetry กรุณาเริ่มแชทอย่างน้อย 1 เทิร์น")
-        
-    try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        return data
-    except Exception as e:
-        logger.error(f"Error reading telemetry.json: {e}")
-        raise HTTPException(status_code=500, detail="ไฟล์ Telemetry เสียหายหรือกำลังถูกใช้งาน")
-
-
-# ==========================================
 # 💬 MAIN CORE: Endpoint สำหรับคุยแชท (SSE Streaming)
 # ==========================================
 

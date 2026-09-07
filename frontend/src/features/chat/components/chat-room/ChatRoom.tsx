@@ -15,7 +15,7 @@ export type { ChatRoomProps }
 
 export function ChatRoom({
   chat = MOCK_CHATS[0],
-  messages = [],
+  messages: _messages = [],
   isChatListOpen = true,
   onToggleChatList,
   isHudOpen = true,
@@ -51,6 +51,11 @@ export function ChatRoom({
     })
   }, [])
 
+  const onHudUpdateRef = useRef(onHudUpdate)
+  useEffect(() => {
+    onHudUpdateRef.current = onHudUpdate
+  }, [onHudUpdate])
+
   // 2. เมื่อสลับตัวละคร: โหลดข้อมูล Session เก่า (ถ้ามี) หรือเตรียมพื้นที่แชท
   useEffect(() => {
     let isCancelled = false
@@ -79,7 +84,7 @@ export function ChatRoom({
           setChatMessages(mapped)
 
           if (res.characterStats) {
-            onHudUpdate?.({
+            onHudUpdateRef.current?.({
               affection: res.characterStats.affection,
               desire: res.characterStats.desire,
               actor_posture: res.actorPosture,
@@ -107,7 +112,7 @@ export function ChatRoom({
     return () => {
       isCancelled = true
     }
-  }, [currentChat.id, currentChat.name, messages, onHudUpdate])
+  }, [currentChat.id])
 
   // 3. เลื่อน Scroll ลงด้านล่างสุดเสมอเมื่อมีข้อความใหม่หรือกำลังสตรีม
   useEffect(() => {

@@ -549,6 +549,10 @@ async def load_session_endpoint(request: LoadSessionRequest):
             }
 
         # 2. 🌟 Fallback ไปยัง Supabase (Legacy Session)
+        # ถ้า user_id เป็น guest (ขึ้นต้นด้วย gst_) ไม่ต้องไปค้นใน Supabase เพราะ Supabase เก็บเฉพาะ UUID
+        if request.user_id and request.user_id.startswith("gst_"):
+            return {"has_started": False, "messages": []}
+
         db = DatabaseCore()
         if request.session_id:
             session = await db.get_session_by_id(request.session_id)

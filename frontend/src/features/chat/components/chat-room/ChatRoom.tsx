@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import ChatRoomHeader from './ChatRoomHeader'
 import MessageList from './MessageList'
 import ChatInputBar from './ChatInputBar'
-import { MOCK_MESSAGES, MOCK_CHATS } from '../../mockData'
+import { MOCK_CHATS } from '../../mockData'
 import type { ChatRoomProps, ChatMessage } from '../../types'
 import {
   ensureGuestAccount,
@@ -15,7 +15,7 @@ export type { ChatRoomProps }
 
 export function ChatRoom({
   chat = MOCK_CHATS[0],
-  messages = MOCK_MESSAGES,
+  messages = [],
   isChatListOpen = true,
   onToggleChatList,
   isHudOpen = true,
@@ -55,8 +55,6 @@ export function ChatRoom({
   useEffect(() => {
     let isCancelled = false
 
-    const isPublishedCampaign = String(currentChat.id).startsWith('campaign_')
-
     loadSession(String(currentChat.id))
       .then(res => {
         if (isCancelled) return
@@ -92,27 +90,15 @@ export function ChatRoom({
             })
           }
         } else {
-          // ถ้ายังไม่เคยเริ่มเซฟ: ถ้าเป็นตัวละครจริง ให้แสดงข้อความต้อนรับ
-          if (isPublishedCampaign) {
-            setSessionId(null)
-            setChatMessages([
-              {
-                id: `intro_${currentChat.id}`,
-                type: 'vo',
-                text: `${currentChat.name} กำลังรอคุณอยู่... พิมพ์ข้อความเพื่อเริ่มต้นบทสนทนา`,
-              },
-            ])
-          } else {
-            // ตัวละคร Mock เดิม
-            setSessionId(null)
-            setChatMessages(messages)
-          }
+          // ถ้ายังไม่เคยเริ่มเซฟ: หน้าแชทเริ่มต้นว่างเปล่าทั้งหมด 100%
+          setSessionId(null)
+          setChatMessages([])
         }
       })
       .catch(err => {
         if (isCancelled) return
-        console.warn('[LOAD SESSION] Fallback to default:', err)
-        setChatMessages(messages)
+        console.warn('[LOAD SESSION] Fallback to empty:', err)
+        setChatMessages([])
       })
       .finally(() => {
         if (!isCancelled) setIsSessionLoading(false)

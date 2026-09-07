@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme {
+  --color-app-bg: #090909;
+  --color-app-border: #2F3336;
+  --color-app-primary: rgb(242, 242, 245);
+  --color-app-secondary: rgb(172, 172, 178);
+  --color-app-surface: #1D1D1F;
+  --color-app-brand: #EF264C;
+}
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background-color: var(--color-app-bg);
+  color: rgb(242, 242, 245);
+  margin: 0;
+  padding: 0;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

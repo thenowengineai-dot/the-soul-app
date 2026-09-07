@@ -1,0 +1,245 @@
+import { Menu, SquarePlus, Settings } from 'lucide-react'
+import { SIDEBAR_MENU } from '../mockData'
+import CreatorSubscriptions from './CreatorSubscriptions'
+import type { SidebarProps } from '../types'
+
+export type { SidebarProps }
+
+interface MenuIconProps {
+  id: string
+  isActive: boolean
+  DefaultIcon: React.ComponentType<{ size?: number | string; strokeWidth?: number | string; className?: string }>
+}
+
+function MenuIcon({ id, isActive, DefaultIcon }: MenuIconProps) {
+  if (!isActive) {
+    return <DefaultIcon strokeWidth={2.2} size={20} className="flex-shrink-0" />
+  }
+
+  // Active state: ใช้ไอคอนเดิม 100% ที่ถูกถมสีขาว (ไม่ใช่ไอคอนใหม่ และแชทไม่มีจุดข้างใน)
+  if (id === 'home') {
+    // ไอคอน Home เดิม: ถมสีขาว โดยช่องประตูเป็นสีดำชัดเจน
+    return (
+      <div className="relative w-5 h-5 flex items-center justify-center flex-shrink-0">
+        <DefaultIcon 
+          strokeWidth={2} 
+          size={20} 
+          className="fill-white text-white" 
+        />
+        <svg viewBox="0 0 24 24" className="absolute inset-0 w-full h-full pointer-events-none">
+          <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8z" fill="black" />
+        </svg>
+      </div>
+    )
+  }
+
+  if (id === 'quests') {
+    // ไอคอน Compass เดิม: ถมสีขาวเฉพาะเข็มทิศด้านใน วงกลมด้านนอกเป็นเส้นโปร่ง
+    return (
+      <DefaultIcon 
+        strokeWidth={2} 
+        size={20} 
+        className="flex-shrink-0 text-white [&>path]:fill-white" 
+      />
+    )
+  }
+
+  if (id === 'pricing') {
+    // ไอคอน Tag (Pricing): เมื่อ active ให้ถมสีขาว และช่องร้อยเชือกวงกลมเป็นสีดำ
+    return (
+      <DefaultIcon 
+        strokeWidth={2} 
+        size={20} 
+        className="flex-shrink-0 fill-white text-white [&>circle]:fill-black [&>circle]:stroke-black" 
+      />
+    )
+  }
+
+  // สำหรับ Crown, MessageCircle (ไอคอนเดิม ไม่มีจุดด้านใน), Heart: ใช้ไอคอนเดิมถมสีขาว
+  return (
+    <DefaultIcon 
+      strokeWidth={2} 
+      size={20} 
+      className="flex-shrink-0 fill-white text-white" 
+    />
+  )
+}
+
+function Sidebar({
+  isSidebarExpanded,
+  setIsSidebarExpanded,
+  selectedMenu,
+  handleMenuClick,
+  onLogoClick,
+  onComposeClick,
+  followedCreators,
+  onCreatorClick,
+  isHomeMode = false,
+}: SidebarProps) {
+  const handleLogo = onLogoClick || (() => handleMenuClick('home'));
+  const handleCompose = onComposeClick || (() => handleMenuClick('chats'));
+
+  return (
+    <div className={`
+      ${isSidebarExpanded ? 'w-[230px] px-3.5' : 'w-[70px] px-3'} 
+      ${isHomeMode ? 'h-full pt-2.5 sm:pt-3' : 'h-screen pt-3.5 sm:pt-4'} 
+      flex-shrink-0 border-r border-app-border flex flex-col pb-3 bg-app-bg/50 backdrop-blur-xl relative transition-all duration-300 ease-in-out z-20
+    `}>
+        
+      {/* Circular Hamburger Button sitting directly on the gray divider line, positioned between Logo and Home icon */}
+      <button 
+        type="button"
+        onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
+        title={isSidebarExpanded ? "ย่อแถบเมนู" : "ขยายแถบเมนู"}
+        className={`absolute -right-3.5 ${isHomeMode ? 'top-[9px] sm:top-[11px]' : 'top-[48px] sm:top-[52px]'} z-30 w-7 h-7 rounded-full bg-[#161616] border border-app-border flex items-center justify-center text-app-primary/90 hover:text-app-primary hover:bg-[#252525] hover:border-white/40 shadow-lg cursor-pointer transition-all duration-200 hover:scale-110`}
+      >
+        <Menu size={14} strokeWidth={2.2} />
+      </button>
+
+      {/* Top Logo (Rendered only when NOT in home mode; on home mode, it is displayed in HomeTopBar) */}
+      {!isHomeMode && (
+        <div 
+          onClick={handleLogo}
+          title="Maomoi Ai"
+          className={`flex items-center ${isSidebarExpanded ? 'px-1 mb-3 gap-2.5' : 'justify-center mb-3'} h-[40px] sm:h-[42px] cursor-pointer group select-none`}
+        >
+          <div className="w-[40px] h-[40px] sm:w-[42px] sm:h-[42px] flex items-center justify-center rounded-xl group-hover:bg-white/[0.06] transition-all flex-shrink-0">
+            <img 
+              src="/logo/logo.png" 
+              alt="Maomoi Ai Logo" 
+              className="w-[34px] h-[34px] sm:w-[36px] sm:h-[36px] object-contain drop-shadow-[0_2px_10px_rgba(236,72,153,0.35)] group-hover:scale-105 transition-transform duration-200" 
+            />
+          </div>
+          {isSidebarExpanded && (
+            <div className="flex items-center overflow-hidden transition-all duration-200">
+              <img 
+                src="/logo/maomoi_ai_white.png" 
+                alt="Maomoi Ai" 
+                className="h-[20px] w-auto object-contain flex-shrink-0" 
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Middle Scrollable Section: Menu Items + Divider + Creator Subscriptions */}
+      <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col min-h-0 py-1">
+        {/* Menu Items (YouTube Style with comfortable spacing) */}
+        <div className="flex flex-col gap-1.5 w-full">
+          {SIDEBAR_MENU.map(item => {
+            const Icon = item.icon;
+            const isActive = selectedMenu === item.id;
+            
+            if (!isSidebarExpanded) {
+              // Collapsed Mode (Icon only + Tooltip) - 44px Standard
+              return (
+                <div key={item.id} className="relative group flex items-center justify-center w-full">
+                  <button
+                    type="button"
+                    onClick={() => handleMenuClick(item.id)}
+                    className="w-[44px] h-[44px] flex items-center justify-center rounded-xl cursor-pointer transition-all duration-150 text-app-primary hover:bg-white/10"
+                  >
+                    <MenuIcon id={item.id} isActive={isActive} DefaultIcon={Icon} />
+                  </button>
+
+                  {/* YouTube Tooltip */}
+                  <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#212121] text-app-primary text-xs font-normal rounded-md shadow-2xl border border-white/10 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50">
+                    {item.label}
+                  </div>
+                </div>
+              );
+            }
+
+            // Expanded Mode (Row with Icon + Text Label as in Ref Image) - 44px Standard
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => handleMenuClick(item.id)}
+                className={`w-full h-[44px] flex items-center gap-3 px-2.5 rounded-xl cursor-pointer transition-all duration-150 text-left text-app-primary hover:bg-white/10 ${
+                  isActive ? 'font-medium' : ''
+                }`}
+              >
+                <MenuIcon id={item.id} isActive={isActive} DefaultIcon={Icon} />
+                <span className="text-[13.5px] truncate leading-tight">
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Gray Hairline Divider Between Main Menu & Subscriptions */}
+        <div className="w-full h-[1px] bg-app-border my-3 shrink-0" />
+
+        {/* Creator Subscriptions (YouTube Style: Circular Avatar + Creator Name + New Bot Dot) */}
+        <CreatorSubscriptions 
+          isSidebarExpanded={isSidebarExpanded}
+          creators={followedCreators}
+          onCreatorClick={onCreatorClick}
+        />
+
+        {/* Gray Hairline Divider Before Action Button */}
+        <div className="w-full h-[1px] bg-app-border my-3 shrink-0" />
+
+        {/* Create Button ("สร้าง" with SquarePlus icon on White background) - 44px Standard */}
+        <div className={`mt-0.5 mb-2 ${isSidebarExpanded ? 'w-full' : 'relative group flex justify-center'}`}>
+          <button 
+            type="button"
+            onClick={handleCompose}
+            className={`
+              ${isSidebarExpanded ? 'w-full h-[44px] px-2.5 rounded-xl flex items-center gap-3 font-medium' : 'w-[44px] h-[44px] rounded-xl flex items-center justify-center'}
+              bg-app-primary text-black hover:opacity-90 transition-all cursor-pointer shadow-md
+            `}
+          >
+            <SquarePlus strokeWidth={2.2} size={20} className="flex-shrink-0" />
+            {isSidebarExpanded && <span className="text-[13.5px] font-semibold truncate">สร้าง</span>}
+          </button>
+
+          {!isSidebarExpanded && (
+            <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#212121] text-app-primary text-xs font-normal rounded-md shadow-2xl border border-white/10 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50">
+              สร้าง
+            </div>
+          )}
+        </div>
+
+      </div>
+
+      {/* Settings at bottom (Fixed with hairline top border) - 44px Standard */}
+      <div className="mt-auto pt-2.5 border-t border-app-border w-full">
+        {isSidebarExpanded ? (
+          <button
+            type="button"
+            onClick={() => handleMenuClick('settings')}
+            className={`w-full h-[44px] flex items-center gap-3 px-2.5 rounded-xl cursor-pointer transition-all duration-150 text-left text-app-primary hover:bg-white/10 ${
+              selectedMenu === 'settings' ? 'font-medium' : ''
+            }`}
+          >
+            <Settings strokeWidth={2.2} size={20} className="flex-shrink-0" />
+            <span className="text-[13.5px] truncate leading-tight">
+              การตั้งค่า
+            </span>
+          </button>
+        ) : (
+          <div className="relative group flex items-center justify-center w-full">
+            <button
+              type="button"
+              onClick={() => handleMenuClick('settings')}
+              className="w-[44px] h-[44px] flex items-center justify-center rounded-xl cursor-pointer transition-all duration-150 text-app-primary hover:bg-white/10"
+            >
+              <Settings strokeWidth={2.2} size={20} />
+            </button>
+
+            {/* YouTube Tooltip */}
+            <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#212121] text-app-primary text-xs font-normal rounded-md shadow-2xl border border-white/10 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50">
+              การตั้งค่า
+            </div>
+          </div>
+        )}
+      </div>
+
+    </div>
+  );
+}
+
+export default Sidebar;

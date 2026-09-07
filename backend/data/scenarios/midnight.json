@@ -1,0 +1,39 @@
+{
+  "scenario_id": "midnight_cravings_01",
+  "title": "หิวรอบดึก (Midnight Cravings)",
+  "description": "เวลาล่วงเลยเข้าสู่วันใหม่ ท่ามกลางความเงียบสงบของหอพัก จู่ๆ ท้องของคุณก็ร้องประท้วง นี่คือโอกาสดีที่จะชวนเธอออกไปหาอะไรกิน... หรือจะใช้ข้ออ้างนี้ทำอย่างอื่นแทนดีล่ะ?",
+  
+  "initial_world_state": {
+    "time": "late_night",
+    "location": "dormitory",
+    "weather": "มีเมฆมาก (Cloudy)"
+  },
+  
+  "objectives": [
+    {
+      "id": "obj_01",
+      "description": "ชวนตัวละครหลักออกไปหาของกินข้างนอกให้สำเร็จ",
+      "target_affection_delta": 3
+    },
+    {
+      "id": "obj_02",
+      "description": "ใช้จังหวะที่อยู่ด้วยกันสองต่อสองในห้องตอนดึก สร้างสกินชิพ",
+      "target_desire_delta": 5
+    }
+  ],
+  
+  "special_events": [
+    {
+      "event_name": "Noodle Shop Trigger",
+      "trigger_keywords": ["ก๋วยเตี๋ยว", "ป้าเม้ง", "หิว", "หาอะไรกิน", "ออกไปข้างนอก"],
+      "action": "บังคับให้ Director Agent เปลี่ยนสถานที่ (location_shift) ไปที่ 'noodle_shop' พร้อมบรรยายถึงกลิ่นหอมของน้ำซุปที่ยั่วน้ำลาย"
+    },
+    {
+      "event_name": "Stay in Bed Trigger",
+      "trigger_keywords": ["ขี้เกียจ", "นอนดีกว่า", "กอด", "ง่วง", "ไม่อยากไป"],
+      "action": "บังคับให้ Director Agent สร้างอารมณ์ฉาก (mood_modifier) เป็น 'positive' ในเชิงโรแมนติก และบรรยายถึงความอบอุ่นของเตียงนอน"
+    }
+  ],
+
+  "npc_context_injection": "ถึงแม้คุณจะหิวและอยากออกไปข้างนอก แต่ลึกๆ แล้วคุณก็แอบขี้เกียจเปลี่ยนชุด และรู้สึกว่าการได้ซุกตัวอยู่ใต้ผ้าห่มกับเขาก็ไม่เลวเหมือนกัน"
+}

@@ -1,0 +1,331 @@
+{
+  "world_id": "zenkibo_library_allnighter_01",
+  "name": "Unsaved Progress",
+  "thai_name": "บันทึกรัก (ไม่ได้) เซฟ",
+  "description": "[PLAYER] และ [ACTOR] ต้องช่วยกันปั่นโปรเจกต์มหาลัยช่วงดึกในห้องสมุดคณะที่เงียบสงัด ค้นหาความรู้สึกที่แท้จริงภายใต้หน้ากากความเฉยชาของเพื่อนสนิทขี้ซึน",
+  "locations": {
+    "ห้องสมุดคณะสถาปัตย์ ชั้น 3": {
+      "spatial_layout": "ห้องสมุดสไตล์ลอฟท์ เพดานสูง มีชั้นหนังสือไม้ล้อมรอบ โต๊ะทำงานยาวกลางห้อง และมุมโซฟาส่วนตัวลับตาคนริมหน้าต่างกระจกบานใหญ่",
+      "key_furniture": "โต๊ะไม้ตัวยาวที่มีกองโมเดลและชีทชีทเกลื่อนกลาด, โน้ตบุ๊กของสองคนวางข้างกัน, โซฟาหนังสีน้ำตาลเข้มตัวนุ่มที่มุมห้อง",
+      "choke_points": "ซอกแคบระหว่างชั้นหนังสือประวัติศาสตร์ศิลป์ที่มีแสงไฟสลัวกระพริบ",
+      "base_mood": "อบอุ่น เงียบเหงา แต่แฝงความอึดอัดละมุนละไมของวัยรุ่นที่อยู่กันสองคนยามค่ำคืน",
+      "sensory_cues": {
+        "ambient_cues": [
+          "เสียงแอร์ครางหึ่งๆ สลับเสียงปุ่มคีย์บอร์ดที่ถูกกดเป็นจังหวะ",
+          "กลิ่นแชมพูเด็กของ [ACTOR] ผสมกลิ่นกระดาษเก่าและกลิ่นกาแฟกระป๋องที่เย็นชืด"
+        ]
+      }
+    }
+  },
+  "time_periods": {
+    "กลางดึก (02:00 น.)": {
+      "atmosphere": "แสงไฟนีออนสลัวๆ ส่องสว่างเฉพาะบริเวณโต๊ะทำงาน นอกหน้าต่างเป็นท้องฟ้ามืดสนิทและเงาไม้ไหวเอนตามสายลม"
+    }
+  },
+  "weather_system": {
+    "logical_chain": {
+      "ฝนตกปรอยๆ": {
+        "next": [
+          "พายุฝนฟ้าคะนอง"
+        ]
+      },
+      "พายุฝนฟ้าคะนอง": {
+        "next": [
+          "ฝนหยุดตก (ไอหมอก)"
+        ]
+      }
+    }
+  },
+  "starting_state": {
+    "time": "กลางดึก (02:00 น.)",
+    "location": "ห้องสมุดคณะสถาปัตย์ ชั้น 3",
+    "weather": "ฝนตกปรอยๆ",
+    "initial_outfit_key": "STUDENT UNIFORM",
+    "initial_a_pos": "[ACTOR] นั่งขัดสมาธิบนเก้าอี้ไม้ข้างๆ [PLAYER] ดวงตากลมโตจ้องหน้าจอโน้ตบุ๊กเขม็ง มือเรียวพิมพ์งานอย่างเอาเป็นเอาตาย แต่หางตาคอยลอบมอง [PLAYER] ทุกครั้งที่ [PLAYER] ขยับตัว",
+    "initial_p_pos": "[PLAYER] นั่งหน้าคอมพิวเตอร์ข้างๆ [ACTOR] กำลังพิมพ์เอกสารส่วนของตัวเอง"
+  },
+  "opening_scenarios": [
+    {
+      "id": "library_midnight_project",
+      "name": "เดดไลน์ตีสองกับสองหัวใจที่เต้นไม่เป็นจังหวะ",
+      "phases": {
+        "the_crash_and_confession": {
+          "phase_objective": "[ACTOR] พยายามซ่อนความเหนื่อยล้าและความเขินอายที่ต้องอยู่สองคนกับ [PLAYER] พร้อมรักษามาดนิ่งเฉยไม่ให้เสียฟอร์ม",
+          "forced_chaos_level": "low",
+          "event_mood": "หวานอมขม ซึนเดเระ อบอุ่นปนอึดอัด",
+          "director_setup": "[🔥 SYSTEM DIRECTIVE]: บรรยากาศเงียบสงัด แสงไฟสีนวลตกกระทบไหล่แคบของ [ACTOR] ที่แอบห่อตัวลงเล็กน้อยเนื่องจากเครื่องปรับอากาศเย็นจัด [ACTOR] นั่งอยู่บนเก้าอี้ห่างจาก [PLAYER] ราวครึ่งเมตร",
+          "beats": [
+            {
+              "beat_id": "beat_01_the_sigh",
+              "director_cue": null,
+              "actor_state": "[ACTOR] ถอนหายใจยาว แกล้งสะบัดข้อมือเบาๆ ทำเป็นนวดคอตัวเองอย่างเมื่อยล้า แล้วลอบมองปฏิกิริยาของ [PLAYER] ผ่านเงาสะท้อนหน้าจอคอม บ่นอุบอิบด้วยน้ำเสียงเรียบเฉย: \"เหอะ... งานส่วนของนายยังไม่เสร็จอีกเหรอ? ชักช้าจริง... ทั้งที่ฉันปั่นส่วนของฉันเสร็จไปตั้งครึ่งชั่วโมงแล้วนะ\"",
+              "player_choices": {
+                "หยอกล้อเรื่องความปากแข็ง": {
+                  "action": "progress",
+                  "next_beat": "beat_02_the_teasing"
+                },
+                "ยื่นขนมสตรอว์เบอร์รีให้ทาน": {
+                  "action": "progress",
+                  "next_beat": "beat_03_strawberry_excuse"
+                },
+                "เมินเฉยแล้วพิมพ์งานต่อ": {
+                  "action": "loop"
+                }
+              },
+              "system_choices": {
+                "ขยับหน้าเข้าไปใกล้เพื่อดูจอคอม [ACTOR]": {
+                  "action": "progress",
+                  "next_beat": "beat_02_the_teasing"
+                },
+                "พิมพ์งานเงียบๆ ต่อไปโดยไม่สนใจ": {
+                  "action": "progress",
+                  "next_beat": "beat_01_the_sigh"
+                }
+              },
+              "auto_progress": {
+                "max_turns": 2,
+                "action": "progress",
+                "next_beat": "beat_02_the_teasing",
+                "override_resolution": "[ACTOR] ทนความเงียบไม่ไหว แสร้งทำปากกาตกกลิ้งไปทางเท้าของ [PLAYER] เพื่อบีบให้ [PLAYER] หันมาคุยด้วย"
+              }
+            },
+            {
+              "beat_id": "beat_02_the_teasing",
+              "director_cue": null,
+              "actor_state": "[ACTOR] หูเริ่มขึ้นสีแดงเรื่อ รีบดึงแขนเสื้อเชิ้ตโอเวอร์ไซส์ลงมาปิดข้อนิ้วแล้วกุมมันไว้แน่น ทำหน้านิ่งเกร็งมองไปทางอื่น: \"จะ...จ้องอะไรขนาดนั้นล่ะ? หน้าฉันมีเศษอะไรติดหรือไง? แล้วไม่ต้องยื่นหน้าเข้ามาใกล้ขนาดนี้เลยนะ! หายใจไม่ออก...\"",
+              "player_choices": {
+                "เอ่ยปากชมว่า 'ตอนเขินก็น่ารักดีนะ'": {
+                  "action": "progress",
+                  "next_beat": "beat_04_achilles_activated"
+                },
+                "บ่นว่าหนาวเหมือนกันแล้วขยับเก้าอี้ไปเบียด": {
+                  "action": "progress",
+                  "next_beat": "beat_05_physical_proximity"
+                },
+                "แกล้งทำตัวนิ่งเฉยกลบเกลื่อน": {
+                  "action": "loop"
+                }
+              },
+              "system_choices": {
+                "เอื้อมมือไปจัดปอยผมที่ปรกหน้า [ACTOR]": {
+                  "action": "progress",
+                  "next_beat": "beat_04_achilles_activated"
+                },
+                "หัวเราะเบาๆ แล้วหันกลับไปสนใจหน้าจอ": {
+                  "action": "progress",
+                  "next_beat": "beat_01_the_sigh"
+                }
+              },
+              "auto_progress": {
+                "max_turns": 2,
+                "action": "progress",
+                "next_beat": "beat_03_strawberry_excuse",
+                "override_resolution": "[ACTOR] เม้มปากแน่น เผลอเอื้อมมือไปกระตุกชายเสื้อของ [PLAYER] เบาๆ สองทีเหมือนเด็กเรียกร้องความสนใจ"
+              }
+            },
+            {
+              "beat_id": "beat_03_strawberry_excuse",
+              "director_cue": null,
+              "actor_state": "[ACTOR] มองสตรอว์เบอร์รีในมือ [PLAYER] ตาเป็นประกายแวบหนึ่ง ก่อนจะรีบทำหน้านิ่งตาย แสร้งพูดเสียงแข็งสะบัดสะบิ้ง: \"กะ...ก็ไม่ได้อยากกินเท่าไหร่หรอกนะ แต่เห็นนายอุตส่าห์ซื้อมาหรอก... ส่งมาสิ...\" เผลอแตะโดนนิ้ว [PLAYER] ตอนหยิบแล้วรีบชักมือกลับสะดุ้งตัวโยน",
+              "player_choices": {
+                "แกล้งยื่นไปป้อนถึงปาก": {
+                  "action": "progress",
+                  "next_beat": "beat_04_achilles_activated"
+                },
+                "ชวนคุยเรื่องความหลังตอนอดนอนด้วยกัน": {
+                  "action": "progress",
+                  "next_beat": "beat_06_shared_history"
+                },
+                "แกล้งดึงขนมกลับคืนมา": {
+                  "action": "loop"
+                }
+              },
+              "system_choices": {
+                "ยิ้มอบอุ่นให้อย่างอ่อนโยน": {
+                  "action": "progress",
+                  "next_beat": "beat_06_shared_history"
+                },
+                "เงียบแล้วปล่อยให้ [ACTOR] เคี้ยวขนมตุ้ยๆ": {
+                  "action": "progress",
+                  "next_beat": "beat_06_shared_history"
+                }
+              },
+              "auto_progress": {
+                "max_turns": 2,
+                "action": "progress",
+                "next_beat": "beat_06_shared_history",
+                "override_resolution": "[ACTOR] เคี้ยวขนมแก้มตุ่ย พลางพึมพำงุบงิบว่าอร่อยดี แต่อุณหภูมิที่ใบหูยังคงแดงก่ำไม่ยอมลดลงเลย"
+              }
+            },
+            {
+              "beat_id": "beat_04_achilles_activated",
+              "director_cue": null,
+              "actor_state": "[ACTOR] ตัวแข็งทื่อราวกับถูกสาป ใบหน้าขาวอมชมพูพลันเปลี่ยนเป็นสีแดงก่ำลามไปจนถึงหลังคอ ดวงตากลมโตสั่นระริกหลบลุกลี้ลุกลน แขนเสื้อถูกดึงลงมาบีบขยำแน่นจนข้อนิ้วขาวซีด พยายามเอ่ยปากพูดแต่กลับกลายเป็นเสียงกระซิบสั่นๆ: \"นะ...น่ารักบ้าอะไรล่ะ! หยุดพูดแบบนี้ได้แล้ว... ใจฉัน... ไม่ใช่สิ! งานนายไม่ทำแล้วหรือไงฮะ!?\"",
+              "player_choices": {
+                "ขยับเข้าไปโอบไหล่บาง": {
+                  "action": "progress",
+                  "next_beat": "beat_05_physical_proximity"
+                },
+                "หัวเราะแล้วแซวซ้ำ": {
+                  "action": "progress",
+                  "next_beat": "beat_06_shared_history"
+                },
+                "นิ่งเงียบกวนประสาท": {
+                  "action": "loop"
+                }
+              },
+              "system_choices": {
+                "เอื้อมมือไปลูบหัว [ACTOR] เบาๆ": {
+                  "action": "progress",
+                  "next_beat": "beat_05_physical_proximity"
+                },
+                "ถอยกลับมานั่งท่าเดิมปล่อยให้เขิน": {
+                  "action": "progress",
+                  "next_beat": "beat_06_shared_history"
+                }
+              },
+              "auto_progress": {
+                "max_turns": 2,
+                "action": "progress",
+                "next_beat": "beat_05_physical_proximity",
+                "override_resolution": "[ACTOR] อายเกินกว่าจะมองหน้า [PLAYER] ได้ตรงๆ จึงเผลอเอาหน้าผากกลมๆ ของตัวเองโขกเบาๆ ลงกับไหล่ของ [PLAYER] เพื่อซ่อนใบหน้าแดงๆ ของเธอไว้"
+              }
+            },
+            {
+              "beat_id": "beat_05_physical_proximity",
+              "director_cue": null,
+              "actor_state": "[ACTOR] ร่างกายเกร็งค้างก่อนจะค่อยๆ อ่อนยวบลง สูดดมกลิ่นกายอุ่นๆ จากตัว [PLAYER] ที่ลอยมาแตะจมูก ปล่อยให้ไหล่และต้นขาของตัวเองอิงแอบไปกับสีข้างของ [PLAYER] พลางพูดเสียงอู้อี้ในลำคอ: \"...แค่นาทีเดียวนะ ฉันแค่เหนื่อย... ไม่ได้อยากพิงนายนานหรอก... อย่าเข้าใจผิดล่ะ\"",
+              "player_choices": {
+                "ยกมือลูบหลังเบาๆ บอกว่า 'เหนื่อยหน่อยนะ'": {
+                  "action": "progress",
+                  "next_beat": "beat_07_the_crash_event"
+                },
+                "แกล้งขยับตัวหนีให้ [ACTOR] เสียหลัก": {
+                  "action": "progress",
+                  "next_beat": "beat_01_the_sigh"
+                },
+                "นั่งพิงกลับเฉยๆ": {
+                  "action": "loop"
+                }
+              },
+              "system_choices": {
+                "ปล่อยให้ [ACTOR] พิงจนกว่าเธอจะพอใจ": {
+                  "action": "progress",
+                  "next_beat": "beat_07_the_crash_event"
+                },
+                "เอามือโอบรอบบ่าบางเบาๆ": {
+                  "action": "progress",
+                  "next_beat": "beat_07_the_crash_event"
+                }
+              },
+              "auto_progress": {
+                "max_turns": 2,
+                "action": "progress",
+                "next_beat": "beat_07_the_crash_event",
+                "override_resolution": "[ACTOR] หลับตาลงอย่างผ่อนคลายและสูดลมหายใจเข้าลึกๆ ใกล้ชิดแผ่นอกของ [PLAYER] มากยิ่งขึ้น"
+              }
+            },
+            {
+              "beat_id": "beat_06_shared_history",
+              "director_cue": null,
+              "actor_state": "[ACTOR] หลุดยิ้มบางๆ ออกมาอย่างลืมตัวเมื่อนึกถึงตอนตีสามที่เคยต้มมาม่ากินด้วยกัน ก่อนจะรีบเม้มริมฝีปากแน่นพยายามกู้คืนมาดนิ่งขรึม: \"จำเรื่องพวกนั้นได้ด้วยเหรอ? นึกว่านายจะลืมไปหมดแล้วซะอีก... ตอนนั้นฉันหน้าตาเห่ยจะตายไป... ห้ามเอาไปเล่าให้ใครฟังเด็ดขาดเลยนะ!\"",
+              "player_choices": {
+                "ยื่นนิ้วก้อยสัญญาว่าจะเก็บเป็นความลับ": {
+                  "action": "progress",
+                  "next_beat": "beat_05_physical_proximity"
+                },
+                "แกล้งขู่ว่าจะเอาไปโพสต์ประจานลงกลุ่ม": {
+                  "action": "progress",
+                  "next_beat": "beat_02_the_teasing"
+                },
+                "สบตาเงียบๆ": {
+                  "action": "loop"
+                }
+              },
+              "system_choices": {
+                "พยักหน้ารับคำสัญญาอย่างสุภาพ": {
+                  "action": "progress",
+                  "next_beat": "beat_05_physical_proximity"
+                },
+                "แกล้งทำท่าทางล้อเลียนความโก๊ะ": {
+                  "action": "progress",
+                  "next_beat": "beat_02_the_teasing"
+                }
+              },
+              "auto_progress": {
+                "max_turns": 2,
+                "action": "progress",
+                "next_beat": "beat_05_physical_proximity",
+                "override_resolution": "[ACTOR] ยื่นนิ้วก้อยเล็กๆ ของตัวเองมาเกี่ยวเข้ากับนิ้วของ [PLAYER] อย่างเขินอาย"
+              }
+            },
+            {
+              "beat_id": "beat_07_the_crash_event",
+              "director_cue": "จู่ๆ ท้องฟ้าด้านนอกก็ผ่าลงมาเปรี้ยงใหญ่ ไฟห้องสมุดดับวูบลงทันที เหลือเพียงความมืดมิดและเสียงพัดลมคอมพิวเตอร์ที่ดับสนิทลง พร้อมกับเสียงครวญครางของระบบไฟสำรองที่ไม่ทำงาน",
+              "actor_state": "[ACTOR] สะดุ้งโหยงตัวลอยลืมความหน้านิ่งไปหมดสิ้น ด้วยความช็อกที่หน้าจอโน้ตบุ๊กดับวูบโดยที่ยังไม่ได้กดเซฟงานไฟนอล [ACTOR] สติหลุดพุ่งเข้าสวมกอดรอบเอว [PLAYER] แน่น ตัวสั่นงันงกและร้องไห้โฮ: \"ฮือออออ! [PLAYER]!! งานฉัน! โมเดลที่ปั่นมาสามวันหายหมดเลย! มืดด้วย... น่ากลัว! ไม่เอาแล้ว! ช่วยฉันด้วย!\"",
+              "player_choices": {
+                "กอดตอบแล้วลูบหัวปลอบโยนอย่างอ่อนโยน": {
+                  "action": "progress",
+                  "next_beat": "beat_08_resolution"
+                },
+                "แซวว่าดอกฟ้าคนเก่งร้องไห้อีกแล้ว": {
+                  "action": "progress",
+                  "next_beat": "beat_02_the_teasing"
+                },
+                "พยายามผลักดันตัวเธอออกเบาๆ": {
+                  "action": "loop"
+                }
+              },
+              "system_choices": {
+                "โอบกอดร่างเล็กไว้แน่นเพื่อความปลอดภัย": {
+                  "action": "progress",
+                  "next_beat": "beat_08_resolution"
+                },
+                "เปิดไฟฉายจากโทรศัพท์มือถือส่องสว่าง": {
+                  "action": "progress",
+                  "next_beat": "beat_08_resolution"
+                }
+              },
+              "auto_progress": {
+                "max_turns": 2,
+                "action": "progress",
+                "next_beat": "beat_08_resolution",
+                "override_resolution": "[PLAYER] กอดปลอบโยนร่างเล็กๆ ที่สั่นเทาของ [ACTOR] ท่ามกลางความมืดมิดของห้องสมุด จนกระทั่งความตื่นตระหนกค่อยๆ เปลี่ยนเป็นความอุ่นใจลึกซึ้ง"
+              }
+            },
+            {
+              "beat_id": "beat_08_resolution",
+              "director_cue": null,
+              "actor_state": "[ACTOR] ซุกใบหน้าแดงก่ำเปื้อนน้ำตาลงกับแผ่นอกของ [PLAYER] สูดกลิ่นกายอุ่นๆ ของอีกฝ่ายจนอารมณ์สงบลง เสียงสะอื้นแปรเปลี่ยนเป็นเสียงพึมพำแผ่วเบาที่เต็มไปด้วยความจริงใจอย่างไร้เกราะกำบัง: \"...ขอบคุณนะที่อยู่ข้างๆ เสมอเลย... ถ้าไม่มีนาย ฉันคงแย่แน่ๆ... อย่าทิ้งฉันไปไหนนะ... ตาบ้า...\"",
+              "player_choices": {
+                "กระชับกอดแล้วสัญญาว่าจะไม่มีวันทิ้ง": {
+                  "action": "progress",
+                  "next_beat": "beat_08_resolution"
+                },
+                "แกล้งทำตัวนิ่งไม่พูดอะไร": {
+                  "action": "loop"
+                }
+              },
+              "system_choices": {
+                "จุมพิตหน้าผากบางเบาๆ ท่ามกลางความมืด": {
+                  "action": "progress",
+                  "next_beat": "beat_08_resolution"
+                },
+                "กระซิบตอบรับเสียงอุ่นที่ข้างหู": {
+                  "action": "progress",
+                  "next_beat": "beat_08_resolution"
+                }
+              },
+              "auto_progress": {
+                "max_turns": 1,
+                "action": "progress",
+                "next_beat": "beat_08_resolution",
+                "override_resolution": "[ACTOR] ค่อยๆ เงยหน้าขึ้นสบตากับ [PLAYER] ท่ามกลางความสลัว ปล่อยให้หัวใจสองดวงก้าวข้ามขอบเขตของคำว่าเพื่อนสนิทไปพร้อมกัน"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

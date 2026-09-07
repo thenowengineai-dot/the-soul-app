@@ -1,0 +1,188 @@
+{
+  "scene_id": "SCN_073_CONFRONTATION",
+  "scene_name": "The Silent Accord",
+  "version": "1.0.0",
+  "description": "ฉากเผชิญหน้าระหว่างตัวละคร 'Alpha' และ 'Prime' บนดาดฟ้าที่ฝนตกปรอยๆ ความตึงเครียดถูกสร้างขึ้นจากระยะห่างที่ใกล้ชิดจนผิดปกติ ก่อนที่จะเกิดการกระทำที่สำคัญ",
+  "world_engineer_notes": "เน้นการจัดวางตำแหน่งเริ่มต้น (starting_state) ให้สื่อถึงความสัมพันธ์ที่ซับซ้อนและอึดอัดของตัวละครทั้งสอง ตำแหน่งแกน X ต่างกันเพียง 0.15 หน่วย เพื่อสร้างเฟรมที่บีบคั้นทางอารมณ์ แอนิเมชั่นเริ่มต้นไม่ใช่สถานะ idle แต่เป็นสถานะ 'กำลังจะ' (anticipation) เพื่อดึงผู้ชมเข้าสู่ฉากทันที",
+  "environment": {
+    "id": "ENV_CYBERPUNK_ROOFTOP_NIGHT",
+    "lighting": {
+      "type": "Dynamic",
+      "sources": [
+        {
+          "id": "light_neon_sign_01",
+          "type": "emissive",
+          "color": "#FF0033",
+          "intensity": 1.8,
+          "position": [
+            -5.0,
+            10.0,
+            15.0
+          ]
+        },
+        {
+          "id": "light_key_moon",
+          "type": "directional",
+          "color": "#AADDFF",
+          "intensity": 0.4,
+          "rotation": [
+            -60,
+            -30,
+            0
+          ]
+        }
+      ]
+    },
+    "weather": {
+      "type": "rain",
+      "intensity": "light_drizzle",
+      "particle_effect": "pfx_rain_neon_reflection"
+    },
+    "audio": {
+      "ambient_track": "sfx_ambient_city_rain_low_hum",
+      "music_track": "mus_tense_synth_pad_arpeggio"
+    }
+  },
+  "assets": {
+    "characters": [
+      {
+        "id": "char_alpha",
+        "model": "/models/characters/alpha_trenchcoat.fbx",
+        "textures": "/textures/characters/alpha_wet_look.mat"
+      },
+      {
+        "id": "char_prime",
+        "model": "/models/characters/prime_stealth_suit.fbx",
+        "textures": "/textures/characters/prime_wet_look.mat"
+      }
+    ],
+    "props": [
+      {
+        "id": "prop_rooftop_ac_unit",
+        "model": "/models/props/rooftop_ac_unit_large.fbx"
+      }
+    ]
+  },
+  "starting_state": {
+    "description": "จุดเริ่มต้นของฉาก Alpha และ Prime ยืนเผชิญหน้ากันในระยะประชิดจนน่าอึดอัด สายตาจับจ้องไม่วางวาย Alpha กำลังจะยื่นมือออกไป ส่วน Prime ยืนนิ่งแต่เตรียมพร้อมตอบสนอง",
+    "camera": {
+      "id": "cam_main",
+      "type": "cinematic_free",
+      "position": [
+        0.9,
+        1.7,
+        2.5
+      ],
+      "look_at_target": [
+        1.0,
+        1.6,
+        0.0
+      ],
+      "lens": {
+        "fov": 45,
+        "aperture": "f/2.8",
+        "focal_distance": 1.5
+      },
+      "post_processing": {
+        "vignette_intensity": 0.4,
+        "chromatic_aberration": 0.1,
+        "film_grain": 0.05
+      }
+    },
+    "characters": [
+      {
+        "id": "char_alpha",
+        "alias": "A",
+        "position": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "rotation": [
+          0,
+          -90,
+          0
+        ],
+        "state": {
+          "action": "anticipation_reach_out",
+          "emotion": "conflicted_determination",
+          "look_at_target": "char_prime"
+        },
+        "attachments": null
+      },
+      {
+        "id": "char_prime",
+        "alias": "P",
+        "position": [
+          1.15,
+          0.0,
+          0.0
+        ],
+        "rotation": [
+          0,
+          90,
+          0
+        ],
+        "state": {
+          "action": "guard_stance_subtle",
+          "emotion": "wary_stillness",
+          "look_at_target": "char_alpha"
+        },
+        "attachments": null
+      }
+    ]
+  },
+  "timeline": [
+    {
+      "shot_id": "SHOT_001",
+      "time_start": 0.0,
+      "duration": 4.0,
+      "camera_shot": "Medium Close-Up, over Alpha's shoulder, focusing on Prime's face.",
+      "events": [
+        {
+          "time": 1.5,
+          "type": "animation",
+          "target": "char_alpha",
+          "params": {
+            "play": "action_reach_hand_slowly",
+            "speed": 0.7
+          }
+        },
+        {
+          "time": 2.0,
+          "type": "sfx",
+          "params": {
+            "play": "sfx_trenchcoat_sleeve_rustle",
+            "volume": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "shot_id": "SHOT_002",
+      "time_start": 4.0,
+      "duration": 3.0,
+      "camera_shot": "Reverse shot, over Prime's shoulder, focusing on Alpha's determined eyes.",
+      "events": [
+        {
+          "time": 0.5,
+          "type": "animation",
+          "target": "char_prime",
+          "params": {
+            "play": "reaction_flinch_no_retreat",
+            "speed": 1.0
+          }
+        },
+        {
+          "time": 2.5,
+          "type": "dialogue",
+          "target": "char_alpha",
+          "params": {
+            "line": "ฉันต้องทำ...",
+            "delivery": "whisper"
+          }
+        }
+      ]
+    }
+  ]
+}

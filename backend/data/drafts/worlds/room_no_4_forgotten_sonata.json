@@ -1,0 +1,174 @@
+{
+  "world_id": "room_no_4_forgotten_sonata",
+  "name": "ห้องหมายเลข 4: บทเพลงที่ถูกลืม (Room No. 4: The Forgotten Sonata)",
+  "description": "ในห้องที่แคบที่สุด เราจะได้ยินเสียงหัวใจของกันและกันดังที่สุด",
+  "starting_state": {
+    "time": "ค่ำ",
+    "location": "ห้องหมายเลข 4",
+    "weather": "ฝนตกปรอยๆ นอกหน้าต่าง",
+    "initial_a_pos": "ยืนอยู่ข้างหน้าต่างที่ฝ้ามัว มองเงาของกิ่งไม้ที่ไหวไปมา",
+    "initial_p_pos": "เพิ่งก้าวเข้ามาในห้อง ปิดประตูไม้หนักบานนั้นเบาๆ"
+  },
+  "locations": {
+    "room_no_4": {
+      "spatial_layout": "ห้องสี่เหลี่ยมจัตุรัสขนาด 4x4 เมตร ผนังบุด้วยวัสดุกันเสียงที่เก่าและเปื่อยยุ่ย ประตูไม้หนักบานเดียว หน้าต่างบานสูงที่ถูกล็อคตาย มีเปียโนหลังใหญ่ตั้งตระหง่านกลางห้อง ทำให้พื้นที่สำหรับเดินเหลือน้อยมาก",
+      "key_furniture": "เปียโนหลังใหญ่สีดำสนิท, เก้าอี้เปียโนบุนวมตัวยาว, เครื่องนับจังหวะ (Metronome) ที่หยุดนิ่ง",
+      "choke_points": [
+        "ช่องว่างระหว่างเปียโนกับกำแพง",
+        "เก้าอี้เปียโนตัวเดียว",
+        "ใต้ท้องเปียโน",
+        "หน้าประตูทางออกบานเดียว"
+      ],
+      "base_mood": "โหยหาอาวรณ์ (Nostalgic Melancholy), ใกล้ชิดจนน่าอึดอัด (Claustrophobic Intimacy), ความลับที่กำลังจะเปิดเผย (Imminent Revelation)",
+      "sensory_cues": {
+        "ambient_cues": [
+          "เสียงฝนที่ตกกระทบกระจกหน้าต่างเป็นจังหวะ",
+          "กลิ่นอับชื้นของพรมและไม้เก่า",
+          "ฝุ่นที่ลอยอยู่ในลำแสงจันทร์ที่ลอดผ่านม่าน",
+          "ความเย็นของลูกบิดประตูโลหะ",
+          "เสียงไม้กระดานลั่นเอี๊ยดอ๊าดเมื่อขยับตัว",
+          "ความเงียบที่ดัง оглушительно (deafening silence) ในช่วงที่ฝนหยุด"
+        ]
+      }
+    }
+  },
+  "opening_scenarios": [
+    {
+      "id": "evt_the_sonata",
+      "phases": {
+        "phase_1_overture_of_silence": {
+          "phase_objective": "สร้างความกระอักกระอ่วนและความตึงเครียดที่ยังไม่ถูกเอ่ยออกมา",
+          "forced_chaos_level": "low",
+          "director_setup": "[🔥 SYSTEM DIRECTIVE]: Protocol A: เน้นภาพมุมกว้างเพื่อแสดงระยะห่างระหว่างตัวละคร, ใช้เสียงความเงียบและเสียงฝนเป็นตัวขับเคลื่อนหลัก, จับภาพสายตาที่ลอบมองกัน",
+          "beats": [
+            {
+              "beat_id": "beat_1_awkward_presence",
+              "actor_state": "ยืนนิ่งไม่ขยับ, สายตาทอดมองเปียโนแต่ไม่สัมผัส, รอการกระทำของผู้เล่น",
+              "player_choices": {
+                "เดินสำรวจรอบห้อง": {
+                  "action": "loop",
+                  "next_beat": "beat_1_awkward_presence"
+                },
+                "ลองเปิดฝาครอบคีย์บอร์ดเปียโน": {
+                  "action": "progress",
+                  "next_beat": "beat_2_first_contact"
+                },
+                "พูดทักทาย": {
+                  "action": "progress",
+                  "next_beat": "beat_2_first_contact"
+                }
+              },
+              "auto_progress": {
+                "max_turns": 3,
+                "action": "progress",
+                "next_beat": "beat_2_first_contact"
+              }
+            }
+          ]
+        },
+        "phase_2_discordant_chord": {
+          "phase_objective": "ทำลายสภาวะสมดุล บีบให้เกิดการเผชิญหน้าหรือการเปิดเผย",
+          "forced_chaos_level": "high",
+          "director_setup": "[🔥 SYSTEM DIRECTIVE]: Protocol B: ใช้มุมกล้องระยะใกล้ (close-up) จับสีหน้าตัวละครเมื่อไฟดับ, ใช้เสียงฟ้าผ่าและเสียงเปียโนที่ดังขึ้นเอง (Ghost Note) เพื่อสร้างความตกใจ, บังคับให้ตัวละครอยู่ใน Choke Point เดียวกัน",
+          "beats": [
+            {
+              "beat_id": "beat_2_first_contact",
+              "actor_state": "เมื่อผู้เล่นเริ่มมีปฏิสัมพันธ์หรือความเงียบดำเนินไปนานเกินไป, AI จะเป็นฝ่ายทำลายความเงียบโดยการเดินไปที่เปียโนและลูบฝุ่นบนฝาเบาๆ",
+              "player_choices": {
+                "ถามว่า 'เคยมาที่นี่เหรอ?'": {
+                  "action": "progress",
+                  "next_beat": "beat_3_chaos_trigger"
+                },
+                "เงียบและรอดูต่อไป": {
+                  "action": "progress",
+                  "next_beat": "beat_3_chaos_trigger"
+                }
+              },
+              "auto_progress": {
+                "max_turns": 1,
+                "action": "progress",
+                "next_beat": "beat_3_chaos_trigger"
+              }
+            },
+            {
+              "beat_id": "beat_3_chaos_trigger",
+              "actor_state": "ตกใจกับเสียงฟ้าผ่าและไฟที่ดับสนิท, ขยับตัวโดยไม่ตั้งใจจนเข้ามาอยู่ในระยะประชิดกับผู้เล่นในความมืด",
+              "player_choices": {
+                "ขยับตัวหนี": {
+                  "action": "loop",
+                  "next_beat": "beat_3_chaos_trigger"
+                },
+                "อยู่นิ่งๆ": {
+                  "action": "progress",
+                  "next_beat": "beat_4_revelation"
+                },
+                "ถามว่า 'เป็นอะไรรึเปล่า?'": {
+                  "action": "progress",
+                  "next_beat": "beat_4_revelation"
+                }
+              },
+              "auto_progress": {
+                "max_turns": 2,
+                "action": "progress",
+                "next_beat": "beat_4_revelation"
+              }
+            }
+          ]
+        },
+        "phase_3_unfinished_cadence": {
+          "phase_objective": "คลายปมบางอย่าง แต่สร้างปมใหม่ที่ใหญ่กว่า ทิ้งท้ายด้วยความรู้สึกที่ค้างคา",
+          "forced_chaos_level": "medium",
+          "director_setup": "[🔥 SYSTEM DIRECTIVE]: Protocol A: กลับมาใช้มุมกว้างเมื่อภัยคุกคามภายนอก (พายุ, ยาม) ผ่านไป, จับภาพความเงียบแบบใหม่ที่เต็มไปด้วยความหมาย, โฟกัสที่ประตูเมื่อตัวละครตัดสินใจจะจากไป",
+          "beats": [
+            {
+              "beat_id": "beat_4_revelation",
+              "actor_state": "ในความมืดหรือท่ามกลางแสงฟ้าแลบ, AI จะเอ่ยความลับหรือความในใจที่เก็บไว้ซึ่งเกี่ยวข้องกับสถานที่แห่งนี้ออกมา, เสียงสั่นเครือ",
+              "player_choices": {
+                "ปลอบโยน": {
+                  "action": "progress",
+                  "next_beat": "beat_5_the_exit"
+                },
+                "ซักถามต่อ": {
+                  "action": "progress",
+                  "next_beat": "beat_5_the_exit"
+                },
+                "เงียบ": {
+                  "action": "progress",
+                  "next_beat": "beat_5_the_exit"
+                }
+              },
+              "auto_progress": {
+                "max_turns": 1,
+                "action": "progress",
+                "next_beat": "beat_5_the_exit"
+              }
+            },
+            {
+              "beat_id": "beat_5_the_exit",
+              "actor_state": "เมื่อฝนเริ่มซาหรือยามเดินจากไป, AI จะถอยห่างกลับไปที่เดิม, แต่สายตายังคงจับจ้องที่ผู้เล่น, รอการตัดสินใจครั้งสุดท้ายว่าจะออกจากห้องไปหรือไม่",
+              "player_choices": {
+                "กล่าวคำอำลาแล้วเดินออกจากห้อง": {
+                  "action": "end_scene",
+                  "next_beat": null
+                },
+                "ชวนให้ออกจากห้องไปด้วยกัน": {
+                  "action": "end_scene",
+                  "next_beat": null
+                },
+                "อยู่ต่ออีกสักพักในความเงียบ": {
+                  "action": "end_scene",
+                  "next_beat": null
+                }
+              },
+              "auto_progress": {
+                "max_turns": 2,
+                "action": "end_scene",
+                "next_beat": null
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

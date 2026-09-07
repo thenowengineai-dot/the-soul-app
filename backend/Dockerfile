@@ -2,21 +2,20 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies if needed
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy requirements supporting both root context and backend/ context
+COPY requirements.txt* backend/requirements.txt* ./
+RUN if [ -f requirements.txt ]; then pip install --no-cache-dir -r requirements.txt; elif [ -f backend/requirements.txt ]; then pip install --no-cache-dir -r backend/requirements.txt; fi
 
-# Copy application source
+# Copy source code
 COPY . .
+# If copied from root, bring backend contents to /app
+RUN if [ -d backend ]; then cp -rn backend/* ./ && rm -rf backend frontend; fi
 
-# Google Cloud Run dynamically injects $PORT (default 8080)
 ENV PORT=8080
 EXPOSE 8080
 
-# Launch FastAPI application via Uvicorn
 CMD exec uvicorn main:app --host 0.0.0.0 --port $PORT

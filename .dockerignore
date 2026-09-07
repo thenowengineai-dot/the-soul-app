@@ -1,0 +1,9 @@
+.git
+frontend/
+node_modules/
+__pycache__/
+*.py[cod]
+.env
+.env.*
+service_account*.json
+*credentials*.json

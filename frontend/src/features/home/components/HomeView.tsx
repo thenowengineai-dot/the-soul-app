@@ -251,13 +251,15 @@ function HomeView({
         isOpen={!!selectedCharacter}
         character={selectedCharacter}
         onClose={() => setSelectedCharacter(null)}
-        onStartChat={() => {
+        onStartChat={(char) => {
+          const target = char || selectedCharacter;
           setSelectedCharacter(null);
-          onNavigateToChat?.();
+          onNavigateToChat?.(target || undefined);
         }}
-        onLoadGame={() => {
+        onLoadGame={(char) => {
+          const target = char || selectedCharacter;
           setSelectedCharacter(null);
-          onNavigateToChat?.();
+          onNavigateToChat?.(target || undefined);
         }}
       />
     </div>

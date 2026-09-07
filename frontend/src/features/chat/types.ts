@@ -93,6 +93,7 @@ export interface MessageListProps {
   messages: ChatMessage[]
   chatAvatar?: string
   chatName?: string
+  endRef?: React.Ref<HTMLDivElement>
 }
 
 export interface ChatInputBarProps {
@@ -116,6 +117,15 @@ export interface ChatRoomProps {
   onProfileClick?: () => void
   userInitial?: string
   userName?: string
+  onHudUpdate?: (data: {
+    actor_posture?: string
+    player_posture?: string
+    tension?: number
+    stance?: string
+    dominance_state?: string
+    affection?: number
+    desire?: number
+  }) => void
 }
 
 // ----------------------------------------------------------------------
@@ -193,6 +203,7 @@ export interface CharacterHudProps {
 
 export interface ChatViewProps {
   onBackToHome: () => void
+  activeCharacter?: ChatConversation | null
   onSelectChat?: (chat: ChatConversation) => void
   coinBalance?: number
   notificationCount?: number

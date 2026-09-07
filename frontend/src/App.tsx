@@ -1,12 +1,25 @@
 import { useState } from 'react'
 import { Sidebar } from './features/navigation'
 import { HomeView, HomeTopBar } from './features/home'
-import { ChatView } from './features/chat'
+import { ChatView, type ChatConversation, getCurrentUser } from './features/chat'
+import type { Character } from './features/characters'
 
 function App() {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState<boolean>(false);
   const [selectedMenu, setSelectedMenu] = useState<string>('home');
   const [currentView, setCurrentView] = useState<'home' | 'chat'>('home');
+  const [activeChatCharacter, setActiveChatCharacter] = useState<ChatConversation | null>(null);
+
+  const [coinBalance, setCoinBalance] = useState<number>(1250);
+  const [notificationCount] = useState<number>(3);
+  const [userName] = useState<string>(() => {
+    const user = getCurrentUser();
+    return user && user.name && !user.is_guest ? user.name : 'นักเดินทาง';
+  });
+  const [userInitial] = useState<string>(() => {
+    const user = getCurrentUser();
+    return user && user.name ? user.name.charAt(0).toUpperCase() : 'N';
+  });
 
   const handleMenuClick = (id: string) => {
     setSelectedMenu(id);
@@ -18,7 +31,19 @@ function App() {
     }
   };
 
-  const handleNavigateToChat = () => {
+  const handleNavigateToChat = (char?: Character) => {
+    if (char) {
+      setActiveChatCharacter({
+        id: char.id,
+        name: char.name,
+        message: char.quote || 'พร้อมเริ่มต้นบทสนทนา...',
+        time: 'ตอนนี้',
+        unread: false,
+        verified: true,
+        avatar: char.image || (char.images && char.images[0]) || '',
+        statusMessage: char.quote,
+      });
+    }
     setCurrentView('chat');
     setSelectedMenu('chats');
     setIsSidebarExpanded(false);
@@ -28,11 +53,6 @@ function App() {
     setCurrentView('home');
     setSelectedMenu('home');
   };
-
-  const [coinBalance, setCoinBalance] = useState<number>(1250);
-  const [notificationCount] = useState<number>(3);
-  const [userName] = useState<string>('Alice');
-  const [userInitial] = useState<string>('A');
 
   const handleCoinClick = () => {
     setCoinBalance(prev => prev + 50);
@@ -69,11 +89,18 @@ function App() {
             selectedMenu={selectedMenu}
             handleMenuClick={handleMenuClick}
             onLogoClick={handleBackToHome}
-            onComposeClick={handleNavigateToChat}
+            onComposeClick={() => handleNavigateToChat()}
             isHomeMode={true}
           />
           <HomeView 
             onNavigateToChat={handleNavigateToChat}
+            coinBalance={coinBalance}
+            notificationCount={notificationCount}
+            onCoinClick={handleCoinClick}
+            onNotificationClick={handleNotificationClick}
+            onProfileClick={handleProfileClick}
+            userInitial={userInitial}
+            userName={userName}
           />
         </div>
       </div>
@@ -89,11 +116,12 @@ function App() {
         selectedMenu={selectedMenu}
         handleMenuClick={handleMenuClick}
         onLogoClick={handleBackToHome}
-        onComposeClick={handleNavigateToChat}
+        onComposeClick={() => handleNavigateToChat()}
         isHomeMode={false}
       />
       <ChatView 
         onBackToHome={handleBackToHome}
+        activeCharacter={activeChatCharacter}
         coinBalance={coinBalance}
         notificationCount={notificationCount}
         onCoinClick={handleCoinClick}

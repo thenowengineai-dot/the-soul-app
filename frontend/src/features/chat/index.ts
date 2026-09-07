@@ -4,3 +4,4 @@ export { ChatList, ChatListHeader, ChatSearchBox, ChatItem } from './components/
 export { default as CharacterHud } from './components/CharacterHud'
 export * from './types'
 export * from './mockData'
+export * from './chatApi'

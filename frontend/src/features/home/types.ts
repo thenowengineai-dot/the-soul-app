@@ -30,7 +30,7 @@ export interface HomeTopBarProps {
 }
 
 export interface HomeViewProps {
-  onNavigateToChat: () => void
+  onNavigateToChat: (character?: import('../characters/types').Character) => void
   coinBalance?: number
   notificationCount?: number
   onCoinClick?: () => void

@@ -16,6 +16,7 @@ from engine.state_manager import StateManager
 import tempfile
 from engine.context_builder import ContextBuilder
 from engine.db_core import DatabaseCore 
+from engine.postgres_core import get_postgres_core
 from engine.transitions import SceneTransitionManager 
 from engine.memory_core import MemoryCore
 
@@ -86,12 +87,16 @@ class GamePipeline:
             return f"{time.time() - turn_start_time:.2f}"
 
         # ==================================================
-        # 💾 [SUPABASE] STEP 1: โหลด State ล่าสุดจาก Database ด้วย session_id โดยตรง
+        # 💾 [DATABASE] STEP 1: โหลด State ล่าสุดจาก Database ด้วย session_id โดยตรง
         # ==================================================
-        # 🌟 สั่งให้วุ้นแปลภาษาทำงานเบื้องหลัง: แปลง User_ID ให้มี Profile ถาวร
-        await self.db.get_or_create_profile(user_id, f"User_{user_id[-4:]}")
-        
-        session = await self.db.get_session_by_id(session_id)
+        pg = get_postgres_core()
+        session = await pg.get_game_session(session_id)
+        is_neon_session = session is not None
+        if not session:
+            # Fallback ไปยัง Supabase (Legacy Session)
+            await self.db.get_or_create_profile(user_id, f"User_{user_id[-4:]}")
+            session = await self.db.get_session_by_id(session_id)
+            
         if not session:
             logger.error(f"❌ [CRITICAL] ไม่พบ Save Slot (Session ID: {session_id})")
             async def error_gen():
@@ -118,9 +123,9 @@ class GamePipeline:
         tension_gauge = session.get("tension_gauge", 0)
         current_inside_jokes = session.get("inside_jokes", [])
         
-        # 🌟 [IMMEDIATE PERSISTENCE] เซฟข้อความของผู้เล่นลง DB ทันทีเพื่อป้องกันหายถ้าพังกลางทาง
+        # 🌟 [IMMEDIATE PERSISTENCE] เซฟข้อความของผู้เล่นลง DB ทันที (สำหรับ legacy Supabase session)
         current_turn = beat_turn_count if active_event_id else sandbox_turn_count
-        if not is_regenerate and not user_message.startswith("[SYSTEM]"):
+        if not is_neon_session and not is_regenerate and not user_message.startswith("[SYSTEM]"):
             logger.info(f"💾 [DATABASE] Saving User Message immediately for safety (Turn: {current_turn})")
             asyncio.create_task(self.db.log_chat_bulk([{
                 "session_id": session_id,
@@ -130,7 +135,7 @@ class GamePipeline:
                 "turn_number": current_turn,
                 "chunk_sequence": 0
             }]))
-        elif is_regenerate:
+        elif not is_neon_session and is_regenerate:
             # 🌟 [PHASE 4] ปราบผีซ้ำซ้อน: ถ้าเป็นการขอตอบใหม่ ต้องไปลบคำตอบเก่าของ AI ทิ้งก่อน
             logger.info(f"🧹 [DATABASE] Regenerate Triggered! Deleting old AI answers for Turn: {current_turn}")
             await self.db.delete_turn_chat_logs(session_id, current_turn)
@@ -835,7 +840,8 @@ class GamePipeline:
             }
                 
 
-            await self.db.update_session_state(session_id, update_payload)
+            if not is_neon_session:
+                await self.db.update_session_state(session_id, update_payload)
             
             # ==================================================
             # 📦 [UNIFIED ROUND SPEC] ประกอบร่างเป็น 1 กล่องสมบูรณ์ (ตาม UNIFIED_ROUND_SPEC.md)
@@ -892,8 +898,17 @@ class GamePipeline:
                 self.redis.save_live_state(session_id, live_state_snapshot)
                 self.redis.push_round(session_id, unified_round, max_window=20)
                 logger.info(f"⚡ [REDIS HOT CACHE] Synchronized Round {beat_turn_count} & Kinematics (A_POS: '{actor_posture}', P_POS: '{player_posture}') to Redis!")
+
+                # 💾 [NEON POSTGRESQL] แอบเซฟสำเนาถาวร (JSONB) เบื้องหลังแบบ Asynchronous
+                asyncio.create_task(
+                    get_postgres_core().save_round(
+                        session_id=session_id,
+                        round_number=beat_turn_count,
+                        round_data=unified_round
+                    )
+                )
             except Exception as r_sync_err:
-                logger.warning(f"⚠️ [REDIS HOT CACHE] Failed to sync cache: {r_sync_err}")
+                logger.warning(f"⚠️ [HOT CACHE / POSTGRES] Failed to sync cache/db: {r_sync_err}")
 
             total_elapsed = time.time() - turn_start_time
             logger.info(f"🕒 ✅ [PIPELINE] Turn Complete | Total Latency: {total_elapsed:.2f}s")

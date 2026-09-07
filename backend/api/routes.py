@@ -1,16 +1,21 @@
 import os
 import json
+import uuid
 import logging
 from typing import Dict, Any, Optional
 from fastapi import APIRouter, HTTPException, BackgroundTasks, Request
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel # 🌟 เพิ่มสำหรับ ResetRequest
+from pydantic import BaseModel
 
 # นำเข้า Schema และ Pipeline
 from api.schemas import ChatRequest
 from engine.pipeline import GamePipeline
 
-# 🌟 นำเข้า Database Core สำหรับปุ่ม Reset
+# 🌟 นำเข้า Neon PostgreSQL & Upstash Redis Hot Cache
+from engine.postgres_core import get_postgres_core
+from engine.redis_cache import RedisHotCache
+
+# 🌟 นำเข้า Database Core เดิมสำหรับดึงแคมเปญ (Read-only Catalog)
 from engine.db_core import DatabaseCore
 
 logger = logging.getLogger("API_ROUTES")
@@ -43,7 +48,108 @@ def load_json_data(file_path: str, error_msg: str) -> Dict[str, Any]:
     raise HTTPException(status_code=404, detail=error_msg)
 
 # ==========================================
-# 🌟 NEW: Endpoints สำหรับให้ Frontend ดึงข้อมูลไปแสดงผล
+# 👤 IDENTITY & AUTH ENDPOINTS (Neon PostgreSQL)
+# ==========================================
+
+class GuestAuthRequest(BaseModel):
+    guest_id: Optional[str] = None
+    name: Optional[str] = "นักเดินทางนิรนาม"
+
+class GoogleAuthRequest(BaseModel):
+    credential: str
+    guest_id: Optional[str] = None
+
+@router.post("/auth/guest")
+async def auth_guest_endpoint(request: GuestAuthRequest):
+    """
+    สร้างหรือยืนยัน Guest Identity ใน Neon PostgreSQL
+    """
+    guest_id = request.guest_id or f"gst_{uuid.uuid4()}"
+    pg = get_postgres_core()
+    user = await pg.get_or_create_user(
+        user_id=guest_id,
+        name=request.name or "นักเดินทางนิรนาม",
+        is_guest=True
+    )
+    return {
+        "status": "success",
+        "user_id": user["id"],
+        "name": user["name"],
+        "is_guest": True,
+        "created_at": str(user.get("created_at", ""))
+    }
+
+@router.post("/auth/google")
+async def auth_google_endpoint(request: GoogleAuthRequest):
+    """
+    ตรวจสอบ Google ID Token, บันทึกผู้ใช้ลง Neon PostgreSQL, และโอนย้าย Session จาก Guest (ถ้ามี)
+    """
+    from google.oauth2 import id_token
+    from google.auth.transport import requests as google_requests
+
+    try:
+        # ตรวจสอบ token กับ Google
+        idinfo = id_token.verify_oauth2_token(
+            request.credential,
+            google_requests.Request()
+        )
+        google_id = idinfo.get("sub")
+        email = idinfo.get("email")
+        name = idinfo.get("name") or "ผู้ใช้ Google"
+        picture = idinfo.get("picture")
+
+        if not google_id:
+            raise HTTPException(status_code=400, detail="Invalid Google Token: Missing sub")
+
+        user_id = f"usr_{google_id[:12]}"
+        pg = get_postgres_core()
+        user = await pg.get_or_create_user(
+            user_id=user_id,
+            name=name,
+            email=email,
+            avatar_url=picture,
+            google_id=google_id,
+            is_guest=False
+        )
+
+        # 🌟 โอนย้าย Session จาก Guest (ถ้าผู้ใช้เคยเล่นในโหมด Guest มาก่อน)
+        migrated_count = 0
+        if request.guest_id and request.guest_id.startswith("gst_"):
+            pool = await pg.get_pool()
+            async with pool.acquire() as conn:
+                res = await conn.execute(
+                    "UPDATE game_sessions SET user_id = $1 WHERE user_id = $2;",
+                    user_id, request.guest_id
+                )
+                migrated_count = int(res.split(" ")[-1]) if "UPDATE" in res else 0
+                logger.info(f"🔄 Migrated {migrated_count} sessions from {request.guest_id} to {user_id}")
+
+        return {
+            "status": "success",
+            "user_id": user["id"],
+            "email": user.get("email"),
+            "name": user.get("name"),
+            "avatar_url": user.get("avatar_url"),
+            "is_guest": False,
+            "migrated_sessions": migrated_count
+        }
+    except Exception as e:
+        logger.error(f"Google Auth Error: {e}")
+        raise HTTPException(status_code=401, detail=f"Authentication failed: {str(e)}")
+
+@router.get("/auth/me/{user_id}")
+async def get_current_user_endpoint(user_id: str):
+    """
+    ดึงข้อมูลโปรไฟล์ผู้ใช้จาก Neon PostgreSQL
+    """
+    pg = get_postgres_core()
+    user = await pg.get_user(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"status": "success", "user": user}
+
+# ==========================================
+# 🌟 Endpoints สำหรับให้ Frontend ดึงข้อมูลไปแสดงผล
 # ==========================================
 
 import time
@@ -210,8 +316,9 @@ async def chat_endpoint(request: ChatRequest):
     try:
         # 1. โหลดข้อมูลตัวละคร (JSON) เต็มรูปแบบสำหรับใช้ใน Engine
         db = DatabaseCore()
-        # ลองหาจาก Supabase ก่อน (ใช้ world_id เป็นตัวอ้างอิงแคมเปญ)
-        campaign = await db.get_published_campaign(request.world_id)
+        # ลองหาจาก Supabase ก่อน (ใช้ world_id หรือ character_id เป็นตัวอ้างอิงแคมเปญ)
+        target_world = request.world_id or request.character_id
+        campaign = await db.get_published_campaign(target_world) if target_world else None
         
         if campaign and campaign.get("character_data"):
             character_data = campaign.get("character_data")
@@ -304,9 +411,116 @@ async def archive_user_session_endpoint(user_id: str, character_id: str):
 @router.post("/load_session")
 async def load_session_endpoint(request: LoadSessionRequest):
     """
-    ดึงข้อมูล Session และประวัติการแชทเก่าจาก Database กลับมาแสดงผลที่หน้าบ้าน
+    ดึงข้อมูล Session และประวัติการแชทเก่ากลับมาแสดงผลที่หน้าบ้าน
+    ลำดับการดึง:
+    1. ตรวจสอบ Neon PostgreSQL & Upstash Redis Hot Cache ก่อน (Zero-latency / Intact JSONB)
+    2. ถ้าไม่พบ ให้ Fallback ไปยัง Supabase เดิม (Legacy Session)
     """
     try:
+        # 1. 🌟 ตรวจสอบ Neon PostgreSQL ก่อน
+        pg = get_postgres_core()
+        redis = RedisHotCache()
+        neon_session = None
+
+        if request.session_id:
+            neon_session = await pg.get_game_session(request.session_id)
+        elif request.user_id and request.character_id:
+            pool = await pg.get_pool()
+            async with pool.acquire() as conn:
+                row = await conn.fetchrow("""
+                    SELECT * FROM game_sessions 
+                    WHERE user_id = $1 AND character_id = $2 AND status = 'active'
+                    ORDER BY updated_at DESC LIMIT 1;
+                """, request.user_id, request.character_id)
+                if row:
+                    neon_session = dict(row)
+
+        if neon_session:
+            session_id = neon_session["id"]
+            # ⚡ ดึงรอบการเล่นจาก Upstash Redis Hot Cache ก่อน (0.001s)
+            cached_rounds = redis.get_recent_rounds(session_id, limit=20)
+            if not cached_rounds:
+                # 💾 ถ้า Redis ไม่มีหรือหมดอายุ ดึงจาก Neon PostgreSQL JSONB
+                cached_rounds = await pg.get_rounds(session_id, limit=20)
+
+            live_state = redis.get_live_state(session_id) or {}
+            last_round_state = (cached_rounds[-1].get("state") if cached_rounds else {}) or {}
+
+            messages = []
+            chat_history = []
+            for rnd in cached_rounds:
+                round_id = rnd.get("round_id", f"rnd_{rnd.get('round_number', 0)}")
+                player = rnd.get("player")
+                if player and player.get("text") and not player["text"].startswith("[SYSTEM]"):
+                    messages.append({
+                        "id": f"{round_id}_p",
+                        "role": "user",
+                        "content": player["text"],
+                        "status": "read"
+                    })
+                    chat_history.append({"role": "user", "content": player["text"]})
+
+                for seg in rnd.get("response", []):
+                    seg_type = seg.get("type")
+                    seg_text = seg.get("text", "")
+                    seg_order = seg.get("order", 0)
+                    if seg_type in ["vo_main", "vo_intimate"]:
+                        messages.append({
+                            "id": f"{round_id}_vo_{seg_order}",
+                            "role": "vo",
+                            "content": seg_text
+                        })
+                    elif seg_type == "action":
+                        messages.append({
+                            "id": f"{round_id}_act_{seg_order}",
+                            "role": "ai",
+                            "action": seg_text,
+                            "dialogue": None
+                        })
+                    elif seg_type == "dialogue":
+                        messages.append({
+                            "id": f"{round_id}_dia_{seg_order}",
+                            "role": "ai",
+                            "action": None,
+                            "dialogue": seg_text
+                        })
+                        chat_history.append({"role": "assistant", "content": seg_text})
+
+            affection = live_state.get("affection", last_round_state.get("affection", 10))
+            desire = live_state.get("desire", last_round_state.get("desire", 5))
+            a_pos = live_state.get("a_pos", last_round_state.get("a_pos", "ยืน/นั่งอิสระตามบริบท"))
+            p_pos = live_state.get("p_pos", last_round_state.get("p_pos", "ยืน/นั่งอิสระตามบริบท"))
+            stance = live_state.get("stance", last_round_state.get("stance", "neutral"))
+
+            return {
+                "has_started": True,
+                "session_id": session_id,
+                "messages": messages,
+                "chatHistory": chat_history,
+                "activeEventId": None,
+                "activeEventPhase": live_state.get("scene_id", "scene_opening"),
+                "activeBeatId": live_state.get("beat_id", "beat_01"),
+                "sandboxTurnCount": len(cached_rounds),
+                "beatTurnCount": len(cached_rounds),
+                "chaosLevel": "low",
+                "currentStance": stance,
+                "tensionGauge": live_state.get("tension_gauge", 0),
+                "playerPosture": p_pos,
+                "actorPosture": a_pos,
+                "dominanceState": live_state.get("dominance_state", "NEUTRAL"),
+                "actionLock": live_state.get("action_lock", False),
+                "contactPoints": [],
+                "worldState": {"time": "บ่าย 2 โมง", "location": "ฉากปัจจุบัน", "weather": "ปกติ"},
+                "characterStats": {
+                    "affection": affection,
+                    "affUnlock": 20,
+                    "desire": desire,
+                    "desUnlock": 50,
+                    "phase": 1
+                }
+            }
+
+        # 2. 🌟 Fallback ไปยัง Supabase (Legacy Session)
         db = DatabaseCore()
         if request.session_id:
             session = await db.get_session_by_id(request.session_id)
@@ -320,10 +534,8 @@ async def load_session_endpoint(request: LoadSessionRequest):
         raw_logs = await db.get_chat_history(session["id"], limit=20)
         
         # 🌟 [PHASE 6] Deep Hydration: ตรวจสอบว่า "เทิร์นแรกสุด" โดนตัดทิ้งไปหรือไม่
-        # ถ้า raw_logs ก้อนที่เก่าที่สุดมี turn_number > 1 แปลว่าตกขอบไปแล้ว ให้งัดกลับมาต่อหัว
         if raw_logs and raw_logs[0].get("turn_number", 0) > 1:
             initial_logs = await db.get_initial_chat_logs(session["id"])
-            # กรองเพื่อไม่ให้เอามาซ้ำ (ถึงแม้ลอจิกจะไม่ซ้ำอยู่แล้วก็ตาม)
             existing_ids = {str(log.get("id")) for log in raw_logs}
             filtered_initial = [log for log in initial_logs if str(log.get("id")) not in existing_ids]
             raw_logs = filtered_initial + raw_logs
@@ -331,34 +543,29 @@ async def load_session_endpoint(request: LoadSessionRequest):
         messages = []
         chat_history = []
         
-        # วนลูปดึงข้อความ (get_chat_history เรียงจากเก่าไปใหม่มาให้แล้ว)
         for log in raw_logs:
             role = log.get("role")
             content = log.get("message")
             action = log.get("action")
-            msg_id = str(log.get("id", "")) # ใช้ ID เป็น string
+            msg_id = str(log.get("id", ""))
             
             if role == "user":
                 if content and content.strip().startswith("[SYSTEM]"):
-                    continue # 🌟 [FIX] ซ่อนข้อความระบบ และ action พิเศษ ไม่ให้ผู้เล่นเห็นในแชทประวัติ
+                    continue
                 messages.append({"id": msg_id, "role": "user", "content": content, "status": "read"})
                 chat_history.append({"role": "user", "content": content})
             elif role == "system":
-                # 🌟 [PHASE 8] คืนร่าง Role Disguise: แยกแยะ system กลับเป็น intro_brief และ vo
                 if content and ("คุณคือ " in content or "ภารกิจหลัก:" in content):
                     messages.append({"id": msg_id, "role": "intro_brief", "content": content})
                 else:
                     messages.append({"id": msg_id, "role": "vo", "content": content})
-            elif role == "intro_brief": # เผื่อของเก่าหลงเหลือ
-                # 🌟 [PHASE 5] ดึงข้อความภารกิจกลับมาโชว์ตอนรีเฟรชหน้าจอ!
+            elif role == "intro_brief":
                 messages.append({"id": msg_id, "role": "intro_brief", "content": content})
-                # ไม่จำเป็นต้องใส่ chat_history เพราะ Model ได้รับจาก system prompt แล้ว
             elif role in ["ai", "assistant"]:
                 messages.append({"id": msg_id, "role": "ai", "action": action, "dialogue": content})
                 chat_history.append({"role": "assistant", "content": content})
-            elif role == "director_vo": # เผื่อของเก่าหลงเหลือ
+            elif role == "director_vo":
                 messages.append({"id": msg_id, "role": "vo", "content": content})
-                # เราไม่จำเป็นต้องส่ง vo กลับไปใน chat_history เพราะมันแค่บรรยายฉาก
         
         return {
             "has_started": True,
@@ -446,48 +653,69 @@ async def background_initial_chat_task(user_id: str, character_id: str, session_
 @router.post("/start_session")
 async def start_session_endpoint(request: StartSessionRequest, background_tasks: BackgroundTasks):
     """
-    สร้างเซฟเกมใหม่ (New Game หรือ NG+)
+    สร้างเซฟเกมใหม่ (New Game) บน Neon PostgreSQL + Upstash Redis
     """
-    logger.warning("="*80)
-    logger.warning(f"🔄 [TIME PARADOX] - ผู้เล่น {request.user_id} สร้าง Save Slot ใหม่ของ {request.character_id}!")
-    
+    user_id = request.user_id or f"gst_{uuid.uuid4()}"
+    character_id = request.character_id
+    world_id = request.world_id or character_id
+    session_id = f"sess_{uuid.uuid4()}"
+
+    logger.info(f"🔄 [NEW GAME] User: {user_id} starting session: {session_id} for char: {character_id}")
+
     try:
-        db = DatabaseCore()
-        
-        # 🌟 [FIX] ตรวจสอบและสร้าง Profile ให้แน่ใจก่อนสร้าง Session ป้องกัน Foreign Key Error
-        await db.get_or_create_profile(request.user_id, f"User_{request.user_id[-4:]}")
-        
-        # เรียกคำสั่งสร้าง Session ใหม่
-        new_session = await db.create_new_session(
-            user_id=request.user_id,
-            character_codename=request.character_id,
-            world_id=request.world_id,
-            ng_plus_from_session_id=request.ng_plus_from_session_id,
-            player_vibe_override=request.player_vibe_override,
-            pronouns_override=request.pronouns_override,
-            nicknames_override=request.nicknames_override,
-            main_quest_override=request.main_quest_override
+        # 1. 🌟 บันทึก/อัปเดตผู้ใช้ และ สร้าง Session ใน Neon PostgreSQL
+        pg = get_postgres_core()
+        is_guest = user_id.startswith("gst_")
+        await pg.get_or_create_user(
+            user_id=user_id,
+            name="นักเดินทางนิรนาม" if is_guest else f"User_{user_id[-4:]}",
+            is_guest=is_guest
         )
-        
-        if new_session:
-            logger.info(f"✅ [TIME PARADOX] - สร้างไทม์ไลน์ใหม่สำเร็จ: {new_session['id']}")
-            
-            # 🚀 [FEATURE: PRE-FETCH VO] ถ้าร้องขอให้รัน VO เบื้องหลัง
-            if request.trigger_initial_vo:
-                background_tasks.add_task(
-                    background_initial_chat_task,
-                    user_id=request.user_id,
-                    character_id=request.character_id,
-                    session_id=new_session["id"],
-                    world_id=request.world_id,
-                    user_message=request.initial_message
-                )
-                
-            return {"status": "success", "session_id": new_session["id"], "message": "New save slot created."}
-        else:
-            logger.error("❌ [TIME PARADOX] - ไม่สามารถสร้างไทม์ไลน์ใหม่ใน Database ได้")
-            raise HTTPException(status_code=500, detail="Failed to reset session in Supabase")
-            
+
+        session_record = await pg.create_game_session(
+            session_id=session_id,
+            user_id=user_id,
+            campaign_id=world_id,
+            character_id=character_id
+        )
+
+        # 2. ⚡ ล้างและเตรียมพื้นที่ใน Upstash Redis Hot Cache
+        redis_cache = RedisHotCache()
+        redis_cache.clear_session(session_id)
+
+        # 3. 🚀 เซ็ตค่าสถานะเริ่มต้น (Live State) ลงใน Redis
+        init_state = {
+            "affection": 10,
+            "desire": 5,
+            "a_pos": "ยืน/นั่งอิสระตามบริบท",
+            "p_pos": "ยืน/นั่งอิสระตามบริบท",
+            "scene_id": "scene_opening",
+            "beat_id": "beat_01",
+            "stance": "neutral"
+        }
+        redis_cache.save_live_state(session_id, init_state)
+
+        logger.info(f"✅ [NEW GAME READY] Session {session_id} created successfully on Neon & Redis")
+
+        if request.trigger_initial_vo:
+            background_tasks.add_task(
+                background_initial_chat_task,
+                user_id=user_id,
+                character_id=character_id,
+                session_id=session_id,
+                world_id=world_id,
+                user_message=request.initial_message or "[SYSTEM] เริ่มต้นเกม"
+            )
+
+        return {
+            "status": "success",
+            "session_id": session_id,
+            "user_id": user_id,
+            "character_id": character_id,
+            "world_id": world_id,
+            "initial_state": init_state,
+            "message": "New game session created on Neon Postgres & Redis."
+        }
     except Exception as e:
-        logger.error(f"[TIME PARADOX ERROR]: {e}")
+        logger.error(f"[START SESSION ERROR]: {e}")
         raise HTTPException(status_code=500, detail=str(e))

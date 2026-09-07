@@ -3,7 +3,7 @@ import type { MessageListProps } from '../../types'
 
 export type { MessageListProps }
 
-export function MessageList({ messages, chatAvatar, chatName }: MessageListProps) {
+export function MessageList({ messages, chatAvatar, chatName, endRef }: MessageListProps) {
   return (
     <div className="w-full max-w-[800px] mx-auto px-4 sm:px-6 pt-2 flex-1 flex flex-col">
       {messages.map((msg, index) => {
@@ -36,8 +36,8 @@ export function MessageList({ messages, chatAvatar, chatName }: MessageListProps
         )
       })}
       
-      {/* ดันบรรทัดล่างสุดให้มีที่ว่างนิดหน่อยก่อนชนแถบ sticky */}
-      <div className="h-6 shrink-0" />
+      {/* ดันบรรทัดล่างสุดให้มีที่ว่างนิดหน่อยก่อนชนแถบ sticky และใช้เป็นจุด Anchor สำหรับ Auto Scroll */}
+      <div ref={endRef} className="h-6 shrink-0" />
     </div>
   )
 }

@@ -136,7 +136,7 @@ function App() {
           username: '@google_traveler',
           is_guest: false,
           pronouns: 'คุณ',
-          about_me: 'ผู้ใช้ผ่าน Google Account พร้อมท่องโลก The Soul',
+          about_me: 'ผู้ใช้ผ่าน Google Account พร้อมท่องโลก Maomoi AI',
           migrated_sessions: 1,
         };
         saveUserIdentity(demoUser);

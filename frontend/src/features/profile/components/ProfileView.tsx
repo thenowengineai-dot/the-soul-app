@@ -15,7 +15,7 @@ export function ProfileView({
   avatarUrl,
   coinBalance = 1250,
   pronouns = 'คุณ',
-  aboutMe = 'ชอบบทสนทนาที่เป็นกันเอง อบอุ่น และหยอกล้อเบาๆ',
+  aboutMe = 'ผู้ใช้พร้อมท่องโลก Maomoi AI',
   username = 'alizzlol',
   onSaveProfile,
   onRedeemCoupon,
@@ -128,7 +128,7 @@ export function ProfileView({
           {/* ============================================================== */}
           <nav className="w-full md:w-[220px] shrink-0 flex flex-row md:flex-col gap-6 md:gap-8 overflow-x-auto no-scrollbar pb-3 md:pb-0">
             
-            {/* แท็บ 1: Edit profile */}
+            {/* แท็บ 1: แก้ไขโปรไฟล์ */}
             <button
               type="button"
               onClick={() => setActiveTab('profile')}
@@ -139,14 +139,14 @@ export function ProfileView({
                   ? 'font-bold text-[#F2F2F5]'
                   : 'font-semibold text-[#ACACB2] hover:text-[#F2F2F5]'
               }`}>
-                Edit profile
+                แก้ไขโปรไฟล์
               </span>
               {activeTab === 'profile' && (
-                <span className="block h-[2.5px] w-[92px] bg-[#F2F2F5] mt-1.5 rounded-full" />
+                <span className="block h-[2.5px] w-[95px] bg-[#F2F2F5] mt-1.5 rounded-full" />
               )}
             </button>
 
-            {/* แท็บ 2: เหรียญ & คูปอง (Coins & Coupons) */}
+            {/* แท็บ 2: เหรียญ & คูปอง */}
             <button
               type="button"
               onClick={() => setActiveTab('coupon')}
@@ -157,14 +157,14 @@ export function ProfileView({
                   ? 'font-bold text-[#F2F2F5]'
                   : 'font-semibold text-[#ACACB2] hover:text-[#F2F2F5]'
               }`}>
-                Coins & Coupons
+                เหรียญ & คูปอง
               </span>
               {activeTab === 'coupon' && (
-                <span className="block h-[2.5px] w-[130px] bg-[#F2F2F5] mt-1.5 rounded-full" />
+                <span className="block h-[2.5px] w-[105px] bg-[#F2F2F5] mt-1.5 rounded-full" />
               )}
             </button>
 
-            {/* แท็บ 3: Account management */}
+            {/* แท็บ 3: บัญชีและความปลอดภัย */}
             <button
               type="button"
               onClick={() => setActiveTab('account')}
@@ -175,10 +175,10 @@ export function ProfileView({
                   ? 'font-bold text-[#F2F2F5]'
                   : 'font-semibold text-[#ACACB2] hover:text-[#F2F2F5]'
               }`}>
-                Account management
+                บัญชีและความปลอดภัย
               </span>
               {activeTab === 'account' && (
-                <span className="block h-[2.5px] w-[165px] bg-[#F2F2F5] mt-1.5 rounded-full" />
+                <span className="block h-[2.5px] w-[145px] bg-[#F2F2F5] mt-1.5 rounded-full" />
               )}
             </button>
 
@@ -190,7 +190,7 @@ export function ProfileView({
           <div className="flex-1 w-full max-w-[560px]">
             
             {/* ------------------------------------------------------------ */}
-            {/* TAB 1: Edit profile                                          */}
+            {/* TAB 1: แก้ไขโปรไฟล์ (Edit Profile)                            */}
             {/* ------------------------------------------------------------ */}
             {activeTab === 'profile' && (
               <form onSubmit={handleSave} className="space-y-6">
@@ -198,17 +198,17 @@ export function ProfileView({
                 {/* Title & Subtitle */}
                 <div>
                   <h1 className="text-[28px] sm:text-[32px] font-bold text-[#F2F2F5] tracking-tight leading-tight">
-                    Edit profile
+                    แก้ไขโปรไฟล์
                   </h1>
                   <p className="text-[14px] text-[#ACACB2] mt-2 leading-relaxed">
-                    Keep your personal details private. Information you add here is visible to anyone who can view your profile.
+                    จัดการข้อมูลส่วนตัว คำสรรพนาม และบุคลิกเพื่อให้ AI สนทนากับคุณได้อย่างสมบูรณ์แบบ
                   </p>
                 </div>
 
                 {/* Photo Row */}
                 <div className="pt-2 space-y-2">
                   <label className="block text-[12.5px] font-medium text-[#ACACB2]">
-                    Photo
+                    รูปโปรไฟล์ (Photo)
                   </label>
                   <div className="flex items-center gap-4">
                     <div className="w-[64px] h-[64px] rounded-full overflow-hidden bg-[#1D1D1F] border border-[#2F3336] flex items-center justify-center shrink-0">
@@ -234,48 +234,51 @@ export function ProfileView({
                       onClick={() => fileInputRef.current?.click()}
                       className="px-4 py-2 rounded-full bg-[#1D1D1F] hover:bg-white/10 text-[13px] font-semibold text-[#F2F2F5] border border-[#2F3336] transition-all cursor-pointer active:scale-95"
                     >
-                      Change
+                      เปลี่ยนรูป
                     </button>
                   </div>
                 </div>
 
-                {/* Box 1: Name */}
+                {/* Box 1: ชื่อที่แสดง (Display Name) */}
                 <div className="space-y-1.5">
                   <div className="rounded-2xl border border-[#2F3336] bg-[#1D1D1F]/50 px-4 py-2.5 focus-within:border-white/40 transition-colors">
                     <label className="block text-[11.5px] font-semibold text-[#ACACB2] leading-none mb-1">
-                      Name
+                      ชื่อที่แสดง (Display Name)
                     </label>
                     <input
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="alizz lol"
+                      placeholder="เช่น alizz lol"
                       className="w-full bg-transparent text-[#F2F2F5] text-[15px] font-normal outline-none p-0 border-none placeholder:text-[#ACACB2]/40"
                     />
                   </div>
                 </div>
 
-                {/* Box 2: About */}
+                {/* Box 2: บุคลิกประจำตัว (Player Persona & Vibe) */}
                 <div className="space-y-1.5">
                   <div className="rounded-2xl border border-[#2F3336] bg-[#1D1D1F]/50 px-4 py-2.5 focus-within:border-white/40 transition-colors">
                     <label className="block text-[11.5px] font-semibold text-[#ACACB2] leading-none mb-1">
-                      About
+                      บุคลิกประจำตัว (PLAYER PERSONA &amp; VIBE)
                     </label>
                     <textarea
                       rows={3}
                       value={about}
                       onChange={(e) => setAbout(e.target.value)}
-                      placeholder="Tell your story"
+                      placeholder="เช่น ชอบบทสนทนาหยอกล้อ ไม่ทางการ มีระยะห่างที่พอดี"
                       className="w-full bg-transparent text-[#F2F2F5] text-[15px] font-normal outline-none p-0 border-none resize-none leading-relaxed placeholder:text-[#ACACB2]/40"
                     />
                   </div>
+                  <p className="text-[12px] text-[#ACACB2] px-1 leading-normal">
+                    ระบุสไตล์ บุคลิก หรือโทนบทสนทนาที่คุณชื่นชอบ เพื่อให้ AI ปรับจูนเข้าหาคุณ
+                  </p>
                 </div>
 
-                {/* Box 3: Pronouns */}
+                {/* Box 3: คำสรรพนาม (Pronouns) */}
                 <div className="space-y-1.5">
                   <div className="rounded-2xl border border-[#2F3336] bg-[#1D1D1F]/50 px-4 py-2.5 focus-within:border-white/40 transition-colors relative">
                     <label className="block text-[11.5px] font-semibold text-[#ACACB2] leading-none mb-1">
-                      Pronouns
+                      คำสรรพนาม (PRONOUNS) — สิ่งที่ตัวละคร AI จะใช้เรียกคุณ
                     </label>
                     <div className="flex items-center justify-between">
                       <select
@@ -293,15 +296,15 @@ export function ProfileView({
                     </div>
                   </div>
                   <p className="text-[12px] text-[#ACACB2] px-1 leading-normal">
-                    Choose up to 2 sets of pronouns to appear on your profile so others know how to refer to you. You can edit or remove them at any time.
+                    คำสรรพนามนี้จะถูกส่งต่อไปยังโมเดล AI เพื่อให้การ Roleplay เรียกชื่อและสถานะของคุณได้อย่างแม่นยำ
                   </p>
                 </div>
 
-                {/* Box 4: Username */}
+                {/* Box 4: ชื่อผู้ใช้ (Username) */}
                 <div className="space-y-1.5">
                   <div className="rounded-2xl border border-[#2F3336] bg-[#1D1D1F]/50 px-4 py-2.5 focus-within:border-white/40 transition-colors">
                     <label className="block text-[11.5px] font-semibold text-[#ACACB2] leading-none mb-1">
-                      Username
+                      ชื่อผู้ใช้ (Username)
                     </label>
                     <input
                       type="text"
@@ -312,7 +315,7 @@ export function ProfileView({
                     />
                   </div>
                   <p className="text-[12px] text-[#ACACB2] px-1 font-mono">
-                    www.thesoul.ai/{userHandle || 'username'}
+                    www.maomoi.ai/{userHandle || 'username'}
                   </p>
                 </div>
 
@@ -320,7 +323,7 @@ export function ProfileView({
                 <div className="pt-6 flex items-center justify-between">
                   {isSaved ? (
                     <span className="flex items-center gap-1.5 text-emerald-400 text-[13px] font-medium animate-in fade-in">
-                      <Check size={16} /> Saved changes successfully!
+                      <Check size={16} /> บันทึกการเปลี่ยนแปลงสำเร็จ!
                     </span>
                   ) : <div />}
 
@@ -330,13 +333,13 @@ export function ProfileView({
                       onClick={handleReset}
                       className="px-4 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-[#F2F2F5] font-semibold text-[13.5px] transition-all cursor-pointer"
                     >
-                      Reset
+                      คืนค่าเดิม
                     </button>
                     <button
                       type="submit"
                       className="px-6 py-2.5 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white font-bold text-[13.5px] transition-all cursor-pointer shadow-sm active:scale-95"
                     >
-                      Save
+                      บันทึก
                     </button>
                   </div>
                 </div>
@@ -345,7 +348,7 @@ export function ProfileView({
             )}
 
             {/* ------------------------------------------------------------ */}
-            {/* TAB 2: Coins & Coupons                                       */}
+            {/* TAB 2: เหรียญ & คูปอง (Coins & Coupons)                       */}
             {/* ------------------------------------------------------------ */}
             {activeTab === 'coupon' && (
               <div className="space-y-6">
@@ -353,19 +356,19 @@ export function ProfileView({
                 {/* Title & Subtitle */}
                 <div>
                   <h1 className="text-[28px] sm:text-[32px] font-bold text-[#F2F2F5] tracking-tight leading-tight">
-                    Coins & Coupons
+                    เหรียญ &amp; คูปอง
                   </h1>
                   <p className="text-[14px] text-[#ACACB2] mt-2 leading-relaxed">
-                    Check your coin balance and redeem promo coupons for free coins.
+                    ตรวจสอบยอดเหรียญคงเหลือและแลกรับเหรียญฟรีด้วยรหัสโปรโมชั่น
                   </p>
                 </div>
 
-                {/* Box 1: Coins Balance */}
+                {/* Box 1: กระเป๋าเหรียญ (Coins Balance) */}
                 <div className="space-y-1.5">
                   <div className="rounded-2xl border border-[#2F3336] bg-[#1D1D1F]/50 px-4 py-3.5 flex items-center justify-between">
                     <div>
                       <span className="block text-[11.5px] font-semibold text-[#ACACB2] leading-none mb-1.5">
-                        Coin Balance
+                        กระเป๋าเหรียญ (Coin Balance)
                       </span>
                       <div className="flex items-center gap-2">
                         <SingleCoinIcon size={20} />
@@ -386,18 +389,18 @@ export function ProfileView({
                   </div>
                 </div>
 
-                {/* Box 2: Coupon Redemption */}
+                {/* Box 2: แลกรับโค้ดคูปอง */}
                 <form onSubmit={handleRedeem} className="space-y-2">
                   <div className="rounded-2xl border border-[#2F3336] bg-[#1D1D1F]/50 px-4 py-2.5 focus-within:border-white/40 transition-colors">
                     <label className="block text-[11.5px] font-semibold text-[#ACACB2] leading-none mb-1">
-                      Promo Code
+                      รหัสคูปอง (Promo Code)
                     </label>
                     <div className="flex items-center gap-3">
                       <input
                         type="text"
                         value={couponCode}
                         onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                        placeholder="e.g. SOUL2026"
+                        placeholder="เช่น MAOMOI2026 หรือ SOUL2026"
                         className="w-full bg-transparent text-[#F2F2F5] text-[15px] font-mono outline-none p-0 border-none uppercase placeholder:text-[#ACACB2]/40"
                       />
                       <button
@@ -405,7 +408,7 @@ export function ProfileView({
                         disabled={!couponCode.trim()}
                         className="px-4 py-1.5 rounded-full bg-[#EF264C] hover:bg-[#d91d40] disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-[13px] transition-all cursor-pointer shrink-0"
                       >
-                        Redeem
+                        แลกเหรียญ
                       </button>
                     </div>
                   </div>
@@ -424,6 +427,13 @@ export function ProfileView({
                   {/* Test Promo Badges */}
                   <div className="pt-2 px-1 flex items-center gap-2 flex-wrap">
                     <span className="text-[12px] text-[#ACACB2]">💡 โค้ดทดสอบ:</span>
+                    <button 
+                      type="button"
+                      onClick={() => setCouponCode('MAOMOI2026')}
+                      className="text-amber-300 bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded text-[11.5px] font-mono cursor-pointer transition-colors border border-white/5"
+                    >
+                      MAOMOI2026 (+500)
+                    </button>
                     <button 
                       type="button"
                       onClick={() => setCouponCode('SOUL2026')}
@@ -452,7 +462,7 @@ export function ProfileView({
             )}
 
             {/* ------------------------------------------------------------ */}
-            {/* TAB 3: Account management                                    */}
+            {/* TAB 3: บัญชีและความปลอดภัย (Account Management)              */}
             {/* ------------------------------------------------------------ */}
             {activeTab === 'account' && (
               <div className="space-y-6">
@@ -460,34 +470,34 @@ export function ProfileView({
                 {/* Title & Subtitle */}
                 <div>
                   <h1 className="text-[28px] sm:text-[32px] font-bold text-[#F2F2F5] tracking-tight leading-tight">
-                    Account management
+                    บัญชีและความปลอดภัย
                   </h1>
                   <p className="text-[14px] text-[#ACACB2] mt-2 leading-relaxed">
-                    Manage your email, password, and sign out preferences.
+                    จัดการข้อมูลการเข้าสู่ระบบ อีเมล และความปลอดภัยของบัญชี Maomoi AI
                   </p>
                 </div>
 
-                {/* Box 1: Email */}
+                {/* Box 1: อีเมลที่ผูกไว้ */}
                 <div className="space-y-1.5">
                   <div className="rounded-2xl border border-[#2F3336] bg-[#1D1D1F]/50 px-4 py-2.5">
                     <span className="block text-[11.5px] font-semibold text-[#ACACB2] leading-none mb-1">
-                      Email
+                      อีเมลที่ผูกไว้ (Email)
                     </span>
                     <p className="text-[15px] font-mono text-[#F2F2F5]">
-                      {userEmail || 'Guest Mode (ยังไม่ได้ผูกอีเมล)'}
+                      {userEmail || 'ยังไม่ได้ผูกอีเมล (สถานะ Guest)'}
                     </p>
                   </div>
                   <p className="text-[12px] text-[#ACACB2] px-1">
-                    Primary email for notifications and sign-in authentication.
+                    อีเมลหลักสำหรับยืนยันตัวตนและการแจ้งเตือนในระบบ Maomoi AI
                   </p>
                 </div>
 
-                {/* Box 2: Password */}
+                {/* Box 2: รหัสผ่าน */}
                 <div className="space-y-1.5">
                   <div className="rounded-2xl border border-[#2F3336] bg-[#1D1D1F]/50 px-4 py-2.5 flex items-center justify-between">
                     <div>
                       <span className="block text-[11.5px] font-semibold text-[#ACACB2] leading-none mb-1">
-                        Password
+                        รหัสผ่าน (Password)
                       </span>
                       <p className="text-[14px] font-mono text-[#F2F2F5]">
                         ••••••••••••
@@ -498,24 +508,21 @@ export function ProfileView({
                       onClick={() => alert('ฟีเจอร์เปลี่ยนรหัสผ่านจะพร้อมใช้งานเมื่อเข้าสู่ระบบด้วยอีเมล')}
                       className="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/15 text-[12.5px] font-semibold text-[#F2F2F5] transition-colors cursor-pointer"
                     >
-                      Change
+                      เปลี่ยนรหัสผ่าน
                     </button>
                   </div>
                 </div>
 
-                {/* Sign Out Row */}
+                {/* 3. ปุ่มออกจากระบบ (ดีไซน์สไตล์ ProfileDropdown สะอาด ไม่มีข้อความด้านล่าง) */}
                 <div className="pt-6 border-t border-[#2F3336]/60">
                   <button
                     type="button"
                     onClick={onSignOut}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-400 font-semibold text-[13.5px] border border-red-500/20 transition-all cursor-pointer"
+                    className="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-red-500/10 text-red-400 hover:text-red-300 text-[13.5px] font-medium transition-colors cursor-pointer group"
                   >
-                    <LogOut size={16} />
-                    <span>Log out</span>
+                    <LogOut size={16} className="text-red-400/80 group-hover:text-red-400 transition-colors" />
+                    <span>ออกจากระบบ</span>
                   </button>
-                  <p className="text-[12px] text-[#ACACB2] mt-2 px-1">
-                    Signing out will return you to Guest traveler mode.
-                  </p>
                 </div>
 
               </div>

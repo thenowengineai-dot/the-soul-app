@@ -71,7 +71,7 @@ export function AuthModal({
             <Sparkles className="text-[#EF264C]" size={24} />
           </div>
           <h2 className="text-[24px] sm:text-[26px] font-bold text-app-primary tracking-tight">
-            ยินดีต้อนรับสู่ The Soul
+            ยินดีต้อนรับสู่ Maomoi AI
           </h2>
           <p className="text-[13.5px] text-app-secondary mt-1 max-w-[280px] mx-auto leading-relaxed">
             {mode === 'login' 

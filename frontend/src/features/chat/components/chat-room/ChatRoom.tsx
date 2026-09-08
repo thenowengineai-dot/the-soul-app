@@ -10,6 +10,13 @@ import {
   loadSession,
   streamChatMessage,
 } from '../../chatApi'
+import { CompanionInspectorDrawer } from '../../../dev-console'
+import type {
+  UserConsoleRole,
+  TurnLogEntry,
+  QuestBeatState,
+  LiveStateGauges,
+} from '../../../dev-console'
 
 export type { ChatRoomProps }
 
@@ -136,6 +143,33 @@ export function ChatRoom({
     required: number
   } | null>(null)
 
+  // 🧭 Dev Console / Quest & Beat Inspector State
+  const [isInspectorOpen, setIsInspectorOpen] = useState(false)
+  const [turnLogs, setTurnLogs] = useState<TurnLogEntry[]>([])
+  const [questState, setQuestState] = useState<QuestBeatState | undefined>(undefined)
+  const [liveGauges, setLiveGauges] = useState<LiveStateGauges | undefined>(undefined)
+  const currentTurnIdRef = useRef<string | number | null>(null)
+  const turnCountRef = useRef<number>(0)
+
+  // Gating Role:
+  const isSuperAdmin = Boolean(
+    (userEmail && (
+      userEmail.toLowerCase().includes('admin') ||
+      userEmail.toLowerCase().includes('alice') ||
+      userEmail.toLowerCase() === 'traveler@gmail.com'
+    )) ||
+    import.meta.env.DEV ||
+    localStorage.getItem('the_soul_role') === 'admin'
+  )
+
+  const isCreator = Boolean(
+    localStorage.getItem('the_soul_role') === 'creator' ||
+    (userEmail && userEmail.toLowerCase().includes('creator')) ||
+    currentChat.isCreator
+  )
+
+  const consoleRole: UserConsoleRole = isSuperAdmin ? 'admin' : (isCreator ? 'creator' : 'admin')
+
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const currentKey = `${currentChat.id}_${currentChat.sessionTriggerKey || 0}`
@@ -258,9 +292,32 @@ export function ChatRoom({
             current_outfit: newSess.initial_state.current_outfit,
             environment: newSess.initial_state.environment,
           })
+          setLiveGauges({
+            affection: newSess.initial_state.affection,
+            desire: newSess.initial_state.desire,
+            tension: 0,
+            stance: newSess.initial_state.stance || 'NEUTRAL',
+            chaosLevel: 'LOW',
+            actorPosture: newSess.initial_state.a_pos,
+            playerPosture: newSess.initial_state.p_pos,
+            currentOutfit: newSess.initial_state.current_outfit,
+          })
         }
 
         const openingTimestamp = Date.now()
+        const turn0Id = `turn_0_${openingTimestamp}`
+        currentTurnIdRef.current = turn0Id
+        turnCountRef.current = 0
+        setTurnLogs([
+          {
+            id: turn0Id,
+            type: 'turn',
+            turnNumber: 0,
+            userMsg: '[SYSTEM] เริ่มต้นเกม (Prologue)',
+            timestamp: openingTimestamp,
+          },
+        ])
+
         await streamChatMessage(
           {
             sessionId: activeSessionId,
@@ -320,6 +377,16 @@ export function ChatRoom({
                 stance: phys.stance,
                 dominance_state: phys.dominance_state,
               })
+              setLiveGauges(prev => ({
+                affection: prev?.affection ?? 0,
+                desire: prev?.desire ?? 0,
+                tension: typeof phys.tension === 'number' ? phys.tension : (prev?.tension ?? 0),
+                stance: phys.stance || prev?.stance || 'NEUTRAL',
+                chaosLevel: prev?.chaosLevel || 'LOW',
+                actorPosture: phys.actor_posture || prev?.actorPosture,
+                playerPosture: phys.player_posture || prev?.playerPosture,
+                dominanceState: phys.dominance_state || prev?.dominanceState,
+              }))
             },
             onUnifiedRound: (round) => {
               if (isCancelled) return
@@ -330,7 +397,80 @@ export function ChatRoom({
                   actor_posture: round.state.a_pos,
                   player_posture: round.state.p_pos,
                 })
+                setLiveGauges(prev => ({
+                  affection: round.state.affection ?? prev?.affection ?? 0,
+                  desire: round.state.desire ?? prev?.desire ?? 0,
+                  tension: prev?.tension ?? 0,
+                  stance: prev?.stance || 'NEUTRAL',
+                  chaosLevel: prev?.chaosLevel || 'LOW',
+                  actorPosture: round.state.a_pos || prev?.actorPosture,
+                  playerPosture: round.state.p_pos || prev?.playerPosture,
+                  dominanceState: prev?.dominanceState,
+                }))
               }
+            },
+            onDebugPrompt: (debug) => {
+              if (isCancelled) return
+              const agentKey = debug.agent as 'evaluator' | 'director' | 'actor'
+              setTurnLogs(prev => prev.map(item => {
+                if (item.id !== turn0Id) return item
+                return {
+                  ...item,
+                  [agentKey]: {
+                    ...item[agentKey],
+                    prompt: debug.prompt,
+                  },
+                }
+              }))
+            },
+            onDebugResponse: (debug) => {
+              if (isCancelled) return
+              const agentKey = debug.agent as 'evaluator' | 'director' | 'actor'
+              setTurnLogs(prev => prev.map(item => {
+                if (item.id !== turn0Id) return item
+                return {
+                  ...item,
+                  [agentKey]: {
+                    ...item[agentKey],
+                    response: debug.response,
+                    thinking: debug.thinking,
+                  },
+                }
+              }))
+            },
+            onBeatStatus: (beatData) => {
+              if (isCancelled) return
+              setQuestState({
+                eventId: beatData.event_id || beatData.current_quest,
+                eventName: beatData.event_name || beatData.quest_title,
+                phaseId: beatData.phase_id || beatData.current_scene,
+                beatId: beatData.beat_id || beatData.current_beat_id,
+                beatTurnCount: beatData.turns_in_beat ?? 0,
+                sandboxTurnCount: beatData.sandbox_turn_count ?? 0,
+                pacingStatus: (beatData.pacing_status === 'advancing' || beatData.pacing_status === 'holding' || beatData.pacing_status === 'completed') ? beatData.pacing_status : 'idle',
+                conditionHint: beatData.condition_hint || beatData.trigger_condition,
+              })
+              if (beatData.gauges) {
+                setLiveGauges(prev => ({
+                  ...prev,
+                  ...beatData.gauges,
+                }))
+              }
+            },
+            onSystemEvent: (sys) => {
+              if (isCancelled) return
+              const alertId = `alert_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
+              setTurnLogs(prev => [
+                {
+                  id: alertId,
+                  type: 'system_alert',
+                  message: sys.message || sys.event || 'System Event Triggered',
+                  detail: sys.detail || (typeof sys.data === 'object' ? JSON.stringify(sys.data) : sys.data),
+                  alertType: sys.type || 'info',
+                  timestamp: Date.now(),
+                },
+                ...prev,
+              ])
             },
             onError: (err) => {
               console.error('[OPENING STREAM ERROR]:', err)
@@ -393,6 +533,16 @@ export function ChatRoom({
               tension: res.tensionGauge,
               stance: res.currentStance,
               dominance_state: res.dominanceState,
+            })
+            setLiveGauges({
+              affection: res.characterStats.affection,
+              desire: res.characterStats.desire,
+              tension: res.tensionGauge ?? 0,
+              stance: res.currentStance || 'NEUTRAL',
+              chaosLevel: 'LOW',
+              actorPosture: res.actorPosture,
+              playerPosture: res.playerPosture,
+              dominanceState: res.dominanceState,
             })
           }
           setIsSessionLoading(false)
@@ -458,6 +608,19 @@ export function ChatRoom({
       }
 
       const turnTimestamp = Date.now()
+      const nextTurnNum = (turnCountRef.current += 1)
+      const currentTurnId = `turn_${nextTurnNum}_${turnTimestamp}`
+      currentTurnIdRef.current = currentTurnId
+      setTurnLogs(prev => [
+        {
+          id: currentTurnId,
+          type: 'turn',
+          turnNumber: nextTurnNum,
+          userMsg: text,
+          timestamp: turnTimestamp,
+        },
+        ...prev,
+      ])
       const historyPayload = buildTurnHistory(chatMessages, 6)
 
       await streamChatMessage(
@@ -515,6 +678,16 @@ export function ChatRoom({
               stance: phys.stance,
               dominance_state: phys.dominance_state,
             })
+            setLiveGauges(prev => ({
+              affection: prev?.affection ?? 0,
+              desire: prev?.desire ?? 0,
+              tension: typeof phys.tension === 'number' ? phys.tension : (prev?.tension ?? 0),
+              stance: phys.stance || prev?.stance || 'NEUTRAL',
+              chaosLevel: prev?.chaosLevel || 'LOW',
+              actorPosture: phys.actor_posture || prev?.actorPosture,
+              playerPosture: phys.player_posture || prev?.playerPosture,
+              dominanceState: phys.dominance_state || prev?.dominanceState,
+            }))
           },
           onUnifiedRound: (round) => {
             if (round.state) {
@@ -524,7 +697,76 @@ export function ChatRoom({
                 actor_posture: round.state.a_pos,
                 player_posture: round.state.p_pos,
               })
+              setLiveGauges(prev => ({
+                affection: round.state.affection ?? prev?.affection ?? 0,
+                desire: round.state.desire ?? prev?.desire ?? 0,
+                tension: prev?.tension ?? 0,
+                stance: prev?.stance || 'NEUTRAL',
+                chaosLevel: prev?.chaosLevel || 'LOW',
+                actorPosture: round.state.a_pos || prev?.actorPosture,
+                playerPosture: round.state.p_pos || prev?.playerPosture,
+                dominanceState: prev?.dominanceState,
+              }))
             }
+          },
+          onDebugPrompt: (debug) => {
+            const agentKey = debug.agent as 'evaluator' | 'director' | 'actor'
+            setTurnLogs(prev => prev.map(item => {
+              if (item.id !== currentTurnId) return item
+              return {
+                ...item,
+                [agentKey]: {
+                  ...item[agentKey],
+                  prompt: debug.prompt,
+                },
+              }
+            }))
+          },
+          onDebugResponse: (debug) => {
+            const agentKey = debug.agent as 'evaluator' | 'director' | 'actor'
+            setTurnLogs(prev => prev.map(item => {
+              if (item.id !== currentTurnId) return item
+              return {
+                ...item,
+                [agentKey]: {
+                  ...item[agentKey],
+                  response: debug.response,
+                  thinking: debug.thinking,
+                },
+              }
+            }))
+          },
+          onBeatStatus: (beatData) => {
+            setQuestState({
+              eventId: beatData.event_id || beatData.current_quest,
+              eventName: beatData.event_name || beatData.quest_title,
+              phaseId: beatData.phase_id || beatData.current_scene,
+              beatId: beatData.beat_id || beatData.current_beat_id,
+              beatTurnCount: beatData.turns_in_beat ?? 0,
+              sandboxTurnCount: beatData.sandbox_turn_count ?? 0,
+              pacingStatus: (beatData.pacing_status === 'advancing' || beatData.pacing_status === 'holding' || beatData.pacing_status === 'completed') ? beatData.pacing_status : 'idle',
+              conditionHint: beatData.condition_hint || beatData.trigger_condition,
+            })
+            if (beatData.gauges) {
+              setLiveGauges(prev => ({
+                ...prev,
+                ...beatData.gauges,
+              }))
+            }
+          },
+          onSystemEvent: (sys) => {
+            const alertId = `alert_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
+            setTurnLogs(prev => [
+              {
+                id: alertId,
+                type: 'system_alert',
+                message: sys.message || sys.event || 'System Event Triggered',
+                detail: sys.detail || (typeof sys.data === 'object' ? JSON.stringify(sys.data) : sys.data),
+                alertType: sys.type || 'info',
+                timestamp: Date.now(),
+              },
+              ...prev,
+            ])
           },
           onWalletUpdate: (walletData) => {
             if (typeof walletData.remaining_coins === 'number') {
@@ -570,6 +812,8 @@ export function ChatRoom({
           onToggleChatList={onToggleChatList}
           isHudOpen={isHudOpen}
           onToggleHud={onToggleHud}
+          isInspectorOpen={isInspectorOpen}
+          onToggleInspector={() => setIsInspectorOpen(prev => !prev)}
           coinBalance={coinBalance}
           notificationCount={notificationCount}
           onCoinClick={onCoinClick}
@@ -664,6 +908,17 @@ export function ChatRoom({
           </div>
         </div>
       )}
+
+      {/* Companion Quest & Dev Inspector Drawer */}
+      <CompanionInspectorDrawer
+        isOpen={isInspectorOpen}
+        onClose={() => setIsInspectorOpen(false)}
+        role={consoleRole}
+        characterName={currentChat.name}
+        turnLogs={turnLogs}
+        questState={questState}
+        liveGauges={liveGauges}
+      />
     </div>
   )
 }

@@ -78,7 +78,9 @@ class GamePipeline:
         history: list = None,
         current_world_state: Dict[str, Any] = None,
         world_id: str = None,
-        is_regenerate: bool = False
+        is_regenerate: bool = False,
+        user_role: str = "player",
+        is_creator: bool = False
     ) -> AsyncGenerator[str, None]:
         
         turn_start_time = time.time()
@@ -453,7 +455,8 @@ class GamePipeline:
                 inside_jokes=current_inside_jokes
             )
             
-            yield f"data: {json.dumps({'type': 'debug_prompt', 'agent': 'evaluator', 'prompt': evaluator_prompt}, ensure_ascii=False)}\n\n"
+            if user_role == "admin":
+                yield f"data: {json.dumps({'type': 'debug_prompt', 'agent': 'evaluator', 'prompt': evaluator_prompt}, ensure_ascii=False)}\n\n"
 
             # 📡 2. สัญญาณสอง: เริ่มทำงานสอดแนมความเร็วสูง (Evaluator)
             if user_message.strip().startswith("[SYSTEM]"):
@@ -471,7 +474,8 @@ class GamePipeline:
                     wardrobe_update=None,
                     inhibition_shield="active"
                 )
-                yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'evaluator', 'response': eval_result.model_dump()}, ensure_ascii=False)}\n\n"
+                if user_role in ["admin", "creator"]:
+                    yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'evaluator', 'response': eval_result.model_dump()}, ensure_ascii=False)}\n\n"
                 
                 # 🌟 [UX BUFFER] ยิง System Briefing ปลอมตัวเป็น VO ไปแสดงผลทันทีเพื่อซื้อเวลาให้ผู้เล่นอ่าน
                 if beat_turn_count <= 1:
@@ -505,7 +509,8 @@ class GamePipeline:
                     # 🌟 [QDRANT] ซิงค์ความจำลง Vector Database
                     await self.memory.save_memory(user_id, character_id, eval_result.memory_extracted, session_id=session_id)
     
-                yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'evaluator', 'response': eval_result.model_dump()}, ensure_ascii=False)}\n\n"
+                if user_role in ["admin", "creator"]:
+                    yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'evaluator', 'response': eval_result.model_dump()}, ensure_ascii=False)}\n\n"
 
             # ==================================================
             # 🧠 3. อัปเดตสเตตัสทันทีหลัง Evaluator เสร็จ (State Update)
@@ -768,8 +773,9 @@ class GamePipeline:
                 secret_directive = f"\n\n[🔥 SYSTEM OVERRIDE (LOSS OF CONTROL)]: ผู้เล่นใช้เวลาลีลานานเกินไปจนหมดเวลา! บังคับให้คุณหมดความอดทนและ {resolution_text} ห้ามขอให้ผู้เล่นช่วยอีกต่อไป แสดงให้เห็นว่าโลกนี้เดินหน้าได้โดยไม่ต้องง้อผู้เล่น จากนั้นให้ดำเนินเรื่องเข้าสู่เป้าหมายใหม่ทันที!"
                 actor_prompt += secret_directive
 
-            yield f"data: {json.dumps({'type': 'debug_prompt', 'agent': 'director', 'prompt': director_prompt}, ensure_ascii=False)}\n\n"
-            yield f"data: {json.dumps({'type': 'debug_prompt', 'agent': 'actor', 'prompt': actor_prompt}, ensure_ascii=False)}\n\n"
+            if user_role == "admin":
+                yield f"data: {json.dumps({'type': 'debug_prompt', 'agent': 'director', 'prompt': director_prompt}, ensure_ascii=False)}\n\n"
+                yield f"data: {json.dumps({'type': 'debug_prompt', 'agent': 'actor', 'prompt': actor_prompt}, ensure_ascii=False)}\n\n"
 
             # ==================================================
             # 🚀 5. รันคู่ขนาน: DIRECTOR vs ACTOR STREAM (INCREMENTAL PARSER)
@@ -815,7 +821,7 @@ class GamePipeline:
                     cleaned_vo = " ".join(re.sub(r'\[.*?\]|\(.*?\)', '', director_out.voice_over).split())
                     director_out.voice_over = cleaned_vo
                     yield f"data: {json.dumps({'type': 'voice_over', 'content': cleaned_vo}, ensure_ascii=False)}\n\n"
-                if director_out:
+                if director_out and user_role in ["admin", "creator"]:
                     yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'director', 'response': director_out.model_dump()}, ensure_ascii=False)}\n\n"
             else:
                 # 🌟 เทิร์นทั่วไป (Gear 3): ไม่ต้องรอ Director เลย! Actor สตรีมบับเบิ้ลลงจอได้ทันทีด้วยความเร็วสูงสุด
@@ -841,7 +847,7 @@ class GamePipeline:
             # 4. สำหรับกรณี needs_vo=False ให้รอเก็บผลลัพธ์ Director ที่รันคู่ขนานเสร็จแล้ว พร้อม Hard Clamp voice_over = None
             if not needs_vo:
                 _, director_out = await director_task
-                if director_out:
+                if director_out and user_role in ["admin", "creator"]:
                     # 🛑 บังคับตัด voice_over เป็น None เด็ดขาด 100% ป้องกัน AI ละเมอ
                     director_out.voice_over = None
                     yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'director', 'response': director_out.model_dump()}, ensure_ascii=False)}\n\n"
@@ -858,7 +864,8 @@ class GamePipeline:
 
             # 4. ส่ง Sequence รวมรอบสุดท้ายเพื่อความสมบูรณ์และเป็น Sync Fallback
             yield f"data: {json.dumps({'type': 'chat_message_array', 'sequence': [s.model_dump() for s in actor_out.response_sequence], 'system_choices': current_system_choices_dict}, ensure_ascii=False)}\n\n"
-            yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'actor', 'response': actor_out.model_dump()}, ensure_ascii=False)}\n\n"
+            if user_role in ["admin", "creator"]:
+                yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'actor', 'response': actor_out.model_dump()}, ensure_ascii=False)}\n\n"
 
             # 5. อัปเดต Kinematics & Physics ประจำเทิร์น
             new_a_pos = getattr(actor_out, "a_pos", None)
@@ -876,6 +883,8 @@ class GamePipeline:
 
             yield f"data: {json.dumps({'system_event': 'physics_update', 'stance': current_stance, 'tension': tension_gauge, 'player_posture': player_posture, 'actor_posture': actor_posture, 'dominance_state': current_dominance_state, 'action_lock': current_action_lock, 'contact_points': contact_points_list, 'current_outfit': current_outfit}, ensure_ascii=False)}\n\n"
             yield f"data: {json.dumps({'system_event': 'turn_sync', 'beat_turn_count': beat_turn_count}, ensure_ascii=False)}\n\n"
+            if user_role in ["admin", "creator"]:
+                yield f"data: {json.dumps({'type': 'beat_status', 'event_id': active_event_id, 'phase_id': active_event_phase, 'beat_id': active_beat_id, 'beat_turn_count': beat_turn_count, 'sandbox_turn_count': sandbox_turn_count, 'pacing_status': 'advancing' if is_new_phase else 'holding', 'chaos_level': chaos_level, 'stance': current_stance, 'tension': tension_gauge}, ensure_ascii=False)}\n\n"
 
 
             # ==================================================

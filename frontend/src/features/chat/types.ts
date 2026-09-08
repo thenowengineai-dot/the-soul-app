@@ -33,6 +33,7 @@ export interface ChatConversation {
   initialPose?: string
   forceNewSession?: boolean
   sessionTriggerKey?: number
+  isCreator?: boolean
 }
 
 // ----------------------------------------------------------------------
@@ -82,6 +83,8 @@ export interface ChatRoomHeaderProps {
   onToggleChatList?: () => void
   isHudOpen?: boolean
   onToggleHud?: () => void
+  isInspectorOpen?: boolean
+  onToggleInspector?: () => void
   coinBalance?: number
   notificationCount?: number
   onCoinClick?: () => void
@@ -130,6 +133,8 @@ export interface ChatRoomProps {
   onToggleChatList?: () => void
   isHudOpen?: boolean
   onToggleHud?: () => void
+  isInspectorOpen?: boolean
+  onToggleInspector?: () => void
   coinBalance?: number
   notificationCount?: number
   onCoinClick?: () => void

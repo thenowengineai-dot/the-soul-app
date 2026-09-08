@@ -1,4 +1,4 @@
-import { ChevronRight, PanelLeftOpen, PanelLeftClose, PanelRightOpen } from 'lucide-react'
+import { ChevronRight, PanelLeftOpen, PanelLeftClose, PanelRightOpen, Terminal } from 'lucide-react'
 import { HeaderActionGroup } from '../../../navigation'
 import type { ChatRoomHeaderProps } from '../../types'
 
@@ -10,6 +10,8 @@ export function ChatRoomHeader({
   onToggleChatList,
   isHudOpen = true,
   onToggleHud,
+  isInspectorOpen = false,
+  onToggleInspector,
   coinBalance = 1250,
   notificationCount = 3,
   onCoinClick,
@@ -31,8 +33,8 @@ export function ChatRoomHeader({
 
   return (
     <div className="sticky top-0 z-30 w-full pl-2 sm:pl-3 pr-2 sm:pr-4 pt-3 pb-2 flex items-center justify-between pointer-events-none select-none relative">
-      {/* Left: [Toggle ChatList Button (Hide / Open)] ชิดซ้ายสุดของ chatroom เส้นบางกลมกลืน */}
-      <div className="flex items-center pointer-events-auto">
+      {/* Left: [Toggle ChatList Button] + [Toggle Inspector Button] */}
+      <div className="flex items-center gap-1.5 pointer-events-auto">
         <button
           type="button"
           onClick={onToggleChatList}
@@ -45,6 +47,21 @@ export function ChatRoomHeader({
             <PanelLeftOpen size={16} strokeWidth={1.8} />
           )}
         </button>
+
+        {onToggleInspector && (
+          <button
+            type="button"
+            onClick={onToggleInspector}
+            title={isInspectorOpen ? 'ปิดหน้าต่างตรวจสอบเควสต์ (Inspector)' : 'เปิดหน้าต่างตรวจสอบเควสต์ & บีท (Inspector)'}
+            className={`w-8 h-8 rounded-full backdrop-blur-xl border transition-all cursor-pointer shadow-lg active:scale-95 flex items-center justify-center select-none ${
+              isInspectorOpen
+                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 shadow-emerald-500/10'
+                : 'bg-[#121212]/65 border-white/[0.07] hover:border-white/20 hover:bg-white/10 text-app-secondary hover:text-emerald-400'
+            }`}
+          >
+            <Terminal size={14} strokeWidth={2} />
+          </button>
+        )}
       </div>
 
       {/* Center: Character Identity & Status Pill (Dual-Line Stacked Glassmorphism Pill: รูป + ชื่อ + สถานะ + Chevron) */}

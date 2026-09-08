@@ -488,6 +488,32 @@ async def chat_endpoint(request: ChatRequest):
                     }
                 )
         
+        # 👑 [ROLE & PERMISSION GATING] ตรวจสอบสิทธิ์ Admin / Creator
+        user_role = "player"
+        is_creator = False
+        if request.user_id:
+            pg = get_postgres_core()
+            user_rec = await pg.get_user(request.user_id)
+            user_email = (user_rec.get("email") or "").lower() if user_rec else ""
+            ADMIN_EMAILS = set(filter(None, [
+                e.strip().lower() for e in os.getenv("ADMIN_EMAILS", "aliceer@gmail.com,admin@maomoi.ai,traveler@gmail.com").split(",")
+            ]))
+            if user_email in ADMIN_EMAILS or user_email.startswith("aliceer") or request.user_id.startswith("usr_admin_"):
+                user_role = "admin"
+                is_creator = True
+            elif campaign and campaign.get("creator_id") and campaign.get("creator_id") == request.user_id:
+                user_role = "creator"
+                is_creator = True
+            elif character_data and character_data.get("creator_id") == request.user_id:
+                user_role = "creator"
+                is_creator = True
+            elif request.user_id.startswith("usr_creator_") or request.user_id.startswith("gst_"):
+                # Guest หรือ Creator ทดสอบโลกของตัวเองใน Dev/Alpha environment
+                user_role = "creator"
+                is_creator = True
+
+        logger.info(f"🛡️ [SECURITY GATE] User: {request.user_id} | Role: {user_role} | is_creator: {is_creator}")
+
         # 3. 🌟 [SUPABASE EDITION] โยนเฉพาะข้อมูลที่จำเป็นเข้า Pipeline (สเตตัสอื่นๆ Pipeline จะไปดึงจาก Database เอง)
         stream_generator = await pipeline.process_chat_turn(
             user_id=request.user_id,
@@ -498,7 +524,9 @@ async def chat_endpoint(request: ChatRequest):
             history=request.history,
             current_world_state=request.world_state,
             world_id=request.world_id,
-            is_regenerate=request.is_regenerate
+            is_regenerate=request.is_regenerate,
+            user_role=user_role,
+            is_creator=is_creator
         )
         
         # 4. ส่ง Stream กลับไปให้ Frontend แบบ Server-Sent Events (SSE)

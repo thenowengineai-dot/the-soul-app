@@ -293,6 +293,45 @@ export interface StreamChatCallbacks {
   onUnifiedRound?: (round: UnifiedInteractionRound) => void
   onWalletUpdate?: (data: { coins_deducted: number; remaining_coins?: number }) => void
   onInsufficientCoins?: (data: { balance: number; required: number; message: string }) => void
+  onDebugPrompt?: (data: { agent: 'evaluator' | 'director' | 'actor'; prompt: string }) => void
+  onDebugResponse?: (data: { agent: 'evaluator' | 'director' | 'actor'; response: any; thinking?: string }) => void
+  onBeatStatus?: (data: {
+    event_id?: string | null
+    event_name?: string | null
+    quest_title?: string | null
+    current_quest?: string | null
+    phase_id?: string | null
+    current_scene?: string | null
+    beat_id?: string | null
+    current_beat_id?: string | null
+    beat_turn_count?: number
+    turns_in_beat?: number
+    sandbox_turn_count?: number
+    pacing_status?: 'advancing' | 'holding' | 'completed' | 'idle' | string
+    chaos_level?: string
+    stance?: string
+    tension?: number
+    condition_hint?: string | null
+    trigger_condition?: string | null
+    gauges?: any
+    [key: string]: any
+  }) => void
+  onSystemEvent?: (data: {
+    system_event?: string
+    event?: string
+    event_id?: string | null
+    phase_id?: string | null
+    new_phase?: string | null
+    new_beat?: string | null
+    beat_turn_count?: number
+    affection_delta?: number
+    desire_delta?: number
+    message?: string
+    detail?: string
+    type?: 'info' | 'success' | 'warning' | 'error'
+    data?: any
+    [key: string]: any
+  }) => void
   onError?: (err: Error) => void
   onDone?: () => void
 }
@@ -405,6 +444,22 @@ export async function streamChatMessage(
           // 6. Wallet Balance Update
           else if (parsed.type === 'wallet_update') {
             callbacks.onWalletUpdate?.(parsed)
+          }
+          // 7. Dev Console & Inspector: Debug Prompt
+          else if (parsed.type === 'debug_prompt' && parsed.agent && parsed.prompt) {
+            callbacks.onDebugPrompt?.({ agent: parsed.agent, prompt: parsed.prompt })
+          }
+          // 8. Dev Console & Inspector: Debug Response (Thinking & Decisions)
+          else if (parsed.type === 'debug_response' && parsed.agent && parsed.response) {
+            callbacks.onDebugResponse?.({ agent: parsed.agent, response: parsed.response, thinking: parsed.thinking })
+          }
+          // 9. Dev Console & Inspector: Beat & Scene Status
+          else if (parsed.type === 'beat_status') {
+            callbacks.onBeatStatus?.(parsed)
+          }
+          // 10. System Event Alerts (Quest, Scene, Beat changes)
+          else if (parsed.system_event && parsed.system_event !== 'physics_update') {
+            callbacks.onSystemEvent?.(parsed)
           }
         } catch {
           // Skip non-JSON or heartbeat data lines

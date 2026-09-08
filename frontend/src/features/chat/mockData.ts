@@ -10,7 +10,8 @@ export const MOCK_CHATS: ChatConversation[] = [
     unreadCount: 3,
     verified: true, 
     avatar: "https://i.pinimg.com/1200x/60/8d/e0/608de07b09fe6e34f8b9517213bc4a24.jpg",
-    statusMessage: "ในห้องชมรมคนเดียว... 🤫"
+    statusMessage: "ในห้องชมรมคนเดียว... 🤫",
+    defaultWorld: "lacquered_glasses_black_lace_secret_01"
   },
   { 
     id: 2, 
@@ -20,7 +21,8 @@ export const MOCK_CHATS: ChatConversation[] = [
     unread: true, 
     unreadCount: 1,
     avatar: "https://i.pinimg.com/736x/32/f6/17/32f617cd2fd08759eca04c027f66674d.jpg",
-    statusMessage: "ว่างทั้งวัน... มาหาหน่อยสิ 💋"
+    statusMessage: "ว่างทั้งวัน... มาหาหน่อยสิ 💋",
+    defaultWorld: "secret_signal_after_school_01"
   },
   { 
     id: 3, 
@@ -29,7 +31,8 @@ export const MOCK_CHATS: ChatConversation[] = [
     time: "2h", 
     unread: false, 
     avatar: "https://i.pinimg.com/736x/a5/22/bc/a522bcfb7f3e125929c8ff2213c9d3cb.jpg",
-    statusMessage: "อ่านหนังสืออยู่ อย่าเพิ่งกวนนะ 📚"
+    statusMessage: "อ่านหนังสืออยู่ อย่าเพิ่งกวนนะ 📚",
+    defaultWorld: "midnight_deadline_01"
   },
   { 
     id: 4, 
@@ -39,7 +42,8 @@ export const MOCK_CHATS: ChatConversation[] = [
     unread: true, 
     unreadCount: 5,
     avatar: "https://i.pinimg.com/736x/b6/d6/98/b6d6981647638b2ad2ce1505f52d8d1d.jpg",
-    statusMessage: "แอบมองเธออยู่นะ เจ้าบ้า 🙈"
+    statusMessage: "แอบมองเธออยู่นะ เจ้าบ้า 🙈",
+    defaultWorld: "starry_land_01"
   },
   { 
     id: 5, 
@@ -48,7 +52,8 @@ export const MOCK_CHATS: ChatConversation[] = [
     time: "1d", 
     unread: false, 
     avatar: "https://i.pinimg.com/736x/d8/17/b9/d817b9207bc55aae576816c90e252d99.jpg",
-    statusMessage: "คืนนี้ไม่อยากอยู่คนเดียวเลย 🌙"
+    statusMessage: "คืนนี้ไม่อยากอยู่คนเดียวเลย 🌙",
+    defaultWorld: "stadium_under_bleachers_01"
   },
   { 
     id: 6, 
@@ -57,7 +62,8 @@ export const MOCK_CHATS: ChatConversation[] = [
     time: "1d", 
     unread: false, 
     avatar: "https://i.pinimg.com/1200x/97/a5/e6/97a5e6d5a5b35584805c0dec650a63b2.jpg",
-    statusMessage: "ติวหนังสือเสร็จแล้ว ไปเล่นเกมกัน 🎮"
+    statusMessage: "ติวหนังสือเสร็จแล้ว ไปเล่นเกมกัน 🎮",
+    defaultWorld: "aces_secret_lesson_01"
   },
   { 
     id: 7, 

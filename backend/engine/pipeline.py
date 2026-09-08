@@ -18,7 +18,7 @@ import tempfile
 from engine.context_builder import ContextBuilder
 from engine.db_core import DatabaseCore 
 from engine.postgres_core import get_postgres_core
-from engine.transitions import SceneTransitionManager 
+from engine.transitions import SceneTransitionManager, resolve_world_file_path
 from engine.memory_core import MemoryCore
 
 # ==========================================
@@ -171,24 +171,21 @@ class GamePipeline:
         current_loc = current_world_state.get("location", "ไม่ระบุ")
         current_weather = current_world_state.get("weather", "ไม่ระบุ")
 
-        # 🌟 [STRICT MODE] ดึง world_id จากหน้าบ้านก่อน ถ้าไม่มีให้ดูใน Session (ไม่มี Fallback มั่วซั่วอีกต่อไป)
-        actual_world_id = world_id or session.get("world_id")
-        
-        if not actual_world_id:
-            logger.error("❌ [CRITICAL] ไม่พบ world_id! ระบบไม่สามารถโหลดไฟล์โลกได้")
-            # ปล่อยให้ actual_world_id เป็น None เพื่อให้ Fail-Fast และเห็นบั๊กชัดเจน
-            
-        # 🌟 [SUPABASE EDITION] ดึงข้อมูลโลกจากแคมเปญที่ Publish แล้ว
+        # 🌟 [SMART WORLD RESOLUTION] ดึง world_id จากหน้าบ้านหรือ Session และ Resolve ID
+        raw_world_id = world_id or session.get("world_id")
+        actual_world_id, world_file_path = resolve_world_file_path(raw_world_id)
+        logger.info(f"🌍 [WORLD RESOLVER] Raw: '{raw_world_id}' -> Resolved: '{actual_world_id}' | Path: {world_file_path}")
+
+        # 🌟 [SUPABASE EDITION] ดึงข้อมูลโลกจากแคมเปญที่ Publish แล้ว หรือ Fallback Local World File
         world_data_json = {}
         campaign = await self.db.get_published_campaign(actual_world_id)
         if campaign and campaign.get("world_data"):
             world_data_json = campaign.get("world_data")
+        elif os.path.exists(world_file_path):
+            with open(world_file_path, "r", encoding="utf-8") as f:
+                world_data_json = json.load(f)
         else:
-            # Fallback Local
-            world_file_path = f"data/worlds/{actual_world_id}.json"
-            if os.path.exists(world_file_path):
-                with open(world_file_path, "r", encoding="utf-8") as f:
-                    world_data_json = json.load(f)
+            logger.warning(f"⚠️ [WORLD WARNING] File not found: {world_file_path}, world_data_json is empty")
 
         starting_state = world_data_json.get("starting_state", {})
 
@@ -472,7 +469,7 @@ class GamePipeline:
                     inhibition_shield="active"
                 )
                 if user_role in ["admin", "creator"]:
-                    yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'evaluator', 'response': eval_result.model_dump()}, ensure_ascii=False)}\n\n"
+                    yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'evaluator', 'response': eval_result.model_dump(), 'thinking': 'ฉากเริ่มต้น (Prologue): Evaluator ข้ามการประเมินเพื่อเปิดทางให้ Director และ Actor รันฉากเปิดตัวตาม World Script'}, ensure_ascii=False)}\n\n"
                 
                 # 🌟 [UX BUFFER] ยิง System Briefing ปลอมตัวเป็น VO ไปแสดงผลทันทีเพื่อซื้อเวลาให้ผู้เล่นอ่าน
                 if beat_turn_count <= 1:
@@ -507,7 +504,7 @@ class GamePipeline:
                     await self.memory.save_memory(user_id, character_id, eval_result.memory_extracted, session_id=session_id)
     
                 if user_role in ["admin", "creator"]:
-                    yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'evaluator', 'response': eval_result.model_dump()}, ensure_ascii=False)}\n\n"
+                    yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'evaluator', 'response': eval_result.model_dump(), 'thinking': getattr(eval_result, 'reasoning', None)}, ensure_ascii=False)}\n\n"
 
             # ==================================================
             # 🧠 3. อัปเดตสเตตัสทันทีหลัง Evaluator เสร็จ (State Update)
@@ -823,7 +820,7 @@ class GamePipeline:
                     director_out.voice_over = cleaned_vo
                     yield f"data: {json.dumps({'type': 'voice_over', 'content': cleaned_vo}, ensure_ascii=False)}\n\n"
                 if director_out and user_role in ["admin", "creator"]:
-                    yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'director', 'response': director_out.model_dump()}, ensure_ascii=False)}\n\n"
+                    yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'director', 'response': director_out.model_dump(), 'thinking': getattr(director_out, 'director_analysis', None)}, ensure_ascii=False)}\n\n"
             else:
                 # 🌟 เทิร์นทั่วไป (Gear 3): ไม่ต้องรอ Director เลย! Actor สตรีมบับเบิ้ลลงจอได้ทันทีด้วยความเร็วสูงสุด
                 logger.info("⚡ [PIPELINE] needs_vo=False (Gear 3): Actor streaming immediately without waiting for Director!")
@@ -851,7 +848,7 @@ class GamePipeline:
                 if director_out and user_role in ["admin", "creator"]:
                     # 🛑 บังคับตัด voice_over เป็น None เด็ดขาด 100% ป้องกัน AI ละเมอ
                     director_out.voice_over = None
-                    yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'director', 'response': director_out.model_dump()}, ensure_ascii=False)}\n\n"
+                    yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'director', 'response': director_out.model_dump(), 'thinking': getattr(director_out, 'director_analysis', None)}, ensure_ascii=False)}\n\n"
 
             if not actor_out:
                 actor_out = ActorOutput(
@@ -866,7 +863,7 @@ class GamePipeline:
             # 4. ส่ง Sequence รวมรอบสุดท้ายเพื่อความสมบูรณ์และเป็น Sync Fallback
             yield f"data: {json.dumps({'type': 'chat_message_array', 'sequence': [s.model_dump() for s in actor_out.response_sequence], 'system_choices': current_system_choices_dict}, ensure_ascii=False)}\n\n"
             if user_role in ["admin", "creator"]:
-                yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'actor', 'response': actor_out.model_dump()}, ensure_ascii=False)}\n\n"
+                yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'actor', 'response': actor_out.model_dump(), 'thinking': getattr(actor_out, 'thinking', None)}, ensure_ascii=False)}\n\n"
 
             # 5. อัปเดต Kinematics & Physics ประจำเทิร์น
             new_a_pos = getattr(actor_out, "a_pos", None)

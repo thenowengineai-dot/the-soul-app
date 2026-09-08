@@ -18,6 +18,13 @@ export function AgentInspectorView({ turnLog }: AgentInspectorViewProps) {
   }
 
   const agentData = turnLog[activeAgent]
+  const thinkingText = 
+    agentData?.thinking || 
+    (agentData?.response && typeof agentData.response === 'object' && (
+      (agentData.response as Record<string, any>).thinking || 
+      (agentData.response as Record<string, any>).reasoning || 
+      (agentData.response as Record<string, any>).director_analysis
+    )) || ''
 
   return (
     <div className="flex flex-col gap-3 p-3.5 bg-[#121214] rounded-2xl border border-[#2F3336]">
@@ -40,14 +47,14 @@ export function AgentInspectorView({ turnLog }: AgentInspectorViewProps) {
       </div>
 
       {/* 2. Agent Content */}
-      {!agentData || (!agentData.prompt && !agentData.response && !agentData.thinking) ? (
+      {!agentData || (!agentData.prompt && !agentData.response && !agentData.thinking && !thinkingText) ? (
         <div className="py-6 text-center text-[12px] font-mono text-[#ACACB2]/60">
           ยังไม่มีข้อมูล Debug ของ {activeAgent.toUpperCase()} ในเทิร์นนี้
         </div>
       ) : (
         <div className="space-y-3">
           {/* A. Thinking / Reasoning Section */}
-          {(agentData.thinking || (agentData.response && agentData.response.reasoning)) && (
+          {Boolean(thinkingText) && (
             <div className="flex flex-col rounded-xl overflow-hidden border border-purple-500/20 bg-purple-950/10">
               <div className="flex items-center justify-between px-3 py-1.5 bg-purple-900/20 border-b border-purple-500/20 text-[10.5px] font-mono font-bold text-purple-300">
                 <span className="flex items-center gap-1.5">
@@ -56,7 +63,7 @@ export function AgentInspectorView({ turnLog }: AgentInspectorViewProps) {
                 </span>
                 <button
                   type="button"
-                  onClick={() => handleCopy(agentData.thinking || agentData.response?.reasoning || '', 'thinking')}
+                  onClick={() => handleCopy(thinkingText, 'thinking')}
                   className="hover:text-white transition-colors cursor-pointer"
                   title="คัดลอกข้อความ"
                 >
@@ -64,7 +71,7 @@ export function AgentInspectorView({ turnLog }: AgentInspectorViewProps) {
                 </button>
               </div>
               <div className="p-3 text-[11.5px] font-mono text-purple-200/90 leading-relaxed whitespace-pre-wrap max-h-[160px] overflow-y-auto">
-                {agentData.thinking || agentData.response?.reasoning}
+                {thinkingText}
               </div>
             </div>
           )}

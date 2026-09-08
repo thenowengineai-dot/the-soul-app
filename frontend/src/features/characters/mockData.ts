@@ -69,6 +69,7 @@ export const MOCK_CHARACTERS: Character[] = [
   {
     id: 1,
     name: "ชิน อา-ยอง",
+    defaultWorld: "lacquered_glasses_black_lace_secret_01",
     quote: '"ได้โปรดหยุดเถอะ... ถ้าคนอื่นเห็นเข้าล่ะ... ฮ่า..."',
     views: "5,830,000",
     messages: "170,000",

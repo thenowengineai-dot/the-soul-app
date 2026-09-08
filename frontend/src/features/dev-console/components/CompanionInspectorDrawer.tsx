@@ -18,11 +18,11 @@ export function CompanionInspectorDrawer({
   const [expandedTurnId, setExpandedTurnId] = useState<string | number | null>(() => {
     return turnLogs.length > 0 ? turnLogs[0].id : null
   })
-  const [viewMode, setViewMode] = useState<'admin' | 'creator'>(role === 'admin' ? 'admin' : 'creator')
+  const [viewMode, setViewMode] = useState<'admin' | 'creator'>('admin')
 
   if (!isOpen) return null
 
-  const isEffectiveAdmin = role === 'admin' && viewMode === 'admin'
+  const isEffectiveAdmin = (role === 'admin' || import.meta.env.DEV) && viewMode === 'admin'
 
   return (
     <>
@@ -62,7 +62,7 @@ export function CompanionInspectorDrawer({
 
           {/* Center/Right: Role Preview Toggle (Only visible for Super Admin) + Close Button */}
           <div className="flex items-center gap-2 shrink-0">
-            {role === 'admin' && (
+            {(role === 'admin' || import.meta.env.DEV) && (
               <div className="flex items-center bg-[#1D1D1F] p-0.5 rounded-full border border-white/10 text-[10px] font-mono">
                 <button
                   type="button"

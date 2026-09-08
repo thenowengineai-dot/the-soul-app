@@ -292,7 +292,8 @@ export function ChatRoom({
       setIsStreaming(true)
 
       try {
-        const newSess = await startNewSession(charKey)
+        const actualWorld = currentChat.defaultWorld || charKey
+        const newSess = await startNewSession(charKey, actualWorld)
         if (isCancelled) return
 
         const activeSessionId = newSess.session_id
@@ -338,7 +339,7 @@ export function ChatRoom({
           {
             sessionId: activeSessionId,
             characterId: charKey,
-            worldId: charKey,
+            worldId: actualWorld,
             message: '[SYSTEM] เริ่มต้นเกม',
             history: [],
           },
@@ -586,7 +587,7 @@ export function ChatRoom({
     return () => {
       isCancelled = true
     }
-  }, [currentChat.id, currentChat.sessionTriggerKey, currentChat.forceNewSession])
+  }, [currentChat.id, currentChat.sessionTriggerKey, currentChat.forceNewSession, currentChat.defaultWorld])
 
   // 3. เลื่อน Scroll ลงด้านล่างสุดเสมอเมื่อมีข้อความใหม่หรือกำลังสตรีม
   useEffect(() => {
@@ -654,7 +655,7 @@ export function ChatRoom({
         {
           sessionId: activeSessionId,
           characterId: String(currentChat.id),
-          worldId: String(currentChat.id),
+          worldId: currentChat.defaultWorld || String(currentChat.id),
           message: text,
           history: historyPayload,
         },

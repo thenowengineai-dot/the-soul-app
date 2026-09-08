@@ -456,7 +456,8 @@ export async function streamChatMessage(
           }
           // 8. Dev Console & Inspector: Debug Response (Thinking & Decisions)
           else if (parsed.type === 'debug_response' && parsed.agent && parsed.response) {
-            callbacks.onDebugResponse?.({ agent: parsed.agent, response: parsed.response, thinking: parsed.thinking })
+            const rawThinking = parsed.thinking || parsed.response?.thinking || parsed.response?.reasoning || parsed.response?.director_analysis
+            callbacks.onDebugResponse?.({ agent: parsed.agent, response: parsed.response, thinking: rawThinking })
           }
           // 9. Dev Console & Inspector: Beat & Scene Status
           else if (parsed.type === 'beat_status') {

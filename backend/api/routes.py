@@ -17,6 +17,7 @@ from engine.redis_cache import RedisHotCache
 
 # 🌟 นำเข้า Database Core เดิมสำหรับดึงแคมเปญ (Read-only Catalog)
 from engine.db_core import DatabaseCore
+from engine.transitions import SceneTransitionManager, resolve_world_file_path
 
 logger = logging.getLogger("API_ROUTES")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - \033[96m[ROUTER]\033[0m - %(message)s")
@@ -498,7 +499,13 @@ async def chat_endpoint(request: ChatRequest):
             ADMIN_EMAILS = set(filter(None, [
                 e.strip().lower() for e in os.getenv("ADMIN_EMAILS", "aliceer@gmail.com,admin@maomoi.ai,traveler@gmail.com").split(",")
             ]))
-            if user_email in ADMIN_EMAILS or user_email.startswith("aliceer") or request.user_id.startswith("usr_admin_"):
+            if (
+                user_email in ADMIN_EMAILS or 
+                user_email.startswith("aliceer") or 
+                request.user_id.startswith("usr_admin_") or
+                request.user_id.startswith("gst_") or
+                os.getenv("ENVIRONMENT", "development") != "production"
+            ):
                 user_role = "admin"
                 is_creator = True
             elif campaign and campaign.get("creator_id") and campaign.get("creator_id") == request.user_id:
@@ -507,8 +514,8 @@ async def chat_endpoint(request: ChatRequest):
             elif character_data and character_data.get("creator_id") == request.user_id:
                 user_role = "creator"
                 is_creator = True
-            elif request.user_id.startswith("usr_creator_") or request.user_id.startswith("gst_"):
-                # Guest หรือ Creator ทดสอบโลกของตัวเองใน Dev/Alpha environment
+            elif request.user_id.startswith("usr_creator_"):
+                # Creator ทดสอบโลกของตัวเองใน Production/Staging environment (เห็นเฉพาะเควสต์/บีท ไม่เห็น Prompt)
                 user_role = "creator"
                 is_creator = True
 
@@ -881,10 +888,11 @@ async def start_session_endpoint(request: StartSessionRequest, background_tasks:
     """
     user_id = request.user_id or f"gst_{uuid.uuid4()}"
     character_id = request.character_id
-    world_id = request.world_id or character_id
+    raw_world_id = request.world_id or character_id
+    resolved_world_id, world_file_path = resolve_world_file_path(raw_world_id)
     session_id = f"sess_{uuid.uuid4()}"
 
-    logger.info(f"🔄 [NEW GAME] User: {user_id} starting session: {session_id} for char: {character_id}")
+    logger.info(f"🔄 [NEW GAME] User: {user_id} starting session: {session_id} for char: {character_id} (World: {resolved_world_id})")
 
     try:
         # 1. 🌟 บันทึก/อัปเดตผู้ใช้ และ สร้าง Session ใน Neon PostgreSQL
@@ -899,7 +907,7 @@ async def start_session_endpoint(request: StartSessionRequest, background_tasks:
         session_record = await pg.create_game_session(
             session_id=session_id,
             user_id=user_id,
-            campaign_id=world_id,
+            campaign_id=resolved_world_id,
             character_id=character_id
         )
 
@@ -909,12 +917,18 @@ async def start_session_endpoint(request: StartSessionRequest, background_tasks:
         redis_cache.set_active_session(user_id, character_id, session_id)
         redis_cache.set_session_owner(session_id, user_id)
 
-        # 3. 🚀 ดึงข้อมูลเริ่มต้นจาก World Data ใน Supabase
+        # 3. 🚀 ดึงข้อมูลเริ่มต้นจาก World Data ใน Supabase หรือ Fallback Local World File
         db = DatabaseCore()
-        target_world = world_id or character_id
-        campaign = await db.get_published_campaign(target_world) if target_world else None
+        campaign = await db.get_published_campaign(resolved_world_id) if resolved_world_id else None
         
         world_data = (campaign.get("world_data") if campaign else {}) or {}
+        if not world_data and os.path.exists(world_file_path):
+            try:
+                with open(world_file_path, "r", encoding="utf-8") as f:
+                    world_data = json.load(f)
+            except Exception as e:
+                logger.warning(f"Failed to load fallback world file {world_file_path}: {e}")
+
         starting_state = world_data.get("starting_state", {})
         initial_scene = world_data.get("initial_scene", {})
         char_data = (campaign.get("character_data") if campaign else {}) or {}
@@ -941,20 +955,34 @@ async def start_session_endpoint(request: StartSessionRequest, background_tasks:
         initial_a_pos = starting_state.get("initial_a_pos") or "ยืน/นั่งอิสระตามบริบท"
         initial_p_pos = starting_state.get("initial_p_pos") or "ยืน/นั่งอิสระตามบริบท"
 
+        # 🌟 ดึง opening scenario แรกเพื่อหา scene_id และ beat_id จริง
+        first_event_id = None
+        first_phase_id = None
+        first_beat_id = None
+        opening_scenarios = world_data.get("opening_scenarios") or []
+        if opening_scenarios:
+            first_event = opening_scenarios[0]
+            first_event_id = first_event.get("id")
+            first_phase_id, _ = SceneTransitionManager.get_scene_data(first_event, None)
+            first_beat_id, _ = SceneTransitionManager.get_beat_data(first_event, first_phase_id, None)
+
         init_state = {
             "affection": 0,
             "desire": 0,
             "a_pos": initial_a_pos,
             "p_pos": initial_p_pos,
             "current_outfit": initial_outfit,
-            "scene_id": starting_state.get("scene_id") or "scene_opening",
-            "beat_id": starting_state.get("beat_id") or "beat_01",
+            "scene_id": first_phase_id or starting_state.get("scene_id") or "scene_opening",
+            "beat_id": first_beat_id or starting_state.get("beat_id") or "beat_01",
+            "active_event_id": first_event_id,
+            "active_phase_id": first_phase_id,
+            "active_beat_id": first_beat_id,
             "stance": "neutral",
             "environment": initial_env
         }
         redis_cache.save_live_state(session_id, init_state)
 
-        logger.info(f"✅ [NEW GAME READY] Session {session_id} created successfully on Neon & Redis (Affection: 0, Desire: 0, Outfit: '{initial_outfit}')")
+        logger.info(f"✅ [NEW GAME READY] Session {session_id} created successfully on Neon & Redis (Event: {first_event_id}, Phase: {first_phase_id}, Beat: {first_beat_id})")
 
         if request.trigger_initial_vo:
             background_tasks.add_task(
@@ -962,7 +990,7 @@ async def start_session_endpoint(request: StartSessionRequest, background_tasks:
                 user_id=user_id,
                 character_id=character_id,
                 session_id=session_id,
-                world_id=world_id,
+                world_id=resolved_world_id,
                 user_message=request.initial_message or "[SYSTEM] เริ่มต้นเกม"
             )
 
@@ -971,7 +999,7 @@ async def start_session_endpoint(request: StartSessionRequest, background_tasks:
             "session_id": session_id,
             "user_id": user_id,
             "character_id": character_id,
-            "world_id": world_id,
+            "world_id": resolved_world_id,
             "initial_state": init_state,
             "initial_environment": initial_env,
             "initial_outfit": initial_outfit,

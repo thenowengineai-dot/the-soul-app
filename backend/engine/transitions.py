@@ -1,8 +1,57 @@
 from __future__ import annotations
+import os
 import logging
 from typing import Optional, List, Dict, Tuple, Any
 
 logger = logging.getLogger("TRANSITIONS")
+
+DEFAULT_WORLD_ID = "lacquered_glasses_black_lace_secret_01"
+
+ID_TO_WORLD_MAP: Dict[str, str] = {
+    "1": "lacquered_glasses_black_lace_secret_01",
+    "2": "secret_signal_after_school_01",
+    "3": "midnight_deadline_01",
+    "4": "starry_land_01",
+    "5": "stadium_under_bleachers_01",
+    "6": "aces_secret_lesson_01",
+    "cher": "stadium_under_bleachers_01",
+    "may": "aces_secret_lesson_01",
+    "shin": "lacquered_glasses_black_lace_secret_01",
+    "ayoung": "lacquered_glasses_black_lace_secret_01",
+    "lacquered_glasses": "lacquered_glasses_black_lace_secret_01",
+}
+
+def resolve_world_file_path(target_world_id: Optional[str]) -> Tuple[str, str]:
+    """
+    คืนค่า (resolved_world_id, resolved_file_path)
+    รองรับทั้ง numeric ID, shortcut key, และ path resolution ทั้งแบบ Local และ Cloud
+    """
+    clean_id = str(target_world_id).strip() if target_world_id else ""
+    if clean_id in ID_TO_WORLD_MAP:
+        clean_id = ID_TO_WORLD_MAP[clean_id]
+    
+    if not clean_id or clean_id == "None":
+        clean_id = DEFAULT_WORLD_ID
+
+    candidate_paths = [
+        f"data/worlds/{clean_id}.json",
+        os.path.join(os.path.dirname(__file__), "..", "data", "worlds", f"{clean_id}.json"),
+        os.path.join(os.path.dirname(__file__), "data", "worlds", f"{clean_id}.json"),
+    ]
+    for p in candidate_paths:
+        if os.path.exists(p):
+            return clean_id, os.path.abspath(p)
+
+    fallback_paths = [
+        f"data/worlds/{DEFAULT_WORLD_ID}.json",
+        os.path.join(os.path.dirname(__file__), "..", "data", "worlds", f"{DEFAULT_WORLD_ID}.json"),
+    ]
+    for p in fallback_paths:
+        if os.path.exists(p):
+            return DEFAULT_WORLD_ID, os.path.abspath(p)
+
+    return clean_id, candidate_paths[0]
+
 
 class SceneTransitionManager:
     @staticmethod

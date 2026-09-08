@@ -145,7 +145,7 @@ export default function CharacterDetailModal({
   const handleStartChat = () => {
     onClose();
     if (character) {
-      onStartChat?.(character);
+      onStartChat?.(character, { forceNewSession: true });
     }
   };
 
@@ -509,14 +509,15 @@ export default function CharacterDetailModal({
 
             {/* พื้นหลังสีดำ Sticky ด้านล่างสุดเฉพาะฝั่งขวา ติดขอบล่างของกล่อง Pop-up สไตล์ Fashion E-commerce: ปุ่มแชท + ปุ่ม Load Game ทรงกลม */}
             <div className="sticky bottom-0 z-20 -ml-6 md:ml-0 pl-6 md:pl-0 -mr-6 sm:-mr-8 lg:-mr-10 pr-6 sm:pr-8 lg:pr-10 pt-6 pb-3.5 sm:pb-4 mt-6 bg-gradient-to-t from-black from-70% via-black/95 to-transparent rounded-br-3xl flex items-center gap-2.5 sm:gap-3">
-              {/* ปุ่มแชทหลัก */}
+              {/* ปุ่มแชทหลัก: เริ่ม Session ใหม่ (New Game) */}
               <button
                 type="button"
                 onClick={handleStartChat}
+                title="เริ่มเซสชันใหม่ (Start New Session)"
                 className="flex-1 py-3.5 px-6 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white font-bold text-[16px] sm:text-[17px] flex items-center justify-center gap-2.5 transition-all duration-200 cursor-pointer select-none active:scale-[0.98]"
               >
                 <MessageCircle size={20} strokeWidth={2.2} className="fill-white/20" />
-                <span>แชท</span>
+                <span>เริ่มคุยใหม่</span>
               </button>
 
               {/* ปุ่ม Load Game: ทรงกลม สไตล์หลัก ตัวหนังสือสีขาว ขอบเทา ไม่มีพื้นหลัง */}

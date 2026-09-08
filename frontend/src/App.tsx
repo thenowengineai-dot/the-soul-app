@@ -31,7 +31,7 @@ function App() {
     }
   };
 
-  const handleNavigateToChat = (char?: Character) => {
+  const handleNavigateToChat = (char?: Character, options?: { forceNewSession?: boolean }) => {
     if (char) {
       setActiveChatCharacter({
         id: char.id,
@@ -47,6 +47,8 @@ function App() {
         initialOutfit: char.initialOutfit,
         initialPose: char.initialPose,
         defaultWorld: char.defaultWorld,
+        forceNewSession: options?.forceNewSession,
+        sessionTriggerKey: options?.forceNewSession ? Date.now() : undefined,
       });
     }
     setCurrentView('chat');

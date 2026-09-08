@@ -254,10 +254,10 @@ function HomeView({
         isOpen={!!selectedCharacter}
         character={selectedCharacter}
         onClose={() => setSelectedCharacter(null)}
-        onStartChat={(char) => {
+        onStartChat={(char, options) => {
           const target = char || selectedCharacter;
           setSelectedCharacter(null);
-          onNavigateToChat?.(target || undefined);
+          onNavigateToChat?.(target || undefined, { forceNewSession: options?.forceNewSession ?? true });
         }}
         onLoadGame={(char) => {
           const target = char || selectedCharacter;

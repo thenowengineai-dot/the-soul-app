@@ -69,7 +69,7 @@ export interface CharacterDetailModalProps {
   isOpen: boolean
   character: Character | null
   onClose: () => void
-  onStartChat?: (character: Character) => void
+  onStartChat?: (character: Character, options?: { forceNewSession?: boolean }) => void
   onLoadGame?: (character: Character) => void
 }
 

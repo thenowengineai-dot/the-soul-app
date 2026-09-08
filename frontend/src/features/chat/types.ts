@@ -31,6 +31,8 @@ export interface ChatConversation {
   }
   initialOutfit?: string
   initialPose?: string
+  forceNewSession?: boolean
+  sessionTriggerKey?: number
 }
 
 // ----------------------------------------------------------------------

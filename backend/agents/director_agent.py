@@ -75,9 +75,10 @@ class DirectorAgent:
                 
             else:
                 # 🌟 [GEMINI ENGINE]
+                import os
                 config_kwargs = {
                     "safety_settings": [
-                        types.SafetySetting(category="HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold="BLOCK_ONLY_HIGH"),
+                        types.SafetySetting(category="HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold=os.getenv("SAFETY_SEXUAL_THRESHOLD", "BLOCK_NONE")),
                         types.SafetySetting(category="HARM_CATEGORY_HARASSMENT", threshold="BLOCK_ONLY_HIGH"),
                         types.SafetySetting(category="HARM_CATEGORY_HATE_SPEECH", threshold="BLOCK_ONLY_HIGH"),
                         types.SafetySetting(category="HARM_CATEGORY_DANGEROUS_CONTENT", threshold="BLOCK_ONLY_HIGH"),

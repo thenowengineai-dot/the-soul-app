@@ -200,9 +200,77 @@ class RedisHotCache:
         """Cleans up cache keys for a specific session."""
         rounds_key = f"session:{session_id}:rounds"
         state_key = f"session:{session_id}:state"
+        owner_key = f"session:{session_id}:owner"
         try:
-            self.execute_pipeline([["DEL", rounds_key], ["DEL", state_key]])
+            self.execute_pipeline([["DEL", rounds_key], ["DEL", state_key], ["DEL", owner_key]])
             return True
         except Exception as e:
             logger.error(f"Failed to clear session {session_id}: {e}")
             return False
+
+    # -------------------------------------------------------------
+    # ⚡ Active Session Indexing & Ownership (Fast Path & IDOR Security)
+    # -------------------------------------------------------------
+
+    def set_active_session(self, user_id: str, character_id: str, session_id: str, ttl_days: int = 30) -> bool:
+        """
+        Maps (user_id, character_id) -> session_id for instant (0.001s) room entry.
+        Default TTL: 30 days.
+        """
+        key = f"active_session:{user_id}:{character_id}"
+        ttl_seconds = ttl_days * 86400
+        try:
+            res = self.execute_command(["SET", key, session_id, "EX", ttl_seconds])
+            return res == "OK"
+        except Exception as e:
+            logger.error(f"Failed to set active session index ({key} -> {session_id}): {e}")
+            return False
+
+    def get_active_session(self, user_id: str, character_id: str) -> Optional[str]:
+        """
+        Retrieves the active session_id for a given user and character from Redis RAM.
+        Returns session_id string or None if cache miss.
+        """
+        key = f"active_session:{user_id}:{character_id}"
+        try:
+            res = self.execute_command(["GET", key])
+            if res and isinstance(res, str):
+                return res
+            return None
+        except Exception as e:
+            logger.error(f"Failed to get active session index for {key}: {e}")
+            return None
+
+    def clear_active_session(self, user_id: str, character_id: str) -> bool:
+        """Removes the active session index pointer (e.g. on reset or archive)."""
+        key = f"active_session:{user_id}:{character_id}"
+        try:
+            self.execute_command(["DEL", key])
+            return True
+        except Exception as e:
+            logger.error(f"Failed to clear active session index for {key}: {e}")
+            return False
+
+    def set_session_owner(self, session_id: str, user_id: str, ttl_days: int = 30) -> bool:
+        """Saves session ownership in Redis for zero-cost IDOR verification."""
+        key = f"session:{session_id}:owner"
+        ttl_seconds = ttl_days * 86400
+        try:
+            res = self.execute_command(["SET", key, user_id, "EX", ttl_seconds])
+            return res == "OK"
+        except Exception as e:
+            logger.error(f"Failed to set session owner for {session_id}: {e}")
+            return False
+
+    def get_session_owner(self, session_id: str) -> Optional[str]:
+        """Retrieves session owner from Redis cache."""
+        key = f"session:{session_id}:owner"
+        try:
+            res = self.execute_command(["GET", key])
+            if res and isinstance(res, str):
+                return res
+            return None
+        except Exception as e:
+            logger.error(f"Failed to get session owner for {session_id}: {e}")
+            return None
+

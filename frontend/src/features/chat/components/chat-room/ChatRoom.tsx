@@ -184,11 +184,18 @@ export function ChatRoom({
     }
   }, [])
 
-  // 1. ลงทะเบียน Guest Account ครั้งแรกในเบื้องหลัง
+  // 1. ลงทะเบียน Guest Account ครั้งแรกในเบื้องหลัง (ตัดการยิงซ้ำถ้าเคย Sync แล้ว)
   useEffect(() => {
-    ensureGuestAccount().catch(err => {
-      console.warn('[AUTH GUEST] Background register warning:', err)
-    })
+    const isSynced = localStorage.getItem('the_soul_guest_synced')
+    if (isSynced === 'true') return
+
+    ensureGuestAccount()
+      .then(() => {
+        localStorage.setItem('the_soul_guest_synced', 'true')
+      })
+      .catch(err => {
+        console.warn('[AUTH GUEST] Background register warning:', err)
+      })
   }, [])
 
   const onHudUpdateRef = useRef(onHudUpdate)

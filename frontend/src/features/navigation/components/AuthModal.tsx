@@ -64,11 +64,9 @@ export function AuthModal({
           <X size={18} strokeWidth={2} />
         </button>
 
-        {/* 1. โลโก้แบรนด์ Maomoi AI กลมเด่นตรงกลาง */}
-        <div className="flex justify-center mb-3.5 pt-1">
-          <div className="w-[58px] h-[58px] rounded-full overflow-hidden bg-white/5 border border-white/10 p-1 flex items-center justify-center shadow-lg">
-            <img src="/logo/logo.png" alt="Maomoi AI" className="w-full h-full object-contain" />
-          </div>
+        {/* 1. โลโก้แบรนด์ Maomoi AI ลอยเด่นตรงกลาง ไร้พื้นหลัง */}
+        <div className="flex justify-center mb-3 pt-1">
+          <img src="/logo/logo.png" alt="Maomoi AI" className="w-[56px] h-[56px] object-contain" />
         </div>
 
         {/* 2. ข้อความต้อนรับ Welcome back / ยินดีต้อนรับกลับ */}
@@ -76,27 +74,13 @@ export function AuthModal({
           {mode === 'login' ? 'ยินดีต้อนรับกลับ' : 'สร้างบัญชีใหม่'}
         </h2>
 
-        {/* 3. ปุ่มแคปซูล Google One-Click */}
+        {/* 3. ปุ่มโซเชียล: Google One-Click แบบเดิม */}
         <button
           type="button"
           onClick={handleGoogleClick}
           disabled={isSubmitting}
-          className="w-full rounded-full border border-[#2F3336] bg-[#1D1D1F] hover:bg-white/[0.08] hover:border-white/30 px-4 py-2.5 flex items-center justify-between transition-all cursor-pointer group active:scale-[0.98]"
+          className="w-full h-[48px] sm:h-[50px] rounded-full bg-white hover:bg-[#F2F2F5] text-zinc-900 font-semibold text-[15px] flex items-center justify-center gap-3 shadow-md hover:shadow-lg transition-all active:scale-[0.98] cursor-pointer"
         >
-          <div className="flex items-center gap-3 text-left">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#EF264C]/30 to-amber-500/30 border border-white/10 flex items-center justify-center text-[#F2F2F5] font-bold text-[13px] shrink-0">
-              M
-            </div>
-            <div>
-              <p className="text-[13.5px] font-semibold text-[#F2F2F5] leading-tight">
-                ดำเนินการต่อด้วย Google
-              </p>
-              <p className="text-[11px] text-[#ACACB2] leading-tight mt-0.5">
-                เข้าสู่ระบบทันทีในคลิกเดียว
-              </p>
-            </div>
-          </div>
-
           {/* Google 4-Color SVG Icon */}
           <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
             <path
@@ -116,6 +100,7 @@ export function AuthModal({
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
             />
           </svg>
+          <span>ดำเนินการต่อด้วย Google</span>
         </button>
 
         {/* 4. เส้นคั่นหรือคำว่า "หรือ" ตามเรฟ */}

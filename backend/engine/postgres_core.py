@@ -238,6 +238,260 @@ class PostgresCore:
             return rounds
 
 
+    # -------------------------------------------------------------
+    # 🪙 Wallet & Coupon Operations
+    # -------------------------------------------------------------
+
+    async def get_or_create_wallet(self, user_id: str, default_bonus: int = 50) -> Dict[str, Any]:
+        """
+        Retrieves user wallet. If it doesn't exist, creates one with default starter bonus.
+        """
+        pool = await self.get_pool()
+        async with pool.acquire() as conn:
+            # Ensure user exists in users table
+            user_exists = await conn.fetchval("SELECT 1 FROM users WHERE id = $1;", user_id)
+            if not user_exists:
+                is_guest = user_id.startswith("gst_")
+                await conn.execute("""
+                    INSERT INTO users (id, name, is_guest)
+                    VALUES ($1, $2, $3)
+                    ON CONFLICT (id) DO NOTHING;
+                """, user_id, "นักเดินทางนิรนาม" if is_guest else "Player", is_guest)
+
+            row = await conn.fetchrow("SELECT * FROM user_wallets WHERE user_id = $1;", user_id)
+            if row:
+                return dict(row)
+
+            # Create new wallet with starter bonus
+            async with conn.transaction():
+                new_row = await conn.fetchrow("""
+                    INSERT INTO user_wallets (user_id, balance, total_earned, total_spent, updated_at)
+                    VALUES ($1, $2, $2, 0, NOW())
+                    ON CONFLICT (user_id) DO UPDATE SET updated_at = NOW()
+                    RETURNING *;
+                """, user_id, default_bonus)
+
+                if default_bonus > 0:
+                    await conn.execute("""
+                        INSERT INTO coin_transactions (user_id, amount, balance_after, tx_type, description)
+                        VALUES ($1, $2, $2, 'initial_bonus', 'โบนัสเหรียญเริ่มต้นสำหรับผู้ใช้ใหม่');
+                    """, user_id, default_bonus)
+
+                logger.info(f"Created wallet for user {user_id} with initial bonus {default_bonus}")
+                return dict(new_row)
+
+    async def get_wallet(self, user_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieves wallet record by user_id."""
+        pool = await self.get_pool()
+        async with pool.acquire() as conn:
+            row = await conn.fetchrow("SELECT * FROM user_wallets WHERE user_id = $1;", user_id)
+            return dict(row) if row else None
+
+    async def redeem_coupon(self, user_id: str, code: str) -> Dict[str, Any]:
+        """
+        Redeems a coupon atomically for a user.
+        Enforces:
+        1. Coupon exists & is active
+        2. Not expired
+        3. Within global quota (current_redemptions < max_redemptions)
+        4. User has not already redeemed this coupon
+        """
+        clean_code = code.strip().upper()
+        if not clean_code:
+            return {"success": False, "message": "กรุณาระบุรหัสคูปอง"}
+
+        # Ensure user wallet exists
+        await self.get_or_create_wallet(user_id)
+
+        pool = await self.get_pool()
+        async with pool.acquire() as conn:
+            async with conn.transaction():
+                coupon = await conn.fetchrow("""
+                    SELECT * FROM coupons 
+                    WHERE code = $1 
+                    FOR UPDATE;
+                """, clean_code)
+
+                if not coupon:
+                    return {"success": False, "message": "รหัสคูปองไม่ถูกต้อง หรือไม่มีในระบบ"}
+
+                if not coupon["is_active"]:
+                    return {"success": False, "message": "คูปองนี้ถูกระงับการใช้งานแล้ว"}
+
+                # Check expiration
+                if coupon["expires_at"]:
+                    now_val = await conn.fetchval("SELECT NOW();")
+                    if coupon["expires_at"] < now_val:
+                        return {"success": False, "message": "คูปองนี้หมดอายุการใช้งานแล้ว"}
+
+                # Check global quota
+                if coupon["current_redemptions"] >= coupon["max_redemptions"]:
+                    return {"success": False, "message": "คูปองนี้ถูกใช้งานจนครบโควตาสิทธิ์แล้ว"}
+
+                # Check if user already redeemed
+                already_redeemed = await conn.fetchval("""
+                    SELECT 1 FROM coupon_redemptions 
+                    WHERE coupon_id = $1 AND user_id = $2;
+                """, coupon["id"], user_id)
+
+                if already_redeemed:
+                    return {"success": False, "message": "คุณเคยแลกรับโค้ดคูปองนี้ไปแล้ว"}
+
+                reward = coupon["coin_reward"]
+
+                # 1. Record redemption
+                await conn.execute("""
+                    INSERT INTO coupon_redemptions (coupon_id, user_id, coins_granted, redeemed_at)
+                    VALUES ($1, $2, $3, NOW());
+                """, coupon["id"], user_id, reward)
+
+                # 2. Increment global quota counter
+                await conn.execute("""
+                    UPDATE coupons 
+                    SET current_redemptions = current_redemptions + 1 
+                    WHERE id = $1;
+                """, coupon["id"])
+
+                # 3. Credit coins to user wallet
+                updated_balance = await conn.fetchval("""
+                    UPDATE user_wallets 
+                    SET balance = balance + $1, 
+                        total_earned = total_earned + $1, 
+                        updated_at = NOW()
+                    WHERE user_id = $2 
+                    RETURNING balance;
+                """, reward, user_id)
+
+                # 4. Insert ledger transaction
+                await conn.execute("""
+                    INSERT INTO coin_transactions (user_id, amount, balance_after, tx_type, description)
+                    VALUES ($1, $2, $3, 'coupon_redeem', $4);
+                """, user_id, reward, updated_balance, f"แลกรับคูปอง {clean_code} (+{reward} เหรียญ)")
+
+                logger.info(f"User {user_id} redeemed coupon {clean_code} (+{reward} coins, new balance: {updated_balance})")
+                return {
+                    "success": True,
+                    "message": f"แลกรับสำเร็จ! ได้รับ +{reward:,} เหรียญ 🪙",
+                    "coins_added": reward,
+                    "balance": updated_balance
+                }
+
+    async def deduct_coins_for_round(
+        self,
+        user_id: str,
+        session_id: str,
+        round_number: int,
+        amount: int = 10
+    ) -> Optional[int]:
+        """
+        Deducts coins for a completed chat turn/round atomically.
+        Returns new balance if successful, or None if balance is insufficient.
+        """
+        pool = await self.get_pool()
+        async with pool.acquire() as conn:
+            async with conn.transaction():
+                current_balance = await conn.fetchval("""
+                    SELECT balance FROM user_wallets 
+                    WHERE user_id = $1 
+                    FOR UPDATE;
+                """, user_id)
+
+                if current_balance is None:
+                    # Initialize wallet with 0 or fallback
+                    await conn.execute("""
+                        INSERT INTO user_wallets (user_id, balance, total_earned, total_spent, updated_at)
+                        VALUES ($1, 0, 0, 0, NOW())
+                        ON CONFLICT (user_id) DO NOTHING;
+                    """, user_id)
+                    current_balance = 0
+
+                if current_balance < amount:
+                    logger.warning(f"User {user_id} has insufficient balance: {current_balance} < {amount}")
+                    return None
+
+                new_balance = await conn.fetchval("""
+                    UPDATE user_wallets 
+                    SET balance = balance - $1, 
+                        total_spent = total_spent + $1, 
+                        updated_at = NOW()
+                    WHERE user_id = $2 
+                    RETURNING balance;
+                """, amount, user_id)
+
+                await conn.execute("""
+                    INSERT INTO coin_transactions (user_id, amount, balance_after, tx_type, session_id, round_number, description)
+                    VALUES ($1, $2, $3, 'round_deduction', $4, $5, $6);
+                """, user_id, -amount, new_balance, session_id, round_number, f"ค่าบริการรอบสนทนาที่ {round_number}")
+
+                logger.info(f"Deducted {amount} coins from {user_id} for round {round_number}. Remaining: {new_balance}")
+                return new_balance
+
+    async def migrate_guest_wallet(self, guest_id: str, member_id: str) -> bool:
+        """
+        Migrates wallet balance, coupon redemptions, and transactions from guest to member.
+        """
+        if not guest_id or not member_id or guest_id == member_id:
+            return False
+
+        pool = await self.get_pool()
+        async with pool.acquire() as conn:
+            async with conn.transaction():
+                guest_wallet = await conn.fetchrow("SELECT * FROM user_wallets WHERE user_id = $1 FOR UPDATE;", guest_id)
+                if not guest_wallet:
+                    return False
+
+                # Ensure member wallet exists
+                member_wallet = await conn.fetchrow("SELECT * FROM user_wallets WHERE user_id = $1 FOR UPDATE;", member_id)
+                if not member_wallet:
+                    await conn.execute("""
+                        INSERT INTO user_wallets (user_id, balance, total_earned, total_spent, updated_at)
+                        VALUES ($1, 0, 0, 0, NOW())
+                        ON CONFLICT (user_id) DO NOTHING;
+                    """, member_id)
+
+                guest_bal = guest_wallet["balance"]
+                guest_earned = guest_wallet["total_earned"]
+                guest_spent = guest_wallet["total_spent"]
+
+                # Transfer balances
+                if guest_bal > 0 or guest_earned > 0 or guest_spent > 0:
+                    await conn.execute("""
+                        UPDATE user_wallets 
+                        SET balance = balance + $1, 
+                            total_earned = total_earned + $2, 
+                            total_spent = total_spent + $3, 
+                            updated_at = NOW()
+                        WHERE user_id = $4;
+                    """, guest_bal, guest_earned, guest_spent, member_id)
+
+                    await conn.execute("""
+                        UPDATE user_wallets 
+                        SET balance = 0, updated_at = NOW() 
+                        WHERE user_id = $1;
+                    """, guest_id)
+
+                # Transfer coupon redemptions (ignore if member already redeemed same coupon)
+                await conn.execute("""
+                    UPDATE coupon_redemptions 
+                    SET user_id = $1 
+                    WHERE user_id = $2 
+                    AND NOT EXISTS (
+                        SELECT 1 FROM coupon_redemptions cr2 
+                        WHERE cr2.user_id = $1 AND cr2.coupon_id = coupon_redemptions.coupon_id
+                    );
+                """, member_id, guest_id)
+
+                # Transfer ledger transactions
+                await conn.execute("""
+                    UPDATE coin_transactions 
+                    SET user_id = $1 
+                    WHERE user_id = $2;
+                """, member_id, guest_id)
+
+                logger.info(f"🔄 Migrated wallet from {guest_id} (+{guest_bal} coins) to {member_id}")
+                return True
+
+
 # Singleton Instance
 _postgres_core_instance: Optional[PostgresCore] = None
 
@@ -246,3 +500,4 @@ def get_postgres_core() -> PostgresCore:
     if _postgres_core_instance is None:
         _postgres_core_instance = PostgresCore()
     return _postgres_core_instance
+

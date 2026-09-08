@@ -138,6 +138,14 @@ async def auth_google_endpoint(request: GoogleAuthRequest):
                     redis_hot.set_active_session(user_id, char_id, sess_id)
                     redis_hot.set_session_owner(sess_id, user_id)
 
+            # 🪙 โอนย้ายกระเป๋าเหรียญและประวัติคูปองจาก Guest -> Member
+            await pg.migrate_guest_wallet(request.guest_id, user_id)
+            redis_hot = RedisHotCache()
+            member_wallet = await pg.get_wallet(user_id)
+            if member_wallet:
+                redis_hot.set_user_coins(user_id, member_wallet["balance"])
+            redis_hot.clear_user_coins(request.guest_id)
+
         return {
             "status": "success",
             "user_id": user["id"],
@@ -161,6 +169,69 @@ async def get_current_user_endpoint(user_id: str):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return {"status": "success", "user": user}
+
+# ==========================================
+# 🪙 WALLET & COUPON ENDPOINTS (Neon PostgreSQL + Redis Hot Cache)
+# ==========================================
+
+class RedeemCouponRequest(BaseModel):
+    user_id: str
+    code: str
+
+@router.get("/wallet/balance/{user_id}")
+async def get_wallet_balance_endpoint(user_id: str):
+    """
+    ดึงยอดเหรียญคงเหลือของผู้ใช้ (Upstash Redis Fast Path -> Neon Postgres Fallback)
+    """
+    try:
+        redis_hot = RedisHotCache()
+        cached_coins = redis_hot.get_user_coins(user_id)
+
+        pg = get_postgres_core()
+        wallet = await pg.get_or_create_wallet(user_id)
+
+        if cached_coins is None:
+            redis_hot.set_user_coins(user_id, wallet["balance"])
+            cached_coins = wallet["balance"]
+
+        return {
+            "status": "success",
+            "user_id": user_id,
+            "balance": wallet["balance"],
+            "total_earned": wallet["total_earned"],
+            "total_spent": wallet["total_spent"]
+        }
+    except Exception as e:
+        logger.error(f"Error getting wallet balance for {user_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/wallet/redeem")
+async def redeem_coupon_endpoint(request: RedeemCouponRequest):
+    """
+    แลกรับรหัสคูปองเพื่อเพิ่มเหรียญ (Atomic Transaction ป้องกันแลกเกินโควตาและแลกซ้ำ)
+    """
+    try:
+        pg = get_postgres_core()
+        result = await pg.redeem_coupon(request.user_id, request.code)
+
+        if result.get("success"):
+            redis_hot = RedisHotCache()
+            redis_hot.set_user_coins(request.user_id, result["balance"])
+            return {
+                "status": "success",
+                "message": result["message"],
+                "coins_added": result.get("coins_added", 0),
+                "new_balance": result.get("balance", 0)
+            }
+        else:
+            return {
+                "status": "error",
+                "message": result.get("message", "ไม่สามารถแลกคูปองได้")
+            }
+    except Exception as e:
+        logger.error(f"Error redeeming coupon for {request.user_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 # ==========================================
 # 🌟 Endpoints สำหรับให้ Frontend ดึงข้อมูลไปแสดงผล
@@ -393,6 +464,29 @@ async def chat_endpoint(request: ChatRequest):
             if owner and owner != request.user_id:
                 logger.warning(f"🚨 [UNAUTHORIZED CHAT] User {request.user_id} attempted unauthorized access to session {request.session_id} belonging to {owner}")
                 raise HTTPException(status_code=403, detail="Unauthorized session access")
+
+        # 🪙 [TOKEN ECONOMY PRE-FLIGHT GATE] ตรวจสอบเหรียญก่อนส่งเข้าโมเดล AI (< 2ms)
+        COIN_COST_PER_ROUND = 10
+        if request.user_id:
+            redis_hot = RedisHotCache()
+            cached_coins = redis_hot.get_user_coins(request.user_id)
+            if cached_coins is None:
+                pg_wallet = get_postgres_core()
+                wallet = await pg_wallet.get_or_create_wallet(request.user_id)
+                cached_coins = wallet.get("balance", 0)
+                redis_hot.set_user_coins(request.user_id, cached_coins)
+
+            if cached_coins < COIN_COST_PER_ROUND:
+                logger.warning(f"🚫 [TOKEN GATE BLOCKED] User {request.user_id} has insufficient coins: {cached_coins} < {COIN_COST_PER_ROUND}")
+                raise HTTPException(
+                    status_code=402,
+                    detail={
+                        "code": "INSUFFICIENT_COINS",
+                        "message": f"เหรียญไม่เพียงพอสำหรับการสนทนา (ต้องการ {COIN_COST_PER_ROUND} เหรียญ/รอบ) กรุณากรอกรหัสคูปองเพื่อรับเหรียญเพิ่ม",
+                        "balance": cached_coins,
+                        "required": COIN_COST_PER_ROUND
+                    }
+                )
         
         # 3. 🌟 [SUPABASE EDITION] โยนเฉพาะข้อมูลที่จำเป็นเข้า Pipeline (สเตตัสอื่นๆ Pipeline จะไปดึงจาก Database เอง)
         stream_generator = await pipeline.process_chat_turn(

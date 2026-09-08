@@ -229,6 +229,54 @@ export async function loadSession(
   return await res.json()
 }
 
+export interface WalletBalanceResponse {
+  status: string
+  user_id: string
+  balance: number
+  total_earned: number
+  total_spent: number
+}
+
+export interface RedeemCouponResponse {
+  status: 'success' | 'error'
+  message: string
+  coins_added?: number
+  new_balance?: number
+}
+
+/**
+ * ดึงยอดเหรียญคงเหลือของผู้ใช้จาก Backend (Neon Postgres + Redis)
+ */
+export async function fetchWalletBalance(userId: string): Promise<WalletBalanceResponse> {
+  const res = await fetch(`${API_BASE_URL}/api/wallet/balance/${userId}`)
+  if (!res.ok) {
+    throw new Error(`Failed to fetch wallet balance: ${res.statusText}`)
+  }
+  return await res.json()
+}
+
+/**
+ * แลกรับรหัสคูปองกับ Backend (Neon Postgres)
+ */
+export async function redeemCouponApi(
+  userId: string,
+  code: string
+): Promise<RedeemCouponResponse> {
+  const res = await fetch(`${API_BASE_URL}/api/wallet/redeem`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: userId, code }),
+  })
+  if (!res.ok) {
+    const errText = await res.text()
+    return {
+      status: 'error',
+      message: `ไม่สามารถแลกรับได้ (${res.status}): ${errText}`,
+    }
+  }
+  return await res.json()
+}
+
 export interface StreamChatCallbacks {
   onVoiceOver?: (text: string) => void
   onActorSegment?: (segment: { type: 'action' | 'dialogue'; content: string }, index: number) => void
@@ -243,6 +291,8 @@ export interface StreamChatCallbacks {
     current_outfit?: string
   }) => void
   onUnifiedRound?: (round: UnifiedInteractionRound) => void
+  onWalletUpdate?: (data: { coins_deducted: number; remaining_coins?: number }) => void
+  onInsufficientCoins?: (data: { balance: number; required: number; message: string }) => void
   onError?: (err: Error) => void
   onDone?: () => void
 }
@@ -280,6 +330,25 @@ export async function streamChatMessage(
     })
 
     if (!response.ok) {
+      if (response.status === 402) {
+        try {
+          const errJson = await response.json()
+          const detail = errJson.detail || {}
+          callbacks.onInsufficientCoins?.({
+            balance: detail.balance ?? 0,
+            required: detail.required ?? 10,
+            message: detail.message || 'เหรียญไม่เพียงพอสำหรับการสนทนา',
+          })
+          return
+        } catch {
+          callbacks.onInsufficientCoins?.({
+            balance: 0,
+            required: 10,
+            message: 'เหรียญไม่เพียงพอสำหรับการสนทนา',
+          })
+          return
+        }
+      }
       const errText = await response.text()
       throw new Error(`Chat API Error (${response.status}): ${errText}`)
     }
@@ -325,13 +394,17 @@ export async function streamChatMessage(
           else if (parsed.type === 'chat_message_array' && Array.isArray(parsed.sequence)) {
             callbacks.onActorSegments?.(parsed.sequence)
           }
-          // 3. Physics & Kinematics Update
+          // 4. Physics & Kinematics Update
           else if (parsed.system_event === 'physics_update') {
             callbacks.onPhysicsUpdate?.(parsed)
           }
-          // 4. Complete Unified Interaction Round
+          // 5. Complete Unified Interaction Round
           else if (parsed.type === 'unified_round' && parsed.data) {
             callbacks.onUnifiedRound?.(parsed.data)
+          }
+          // 6. Wallet Balance Update
+          else if (parsed.type === 'wallet_update') {
+            callbacks.onWalletUpdate?.(parsed)
           }
         } catch {
           // Skip non-JSON or heartbeat data lines

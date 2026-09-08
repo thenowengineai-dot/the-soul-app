@@ -76,7 +76,7 @@ export interface ProfileSettingsModalProps {
   pronouns?: string
   aboutMe?: string
   onSaveProfile?: (updatedData: { name: string; username: string; pronouns: string; aboutMe: string; avatarUrl?: string }) => void
-  onRedeemCoupon?: (couponCode: string) => { success: boolean; message: string; coinsAdded?: number }
+  onRedeemCoupon?: (couponCode: string) => { success: boolean; message: string; coinsAdded?: number } | Promise<{ success: boolean; message: string; coinsAdded?: number }>
   onSignOut?: () => void
 }
 

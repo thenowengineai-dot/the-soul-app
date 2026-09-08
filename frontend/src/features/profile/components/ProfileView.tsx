@@ -79,12 +79,12 @@ export function ProfileView({
     }
   }
 
-  const handleRedeem = (e: React.FormEvent) => {
+  const handleRedeem = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!couponCode.trim()) return
 
     if (onRedeemCoupon) {
-      const res = onRedeemCoupon(couponCode.trim())
+      const res = await onRedeemCoupon(couponCode.trim())
       setCouponFeedback({
         type: res.success ? 'success' : 'error',
         message: res.message,

@@ -27,6 +27,7 @@ function ChatView({
   onCloseProfileDropdown,
   onEditProfileClick,
   onSignOut,
+  onCoinBalanceUpdate,
 }: ChatViewProps) {
   const [prevActive, setPrevActive] = useState<ChatConversation | null | undefined>(activeCharacter);
   const [selectedChat, setSelectedChat] = useState<ChatConversation>(() => activeCharacter || MOCK_CHATS[0]);
@@ -126,6 +127,7 @@ function ChatView({
         onCloseProfileDropdown={onCloseProfileDropdown}
         onEditProfileClick={onEditProfileClick}
         onSignOut={onSignOut}
+        onCoinBalanceUpdate={onCoinBalanceUpdate}
         onHudUpdate={handleHudUpdate}
       />
       <CharacterHud 

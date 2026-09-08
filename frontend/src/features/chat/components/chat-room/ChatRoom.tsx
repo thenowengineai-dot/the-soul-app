@@ -120,6 +120,7 @@ export function ChatRoom({
   onCloseProfileDropdown,
   onEditProfileClick,
   onSignOut,
+  onCoinBalanceUpdate,
   onHudUpdate,
 }: ChatRoomProps) {
   const currentChat = chat || MOCK_CHATS[0]
@@ -128,6 +129,12 @@ export function ChatRoom({
   const [inputText, setInputText] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
   const [isSessionLoading, setIsSessionLoading] = useState(true)
+  const [insufficientCoinsModal, setInsufficientCoinsModal] = useState<{
+    isOpen: boolean
+    message: string
+    balance: number
+    required: number
+  } | null>(null)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -519,6 +526,20 @@ export function ChatRoom({
               })
             }
           },
+          onWalletUpdate: (walletData) => {
+            if (typeof walletData.remaining_coins === 'number') {
+              onCoinBalanceUpdate?.(walletData.remaining_coins)
+            }
+          },
+          onInsufficientCoins: (data) => {
+            setIsStreaming(false)
+            setInsufficientCoinsModal({
+              isOpen: true,
+              message: data.message,
+              balance: data.balance,
+              required: data.required,
+            })
+          },
           onError: (err) => {
             console.error('[STREAM ERROR]:', err)
             setIsStreaming(false)
@@ -601,6 +622,48 @@ export function ChatRoom({
           onSendMessage={handleSendMessage}
         />
       </div>
+
+      {/* Insufficient Coins Alert Modal (Dark Luxury) */}
+      {insufficientCoinsModal?.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fadeIn">
+          <div className="bg-[#121214]/95 border border-white/10 rounded-3xl p-6 sm:p-8 max-w-[420px] w-full text-center shadow-2xl relative">
+            <div className="w-14 h-14 rounded-full bg-amber-500/10 border border-amber-500/25 flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
+              🪙
+            </div>
+            <h3 className="text-xl font-bold text-[#F2F2F5] mb-2 tracking-tight">
+              เหรียญไม่เพียงพอสำหรับการสนทนา
+            </h3>
+            <p className="text-[14px] text-[#ACACB2] leading-relaxed mb-3">
+              {insufficientCoinsModal.message}
+            </p>
+            <div className="bg-white/[0.04] border border-white/5 rounded-2xl p-3 mb-6 flex items-center justify-between text-[13.5px]">
+              <span className="text-[#ACACB2]">ยอดคงเหลือของคุณ</span>
+              <span className="font-semibold text-amber-400">
+                {insufficientCoinsModal.balance.toLocaleString()} / {insufficientCoinsModal.required} เหรียญ
+              </span>
+            </div>
+            <div className="flex flex-col gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setInsufficientCoinsModal(null)
+                  onCoinClick?.()
+                }}
+                className="w-full py-3 px-4 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white font-semibold text-[15px] transition-all cursor-pointer shadow-sm active:scale-[0.98]"
+              >
+                กรอกรหัสคูปองเพื่อรับเหรียญเพิ่ม 🪙
+              </button>
+              <button
+                type="button"
+                onClick={() => setInsufficientCoinsModal(null)}
+                className="w-full py-2.5 px-4 rounded-full text-[14px] text-[#ACACB2] hover:text-[#F2F2F5] hover:bg-white/5 transition-all cursor-pointer"
+              >
+                ปิด
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

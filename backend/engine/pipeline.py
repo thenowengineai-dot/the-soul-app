@@ -983,6 +983,21 @@ class GamePipeline:
                         round_data=unified_round
                     )
                 )
+
+                # 🪙 [TOKEN ECONOMY] หักเหรียญ 10 เหรียญต่อ 1 รอบการสนทนา
+                if user_id:
+                    COIN_COST_PER_ROUND = 10
+                    new_redis_coins = self.redis.decr_user_coins(user_id, COIN_COST_PER_ROUND)
+                    asyncio.create_task(
+                        get_postgres_core().deduct_coins_for_round(
+                            user_id=user_id,
+                            session_id=session_id,
+                            round_number=beat_turn_count,
+                            amount=COIN_COST_PER_ROUND
+                        )
+                    )
+                    yield f"data: {json.dumps({'type': 'wallet_update', 'coins_deducted': COIN_COST_PER_ROUND, 'remaining_coins': new_redis_coins}, ensure_ascii=False)}\n\n"
+                    logger.info(f"🪙 [COIN DEDUCTED] Deducted {COIN_COST_PER_ROUND} coins from {user_id} for round {beat_turn_count}. Remaining: {new_redis_coins}")
             except Exception as r_sync_err:
                 logger.warning(f"⚠️ [HOT CACHE / POSTGRES] Failed to sync cache/db: {r_sync_err}")
 

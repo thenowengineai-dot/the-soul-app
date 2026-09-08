@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Sidebar, AuthModal, ProfileSettingsModal } from './features/navigation'
 import { HomeView, HomeTopBar } from './features/home'
 import { ProfileView } from './features/profile'
@@ -9,7 +9,9 @@ import {
   loginWithGoogle,
   signOutUser,
   saveUserIdentity,
-  type UserIdentity
+  type UserIdentity,
+  fetchWalletBalance,
+  redeemCouponApi,
 } from './features/chat'
 import type { Character } from './features/characters'
 
@@ -45,9 +47,25 @@ function App() {
   // 3. Economy & Notification State
   const [coinBalance, setCoinBalance] = useState<number>(() => {
     const saved = localStorage.getItem('the_soul_coin_balance');
-    return saved ? parseInt(saved, 10) : 1250;
+    return saved ? parseInt(saved, 10) : 50;
   });
   const [notificationCount] = useState<number>(3);
+
+  // 🔄 Synchronize real wallet balance from Neon PostgreSQL & Redis Hot Cache
+  useEffect(() => {
+    if (currentUser?.user_id) {
+      fetchWalletBalance(currentUser.user_id)
+        .then((res) => {
+          if (typeof res.balance === 'number') {
+            setCoinBalance(res.balance);
+            localStorage.setItem('the_soul_coin_balance', res.balance.toString());
+          }
+        })
+        .catch((err) => {
+          console.warn('[WALLET] Could not sync balance with backend:', err);
+        });
+    }
+  }, [currentUser?.user_id]);
 
   const handleMenuClick = (id: string) => {
     setSelectedMenu(id);
@@ -233,50 +251,36 @@ function App() {
     });
   };
 
-  // Coupon Redeem Handler
-  const handleRedeemCoupon = (rawCode: string) => {
+  // Coupon Redeem Handler with Real Backend
+  const handleRedeemCoupon = async (rawCode: string) => {
     const code = rawCode.trim().toUpperCase();
-    const redeemedKey = 'the_soul_redeemed_coupons';
-    let redeemedList: string[] = [];
+    if (!code) {
+      return { success: false, message: 'กรุณาระบุรหัสคูปอง' };
+    }
+
     try {
-      const raw = localStorage.getItem(redeemedKey);
-      if (raw) redeemedList = JSON.parse(raw);
-    } catch {
-      redeemedList = [];
-    }
-
-    if (redeemedList.includes(code)) {
-      return { success: false, message: 'คุณเคยแลกรับโค้ดคูปองนี้ไปแล้ว' };
-    }
-
-    const couponValues: Record<string, number> = {
-      MAOMOI2026: 500,
-      MAOMOI: 300,
-      MAOMOIFREE: 200,
-      MAOMOI100: 100,
-      WELCOME100: 100,
-      ALICE: 150,
-      VIP2026: 1000,
-    };
-
-    if (couponValues[code]) {
-      const added = couponValues[code];
-      const newBalance = coinBalance + added;
-      setCoinBalance(newBalance);
-      localStorage.setItem('the_soul_coin_balance', newBalance.toString());
-      redeemedList.push(code);
-      localStorage.setItem(redeemedKey, JSON.stringify(redeemedList));
+      const res = await redeemCouponApi(currentUser.user_id, code);
+      if (res.status === 'success' && typeof res.new_balance === 'number') {
+        setCoinBalance(res.new_balance);
+        localStorage.setItem('the_soul_coin_balance', res.new_balance.toString());
+        return {
+          success: true,
+          message: res.message,
+          coinsAdded: res.coins_added,
+        };
+      } else {
+        return {
+          success: false,
+          message: res.message || 'รหัสคูปองไม่ถูกต้อง หรือหมดอายุการใช้งานแล้ว',
+        };
+      }
+    } catch (e) {
+      console.error('[COUPON] Redeem error:', e);
       return {
-        success: true,
-        message: `แลกรับสำเร็จ! ได้รับ +${added.toLocaleString()} เหรียญ 🪙`,
-        coinsAdded: added,
+        success: false,
+        message: 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์ กรุณาลองใหม่อีกครั้ง',
       };
     }
-
-    return {
-      success: false,
-      message: 'รหัสคูปองไม่ถูกต้อง หรือหมดอายุการใช้งานแล้ว',
-    };
   };
 
   return (
@@ -432,6 +436,7 @@ function App() {
               handleMenuClick('profile');
             }}
             onSignOut={handleSignOut}
+            onCoinBalanceUpdate={(newBalance) => setCoinBalance(newBalance)}
           />
         </div>
       )}

@@ -274,3 +274,69 @@ class RedisHotCache:
             logger.error(f"Failed to get session owner for {session_id}: {e}")
             return None
 
+    # -------------------------------------------------------------
+    # 🪙 User Wallet Hot Cache (Token Gate < 2ms)
+    # -------------------------------------------------------------
+
+    def get_user_coins(self, user_id: str) -> Optional[int]:
+        """
+        Retrieves cached coin balance for a user from Redis RAM (2-5ms).
+        Returns integer balance, or None if cache miss.
+        """
+        key = f"user:{user_id}:coins"
+        try:
+            res = self.execute_command(["GET", key])
+            if res is not None:
+                return int(res)
+            return None
+        except Exception as e:
+            logger.error(f"Failed to get cached coins for {user_id}: {e}")
+            return None
+
+    def set_user_coins(self, user_id: str, coins: int, ttl: int = 3600) -> bool:
+        """
+        Sets user coin balance in Redis Hot Cache with TTL (default: 1 hour).
+        """
+        key = f"user:{user_id}:coins"
+        try:
+            res = self.execute_command(["SET", key, coins, "EX", ttl])
+            return res == "OK"
+        except Exception as e:
+            logger.error(f"Failed to set cached coins for {user_id}: {e}")
+            return False
+
+    def decr_user_coins(self, user_id: str, amount: int) -> Optional[int]:
+        """
+        Decrements user coin balance atomically in Redis Hot Cache.
+        """
+        key = f"user:{user_id}:coins"
+        try:
+            res = self.execute_command(["DECRBY", key, amount])
+            return int(res) if res is not None else None
+        except Exception as e:
+            logger.error(f"Failed to decr cached coins for {user_id}: {e}")
+            return None
+
+    def incr_user_coins(self, user_id: str, amount: int) -> Optional[int]:
+        """
+        Increments user coin balance atomically in Redis Hot Cache.
+        """
+        key = f"user:{user_id}:coins"
+        try:
+            res = self.execute_command(["INCRBY", key, amount])
+            return int(res) if res is not None else None
+        except Exception as e:
+            logger.error(f"Failed to incr cached coins for {user_id}: {e}")
+            return None
+
+    def clear_user_coins(self, user_id: str) -> bool:
+        """Invalidates user coin cache."""
+        key = f"user:{user_id}:coins"
+        try:
+            self.execute_command(["DEL", key])
+            return True
+        except Exception as e:
+            logger.error(f"Failed to clear coin cache for {user_id}: {e}")
+            return False
+
+

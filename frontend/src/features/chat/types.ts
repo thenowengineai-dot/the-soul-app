@@ -146,6 +146,7 @@ export interface ChatRoomProps {
   onCloseProfileDropdown?: () => void
   onEditProfileClick?: () => void
   onSignOut?: () => void
+  onCoinBalanceUpdate?: (newBalance: number) => void
   onHudUpdate?: (data: {
     actor_posture?: string
     player_posture?: string
@@ -256,6 +257,7 @@ export interface ChatViewProps {
   onCloseProfileDropdown?: () => void
   onEditProfileClick?: () => void
   onSignOut?: () => void
+  onCoinBalanceUpdate?: (newBalance: number) => void
 }
 
 // ----------------------------------------------------------------------

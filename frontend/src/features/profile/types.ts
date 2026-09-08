@@ -18,7 +18,11 @@ export interface ProfileViewProps {
     success: boolean
     message: string
     coinsAdded?: number
-  }
+  } | Promise<{
+    success: boolean
+    message: string
+    coinsAdded?: number
+  }>
   onSignOut?: () => void
   onBackToHome?: () => void
   onTopUpCoins?: () => void

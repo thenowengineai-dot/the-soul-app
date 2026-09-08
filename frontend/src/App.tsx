@@ -87,7 +87,7 @@ function App() {
         />
 
         {/* 2. Lower Area: Sidebar (isHomeMode={true}) + HomeView */}
-        <div className="flex-1 flex relative overflow-hidden">
+        <div className="flex-1 flex relative overflow-hidden overscroll-none touch-pan-y">
           <Sidebar 
             isSidebarExpanded={isSidebarExpanded}
             setIsSidebarExpanded={setIsSidebarExpanded}
@@ -113,7 +113,7 @@ function App() {
   }
 
   return (
-    <div className="h-screen w-full bg-app-bg text-app-primary font-sans flex relative overflow-hidden">
+    <div className="h-screen w-full bg-app-bg text-app-primary font-sans flex relative overflow-hidden overscroll-none touch-pan-y">
       {/* ห้องแชท: คงโครงสร้างเดิม 100% ตามความต้องการ */}
       <Sidebar 
         isSidebarExpanded={isSidebarExpanded}

@@ -29,7 +29,7 @@ export function ChatList({
     `}>
       {/* Inner Fixed Container (คงความกว้างไว้เพื่อไม่ให้เลย์เอาต์บีบตัวขณะสไลด์เปิด-ปิด) */}
       <div className="w-[280px] h-full flex flex-col flex-shrink-0">
-        <div className="flex-1 overflow-y-auto no-scrollbar relative">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar relative overscroll-contain touch-pan-y">
           
           {/* Sticky Header & Search Box (X / Twitter Frosted Glass Style) */}
           <div className="sticky top-0 z-20 px-3.5 sm:px-4 pt-3.5 sm:pt-4 pb-2 sm:pb-2.5 bg-[rgb(13,13,13)]/80 backdrop-blur-md">

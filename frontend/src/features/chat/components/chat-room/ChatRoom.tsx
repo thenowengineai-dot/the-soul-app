@@ -236,7 +236,7 @@ export function ChatRoom({
   return (
     <div className="flex-1 h-full flex flex-col bg-app-bg z-0 overflow-hidden relative min-w-0">
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto flex flex-col no-scrollbar relative">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col no-scrollbar relative overscroll-contain touch-pan-y">
         {/* Floating Sticky Header (Frameless Glassmorphism Pills) */}
         <ChatRoomHeader
           chat={currentChat}

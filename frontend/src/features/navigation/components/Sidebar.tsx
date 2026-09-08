@@ -83,7 +83,7 @@ function Sidebar({
     <div className={`
       ${isSidebarExpanded ? 'w-[230px] px-3.5' : 'w-[70px] px-3'} 
       ${isHomeMode ? 'h-full pt-2.5 sm:pt-3' : 'h-screen pt-3.5 sm:pt-4'} 
-      flex-shrink-0 border-r border-app-border flex flex-col pb-3 bg-app-bg/50 backdrop-blur-xl relative transition-all duration-300 ease-in-out z-20
+      flex-shrink-0 border-r border-app-border flex flex-col pb-3 bg-app-bg/50 backdrop-blur-xl relative transition-all duration-300 ease-in-out z-20 select-none overscroll-none touch-pan-y
     `}>
         
       {/* Circular Hamburger Button sitting directly on the gray divider line, positioned between Logo and Home icon */}
@@ -123,7 +123,7 @@ function Sidebar({
       )}
 
       {/* Middle Scrollable Section: Menu Items + Divider + Creator Subscriptions */}
-      <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col min-h-0 py-1">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar flex flex-col min-h-0 py-1 overscroll-contain touch-pan-y">
         {/* Menu Items (YouTube Style with comfortable spacing) */}
         <div className="flex flex-col gap-1.5 w-full">
           {SIDEBAR_MENU.map(item => {
@@ -133,19 +133,15 @@ function Sidebar({
             if (!isSidebarExpanded) {
               // Collapsed Mode (Icon only + Tooltip) - 44px Standard
               return (
-                <div key={item.id} className="relative group flex items-center justify-center w-full">
+                <div key={item.id} className="relative flex items-center justify-center w-full">
                   <button
                     type="button"
+                    title={item.label}
                     onClick={() => handleMenuClick(item.id)}
                     className="w-[44px] h-[44px] flex items-center justify-center rounded-xl cursor-pointer transition-all duration-150 text-app-primary hover:bg-white/10"
                   >
                     <MenuIcon id={item.id} isActive={isActive} DefaultIcon={Icon} />
                   </button>
-
-                  {/* YouTube Tooltip */}
-                  <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#212121] text-app-primary text-xs font-normal rounded-md shadow-2xl border border-white/10 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50">
-                    {item.label}
-                  </div>
                 </div>
               );
             }
@@ -183,9 +179,10 @@ function Sidebar({
         <div className="w-full h-[1px] bg-app-border my-3 shrink-0" />
 
         {/* Create Button ("สร้าง" with SquarePlus icon on White background) - 44px Standard */}
-        <div className={`mt-0.5 mb-2 ${isSidebarExpanded ? 'w-full' : 'relative group flex justify-center'}`}>
+        <div className={`mt-0.5 mb-2 ${isSidebarExpanded ? 'w-full' : 'relative flex justify-center'}`}>
           <button 
             type="button"
+            title="สร้าง"
             onClick={handleCompose}
             className={`
               ${isSidebarExpanded ? 'w-full h-[44px] px-2.5 rounded-xl flex items-center gap-3 font-medium' : 'w-[44px] h-[44px] rounded-xl flex items-center justify-center'}
@@ -195,12 +192,6 @@ function Sidebar({
             <SquarePlus strokeWidth={2.2} size={20} className="flex-shrink-0" />
             {isSidebarExpanded && <span className="text-[13.5px] font-semibold truncate">สร้าง</span>}
           </button>
-
-          {!isSidebarExpanded && (
-            <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#212121] text-app-primary text-xs font-normal rounded-md shadow-2xl border border-white/10 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50">
-              สร้าง
-            </div>
-          )}
         </div>
 
       </div>
@@ -221,19 +212,15 @@ function Sidebar({
             </span>
           </button>
         ) : (
-          <div className="relative group flex items-center justify-center w-full">
+          <div className="relative flex items-center justify-center w-full">
             <button
               type="button"
+              title="การตั้งค่า"
               onClick={() => handleMenuClick('settings')}
               className="w-[44px] h-[44px] flex items-center justify-center rounded-xl cursor-pointer transition-all duration-150 text-app-primary hover:bg-white/10"
             >
               <Settings strokeWidth={2.2} size={20} />
             </button>
-
-            {/* YouTube Tooltip */}
-            <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#212121] text-app-primary text-xs font-normal rounded-md shadow-2xl border border-white/10 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50">
-              การตั้งค่า
-            </div>
           </div>
         )}
       </div>

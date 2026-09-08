@@ -18,9 +18,10 @@ export function CreatorSubscriptions({
     // Collapsed Mode: Collapsed into YouTube-style Subscriptions icon with 44px standard
     const hasAnyNewBot = creators.some(c => c.hasNewBot);
     return (
-      <div className="relative group flex items-center justify-center w-full">
+      <div className="relative flex items-center justify-center w-full">
         <button
           type="button"
+          title={`การติดตาม${hasAnyNewBot ? ' (มีบอทใหม่ ✨)' : ''}`}
           onClick={() => onCreatorClick?.(creators[0]?.id ?? '')}
           className="relative w-[44px] h-[44px] flex items-center justify-center rounded-xl cursor-pointer transition-all duration-150 text-app-primary hover:bg-white/10"
         >
@@ -29,14 +30,6 @@ export function CreatorSubscriptions({
             <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-[#EF264C] ring-2 ring-[rgb(13,13,13)] shadow-[0_0_4px_#EF264C]" />
           )}
         </button>
-
-        {/* YouTube Tooltip */}
-        <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#212121] text-app-primary text-xs font-normal rounded-md shadow-2xl border border-white/10 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50 flex items-center gap-2">
-          <span>การติดตาม</span>
-          {hasAnyNewBot && (
-            <span className="text-[10px] text-[#EF264C] font-medium">• บอทใหม่ ✨</span>
-          )}
-        </div>
       </div>
     );
   }

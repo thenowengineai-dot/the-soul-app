@@ -148,6 +148,34 @@ class ActorAgent:
         self.location = os.getenv("VERTEX_LOCATION", "global")
         self.client = genai.Client(vertexai=True, project=self.project_id, location=self.location)
 
+    def _get_safety_settings(self) -> List[types.SafetySetting]:
+        """
+        กำหนดค่า Safety Settings สำหรับ Roleplay & Interactive Storytelling
+        เพื่อป้องกันไม่ให้ AI ติด Safety Refusal เมื่อมีเนื้อหาแนวโรแมนติก / ล่อแหลม
+        """
+        import os
+        sexual_threshold = os.getenv("SAFETY_SEXUAL_THRESHOLD", "BLOCK_ONLY_HIGH")
+        default_threshold = os.getenv("SAFETY_DEFAULT_THRESHOLD", "BLOCK_ONLY_HIGH")
+        
+        return [
+            types.SafetySetting(
+                category="HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                threshold=sexual_threshold,
+            ),
+            types.SafetySetting(
+                category="HARM_CATEGORY_HARASSMENT",
+                threshold=default_threshold,
+            ),
+            types.SafetySetting(
+                category="HARM_CATEGORY_HATE_SPEECH",
+                threshold=default_threshold,
+            ),
+            types.SafetySetting(
+                category="HARM_CATEGORY_DANGEROUS_CONTENT",
+                threshold=default_threshold,
+            ),
+        ]
+
     def _prepare_contents(self, chat_history: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """แปลงประวัติแชทให้เข้ากับรูปแบบของ Google Gen AI SDK และจัดการ strict alternating turns"""
         contents = []
@@ -218,6 +246,25 @@ class ActorAgent:
         elif not isinstance(thinking_val, str):
             parsed_data["thinking"] = str(thinking_val)
 
+        # 🚨 [SAFETY REFUSAL & MISSING KEYS SAFEGUARD]
+        # ดักจับกรณี AI ส่ง Error/Refusal หรือขาดฟิลด์บังคับของ ActorOutput
+        if "error" in parsed_data:
+            err_msg = str(parsed_data.get("error"))
+            logger.warning(f"⚠️ [ACTOR] Model returned an error or refusal: {err_msg}")
+            if not parsed_data.get("thinking"):
+                parsed_data["thinking"] = f"AI Refusal: {err_msg}"
+            if not parsed_data.get("response_sequence"):
+                parsed_data["response_sequence"] = [
+                    {"type": "action", "content": "นิ่งเงียบชั่วขณะหนึ่ง"},
+                    {"type": "dialogue", "content": "..."}
+                ]
+
+        if "thinking" not in parsed_data or parsed_data["thinking"] is None:
+            parsed_data["thinking"] = ""
+
+        if "response_sequence" not in parsed_data or not isinstance(parsed_data["response_sequence"], list):
+            parsed_data["response_sequence"] = []
+
         return parsed_data
 
     async def generate_response(
@@ -237,6 +284,7 @@ class ActorAgent:
             config_kwargs = {
                 "system_instruction": actor_prompt,
                 "response_mime_type": "application/json",
+                "safety_settings": self._get_safety_settings(),
             }
             if "gemini" in self.model_name.lower():
                 config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_level="medium")
@@ -326,6 +374,7 @@ class ActorAgent:
         config_kwargs = {
             "system_instruction": actor_prompt,
             "response_mime_type": "application/json",
+            "safety_settings": self._get_safety_settings(),
         }
         if "gemini" in self.model_name.lower():
             config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_level="medium")

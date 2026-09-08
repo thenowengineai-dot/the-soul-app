@@ -64,6 +64,11 @@ export interface LoadedSessionData {
   currentStance?: string
   tensionGauge?: number
   actionLock?: boolean
+  activeEventId?: string | null
+  activeEventPhase?: string | null
+  activeBeatId?: string | null
+  sandboxTurnCount?: number
+  beatTurnCount?: number
   worldState?: {
     time: string
     location: string

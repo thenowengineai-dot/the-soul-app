@@ -1,66 +1,157 @@
+from __future__ import annotations
+import logging
+from typing import Optional, List, Dict, Tuple, Any
+
+logger = logging.getLogger("TRANSITIONS")
+
 class SceneTransitionManager:
     @staticmethod
-    def resolve_next_beat(event_data: dict, current_scene_id: str, current_beat_id: str, matched_path: str = None) -> tuple[str, str, str]:
+    def normalize_scenes(event_data: dict) -> list[dict]:
         """
-        Resolves the next scene and beat based on Waterfall Flow and Tagging.
-        Returns: (resolved_scene_id, resolved_beat_id, transition_bridge_prompt)
-        Raises ValueError if the resolution fails (Fail-Fast).
+        Normalizes 'phases' or 'scenes' (dict or list) from event_data into a uniform list:
+        [
+            {
+                "scene_id": str,
+                "scene_title": str,
+                "phase_objective": str,
+                "director_setup": str,
+                "beats": list[dict],
+                ...
+            }
+        ]
         """
-        scenes = event_data.get("scenes", [])
-        if not scenes:
-            raise ValueError("❌ [FAIL-FAST] JSON ไม่มี Array 'scenes' หรือ Array ว่างเปล่า")
-
-        transition_bridge = None
+        if not event_data or not isinstance(event_data, dict):
+            return []
+        raw = event_data.get("phases")
+        if raw is None:
+            raw = event_data.get("scenes")
+        if raw is None:
+            return []
         
-        # 1. Tagging System (User chose a matched path)
+        normalized = []
+        if isinstance(raw, dict):
+            for key, val in raw.items():
+                if isinstance(val, dict):
+                    s = dict(val)
+                    s["scene_id"] = s.get("scene_id") or s.get("phase_id") or key
+                    s["scene_title"] = s.get("scene_title") or key
+                    normalized.append(s)
+                elif isinstance(val, list):
+                    normalized.append({
+                        "scene_id": key,
+                        "scene_title": key,
+                        "beats": val
+                    })
+        elif isinstance(raw, list):
+            for idx, item in enumerate(raw):
+                if isinstance(item, dict):
+                    s = dict(item)
+                    s["scene_id"] = s.get("scene_id") or s.get("phase_id") or s.get("name") or f"scene_{idx+1}"
+                    s["scene_title"] = s.get("scene_title") or s.get("name") or s["scene_id"]
+                    normalized.append(s)
+        return normalized
+
+    @staticmethod
+    def get_first_phase_and_beat(event_data: dict) -> tuple[str | None, str | None]:
+        scenes = SceneTransitionManager.normalize_scenes(event_data)
+        if not scenes:
+            return None, None
+        first_scene = scenes[0]
+        first_scene_id = first_scene.get("scene_id")
+        beats = first_scene.get("beats", [])
+        first_beat_id = beats[0].get("beat_id") if beats and isinstance(beats[0], dict) else None
+        return first_scene_id, first_beat_id
+
+    @staticmethod
+    def get_scene_data(event_data: dict, scene_id: str) -> dict:
+        scenes = SceneTransitionManager.normalize_scenes(event_data)
+        for s in scenes:
+            if s.get("scene_id") == scene_id:
+                return s
+        return {}
+
+    @staticmethod
+    def get_beat_data(event_data: dict, scene_id: str, beat_id: str) -> dict:
+        scene = SceneTransitionManager.get_scene_data(event_data, scene_id)
+        beats = scene.get("beats", [])
+        for b in beats:
+            if isinstance(b, dict) and b.get("beat_id") == beat_id:
+                return b
+        if beats and isinstance(beats[0], dict):
+            return beats[0]
+        return {}
+
+    @staticmethod
+    def resolve_next_beat(
+        event_data: dict, 
+        current_scene_id: str, 
+        current_beat_id: str, 
+        matched_path: str = None, 
+        target_beat_id: str = None
+    ) -> tuple[str, str | None, str | None]:
+        """
+        Resolves the next scene and beat based on Direct Target, Tagging/Matched Path, or Waterfall Flow.
+        Returns: (resolved_scene_id, resolved_beat_id, transition_bridge_prompt)
+        """
+        scenes = SceneTransitionManager.normalize_scenes(event_data)
+        if not scenes:
+            return "completed", None, None
+
+        # 1. Direct Target Beat Resolution (from auto_progress or player_choices)
+        if target_beat_id:
+            # Check current scene first
+            curr_scene = SceneTransitionManager.get_scene_data(event_data, current_scene_id)
+            if any(b.get("beat_id") == target_beat_id for b in curr_scene.get("beats", []) if isinstance(b, dict)):
+                return current_scene_id, target_beat_id, None
+            # Check other scenes
+            for s in scenes:
+                if any(b.get("beat_id") == target_beat_id for b in s.get("beats", []) if isinstance(b, dict)):
+                    target_scene_id = s.get("scene_id")
+                    bridge = (
+                        f"🎬 [DIRECTOR BRIDGE]: บีตก่อนหน้าได้เสร็จสิ้นลงแล้ว ตอนนี้เรากำลังก้าวเข้าสู่ฉากใหม่คือ '{target_scene_id}' "
+                        "จงบรรยายการเคลื่อนย้ายหรือเปิดตัวเข้าสู่สถานที่/เหตุการณ์ใหม่นี้อย่างเป็นธรรมชาติ"
+                    )
+                    return target_scene_id, target_beat_id, bridge
+
+        # 2. Tagging / Matched path
         if matched_path:
-            # ค้นหา Scene ที่มี entry_path_id ตรงกับ matched_path
-            target_scene = next((s for s in scenes if s.get("entry_path_id") == matched_path), None)
+            target_scene = next((s for s in scenes if s.get("entry_path_id") == matched_path or s.get("scene_id") == matched_path), None)
             if target_scene:
                 target_scene_id = target_scene.get("scene_id")
                 beats = target_scene.get("beats", [])
-                if not beats:
-                    raise ValueError(f"❌ [FAIL-FAST] Scene '{target_scene_id}' ไม่มี beats อยู่เลย")
-                
-                # ถ้าเปลี่ยนฉากข้าม Scene (สร้าง Bridge ให้ Director)
+                bridge = None
                 if target_scene_id != current_scene_id:
-                    transition_bridge = (
+                    bridge = (
                         f"🎬 [DIRECTOR BRIDGE]: ผู้เล่นเพิ่งกระทำการบางอย่าง (เลือกเส้นทาง {matched_path}) "
                         f"ตอนนี้เรากำลังเปลี่ยนเข้าสู่ฉากใหม่คือ '{target_scene_id}' "
                         "จงบรรยายผลลัพธ์ของการกระทำเดิม พร้อมกับเปิดเผยสภาพแวดล้อมของฉากใหม่ให้กลมกลืนเป็นเนื้อเดียวกัน"
                     )
-                return target_scene_id, beats[0].get("beat_id"), transition_bridge
+                return target_scene_id, (beats[0].get("beat_id") if beats else None), bridge
             else:
-                # ⚠️ AI อาจจะจินตนาการ matched_path ขึ้นมาเอง ข้ามไปใช้ Waterfall
-                import logging
-                logging.getLogger("TRANSITIONS").warning(f"⚠️ ไม่พบ Scene ที่มี entry_path_id '{matched_path}', กำลังข้ามกลับไปใช้ Waterfall Flow อัตโนมัติ")
+                logger.warning(f"⚠️ ไม่พบ Scene ที่มี entry_path_id หรือ scene_id '{matched_path}', กำลังใช้ Waterfall Flow แทน")
 
-        # 2. Waterfall Flow (Auto Resolve by Index)
+        # 3. Waterfall Flow
         current_scene_index = next((i for i, s in enumerate(scenes) if s.get("scene_id") == current_scene_id), -1)
         if current_scene_index == -1:
-            raise ValueError(f"❌ [FAIL-FAST] ไม่พบ Scene ปัจจุบัน '{current_scene_id}' ใน JSON เพื่อทำ Waterfall")
-            
+            current_scene_index = 0
+
         current_scene = scenes[current_scene_index]
         beats = current_scene.get("beats", [])
         current_beat_index = next((i for i, b in enumerate(beats) if b.get("beat_id") == current_beat_id), -1)
-        
+
         if current_beat_index != -1 and current_beat_index + 1 < len(beats):
-            # Still have beats left in this scene, just move index + 1
-            return current_scene_id, beats[current_beat_index + 1].get("beat_id"), None
-        
-        # Out of beats, move to next scene naturally (Index + 1)
+            return current_scene.get("scene_id", current_scene_id), beats[current_beat_index + 1].get("beat_id"), None
+
+        # Out of beats in this scene, move to next scene
         if current_scene_index + 1 < len(scenes):
             next_scene = scenes[current_scene_index + 1]
             next_scene_id = next_scene.get("scene_id")
             next_beats = next_scene.get("beats", [])
-            if not next_beats:
-                raise ValueError(f"❌ [FAIL-FAST] Scene ถัดไป '{next_scene_id}' ไม่มี beats อยู่เลย")
-            
-            transition_bridge = (
+            next_beat_id = next_beats[0].get("beat_id") if next_beats else None
+            bridge = (
                 f"🎬 [DIRECTOR BRIDGE]: บีตในฉากเดิมสิ้นสุดลงแล้ว ตอนนี้เรากำลังไหลไปสู่ฉากใหม่คือ '{next_scene_id}' "
                 "จงบรรยายการเคลื่อนย้ายหรือความเชื่อมโยง เพื่อเปิดตัวเข้าสู่สถานที่/เวลาใหม่นี้อย่างเป็นธรรมชาติ (อย่าเทเลพอร์ต)"
             )
-            return next_scene_id, next_beats[0].get("beat_id"), transition_bridge
-            
-        # End of the event
+            return next_scene_id, next_beat_id, bridge
+
         return "completed", None, None

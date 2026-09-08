@@ -461,7 +461,7 @@ export function ChatRoom({
                 eventName: beatData.event_name || beatData.quest_title,
                 phaseId: beatData.phase_id || beatData.current_scene,
                 beatId: beatData.beat_id || beatData.current_beat_id,
-                beatTurnCount: beatData.turns_in_beat ?? 0,
+                beatTurnCount: beatData.beat_turn_count ?? beatData.turns_in_beat ?? 0,
                 sandboxTurnCount: beatData.sandbox_turn_count ?? 0,
                 pacingStatus: (beatData.pacing_status === 'advancing' || beatData.pacing_status === 'holding' || beatData.pacing_status === 'completed') ? beatData.pacing_status : 'idle',
                 conditionHint: beatData.condition_hint || beatData.trigger_condition,
@@ -559,6 +559,17 @@ export function ChatRoom({
               actorPosture: res.actorPosture,
               playerPosture: res.playerPosture,
               dominanceState: res.dominanceState,
+            })
+          }
+          if (res.activeEventId) {
+            setQuestState({
+              eventId: res.activeEventId,
+              eventName: res.activeEventId,
+              phaseId: res.activeEventPhase || undefined,
+              beatId: res.activeBeatId || undefined,
+              beatTurnCount: res.beatTurnCount ?? 0,
+              sandboxTurnCount: res.sandboxTurnCount ?? 0,
+              pacingStatus: 'holding',
             })
           }
           setIsSessionLoading(false)
@@ -758,7 +769,7 @@ export function ChatRoom({
               eventName: beatData.event_name || beatData.quest_title,
               phaseId: beatData.phase_id || beatData.current_scene,
               beatId: beatData.beat_id || beatData.current_beat_id,
-              beatTurnCount: beatData.turns_in_beat ?? 0,
+              beatTurnCount: beatData.beat_turn_count ?? beatData.turns_in_beat ?? 0,
               sandboxTurnCount: beatData.sandbox_turn_count ?? 0,
               pacingStatus: (beatData.pacing_status === 'advancing' || beatData.pacing_status === 'holding' || beatData.pacing_status === 'completed') ? beatData.pacing_status : 'idle',
               conditionHint: beatData.condition_hint || beatData.trigger_condition,

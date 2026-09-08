@@ -6,6 +6,7 @@ from agents.prompt_templates import (
     DIRECTOR_SYSTEM_PROMPT, 
     EVALUATOR_SYSTEM_PROMPT
 )
+from engine.transitions import SceneTransitionManager
 
 # ==========================================
 # 🏗️ THE CONTEXT BUILDER (CENTRALIZED PROMPT FACTORY)
@@ -153,17 +154,14 @@ class ContextBuilder:
             if not event_data:
                 openings = world_data.get("opening_scenarios", [])
                 for op in openings:
-                    if op.get("id") == active_event_id:
+                    if op.get("id") == active_event_id or op.get("name") == active_event_id:
                         event_data = op
                         break
             
             if event_data and active_event_phase:
                 is_event_active = True
-                phase_data = {}
-                if event_data.get("scenes"):
-                    phase_data = next((s for s in event_data["scenes"] if s.get("scene_id") == active_event_phase), {})
-                else:
-                    phase_data = event_data.get("phases", {}).get(active_event_phase, {})
+                phase_data = SceneTransitionManager.get_scene_data(event_data, active_event_phase)
+                current_beat = SceneTransitionManager.get_beat_data(event_data, active_event_phase, active_beat_id)
                     
                 # 🌟 [ENGINE 5.5] ดึง Premise ของฉากย่อยนี้มาใช้
                 premise_text = phase_data.get("premise")
@@ -172,17 +170,6 @@ class ContextBuilder:
                 director_vision = phase_data.get("director_vision")
                 phase_objective = phase_data.get("scene_objective") or phase_data.get("phase_objective") # ดึงข้อมูล The North Star ออกมา
                 north_star_directive = phase_data.get("north_star_directive")
-                
-                # 🎵 ดึงข้อมูล Beat ปัจจุบัน
-                beats = phase_data.get("beats", [])
-                current_beat = {}
-                for b in beats:
-                    if b.get("beat_id") == active_beat_id:
-                        current_beat = b
-                        break
-                # หากไม่พบ (หรือเทิร์นแรกสุด) ให้ดึง Beat แรกมาใช้
-                if not current_beat and beats:
-                    current_beat = beats[0]
                 
                 if current_beat:
                     actor_objective = current_beat.get("actor_state")
@@ -497,17 +484,12 @@ class ContextBuilder:
             if not event_data:
                 openings = world_data.get("opening_scenarios", [])
                 for op in openings:
-                    if op.get("id") == active_event_id:
+                    if op.get("id") == active_event_id or op.get("name") == active_event_id:
                         event_data = op
                         break
 
             if event_data and active_event_phase:
-                phase_data = {}
-                if event_data.get("scenes"):
-                    phase_data = next((s for s in event_data["scenes"] if s.get("scene_id") == active_event_phase), {})
-                else:
-                    phase_data = event_data.get("phases", {}).get(active_event_phase, {})
-                    
+                phase_data = SceneTransitionManager.get_scene_data(event_data, active_event_phase)
                 director_setup = phase_data.get("director_setup")
                 sensory_pool_override = phase_data.get("sensory_pool_override")
                 event_mood = phase_data.get("event_mood")
@@ -625,31 +607,18 @@ class ContextBuilder:
             event_data = world_data.get("story_events", {}).get(active_event_id)
             if not event_data:
                 for op in world_data.get("opening_scenarios", []):
-                    if op.get("id") == active_event_id:
+                    if op.get("id") == active_event_id or op.get("name") == active_event_id:
                         event_data = op
                         break
             
             if event_data:
-                current_phase_data = {}
-                if event_data.get("scenes"):
-                    current_phase_data = next((s for s in event_data["scenes"] if s.get("scene_id") == active_event_phase), {})
-                else:
-                    current_phase_data = event_data.get("phases", {}).get(active_event_phase, {})
-                    
-                beats = current_phase_data.get("beats", [])
-                
-                current_beat = {}
-                for b in beats:
-                    if b.get("beat_id") == active_beat_id:
-                        current_beat = b
-                        break
-                if not current_beat and beats:
-                    current_beat = beats[0]
+                current_phase_data = SceneTransitionManager.get_scene_data(event_data, active_event_phase)
+                current_beat = SceneTransitionManager.get_beat_data(event_data, active_event_phase, active_beat_id)
                 
                 if current_beat:
                     hidden_evaluation_criteria = current_beat.get("hidden_evaluation_criteria", current_beat.get("player_choices", {}))
                     illusion_trigger = current_beat.get("illusion_trigger")
-                    beat_id = current_beat.get("beat_id")
+                    beat_id = current_beat.get("beat_id", active_beat_id)
                     actor_state = current_beat.get("actor_state", "ไม่มีข้อมูล")
                     
                     beat_spy_directive = "\n=========================================\n"

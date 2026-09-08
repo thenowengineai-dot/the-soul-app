@@ -350,70 +350,67 @@ class GamePipeline:
                 matched_op = openings[0]
 
             if matched_op:
-                active_event_id = matched_op.get("id")
-                active_event_phase = matched_op["scenes"][0].get("scene_id") if matched_op.get("scenes") else None
+                active_event_id = matched_op.get("id") or matched_op.get("name")
+                first_scene_id, first_beat_id = SceneTransitionManager.get_first_phase_and_beat(matched_op)
+                active_event_phase = first_scene_id
                 is_new_phase = True
-                active_beat_id = None
+                active_beat_id = first_beat_id
                 beat_turn_count = 0  # 🌟 นับเป็น 0 เสมอเมื่อระบบเริ่มฉาก รอผู้เล่นพิมพ์ค่อยนับ
                 sandbox_turn_count = 0
                 chaos_level = matched_op.get("initial_chaos_level", "low")
-                logger.info(f"🎬 [OPENING SCENARIO LOADED] Active Event: '{matched_op.get('name', active_event_id)}' (Phase: {active_event_phase})")
+                logger.info(f"🎬 [OPENING SCENARIO LOADED] Active Event: '{matched_op.get('name', active_event_id)}' (Phase: {active_event_phase}, Beat: {active_beat_id})")
 
         # 🌟 [AUTO-START OPENING SCENARIO] ถ้าเพิ่งเริ่มแชทใหม่ และยังไม่มี Event ให้ดึงฉากเปิดตัวมาใช้เลยอัตโนมัติ
         elif not active_event_id and not is_sandbox_locked and sandbox_turn_count <= 1:
             openings = world_data_json.get("opening_scenarios", [])
             if openings:
                 op = openings[0]  # ดึงฉากเปิดตัวแรกสุดมาบังคับใช้
-                active_event_id = op.get("id")
-                active_event_phase = op["scenes"][0].get("scene_id") if op.get("scenes") else None
+                active_event_id = op.get("id") or op.get("name")
+                first_scene_id, first_beat_id = SceneTransitionManager.get_first_phase_and_beat(op)
+                active_event_phase = first_scene_id
                 is_new_phase = True
-                active_beat_id = None
+                active_beat_id = first_beat_id
                 beat_turn_count = 1
                 sandbox_turn_count = 0
                 chaos_level = op.get("initial_chaos_level", "low")
+                logger.info(f"🎬 [AUTO-START OPENING SCENARIO] Active Event: '{op.get('name', active_event_id)}' (Phase: {active_event_phase}, Beat: {active_beat_id})")
 
         # 🍞 SMART BREADCRUMB INJECTOR (สุ่มเควสต์) - REMOVED BY CAPTAIN'S ORDER
         # ระบบเก่าถูกถอดถอนเพื่อป้องกันผู้เล่นโดนลักพาตัวสุ่มเข้า Event ใหม่ตอนอยู่โหมด Sandbox
         
         async def response_generator():
             nonlocal active_event_id, active_event_phase, active_beat_id, is_sandbox_locked, is_new_phase, current_stance, tension_gauge, player_posture, actor_posture, sandbox_turn_count, beat_turn_count, current_dominance_state, current_action_lock, current_outfit, chaos_level, affection_val, desire_val, contact_points_list, shatter_count, peaceful_turns_count, current_scene_vibe, current_stage_level, pronouns_override, nicknames_override
-            if active_event_id and active_event_phase and not active_beat_id:
+            _event_data = None
+            if active_event_id:
+                _event_data = world_data_json.get("story_events", {}).get(active_event_id)
+                if not _event_data:
+                    for op in world_data_json.get("opening_scenarios", []):
+                        if op.get("id") == active_event_id or op.get("name") == active_event_id:
+                            _event_data = op
+                            break
+
+            if active_event_id and active_event_phase and not active_beat_id and _event_data:
                 try:
-                    _event_data = world_data_json.get("story_events", {}).get(active_event_id, {})
-                    if not _event_data:
-                        for op in world_data_json.get("opening_scenarios", []):
-                            if op.get("id") == active_event_id:
-                                _event_data = op
-                                break
-                    active_phase_data = next((s for s in _event_data.get("scenes", []) if s.get("scene_id") == active_event_phase), {})
-                    
-                    # 🌪️ [NEW] The Jobs-Ive Sounding Board: กระชากอารมณ์ด้วย forced_chaos_level 
+                    active_phase_data = SceneTransitionManager.get_scene_data(_event_data, active_event_phase)
                     forced_chaos = active_phase_data.get("forced_chaos_level")
                     if forced_chaos:
                         chaos_level = forced_chaos # Overwrite ทับค่าเดิมทันที
                     
                     b_list = active_phase_data.get("beats", [])
-                    if b_list: active_beat_id = b_list[0].get("beat_id")
+                    if b_list and isinstance(b_list[0], dict):
+                        active_beat_id = b_list[0].get("beat_id")
                 except: pass
 
             # 🌟 [ENGINE 5.5] ดึง System Choices และ Director Cue จาก Beat ปัจจุบัน
             current_system_choices_dict = {}
             pending_director_cue_str = ""
-            if active_event_id and active_event_phase and active_beat_id:
+            if active_event_id and active_event_phase and active_beat_id and _event_data:
                 try:
-                    _event_data = world_data_json.get("story_events", {}).get(active_event_id, {})
-                    if not _event_data:
-                        for op in world_data_json.get("opening_scenarios", []):
-                            if op.get("id") == active_event_id:
-                                _event_data = op
-                                break
-                    _scene = next((s for s in _event_data.get("scenes", []) if s.get("scene_id") == active_event_phase), {})
-                    _beats = _scene.get("beats", [])
-                    _curr_beat = next((b for b in _beats if b.get("beat_id") == active_beat_id), {})
+                    _curr_beat = SceneTransitionManager.get_beat_data(_event_data, active_event_phase, active_beat_id)
                     
                     # 🌟 [FIX] ส่ง System Choices และ Director Cue เฉพาะเทิร์นแรกของบีตเท่านั้น (ป้องกันการส่งซ้ำซาก)
                     if beat_turn_count <= 1:
-                        current_system_choices_dict = _curr_beat.get("system_choices", {})
+                        current_system_choices_dict = _curr_beat.get("system_choices") or _curr_beat.get("player_choices") or {}
                             
                         # 🌟 [NEW] ดึง Director Cue (แต่ถ้าเพิ่งเปลี่ยน Phase ให้ความสำคัญกับ DIRECTOR SETUP ก่อนเสมอ)
                         raw_director_cue = _curr_beat.get("director_cue")
@@ -628,31 +625,32 @@ class GamePipeline:
                     eval_result.desire_delta = getattr(eval_result, "desire_delta", 0) + 5
                 matched_path = getattr(eval_result, "matched_path", None)
                 
+                target_beat_id = None
                 try:
-                    _event_data = world_data_json.get("story_events", {}).get(active_event_id, {})
                     if not _event_data:
-                        for op in world_data_json.get("opening_scenarios", []):
-                            if op.get("id") == active_event_id:
-                                _event_data = op
-                                break
-                    current_phase_data = next((s for s in _event_data.get("scenes", []) if s.get("scene_id") == active_event_phase), {})
-                    beats = current_phase_data.get("beats", [])
-                    current_beat = next((b for b in beats if b.get("beat_id") == active_beat_id), {})
+                        _event_data = world_data_json.get("story_events", {}).get(active_event_id, {})
+                        if not _event_data:
+                            for op in world_data_json.get("opening_scenarios", []):
+                                if op.get("id") == active_event_id or op.get("name") == active_event_id:
+                                    _event_data = op
+                                    break
                     
+                    current_beat = SceneTransitionManager.get_beat_data(_event_data, active_event_phase, active_beat_id)
                     beat_director_setup = current_beat.get("director_setup")
                     
-                    # 🌟 [STRICT MODE] รองรับเฉพาะ pacing_control ตามมาตรฐานใหม่
-                    pacing_control_data = current_beat.get("pacing_control", {})
+                    # 🌟 [PACING & AUTO PROGRESS] รองรับทั้ง pacing_control และ auto_progress จาก world JSON
+                    pacing_control_data = current_beat.get("pacing_control") or current_beat.get("auto_progress") or {}
                     if pacing_control_data:
                         max_turns = pacing_control_data.get("max_turns", 999)
                         # 🛑 [THE INFINITE IMPROV] ถ้ามี interrupt จะไม่ถูก Pacing Control บังคับตัดจบ
                         if beat_turn_count >= max_turns and beat_action != "interrupt":
-                            beat_action = pacing_control_data.get("action", "illusion_trigger").lower()
+                            beat_action = pacing_control_data.get("action", "progress").lower()
                             matched_path = pacing_control_data.get("matched_path")
-                            current_override_resolution = pacing_control_data.get("inevitable_consequence")
+                            target_beat_id = pacing_control_data.get("next_beat")
+                            current_override_resolution = pacing_control_data.get("override_resolution") or pacing_control_data.get("inevitable_consequence")
                             pacing_control_triggered = True
                 except Exception as e:
-                    pass
+                    logger.warning(f"⚠️ Error checking beat pacing: {e}")
                 
                 if beat_action == "cancel":
                     yield f"data: {json.dumps({'system_event': 'quest_cancelled'}, ensure_ascii=False)}\n\n"
@@ -666,7 +664,8 @@ class GamePipeline:
                             event_data=_event_data,
                             current_scene_id=active_event_phase,
                             current_beat_id=active_beat_id,
-                            matched_path=matched_path
+                            matched_path=matched_path,
+                            target_beat_id=target_beat_id
                         )
                         
                         if resolved_scene == "completed":
@@ -707,13 +706,15 @@ class GamePipeline:
             if not is_new_phase and active_event_id and active_event_phase:
                 masking_text = "[LOOP MODE]: ห้ามบรรยายสภาพแวดล้อมซ้ำเด็ดขาด ให้โฟกัสเฉพาะปฏิกิริยาของตัวละคร"
                 for op in director_world_data.get("opening_scenarios", []):
-                    if op.get("id") == active_event_id:
-                        if op.get("scenes"):
-                            for s in op["scenes"]:
-                                if s.get("scene_id") == active_event_phase:
-                                    s["director_setup"] = masking_text
-                        elif active_event_phase in op.get("phases", {}):
+                    if op.get("id") == active_event_id or op.get("name") == active_event_id:
+                        if isinstance(op.get("phases"), dict) and active_event_phase in op["phases"]:
                             op["phases"][active_event_phase]["director_setup"] = masking_text
+                        elif isinstance(op.get("scenes"), dict) and active_event_phase in op["scenes"]:
+                            op["scenes"][active_event_phase]["director_setup"] = masking_text
+                        elif isinstance(op.get("scenes"), list):
+                            for s in op["scenes"]:
+                                if isinstance(s, dict) and s.get("scene_id") == active_event_phase:
+                                    s["director_setup"] = masking_text
 
             director_prompt = self.context_builder.build_director_prompt(
                 user_message=user_message, current_time=current_time, current_location=current_loc,
@@ -882,9 +883,20 @@ class GamePipeline:
                     player_posture = new_p_pos
 
             yield f"data: {json.dumps({'system_event': 'physics_update', 'stance': current_stance, 'tension': tension_gauge, 'player_posture': player_posture, 'actor_posture': actor_posture, 'dominance_state': current_dominance_state, 'action_lock': current_action_lock, 'contact_points': contact_points_list, 'current_outfit': current_outfit}, ensure_ascii=False)}\n\n"
-            yield f"data: {json.dumps({'system_event': 'turn_sync', 'beat_turn_count': beat_turn_count}, ensure_ascii=False)}\n\n"
             if user_role in ["admin", "creator"]:
-                yield f"data: {json.dumps({'type': 'beat_status', 'event_id': active_event_id, 'phase_id': active_event_phase, 'beat_id': active_beat_id, 'beat_turn_count': beat_turn_count, 'sandbox_turn_count': sandbox_turn_count, 'pacing_status': 'advancing' if is_new_phase else 'holding', 'chaos_level': chaos_level, 'stance': current_stance, 'tension': tension_gauge}, ensure_ascii=False)}\n\n"
+                quest_title = (_event_data.get("name") or active_event_id) if _event_data else active_event_id
+                _curr_beat_for_hint = SceneTransitionManager.get_beat_data(_event_data, active_event_phase, active_beat_id) if _event_data else {}
+                condition_hint_str = None
+                pacing_hint = _curr_beat_for_hint.get("pacing_control") or _curr_beat_for_hint.get("auto_progress") or {}
+                if pacing_hint:
+                    max_t = pacing_hint.get("max_turns", 2)
+                    next_b = pacing_hint.get("next_beat", "ถัดไป")
+                    condition_hint_str = f"เล่นครบ {max_t} เทิร์น หรือเลือกช้อยส์ก้าวหน้า -> สู่บีท '{next_b}'"
+                elif _curr_beat_for_hint.get("player_choices"):
+                    choices_preview = list(_curr_beat_for_hint["player_choices"].keys())[:2]
+                    condition_hint_str = f"ตัวเลือกนำทาง: {' / '.join(choices_preview)}"
+
+                yield f"data: {json.dumps({'type': 'beat_status', 'event_id': active_event_id, 'event_name': quest_title, 'quest_title': quest_title, 'current_quest': quest_title, 'phase_id': active_event_phase, 'current_scene': active_event_phase, 'beat_id': active_beat_id, 'current_beat_id': active_beat_id, 'beat_turn_count': beat_turn_count, 'turns_in_beat': beat_turn_count, 'sandbox_turn_count': sandbox_turn_count, 'pacing_status': 'advancing' if is_new_phase else 'holding', 'chaos_level': chaos_level, 'stance': current_stance, 'tension': tension_gauge, 'condition_hint': condition_hint_str}, ensure_ascii=False)}\n\n"
 
 
             # ==================================================

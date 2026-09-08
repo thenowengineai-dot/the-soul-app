@@ -79,10 +79,10 @@ export function ProfileSettingsModal({
     } else {
       // Fallback default mock logic
       const code = couponCode.trim().toUpperCase()
-      if (code === 'WELCOME100' || code === 'SOULFREE' || code === 'SOUL2026') {
+      if (code === 'WELCOME100' || code === 'MAOMOIFREE' || code === 'MAOMOI2026') {
         setCouponFeedback({
           type: 'success',
-          message: `แลกรับสำเร็จ! ได้รับ +${code === 'SOULFREE' ? 500 : 100} เหรียญ`,
+          message: `แลกรับสำเร็จ! ได้รับ +${code === 'MAOMOI2026' ? 500 : code === 'MAOMOIFREE' ? 200 : 100} เหรียญ`,
         })
         setCouponCode('')
       } else {
@@ -367,7 +367,7 @@ export function ProfileSettingsModal({
                 {/* โค้ดแนะนำสำหรับทดสอบ */}
                 <div className="pt-2 border-t border-white/5">
                   <span className="text-[11.5px] text-app-secondary/70">
-                    💡 โค้ดทดสอบ: ลองพิมพ์ <code className="text-amber-300 bg-white/10 px-1.5 py-0.5 rounded text-[11px]">SOUL2026</code> (+300 เหรียญ) หรือ <code className="text-amber-300 bg-white/10 px-1.5 py-0.5 rounded text-[11px]">WELCOME100</code> (+100 เหรียญ)
+                    💡 โค้ดทดสอบ: ลองพิมพ์ <code className="text-amber-300 bg-white/10 px-1.5 py-0.5 rounded text-[11px]">MAOMOI2026</code> (+500 เหรียญ) หรือ <code className="text-amber-300 bg-white/10 px-1.5 py-0.5 rounded text-[11px]">MAOMOIFREE</code> (+200 เหรียญ)
                   </span>
                 </div>
               </div>

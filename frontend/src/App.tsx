@@ -250,10 +250,11 @@ function App() {
     }
 
     const couponValues: Record<string, number> = {
-      WELCOME100: 100,
-      SOULFREE: 200,
-      SOUL2026: 300,
       MAOMOI2026: 500,
+      MAOMOI: 300,
+      MAOMOIFREE: 200,
+      MAOMOI100: 100,
+      WELCOME100: 100,
       ALICE: 150,
       VIP2026: 1000,
     };

@@ -389,7 +389,7 @@ export function ProfileView({
                   </div>
                 </div>
 
-                {/* Box 2: แลกรับโค้ดคูปอง */}
+                  {/* Box 2: แลกรับโค้ดคูปอง */}
                 <form onSubmit={handleRedeem} className="space-y-2">
                   <div className="rounded-2xl border border-[#2F3336] bg-[#1D1D1F]/50 px-4 py-2.5 focus-within:border-white/40 transition-colors">
                     <label className="block text-[11.5px] font-semibold text-[#ACACB2] leading-none mb-1">
@@ -400,7 +400,7 @@ export function ProfileView({
                         type="text"
                         value={couponCode}
                         onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                        placeholder="เช่น MAOMOI2026 หรือ SOUL2026"
+                        placeholder="เช่น MAOMOI2026 หรือ MAOMOIFREE"
                         className="w-full bg-transparent text-[#F2F2F5] text-[15px] font-mono outline-none p-0 border-none uppercase placeholder:text-[#ACACB2]/40"
                       />
                       <button
@@ -416,10 +416,10 @@ export function ProfileView({
                   {couponFeedback && (
                     <div className={`p-3 rounded-xl text-[12.5px] font-medium flex items-center gap-2 animate-in fade-in ${
                       couponFeedback.type === 'success'
-                        ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
+                        ? 'bg-[#EF264C]/15 text-[#EF264C] border border-[#EF264C]/30'
                         : 'bg-red-500/15 text-red-400 border border-red-500/20'
                     }`}>
-                      {couponFeedback.type === 'success' ? <Check size={16} /> : null}
+                      {couponFeedback.type === 'success' ? <Check size={16} className="text-[#EF264C]" /> : null}
                       <span>{couponFeedback.message}</span>
                     </div>
                   )}
@@ -436,24 +436,24 @@ export function ProfileView({
                     </button>
                     <button 
                       type="button"
-                      onClick={() => setCouponCode('SOUL2026')}
+                      onClick={() => setCouponCode('MAOMOI')}
                       className="text-amber-300 bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded text-[11.5px] font-mono cursor-pointer transition-colors border border-white/5"
                     >
-                      SOUL2026 (+300)
+                      MAOMOI (+300)
                     </button>
                     <button 
                       type="button"
-                      onClick={() => setCouponCode('WELCOME100')}
+                      onClick={() => setCouponCode('MAOMOIFREE')}
                       className="text-amber-300 bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded text-[11.5px] font-mono cursor-pointer transition-colors border border-white/5"
                     >
-                      WELCOME100 (+100)
+                      MAOMOIFREE (+200)
                     </button>
                     <button 
                       type="button"
-                      onClick={() => setCouponCode('SOULFREE')}
+                      onClick={() => setCouponCode('MAOMOI100')}
                       className="text-amber-300 bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded text-[11.5px] font-mono cursor-pointer transition-colors border border-white/5"
                     >
-                      SOULFREE (+200)
+                      MAOMOI100 (+100)
                     </button>
                   </div>
                 </form>
@@ -513,16 +513,19 @@ export function ProfileView({
                   </div>
                 </div>
 
-                {/* 3. ปุ่มออกจากระบบ (ดีไซน์สไตล์ ProfileDropdown สะอาด ไม่มีข้อความด้านล่าง) */}
+                {/* 3. ปุ่มออกจากระบบ (แบบเดิม: แคปซูลมนสีแดงเด่นชัด) */}
                 <div className="pt-6 border-t border-[#2F3336]/60">
                   <button
                     type="button"
                     onClick={onSignOut}
-                    className="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-red-500/10 text-red-400 hover:text-red-300 text-[13.5px] font-medium transition-colors cursor-pointer group"
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-400 font-semibold text-[13.5px] border border-red-500/20 transition-all cursor-pointer"
                   >
-                    <LogOut size={16} className="text-red-400/80 group-hover:text-red-400 transition-colors" />
+                    <LogOut size={16} />
                     <span>ออกจากระบบ</span>
                   </button>
+                  <p className="text-[12px] text-[#ACACB2] mt-2 px-1">
+                    เมื่อออกจากระบบ ข้อมูลจะสลับกลับสู่โหมดนักเดินทางนิรนาม (Guest)
+                  </p>
                 </div>
 
               </div>

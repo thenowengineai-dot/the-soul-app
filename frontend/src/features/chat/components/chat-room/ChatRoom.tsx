@@ -34,7 +34,7 @@ export function ChatRoom({
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
   const [inputText, setInputText] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
-  const [isSessionLoading, setIsSessionLoading] = useState(false)
+  const [isSessionLoading, setIsSessionLoading] = useState(true)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -111,12 +111,14 @@ export function ChatRoom({
     onHudUpdateRef.current = onHudUpdate
   }, [onHudUpdate])
 
-  // 2. เมื่อสลับตัวละคร: โหลดข้อมูล Session เก่า (ถ้ามี) หรือเตรียมพื้นที่แชท
+  const openingTriggeredRef = useRef<string | null>(null)
+
+  // 2. เมื่อสลับตัวละคร: โหลดข้อมูล Session เก่า (ถ้ามี) หรือเริ่มฉากเปิดตัวอัตโนมัติ (Turn 0: Prologue)
   useEffect(() => {
     let isCancelled = false
 
     loadSession(String(currentChat.id))
-      .then(res => {
+      .then(async res => {
         if (isCancelled) return
 
         if (res.has_started && res.messages && res.messages.length > 0) {
@@ -149,19 +151,130 @@ export function ChatRoom({
               dominance_state: res.dominanceState,
             })
           }
+          setIsSessionLoading(false)
         } else {
-          // ถ้ายังไม่เคยเริ่มเซฟ: หน้าแชทเริ่มต้นว่างเปล่าทั้งหมด 100%
+          // 🌟 [OPENING TURN 0: PROLOGUE]
+          // เมื่อยังไม่มีประวัติบทสนทนา: ให้ AI เป็นฝ่ายยิง VO ขึ้นจอ และบ็อตเริ่มทักก่อนเสมอในเทิร์นแรก
+          const charKey = String(currentChat.id)
+          if (openingTriggeredRef.current === charKey) {
+            setIsSessionLoading(false)
+            return
+          }
+          openingTriggeredRef.current = charKey
+
           setSessionId(null)
           setChatMessages([])
+          setIsSessionLoading(false)
+          setIsStreaming(true)
+
+          try {
+            const newSess = await startNewSession(charKey)
+            if (isCancelled) return
+
+            const activeSessionId = newSess.session_id
+            setSessionId(activeSessionId)
+
+            if (newSess.initial_state) {
+              onHudUpdateRef.current?.({
+                affection: newSess.initial_state.affection,
+                desire: newSess.initial_state.desire,
+                actor_posture: newSess.initial_state.a_pos,
+                player_posture: newSess.initial_state.p_pos,
+                stance: newSess.initial_state.stance,
+                current_outfit: newSess.initial_state.current_outfit,
+                environment: newSess.initial_state.environment,
+              })
+            }
+
+            const openingTimestamp = Date.now()
+            await streamChatMessage(
+              {
+                sessionId: activeSessionId,
+                characterId: charKey,
+                worldId: charKey,
+                message: '[SYSTEM] เริ่มต้นเกม',
+                history: [],
+              },
+              {
+                onVoiceOver: (voText) => {
+                  if (isCancelled) return
+                  const voId = `vo_${openingTimestamp}`
+                  setChatMessages(prev => {
+                    const existingIndex = prev.findIndex(m => m.id === voId)
+                    if (existingIndex >= 0) {
+                      return prev.map((m, idx) => idx === existingIndex ? { ...m, text: voText } : m)
+                    }
+                    return [...prev, { id: voId, type: 'vo', text: voText }]
+                  })
+                },
+                onActorSegments: (segments) => {
+                  if (isCancelled) return
+                  setChatMessages(prev => {
+                    const next = prev.filter(m => !String(m.id).startsWith(`opening_${openingTimestamp}`))
+                    const segMessages: ChatMessage[] = segments.map((s, idx) => {
+                      if (s.type === 'action') {
+                        return {
+                          id: `opening_${openingTimestamp}_act_${idx}`,
+                          type: 'action',
+                          text: s.content,
+                          sender: 'them',
+                        }
+                      }
+                      return {
+                        id: `opening_${openingTimestamp}_dia_${idx}`,
+                        type: 'msg',
+                        text: s.content,
+                        sender: 'them',
+                      }
+                    })
+                    return [...next, ...segMessages]
+                  })
+                },
+                onPhysicsUpdate: (phys) => {
+                  if (isCancelled) return
+                  onHudUpdateRef.current?.({
+                    actor_posture: phys.actor_posture,
+                    player_posture: phys.player_posture,
+                    tension: phys.tension,
+                    stance: phys.stance,
+                    dominance_state: phys.dominance_state,
+                  })
+                },
+                onUnifiedRound: (round) => {
+                  if (isCancelled) return
+                  if (round.state) {
+                    onHudUpdateRef.current?.({
+                      affection: round.state.affection,
+                      desire: round.state.desire,
+                      actor_posture: round.state.a_pos,
+                      player_posture: round.state.p_pos,
+                    })
+                  }
+                },
+                onError: (err) => {
+                  console.error('[OPENING STREAM ERROR]:', err)
+                  if (!isCancelled) setIsStreaming(false)
+                },
+                onDone: () => {
+                  if (!isCancelled) setIsStreaming(false)
+                },
+              }
+            )
+          } catch (initErr) {
+            console.error('[OPENING INIT FAILED]:', initErr)
+            if (!isCancelled) setIsStreaming(false)
+          } finally {
+            if (!isCancelled) {
+              setIsSessionLoading(false)
+              setIsStreaming(false)
+            }
+          }
         }
       })
       .catch(err => {
         if (isCancelled) return
-        console.warn('[LOAD SESSION] Fallback to empty:', err)
-        setChatMessages([])
-      })
-      .finally(() => {
-        if (!isCancelled) setIsSessionLoading(false)
+        console.warn('[LOAD SESSION] Error:', err)
+        setIsSessionLoading(false)
       })
 
     return () => {

@@ -325,26 +325,35 @@ class GamePipeline:
         logger.info("-" * 80)
 
         # ==================================================
-        # 🚨 [CRITICAL FIX] ระบบดักจับคำสั่งเริ่มเควสต์จากหน้าบ้าน
+        # 🚨 [CRITICAL FIX] ระบบดักจับคำสั่งเริ่มเควสต์/เปิดฉากจากหน้าบ้าน
         # ==================================================
-        if user_message.startswith("[SYSTEM] เริ่มต้นเกมด้วยฉาก:"):
-            scenario_name = user_message.replace("[SYSTEM] เริ่มต้นเกมด้วยฉาก:", "").strip()
-            for op in world_data_json.get("opening_scenarios", []):
-                if op.get("name") == scenario_name:
-                    active_event_id = op.get("id")
-                    active_event_phase = op["scenes"][0].get("scene_id") if op.get("scenes") else None
-                    is_new_phase = True
-                    active_beat_id = None
-                    beat_turn_count = 0 # 🌟 [FIX] นับเป็น 0 เสมอเมื่อระบบเริ่มฉาก รอผู้เล่นพิมพ์ค่อยนับ
-                    sandbox_turn_count = 0
-                    chaos_level = op.get("initial_chaos_level", "low")
-                    break
+        if user_message.startswith("[SYSTEM]"):
+            openings = world_data_json.get("opening_scenarios", [])
+            matched_op = None
+            if user_message.startswith("[SYSTEM] เริ่มต้นเกมด้วยฉาก:"):
+                scenario_name = user_message.replace("[SYSTEM] เริ่มต้นเกมด้วยฉาก:", "").strip()
+                for op in openings:
+                    if op.get("name") == scenario_name or op.get("id") == scenario_name:
+                        matched_op = op
+                        break
+            if not matched_op and openings:
+                matched_op = openings[0]
+
+            if matched_op:
+                active_event_id = matched_op.get("id")
+                active_event_phase = matched_op["scenes"][0].get("scene_id") if matched_op.get("scenes") else None
+                is_new_phase = True
+                active_beat_id = None
+                beat_turn_count = 0  # 🌟 นับเป็น 0 เสมอเมื่อระบบเริ่มฉาก รอผู้เล่นพิมพ์ค่อยนับ
+                sandbox_turn_count = 0
+                chaos_level = matched_op.get("initial_chaos_level", "low")
+                logger.info(f"🎬 [OPENING SCENARIO LOADED] Active Event: '{matched_op.get('name', active_event_id)}' (Phase: {active_event_phase})")
 
         # 🌟 [AUTO-START OPENING SCENARIO] ถ้าเพิ่งเริ่มแชทใหม่ และยังไม่มี Event ให้ดึงฉากเปิดตัวมาใช้เลยอัตโนมัติ
-        if not active_event_id and not is_sandbox_locked and sandbox_turn_count <= 1 and not user_message.startswith("[SYSTEM]"):
+        elif not active_event_id and not is_sandbox_locked and sandbox_turn_count <= 1:
             openings = world_data_json.get("opening_scenarios", [])
             if openings:
-                op = openings[0] # ดึงฉากเปิดตัวแรกสุดมาบังคับใช้
+                op = openings[0]  # ดึงฉากเปิดตัวแรกสุดมาบังคับใช้
                 active_event_id = op.get("id")
                 active_event_phase = op["scenes"][0].get("scene_id") if op.get("scenes") else None
                 is_new_phase = True
@@ -753,7 +762,8 @@ class GamePipeline:
                 return ("director", res)
             
             async def timed_actor():
-                res = await self.actor.generate_response(actor_prompt=actor_prompt, chat_history=chat_history + [{"role": "user", "content": user_message}])
+                actor_history = chat_history if user_message.startswith("[SYSTEM]") else chat_history + [{"role": "user", "content": user_message}]
+                res = await self.actor.generate_response(actor_prompt=actor_prompt, chat_history=actor_history)
                 return ("actor", res)
                 
             director_out = None

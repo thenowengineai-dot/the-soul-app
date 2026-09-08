@@ -103,6 +103,12 @@ class GamePipeline:
             async def error_gen():
                 yield "data: [ERROR] ไม่พบเซฟเกม กรุณารีเฟรชหน้าต่าง\n\n"
             return error_gen()
+
+        # ⚡ [REDIS HOT CACHE] ซิงก์ State ล่าสุดจาก Redis สำหรับ Neon Session เพื่อความต่อเนื่อง 100%
+        if is_neon_session and session:
+            cached_live = self.redis.get_live_state(session_id)
+            if cached_live and isinstance(cached_live, dict):
+                session.update(cached_live)
         
         # คลายซิปตัวแปร
         active_event_id = session.get("active_event_id")
@@ -682,8 +688,15 @@ class GamePipeline:
             yield f"data: {json.dumps({'system_event': 'stats_update', 'affection_delta': getattr(eval_result, 'affection_delta', 0), 'desire_delta': getattr(eval_result, 'desire_delta', 0)}, ensure_ascii=False)}\n\n"
 
             # ==================================================
-            # 🎬 4. เตรียม Prompt สำหรับ Director & Actor เพื่อวิ่ง Parallel
+            # 🎬 4. ตรวจสอบ Gatekeeper สำหรับ Voice Over (VO)
             # ==================================================
+            needs_vo = bool(
+                is_new_phase or 
+                transition_bridge or 
+                getattr(eval_result, "is_cinematic_moment", False) or 
+                (beat_director_setup and beat_turn_count <= 1)
+            )
+
             import copy
             director_world_data = copy.deepcopy(world_data_json)
             if not is_new_phase and active_event_id and active_event_phase:
@@ -761,7 +774,7 @@ class GamePipeline:
             # ==================================================
             # 🚀 5. รันคู่ขนาน: DIRECTOR vs ACTOR STREAM (INCREMENTAL PARSER)
             # ==================================================
-            logger.info("🕒 🔀 [PIPELINE] Building Prompts & Spawning Concurrent Tasks...")
+            logger.info(f"🕒 🔀 [PIPELINE] Building Prompts & Spawning Concurrent Tasks (needs_vo={needs_vo})...")
 
             async def timed_director():
                 try:
@@ -790,14 +803,23 @@ class GamePipeline:
             director_task = asyncio.create_task(timed_director())
             actor_task = asyncio.create_task(run_actor_worker())
 
-            # 2. รอ Director จบก่อนเสมอ (การันตี 100% ว่า Voice Over จะถูกส่งออกไปเป็นอันดับแรก)
-            _, director_out = await director_task
-            if director_out and getattr(director_out, "voice_over", None):
-                cleaned_vo = " ".join(re.sub(r'\[.*?\]|\(.*?\)', '', director_out.voice_over).split())
-                director_out.voice_over = cleaned_vo
-                yield f"data: {json.dumps({'type': 'voice_over', 'content': cleaned_vo}, ensure_ascii=False)}\n\n"
-            if director_out:
-                yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'director', 'response': director_out.model_dump()}, ensure_ascii=False)}\n\n"
+            director_out = None
+
+            # 2. Gatekeeper: ควบคุมการปล่อย VO
+            if needs_vo:
+                # 🌟 เทิร์นเปลี่ยนฉาก / เพลงขึ้น (Gear 1 หรือ Gear 2):
+                # รอ Director ทำงานเสร็จก่อนเพื่อพ่น VO ออกไปเป็นอันดับแรก จากนั้นค่อยให้ Actor ตามมา
+                logger.info("🎬 [PIPELINE] needs_vo=True (Gear 1/2): Awaiting Director VO before streaming Actor...")
+                _, director_out = await director_task
+                if director_out and getattr(director_out, "voice_over", None):
+                    cleaned_vo = " ".join(re.sub(r'\[.*?\]|\(.*?\)', '', director_out.voice_over).split())
+                    director_out.voice_over = cleaned_vo
+                    yield f"data: {json.dumps({'type': 'voice_over', 'content': cleaned_vo}, ensure_ascii=False)}\n\n"
+                if director_out:
+                    yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'director', 'response': director_out.model_dump()}, ensure_ascii=False)}\n\n"
+            else:
+                # 🌟 เทิร์นทั่วไป (Gear 3): ไม่ต้องรอ Director เลย! Actor สตรีมบับเบิ้ลลงจอได้ทันทีด้วยความเร็วสูงสุด
+                logger.info("⚡ [PIPELINE] needs_vo=False (Gear 3): Actor streaming immediately without waiting for Director!")
 
             # 3. ทยอยดีดบับเบิ้ล Actor ทีละก้อน (Incremental Segments) ทันทีที่ AI แต่งเสร็จ
             actor_out = None
@@ -815,6 +837,14 @@ class GamePipeline:
                     break
 
             await actor_task
+
+            # 4. สำหรับกรณี needs_vo=False ให้รอเก็บผลลัพธ์ Director ที่รันคู่ขนานเสร็จแล้ว พร้อม Hard Clamp voice_over = None
+            if not needs_vo:
+                _, director_out = await director_task
+                if director_out:
+                    # 🛑 บังคับตัด voice_over เป็น None เด็ดขาด 100% ป้องกัน AI ละเมอ
+                    director_out.voice_over = None
+                    yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'director', 'response': director_out.model_dump()}, ensure_ascii=False)}\n\n"
 
             if not actor_out:
                 actor_out = ActorOutput(
@@ -927,13 +957,19 @@ class GamePipeline:
                     "p_pos": player_posture,
                     "affection": affection_val,
                     "desire": desire_val,
+                    "active_event_id": active_event_id,
+                    "active_phase_id": active_event_phase,
+                    "active_beat_id": active_beat_id,
                     "scene_id": active_event_phase,
                     "beat_id": active_beat_id,
+                    "beat_turn_count": beat_turn_count,
+                    "sandbox_turn_count": sandbox_turn_count,
                     "current_outfit": current_outfit,
                     "dominance_state": current_dominance_state,
                     "action_lock": current_action_lock,
                     "tension_gauge": tension_gauge,
-                    "stance": current_stance
+                    "stance": current_stance,
+                    "chaos_level": chaos_level,
                 }
                 self.redis.save_live_state(session_id, live_state_snapshot)
                 self.redis.push_round(session_id, unified_round, max_window=20)

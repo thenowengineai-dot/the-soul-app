@@ -64,13 +64,16 @@
 
 ---
 
-## 💾 4. สถาปัตยกรรมข้อมูล (Data & Storage Architecture)
-- **The Single Source of Truth:** ดูรายละเอียดเต็มได้ที่ `UNIFIED_ROUND_SPEC.md`
+## 💾 4. สถาปัตยกรรมข้อมูลและระบบไอดี (Data, Identity & Storage)
+- **ระบบไอดี, เซสชัน และปรัชญากุญแจโรงแรม:** ดูรายละเอียดเชิงลึกและเช็กลิสต์ได้ที่ **[`IDENTITY_AND_SESSION_SPEC.md`](./IDENTITY_AND_SESSION_SPEC.md)**
+- **The Single Source of Truth ของข้อมูลรอบการเล่น:** ดูรายละเอียดเต็มได้ที่ `UNIFIED_ROUND_SPEC.md`
 - **Upstash Redis Hot Cache (`redis_cache.py`):**
   - เก็บรอบการเล่น 20 เทิร์นล่าสุด: `session:{session_id}:rounds` (List ของ Unified Round)
   - เก็บสถานะ Kinematics และฟิสิกส์สด: `session:{session_id}:state`
 - **Neon PostgreSQL (`postgres_core.py`):**
-  - บันทึกถาวรลงตาราง `game_rounds` ในรูปแบบ `JSONB`
+  - บันทึกผู้ใช้และสถานะ Guest/Member: ตาราง `users`
+  - บันทึกสถานะห้องเล่น: ตาราง `game_sessions`
+  - บันทึกถาวรประวัติการเล่น: ตาราง `game_rounds` ในรูปแบบ `JSONB`
 
 ---
 
@@ -94,4 +97,4 @@
 2. **งานที่ดำเนินอยู่ตอนนี้:**
    - ผู้ใช้เพิ่งทำความเข้าใจโครงสร้าง History / Turn Sizing / VO Attachment ระหว่าง Frontend และ Backend ครบถ้วน
    - หากผู้ใช้สั่งให้ทดสอบ ให้ช่วยผู้ใช้มอนิเตอร์การรันเทิร์นบน Cloud Run หรือตรวจสอบ Log ของ API `/api/chat`
-   - หากผู้ใช้มีคำถามเกี่ยวกับระบบหรือต้องการปรับแต่งฟีเจอร์ใด สามารถอ้างอิงเอกสารฉบับนี้และ `UNIFIED_ROUND_SPEC.md` ได้ทันที
+   - หากผู้ใช้มีคำถามเกี่ยวกับระบบ ไอดีผู้เล่น เซสชัน หรือต้องการปรับแต่งฟีเจอร์ใด สามารถอ้างอิงเอกสารฉบับนี้, **`IDENTITY_AND_SESSION_SPEC.md`** และ **`UNIFIED_ROUND_SPEC.md`** ได้ทันที

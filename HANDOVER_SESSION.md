@@ -4,13 +4,25 @@
 
 ---
 
-## 🎯 1. ภาพรวมโปรเจกต์และเป้าหมายหลัก (Project Overview)
-โปรเจกต์นี้คือ **"The Soul Engine 5.5"** ซึ่งกำลังอยู่ในกระบวนการปรับปรุงและรันระบบบน Production ใหม่:
-- **Root พัฒนาหลัก (Active Production Root):** อยู่ในโฟลเดอร์ **`the_soul_app/`** เท่านั้น
+## 🎯 1. ภาพรวมโปรเจกต์และขอบเขตโฟลเดอร์ (Workspace Scope & Architecture)
+โปรเจกต์นี้คือ **"The Soul Engine 5.5"** ซึ่งกำลังรันและพัฒนาบน Production ใหม่:
+
+### 📂 กฎการแบ่งแยกโฟลเดอร์ (Strict Folder Scope):
+- **🟢 Active Production Root (แอปใหม่ - โฟลเดอร์ทำงานหลักแห่งเดียว):**
+  - ทุกการพัฒนา, การค้นหา (`grep_search`), การแก้ไข, การสร้างไฟล์ หรือรันคำสั่ง **ต้องทำอยู่ภายใน `the_soul_app/` เท่านั้น**
   - **Frontend:** `the_soul_app/frontend/` (React + TypeScript + Tailwind CSS)
   - **Backend:** `the_soul_app/backend/` (FastAPI + Neon PostgreSQL + Upstash Redis Hot Cache + Google Vertex AI)
-- **คลังอ้างอิงเดิม (Read-Only Reference):** `_legacy_my_ai_engine/` (ห้ามแก้ไขเด็ดขาด ใช้ `view_file` เพื่อเทียบสเปกได้เสมอ)
-- **Deployment:** Google Cloud Run Service: `the-soul-backend` (ภูมิภาค `asia-southeast1`) ภายใต้ Keyless Service Account IAM (`Vertex AI User`)
+- **🔴 Legacy Archives (แอปเก่า - คลังข้อมูลอ้างอิง ห้ามแตะ 100%):**
+  - `_legacy_my_ai_engine/` (โค้ด AI Engine ดั้งเดิม: Evaluator, Director, Actor และ Prompt เก่า)
+  - `_legacy_soul_backend/` (Backend เก่า)
+  - `chat-ui/` (UI เก่า)
+  - **กฎเหล็ก:** โฟลเดอร์เหล่านี้ถูกเก็บไว้เป็น "คลังอ้างอิง (Read-Only Reference) ปลอดภัย 100%" **ห้ามแก้ไขหรือสร้างไฟล์ใหม่เด็ดขาด** หากต้องการศึกษาตรรกะเดิมหรือก๊อปปี้ฟีเจอร์ ให้ใช้คำสั่ง `view_file` เพื่อนำไอเดียมาต่อยอดใน `the_soul_app/` เท่านั้น
+
+### ☁️ เซิร์ฟเวอร์ Production บน Google Cloud Run:
+- **Service Name:** `the-soul-backend`
+- **ภูมิภาค (Region):** `asia-southeast1` (Singapore)
+- **สถาปัตยกรรม:** เซิร์ฟเวอร์จริงรัน Backend จาก `the_soul_app/backend/` ให้บริการ API ต่างๆ เช่น `/api/chat`, `/api/evaluator`, `/api/director`
+- **Authentication & Vertex AI:** รันแบบ Keyless ผ่าน Google Service Account IAM สิทธิ์ `Vertex AI User` โดยตรง ไม่ต้องใช้ Service Account Key JSON และเชื่อมต่อ Google Vertex AI API (Location: `global`) ในการเรียกโมเดล Gemini ทั้งหมด
 
 ---
 
@@ -76,9 +88,9 @@
 
 ## 📌 6. สิ่งที่ AI ตัวต่อไปควรทราบเมื่อเริ่มงานต่อทันที (Next Directives)
 1. **กฎเหล็กการทำงาน (จาก `GEMINI.md`):**
-   - ห้ามแก้ไขไฟล์นอกโฟลเดอร์ `the_soul_app/`
+   - **โฟลเดอร์ทำงานหลักแห่งเดียว:** ทำงานและแก้ไขไฟล์เฉพาะใน **`the_soul_app/`** เท่านั้น (โฟลเดอร์ `_legacy_*` และ `chat-ui/` ห้ามแก้ไขหรือสร้างไฟล์ใหม่เด็ดขาด เป็น Read-Only Reference)
    - **ห้ามรันคำสั่ง `npm run dev` เด็ดขาดทุกกรณี** (มี Dev Server รันอยู่ใน Background อยู่แล้ว)
-   - การ Build / Lint ทุกครั้งต้องผ่าน 100%
+   - การ Build / Lint ทุกครั้งต้องผ่าน 100% (`npm run build` และ `npx oxlint --deny-warnings`)
 2. **งานที่ดำเนินอยู่ตอนนี้:**
    - ผู้ใช้เพิ่งทำความเข้าใจโครงสร้าง History / Turn Sizing / VO Attachment ระหว่าง Frontend และ Backend ครบถ้วน
    - หากผู้ใช้สั่งให้ทดสอบ ให้ช่วยผู้ใช้มอนิเตอร์การรันเทิร์นบน Cloud Run หรือตรวจสอบ Log ของ API `/api/chat`

@@ -213,6 +213,7 @@ export async function loadSession(
 
 export interface StreamChatCallbacks {
   onVoiceOver?: (text: string) => void
+  onActorSegment?: (segment: { type: 'action' | 'dialogue'; content: string }, index: number) => void
   onActorSegments?: (segments: Array<{ type: 'action' | 'dialogue'; content: string }>) => void
   onPhysicsUpdate?: (data: {
     stance?: string
@@ -298,7 +299,11 @@ export async function streamChatMessage(
           if (parsed.type === 'voice_over' && parsed.content) {
             callbacks.onVoiceOver?.(parsed.content)
           }
-          // 2. Chat Message Array (Actor sequences)
+          // 2. Incremental Actor Segment (Individual Bubble)
+          else if (parsed.type === 'actor_segment' && parsed.segment) {
+            callbacks.onActorSegment?.(parsed.segment, typeof parsed.index === 'number' ? parsed.index : 0)
+          }
+          // 3. Chat Message Array (Actor sequences fallback / sync)
           else if (parsed.type === 'chat_message_array' && Array.isArray(parsed.sequence)) {
             callbacks.onActorSegments?.(parsed.sequence)
           }

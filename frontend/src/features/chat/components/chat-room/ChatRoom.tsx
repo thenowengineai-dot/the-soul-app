@@ -265,26 +265,33 @@ export function ChatRoom({
                 return [...prev, { id: voId, type: 'vo', text: voText }]
               })
             },
+            onActorSegment: (segment, index) => {
+              if (isCancelled) return
+              const msgId = `opening_${openingTimestamp}_${index}`
+              setChatMessages(prev => {
+                const existingIndex = prev.findIndex(m => m.id === msgId)
+                const newMsg: ChatMessage = {
+                  id: msgId,
+                  type: segment.type === 'action' ? 'action' : 'msg',
+                  text: segment.content,
+                  sender: 'them',
+                }
+                if (existingIndex >= 0) {
+                  return prev.map((m, idx) => idx === existingIndex ? newMsg : m)
+                }
+                return [...prev, newMsg]
+              })
+            },
             onActorSegments: (segments) => {
               if (isCancelled) return
               setChatMessages(prev => {
-                const next = prev.filter(m => !String(m.id).startsWith(`opening_${openingTimestamp}`))
-                const segMessages: ChatMessage[] = segments.map((s, idx) => {
-                  if (s.type === 'action') {
-                    return {
-                      id: `opening_${openingTimestamp}_act_${idx}`,
-                      type: 'action',
-                      text: s.content,
-                      sender: 'them',
-                    }
-                  }
-                  return {
-                    id: `opening_${openingTimestamp}_dia_${idx}`,
-                    type: 'msg',
-                    text: s.content,
-                    sender: 'them',
-                  }
-                })
+                const next = prev.filter(m => !String(m.id).startsWith(`opening_${openingTimestamp}_`))
+                const segMessages: ChatMessage[] = segments.map((s, idx) => ({
+                  id: `opening_${openingTimestamp}_${idx}`,
+                  type: s.type === 'action' ? 'action' : 'msg',
+                  text: s.content,
+                  sender: 'them',
+                }))
                 return [...next, ...segMessages]
               })
             },
@@ -454,6 +461,22 @@ export function ChatRoom({
                 return prev.map((m, idx) => idx === existingIndex ? { ...m, text: voText } : m)
               }
               return [...prev, { id: voId, type: 'vo', text: voText }]
+            })
+          },
+          onActorSegment: (segment, index) => {
+            const msgId = `act_${turnTimestamp}_${index}`
+            setChatMessages(prev => {
+              const existingIndex = prev.findIndex(m => m.id === msgId)
+              const newMsg: ChatMessage = {
+                id: msgId,
+                type: segment.type === 'action' ? 'action' : 'msg',
+                text: segment.content,
+                sender: 'them',
+              }
+              if (existingIndex >= 0) {
+                return prev.map((m, idx) => idx === existingIndex ? newMsg : m)
+              }
+              return [...prev, newMsg]
             })
           },
           onActorSegments: (segments) => {

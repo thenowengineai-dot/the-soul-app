@@ -12,6 +12,7 @@ from loguru import logger
 from agents.director_agent import DirectorAgent
 from agents.actor_agent import ActorAgent
 from agents.evaluator_agent import EvaluatorAgent
+from api.schemas import ActorOutput, ResponseSegment
 from engine.state_manager import StateManager
 import tempfile
 from engine.context_builder import ContextBuilder
@@ -758,69 +759,90 @@ class GamePipeline:
             yield f"data: {json.dumps({'type': 'debug_prompt', 'agent': 'actor', 'prompt': actor_prompt}, ensure_ascii=False)}\n\n"
 
             # ==================================================
-            # 🚀 5. รันคู่ขนาน: DIRECTOR vs ACTOR
+            # 🚀 5. รันคู่ขนาน: DIRECTOR vs ACTOR STREAM (INCREMENTAL PARSER)
             # ==================================================
             logger.info("🕒 🔀 [PIPELINE] Building Prompts & Spawning Concurrent Tasks...")
 
             async def timed_director():
-                res = await self.director.analyze_scene(director_prompt=director_prompt)
-                return ("director", res)
-            
-            async def timed_actor():
-                if user_message.startswith("[SYSTEM]"):
-                    actor_history = chat_history[-12:] + [{"role": "user", "content": "[SYSTEM]: เริ่มต้นฉากเปิดตัว (Prologue) ให้แสดงท่าทางเปิดตัวและทักทายผู้เล่นเป็นคนแรกตามบทบาท"}]
-                else:
-                    actor_history = chat_history[-12:] + [{"role": "user", "content": user_message}]
-                res = await self.actor.generate_response(actor_prompt=actor_prompt, chat_history=actor_history)
-                return ("actor", res)
-                
-            director_out = None
-            actor_out = None
-            pending_actor_yields = []
-            
-            for completed_task in asyncio.as_completed([timed_director(), timed_actor()]):
-                agent_type, res = await completed_task
-                if agent_type == "director":
-                    director_out = res
-                    if getattr(director_out, "voice_over", None):
-                        director_out.voice_over = " ".join(re.sub(r'\[.*?\]|\(.*?\)', '', director_out.voice_over).split())
-                        yield f"data: {json.dumps({'type': 'voice_over', 'content': director_out.voice_over}, ensure_ascii=False)}\n\n"
-                    yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'director', 'response': director_out.model_dump()}, ensure_ascii=False)}\n\n"
-                    
-                    # 🌟 [SYNC]: พอ Director คายข้อมูลเสร็จ ถ้า Actor รออยู่แล้ว ให้คาย Actor ตามทันที!
-                    for pending_yield in pending_actor_yields:
-                        yield pending_yield
-                    pending_actor_yields.clear()
-                    
-                else:
-                    actor_out = res
-                    
-                    # 🌟 [SYNC]: เตรียมข้อมูล Actor ไว้ก่อน
-                    actor_yields = [
-                        f"data: {json.dumps({'type': 'chat_message_array', 'sequence': [s.model_dump() for s in actor_out.response_sequence], 'system_choices': current_system_choices_dict}, ensure_ascii=False)}\n\n",
-                        f"data: {json.dumps({'type': 'debug_response', 'agent': 'actor', 'response': actor_out.model_dump()}, ensure_ascii=False)}\n\n"
-                    ]
-                    
-                    if director_out is None:
-                        # ถ้านักแสดงเสร็จก่อนผู้กำกับ ให้รอผู้กำกับก่อน (กันบั๊ก UI สลับที่)
-                        pending_actor_yields.extend(actor_yields)
-                    else:
-                        # ถ้าผู้กำกับสั่งการเสร็จแล้ว ปล่อยนักแสดงออกไปได้เลย!
-                        for y in actor_yields:
-                            yield y
-                    
-                    new_a_pos = getattr(actor_out, "a_pos", None)
-                    new_p_pos = getattr(actor_out, "p_pos", None)
-                    current_dominance_state = getattr(actor_out, "dominance_state", "NEUTRAL")
-                    current_action_lock = getattr(actor_out, "action_lock", False)
-                    contact_points_list = getattr(actor_out, "contact_points", [])
+                try:
+                    res = await self.director.analyze_scene(director_prompt=director_prompt)
+                    return ("director", res)
+                except Exception as e:
+                    logger.error(f"Director Agent Error: {e}", exc_info=True)
+                    return ("director", None)
 
-                    if new_a_pos and str(new_a_pos).lower() not in ["none", "null", "", "ยืน/นั่งอิสระตามบริบท"]: 
-                        actor_posture = new_a_pos
-                    
-                    if new_p_pos and str(new_p_pos).lower() not in ["none", "null", "", "ยืน/นั่งอิสระตามบริบท"]:
-                        if "[FORCED]" in str(new_p_pos).upper():
-                            player_posture = new_p_pos
+            if user_message.startswith("[SYSTEM]"):
+                actor_history = chat_history[-12:] + [{"role": "user", "content": "[SYSTEM]: เริ่มต้นฉากเปิดตัว (Prologue) ให้แสดงท่าทางเปิดตัวและทักทายผู้เล่นเป็นคนแรกตามบทบาท"}]
+            else:
+                actor_history = chat_history[-12:] + [{"role": "user", "content": user_message}]
+
+            actor_queue = asyncio.Queue()
+
+            async def run_actor_worker():
+                try:
+                    async for item in self.actor.generate_response_stream(actor_prompt=actor_prompt, chat_history=actor_history):
+                        await actor_queue.put(item)
+                except Exception as e:
+                    logger.error(f"Actor stream worker error: {e}", exc_info=True)
+                    await actor_queue.put(("error", str(e)))
+
+            # 1. ยิง Director และ Actor stream ไปพร้อมกันทันที
+            director_task = asyncio.create_task(timed_director())
+            actor_task = asyncio.create_task(run_actor_worker())
+
+            # 2. รอ Director จบก่อนเสมอ (การันตี 100% ว่า Voice Over จะถูกส่งออกไปเป็นอันดับแรก)
+            _, director_out = await director_task
+            if director_out and getattr(director_out, "voice_over", None):
+                cleaned_vo = " ".join(re.sub(r'\[.*?\]|\(.*?\)', '', director_out.voice_over).split())
+                director_out.voice_over = cleaned_vo
+                yield f"data: {json.dumps({'type': 'voice_over', 'content': cleaned_vo}, ensure_ascii=False)}\n\n"
+            if director_out:
+                yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'director', 'response': director_out.model_dump()}, ensure_ascii=False)}\n\n"
+
+            # 3. ทยอยดีดบับเบิ้ล Actor ทีละก้อน (Incremental Segments) ทันทีที่ AI แต่งเสร็จ
+            actor_out = None
+            while True:
+                item = await actor_queue.get()
+                kind = item[0]
+                if kind == "segment":
+                    _, seg_data, seg_idx = item
+                    yield f"data: {json.dumps({'type': 'actor_segment', 'index': seg_idx, 'segment': seg_data}, ensure_ascii=False)}\n\n"
+                elif kind == "final_output":
+                    _, actor_out, _ = item
+                    break
+                elif kind == "error":
+                    logger.error(f"Received error from actor worker: {item[1]}")
+                    break
+
+            await actor_task
+
+            if not actor_out:
+                actor_out = ActorOutput(
+                    thinking="System Error",
+                    a_pos="นั่งทรุดตัวลงด้วยความมึนงง",
+                    response_sequence=[
+                        ResponseSegment(type="action", content="ก้มหน้าเงียบๆ สัญญาณขาดหาย"),
+                        ResponseSegment(type="dialogue", content="...")
+                    ]
+                )
+
+            # 4. ส่ง Sequence รวมรอบสุดท้ายเพื่อความสมบูรณ์และเป็น Sync Fallback
+            yield f"data: {json.dumps({'type': 'chat_message_array', 'sequence': [s.model_dump() for s in actor_out.response_sequence], 'system_choices': current_system_choices_dict}, ensure_ascii=False)}\n\n"
+            yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'actor', 'response': actor_out.model_dump()}, ensure_ascii=False)}\n\n"
+
+            # 5. อัปเดต Kinematics & Physics ประจำเทิร์น
+            new_a_pos = getattr(actor_out, "a_pos", None)
+            new_p_pos = getattr(actor_out, "p_pos", None)
+            current_dominance_state = getattr(actor_out, "dominance_state", "NEUTRAL")
+            current_action_lock = getattr(actor_out, "action_lock", False)
+            contact_points_list = getattr(actor_out, "contact_points", [])
+
+            if new_a_pos and str(new_a_pos).lower() not in ["none", "null", "", "ยืน/นั่งอิสระตามบริบท"]: 
+                actor_posture = new_a_pos
+            
+            if new_p_pos and str(new_p_pos).lower() not in ["none", "null", "", "ยืน/นั่งอิสระตามบริบท"]:
+                if "[FORCED]" in str(new_p_pos).upper():
+                    player_posture = new_p_pos
 
             yield f"data: {json.dumps({'system_event': 'physics_update', 'stance': current_stance, 'tension': tension_gauge, 'player_posture': player_posture, 'actor_posture': actor_posture, 'dominance_state': current_dominance_state, 'action_lock': current_action_lock, 'contact_points': contact_points_list, 'current_outfit': current_outfit}, ensure_ascii=False)}\n\n"
             yield f"data: {json.dumps({'system_event': 'turn_sync', 'beat_turn_count': beat_turn_count}, ensure_ascii=False)}\n\n"

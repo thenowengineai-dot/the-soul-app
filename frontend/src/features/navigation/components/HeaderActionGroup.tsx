@@ -49,14 +49,14 @@ export function HeaderActionGroup({
           <button
             type="button"
             onClick={onSignupClick}
-            className="text-[14px] sm:text-[15px] font-semibold text-[#F2F2F5] hover:opacity-80 px-2.5 sm:px-3 py-1.5 transition-opacity cursor-pointer select-none"
+            className="text-[14px] sm:text-[15px] font-medium text-[#F2F2F5] hover:opacity-80 px-2.5 sm:px-3 py-1.5 transition-opacity cursor-pointer select-none"
           >
             สมัครสมาชิก
           </button>
           <button
             type="button"
             onClick={onLoginClick}
-            className="h-[34px] sm:h-[36px] px-4 sm:px-5 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white font-bold text-[13.5px] sm:text-[14.5px] transition-all duration-200 cursor-pointer shadow-sm active:scale-95 flex items-center justify-center select-none"
+            className="h-[34px] sm:h-[36px] px-4 sm:px-5 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white font-medium text-[13.5px] sm:text-[14.5px] transition-all duration-200 cursor-pointer shadow-sm active:scale-95 flex items-center justify-center select-none"
           >
             เข้าสู่ระบบ
           </button>

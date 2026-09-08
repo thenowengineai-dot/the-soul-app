@@ -262,7 +262,7 @@ function Sidebar({
             <button
               type="button"
               onClick={onLoginClick}
-              className="w-full h-[42px] flex items-center justify-center gap-2 px-3.5 rounded-xl bg-[#EF264C] hover:bg-[#d91d40] text-white text-[14px] font-bold cursor-pointer transition-all shadow-sm active:scale-95"
+              className="w-full h-[42px] flex items-center justify-center gap-2 px-3.5 rounded-xl bg-[#EF264C] hover:bg-[#d91d40] text-white text-[14px] font-medium cursor-pointer transition-all shadow-sm active:scale-95"
             >
               <User size={16} />
               <span>เข้าสู่ระบบ</span>

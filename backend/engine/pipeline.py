@@ -301,7 +301,8 @@ class GamePipeline:
                 "role": role, 
                 "original_role": original_role, # เก็บไว้ให้ Director แยกแยะได้
                 "content": row.get("content", row.get("message", "")), # รองรับ format ของหน้าบ้าน
-                "action": row.get("action")
+                "action": row.get("action"),
+                "voice_over": row.get("voice_over")
             })
 
         # 🌟 [BULK PREPARATION] เตรียมกล่องเก็บแชทที่จะยิงทีเดียวหลังจบเทิร์น (เฉพาะ AI และ Director)
@@ -419,8 +420,12 @@ class GamePipeline:
             
             def format_eval_msg(msg):
                 parts = []
-                if msg.get('action'): parts.append(f"({msg['action']})")
-                if msg.get('content'): parts.append(str(msg['content']))
+                action = msg.get('action')
+                content = str(msg.get('content') or '')
+                if action and f"({action})" not in content and f"*{action}*" not in content:
+                    parts.append(f"({action})")
+                if content:
+                    parts.append(content)
                 return f"{msg['role'].upper()}: {' '.join(parts).strip()}"
                 
             eval_chat_text = "\n".join([format_eval_msg(msg) for msg in eval_hist[-4:] if msg.get('action') or msg.get('content')])
@@ -763,9 +768,9 @@ class GamePipeline:
             
             async def timed_actor():
                 if user_message.startswith("[SYSTEM]"):
-                    actor_history = chat_history + [{"role": "user", "content": "[SYSTEM]: เริ่มต้นฉากเปิดตัว (Prologue) ให้แสดงท่าทางเปิดตัวและทักทายผู้เล่นเป็นคนแรกตามบทบาท"}]
+                    actor_history = chat_history[-12:] + [{"role": "user", "content": "[SYSTEM]: เริ่มต้นฉากเปิดตัว (Prologue) ให้แสดงท่าทางเปิดตัวและทักทายผู้เล่นเป็นคนแรกตามบทบาท"}]
                 else:
-                    actor_history = chat_history + [{"role": "user", "content": user_message}]
+                    actor_history = chat_history[-12:] + [{"role": "user", "content": user_message}]
                 res = await self.actor.generate_response(actor_prompt=actor_prompt, chat_history=actor_history)
                 return ("actor", res)
                 

@@ -13,6 +13,90 @@ import {
 
 export type { ChatRoomProps }
 
+interface TurnHistoryItem {
+  role: 'user' | 'assistant'
+  content: string
+  action?: string
+  voice_over?: string
+}
+
+/**
+ * 🌟 รวม ChatMessages ให้กลายเป็น Turn-based History แท้จริงเหมือนแอปเก่า
+ * - 1 เทิร์น = ผู้เล่น 1 ข้อความ (user) + บอท 1 ข้อความ (assistant)
+ * - บอท 1 เทิร์นจะรวบทั้ง Action (*...*) และ Dialogue เข้าด้วยกัน พร้อมแนบ voice_over
+ * - คืนค่าประวัติย้อนหลังตามจำนวน maxTurns (6 เทิร์น = 12 ข้อความ)
+ */
+function buildTurnHistory(messages: ChatMessage[], maxTurns = 6): TurnHistoryItem[] {
+  const turns: TurnHistoryItem[] = []
+  let pendingUser: TurnHistoryItem | null = null
+  let botActions: string[] = []
+  let botDialogues: string[] = []
+  let botVo: string | undefined = undefined
+
+  const flushBot = () => {
+    if (pendingUser) {
+      turns.push(pendingUser)
+      pendingUser = null
+    }
+    if (botActions.length > 0 || botDialogues.length > 0) {
+      const actionText = botActions.join(' ').trim()
+      const dialogueText = botDialogues.join(' ').trim()
+
+      let content = ''
+      if (actionText && dialogueText) {
+        content = `*(${actionText})* ${dialogueText}`
+      } else if (actionText) {
+        content = `*(${actionText})*`
+      } else {
+        content = dialogueText
+      }
+
+      turns.push({
+        role: 'assistant',
+        content,
+        action: actionText || undefined,
+        voice_over: botVo,
+      })
+
+      botActions = []
+      botDialogues = []
+      botVo = undefined
+    } else if (botVo) {
+      turns.push({
+        role: 'assistant',
+        content: `[บรรยายฉาก]: ${botVo}`,
+        voice_over: botVo,
+      })
+      botVo = undefined
+    }
+  }
+
+  for (const m of messages) {
+    if (m.type === 'date') continue
+
+    if (m.sender === 'me') {
+      flushBot()
+      pendingUser = {
+        role: 'user',
+        content: m.text,
+      }
+    } else if (m.type === 'vo') {
+      botVo = m.text
+    } else if (m.type === 'action') {
+      botActions.push(m.text)
+    } else if (m.type === 'msg' || !m.type) {
+      botDialogues.push(m.text)
+    }
+  }
+
+  flushBot()
+
+  // 1 เทิร์น = 2 ข้อความ (User 1 + Assistant 1)
+  // ตัดประวัติย้อนหลัง maxTurns เทิร์น (6 เทิร์น = 12 ข้อความ)
+  const maxItems = maxTurns * 2
+  return turns.slice(-maxItems)
+}
+
 export function ChatRoom({
   chat = MOCK_CHATS[0],
   messages: _messages = [],
@@ -344,12 +428,7 @@ export function ChatRoom({
       }
 
       const turnTimestamp = Date.now()
-      const historyPayload = chatMessages
-        .filter(m => m.type === 'msg')
-        .map(m => ({
-          role: m.sender === 'me' ? 'user' : 'assistant',
-          content: m.text,
-        }))
+      const historyPayload = buildTurnHistory(chatMessages, 6)
 
       await streamChatMessage(
         {

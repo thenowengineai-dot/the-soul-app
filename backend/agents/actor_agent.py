@@ -58,7 +58,8 @@ class ActorAgent:
             
             parts = []
             if a_text and str(a_text).lower() not in ["none", "null", ""]:
-                parts.append(f"({a_text})")
+                if f"({a_text})" not in str(c_text) and f"*{a_text}*" not in str(c_text):
+                    parts.append(f"({a_text})")
             if c_text and str(c_text).lower() not in ["none", "null", ""]:
                 parts.append(str(c_text))
                 
@@ -71,6 +72,17 @@ class ActorAgent:
                 text = f"[SYSTEM]: {text}"
                 
             contents.append({"role": role, "parts": [{"text": text}]})
+            
+        # 🌟 รวมข้อความที่มี Role ซ้ำกันติดกันให้กลายเป็น 1 เทิร์น (Strict Alternating Sequence)
+        merged_contents = []
+        for item in contents:
+            if merged_contents and merged_contents[-1]["role"] == item["role"]:
+                prev_text = merged_contents[-1]["parts"][0]["text"]
+                curr_text = item["parts"][0]["text"]
+                merged_contents[-1]["parts"][0]["text"] = f"{prev_text}\n{curr_text}"
+            else:
+                merged_contents.append(item)
+        contents = merged_contents
             
         # 🌟 [CRITICAL FIX] ป้องกัน Vertex AI บั๊ก "contents are required" กรณีเริ่มฉากใหม่ Turn 0 (Prologue)
         if not contents:

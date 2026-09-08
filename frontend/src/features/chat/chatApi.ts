@@ -237,7 +237,7 @@ export async function streamChatMessage(
     characterId: string
     worldId?: string
     message: string
-    history?: Array<{ role: string; content: string }>
+    history?: Array<{ role: string; content: string; action?: string; voice_over?: string }>
   },
   callbacks: StreamChatCallbacks
 ): Promise<void> {

@@ -461,11 +461,17 @@ class ContextBuilder:
             
             for msg in reversed(chat_history):
                 orig_role = msg.get("original_role", msg.get("role"))
-                if orig_role == "director_vo":
+                if (orig_role == "director_vo" or orig_role == "system") and not last_vo:
                     last_vo = msg.get("content")
-                elif orig_role == "assistant":
-                    last_action = msg.get("action")
-                    last_dialogue = msg.get("content")
+                elif orig_role in ["assistant", "ai", "model"]:
+                    if not last_action and msg.get("action"):
+                        last_action = msg.get("action")
+                    if not last_dialogue and msg.get("content"):
+                        last_dialogue = msg.get("content")
+                    if not last_vo and msg.get("voice_over"):
+                        last_vo = msg.get("voice_over")
+                if last_dialogue and (last_action or last_vo):
+                    break
             
             context_parts = []
             if last_vo and str(last_vo).lower() not in ["null", "none", ""]:

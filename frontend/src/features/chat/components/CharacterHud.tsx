@@ -10,13 +10,14 @@ import {
   Clock, 
   CloudRain, 
   Shirt, 
-  Smile 
+  Smile,
+  Terminal,
 } from 'lucide-react'
 import type { CharacterHudProps } from '../types'
 
 type HudWidth = 'normal' | 'wide'
 
-function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
+function CharacterHud({ data, isOpen, onClose, onOpenInspector }: CharacterHudProps) {
   const [hudWidth, setHudWidth] = useState<HudWidth>(() => {
     const saved = localStorage.getItem('solccai_hud_width')
     return saved === 'normal' ? 'normal' : 'wide'
@@ -78,6 +79,18 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
           </div>
 
           <div className="flex items-center gap-1.5 relative" ref={menuRef}>
+            {/* Dev Inspector Shortcut Button */}
+            {onOpenInspector && (
+              <button
+                type="button"
+                onClick={onOpenInspector}
+                title="สลับไปหน้าต่างตรวจสอบเควสต์ & บีท (Dev Inspector)"
+                className="w-7 h-7 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-400 flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 select-none"
+              >
+                <Terminal size={13} strokeWidth={2} />
+              </button>
+            )}
+
             {/* 3-Dots Settings Button */}
             <button
               type="button"

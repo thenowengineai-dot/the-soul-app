@@ -8,6 +8,7 @@ import type { CompanionInspectorProps } from '../types'
 export function CompanionInspectorDrawer({
   isOpen,
   onClose,
+  onSwitchToHud,
   role = 'creator',
   characterName = 'ตัวละคร',
   turnLogs = [],
@@ -28,12 +29,12 @@ export function CompanionInspectorDrawer({
       {/* 1. Backdrop Overlay (สำหรับจอมือถือ/แท็บเล็ต) */}
       <div 
         onClick={onClose}
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden transition-opacity"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] lg:hidden transition-opacity"
       />
 
       {/* 2. Main Container: Bottom Sheet on Mobile, Right Panel on Desktop */}
       <aside 
-        className={`fixed z-50 bg-[#090909]/95 backdrop-blur-2xl border-[#2F3336] shadow-2xl flex flex-col transition-all duration-300 select-none
+        className={`fixed z-[60] bg-[#090909]/95 backdrop-blur-2xl border-[#2F3336] shadow-2xl flex flex-col transition-all duration-300 select-none
           inset-x-0 bottom-0 max-h-[88vh] rounded-t-3xl border-t
           lg:inset-y-0 lg:right-0 lg:left-auto lg:max-h-full lg:rounded-none lg:border-l lg:border-t-0 lg:w-[440px] xl:w-[480px]
         `}
@@ -88,6 +89,17 @@ export function CompanionInspectorDrawer({
                   Creator
                 </button>
               </div>
+            )}
+
+            {onSwitchToHud && (
+              <button
+                type="button"
+                onClick={onSwitchToHud}
+                className="px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/10 text-[10.5px] font-mono text-[#ACACB2] hover:text-[#F2F2F5] border border-white/10 flex items-center gap-1 transition-all cursor-pointer shrink-0"
+                title="สลับไปหน้าต่างสถานะตัวละคร (Character HUD)"
+              >
+                <span>👤 HUD</span>
+              </button>
             )}
 
             <button

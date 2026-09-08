@@ -50,6 +50,7 @@ export interface LiveStateGauges {
 export interface CompanionInspectorProps {
   isOpen: boolean
   onClose: () => void
+  onSwitchToHud?: () => void
   role?: UserConsoleRole
   isCreator?: boolean
   characterName?: string

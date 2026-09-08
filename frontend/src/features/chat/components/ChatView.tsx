@@ -32,8 +32,31 @@ function ChatView({
   const [prevActive, setPrevActive] = useState<ChatConversation | null | undefined>(activeCharacter);
   const [selectedChat, setSelectedChat] = useState<ChatConversation>(() => activeCharacter || MOCK_CHATS[0]);
   const [isChatListOpen, setIsChatListOpen] = useState<boolean>(true);
-  const [isHudOpen, setIsHudOpen] = useState<boolean>(true);
+  const [activeRightPanel, setActiveRightPanel] = useState<'none' | 'hud' | 'inspector'>('hud');
   const [liveHudData, setLiveHudData] = useState<CharacterHudData>(() => getCharacterHudData(activeCharacter || MOCK_CHATS[0]));
+
+  const isHudOpen = activeRightPanel === 'hud';
+  const isInspectorOpen = activeRightPanel === 'inspector';
+
+  const handleToggleHud = () => {
+    setActiveRightPanel(prev => prev === 'hud' ? 'none' : 'hud');
+  };
+
+  const handleToggleInspector = () => {
+    setActiveRightPanel(prev => prev === 'inspector' ? 'none' : 'inspector');
+  };
+
+  const handleCloseRightPanel = () => {
+    setActiveRightPanel('none');
+  };
+
+  const handleSwitchToHud = () => {
+    setActiveRightPanel('hud');
+  };
+
+  const handleSwitchToInspector = () => {
+    setActiveRightPanel('inspector');
+  };
 
   if (activeCharacter && activeCharacter !== prevActive) {
     setPrevActive(activeCharacter);
@@ -110,7 +133,11 @@ function ChatView({
         isChatListOpen={isChatListOpen}
         onToggleChatList={() => setIsChatListOpen(prev => !prev)}
         isHudOpen={isHudOpen}
-        onToggleHud={() => setIsHudOpen(prev => !prev)}
+        onToggleHud={handleToggleHud}
+        isInspectorOpen={isInspectorOpen}
+        onToggleInspector={handleToggleInspector}
+        onCloseInspector={handleCloseRightPanel}
+        onSwitchToHud={handleSwitchToHud}
         coinBalance={coinBalance}
         notificationCount={notificationCount}
         onCoinClick={onCoinClick}
@@ -133,7 +160,8 @@ function ChatView({
       <CharacterHud 
         data={liveHudData}
         isOpen={isHudOpen}
-        onClose={() => setIsHudOpen(false)}
+        onClose={handleCloseRightPanel}
+        onOpenInspector={handleSwitchToInspector}
       />
     </div>
   )

@@ -135,6 +135,8 @@ export interface ChatRoomProps {
   onToggleHud?: () => void
   isInspectorOpen?: boolean
   onToggleInspector?: () => void
+  onCloseInspector?: () => void
+  onSwitchToHud?: () => void
   coinBalance?: number
   notificationCount?: number
   onCoinClick?: () => void
@@ -236,6 +238,7 @@ export interface CharacterHudProps {
   data?: CharacterHudData
   isOpen: boolean
   onClose: () => void
+  onOpenInspector?: () => void
 }
 
 // ----------------------------------------------------------------------

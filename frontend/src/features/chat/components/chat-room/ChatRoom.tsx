@@ -127,6 +127,10 @@ export function ChatRoom({
   onCloseProfileDropdown,
   onEditProfileClick,
   onSignOut,
+  isInspectorOpen: propIsInspectorOpen,
+  onToggleInspector,
+  onCloseInspector,
+  onSwitchToHud,
   onCoinBalanceUpdate,
   onHudUpdate,
 }: ChatRoomProps) {
@@ -144,7 +148,19 @@ export function ChatRoom({
   } | null>(null)
 
   // 🧭 Dev Console / Quest & Beat Inspector State
-  const [isInspectorOpen, setIsInspectorOpen] = useState(false)
+  const [internalIsInspectorOpen, setInternalIsInspectorOpen] = useState(false)
+  const isInspectorOpen = propIsInspectorOpen !== undefined ? propIsInspectorOpen : internalIsInspectorOpen
+  const toggleInspector = onToggleInspector || (() => setInternalIsInspectorOpen(prev => !prev))
+  const closeInspector = () => {
+    if (onCloseInspector) {
+      onCloseInspector()
+    } else if (onToggleInspector && isInspectorOpen) {
+      onToggleInspector()
+    } else {
+      setInternalIsInspectorOpen(false)
+    }
+  }
+
   const [turnLogs, setTurnLogs] = useState<TurnLogEntry[]>([])
   const [questState, setQuestState] = useState<QuestBeatState | undefined>(undefined)
   const [liveGauges, setLiveGauges] = useState<LiveStateGauges | undefined>(undefined)
@@ -813,7 +829,7 @@ export function ChatRoom({
           isHudOpen={isHudOpen}
           onToggleHud={onToggleHud}
           isInspectorOpen={isInspectorOpen}
-          onToggleInspector={() => setIsInspectorOpen(prev => !prev)}
+          onToggleInspector={toggleInspector}
           coinBalance={coinBalance}
           notificationCount={notificationCount}
           onCoinClick={onCoinClick}
@@ -912,7 +928,8 @@ export function ChatRoom({
       {/* Companion Quest & Dev Inspector Drawer */}
       <CompanionInspectorDrawer
         isOpen={isInspectorOpen}
-        onClose={() => setIsInspectorOpen(false)}
+        onClose={closeInspector}
+        onSwitchToHud={onSwitchToHud}
         role={consoleRole}
         characterName={currentChat.name}
         turnLogs={turnLogs}

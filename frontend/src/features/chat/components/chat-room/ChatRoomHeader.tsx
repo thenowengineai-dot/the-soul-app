@@ -33,7 +33,7 @@ export function ChatRoomHeader({
 
   return (
     <div className="sticky top-0 z-30 w-full pl-2 sm:pl-3 pr-2 sm:pr-4 pt-3 pb-2 flex items-center justify-between pointer-events-none select-none relative">
-      {/* Left: [Toggle ChatList Button] + [Toggle Inspector Button] */}
+      {/* Left: [Toggle ChatList Button] */}
       <div className="flex items-center gap-1.5 pointer-events-auto">
         <button
           type="button"
@@ -47,21 +47,6 @@ export function ChatRoomHeader({
             <PanelLeftOpen size={16} strokeWidth={1.8} />
           )}
         </button>
-
-        {onToggleInspector && (
-          <button
-            type="button"
-            onClick={onToggleInspector}
-            title={isInspectorOpen ? 'ปิดหน้าต่างตรวจสอบเควสต์ (Inspector)' : 'เปิดหน้าต่างตรวจสอบเควสต์ & บีท (Inspector)'}
-            className={`w-8 h-8 rounded-full backdrop-blur-xl border transition-all cursor-pointer shadow-lg active:scale-95 flex items-center justify-center select-none ${
-              isInspectorOpen
-                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 shadow-emerald-500/10'
-                : 'bg-[#121212]/65 border-white/[0.07] hover:border-white/20 hover:bg-white/10 text-app-secondary hover:text-emerald-400'
-            }`}
-          >
-            <Terminal size={14} strokeWidth={2} />
-          </button>
-        )}
       </div>
 
       {/* Center: Character Identity & Status Pill (Dual-Line Stacked Glassmorphism Pill: รูป + ชื่อ + สถานะ + Chevron) */}
@@ -120,6 +105,25 @@ export function ChatRoomHeader({
           onEditProfileClick={onEditProfileClick}
           onSignOut={onSignOut}
         />
+
+        {/* Toggle Inspector Button (Dev Console) - เด่นชัด สีเขียวมรกต อยู่ฝั่งขวาติดกับ HUD */}
+        {onToggleInspector && (
+          <button
+            type="button"
+            onClick={onToggleInspector}
+            title={isInspectorOpen ? 'ปิดหน้าต่าง Dev Console & Inspector' : 'เปิดหน้าต่าง Dev Console & Inspector'}
+            className={`h-8 px-2.5 rounded-full backdrop-blur-xl border transition-all cursor-pointer shadow-lg active:scale-95 flex items-center gap-1.5 select-none ${
+              isInspectorOpen
+                ? 'bg-emerald-500/25 text-emerald-300 border-emerald-500/50 shadow-emerald-500/15'
+                : 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/40'
+            }`}
+          >
+            <Terminal size={14} strokeWidth={2.2} />
+            <span className="text-[11px] font-mono font-bold tracking-wide hidden sm:inline">
+              DEV
+            </span>
+          </button>
+        )}
 
         {/* Toggle Character HUD Button (แสดงเฉพาะตอนที่ HUD ซ่อนอยู่ เพื่อให้มีปุ่มปิดเปิดเพียงปุ่มเดียวที่ขวาสุด) */}
         {onToggleHud && !isHudOpen && (

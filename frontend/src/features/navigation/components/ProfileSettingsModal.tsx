@@ -367,7 +367,7 @@ export function ProfileSettingsModal({
                 {/* โค้ดแนะนำสำหรับทดสอบ */}
                 <div className="pt-2 border-t border-white/5">
                   <span className="text-[11.5px] text-app-secondary/70">
-                    💡 โค้ดทดสอบ: ลองพิมพ์ <code className="text-amber-300 bg-white/10 px-1.5 py-0.5 rounded text-[11px]">WELCOME100</code> (+100 เหรียญ) หรือ <code className="text-amber-300 bg-white/10 px-1.5 py-0.5 rounded text-[11px]">SOULFREE</code> (+500 เหรียญ)
+                    💡 โค้ดทดสอบ: ลองพิมพ์ <code className="text-amber-300 bg-white/10 px-1.5 py-0.5 rounded text-[11px]">SOUL2026</code> (+300 เหรียญ) หรือ <code className="text-amber-300 bg-white/10 px-1.5 py-0.5 rounded text-[11px]">WELCOME100</code> (+100 เหรียญ)
                   </span>
                 </div>
               </div>

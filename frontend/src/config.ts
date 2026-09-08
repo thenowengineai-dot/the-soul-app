@@ -6,3 +6,8 @@
 export const API_BASE_URL: string =
   (import.meta.env.VITE_API_BASE_URL as string) ||
   'https://the-soul-backend-330377476882.asia-southeast1.run.app';
+
+export const GOOGLE_CLIENT_ID: string =
+  (import.meta.env.VITE_GOOGLE_CLIENT_ID as string) ||
+  '330377476882-3aa1uknr6f6psvlrrgaq82bccucpjdru.apps.googleusercontent.com';
+

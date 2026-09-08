@@ -37,12 +37,67 @@ export function ChatRoom({
   const [isSessionLoading, setIsSessionLoading] = useState(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [prevChatId, setPrevChatId] = useState<string | number>(currentChat.id)
 
   if (currentChat.id !== prevChatId) {
     setPrevChatId(currentChat.id)
     setIsSessionLoading(true)
   }
+
+  // ป้องกันการเด้งดึ๋ง (Elastic Rubber-Band Bounce) เมื่อเลื่อนถึงบนสุดและล่างสุด ให้หยุดนิ่งสนิท
+  useEffect(() => {
+    const el = scrollContainerRef.current
+    if (!el) return
+
+    const handleWheel = (e: WheelEvent) => {
+      const canScroll = el.scrollHeight > el.clientHeight
+      if (!canScroll) {
+        e.preventDefault()
+        return
+      }
+
+      const isAtTop = el.scrollTop <= 0
+      const isAtBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 1
+
+      if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
+        e.preventDefault()
+      }
+    }
+
+    let touchStartY = 0
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0]?.clientY || 0
+    }
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const currentY = e.touches[0]?.clientY || 0
+      const deltaY = touchStartY - currentY
+      const canScroll = el.scrollHeight > el.clientHeight
+
+      if (!canScroll) {
+        if (e.cancelable) e.preventDefault()
+        return
+      }
+
+      const isAtTop = el.scrollTop <= 0
+      const isAtBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 1
+
+      if ((isAtTop && deltaY < 0) || (isAtBottom && deltaY > 0)) {
+        if (e.cancelable) e.preventDefault()
+      }
+    }
+
+    el.addEventListener('wheel', handleWheel, { passive: false })
+    el.addEventListener('touchstart', handleTouchStart, { passive: true })
+    el.addEventListener('touchmove', handleTouchMove, { passive: false })
+
+    return () => {
+      el.removeEventListener('wheel', handleWheel)
+      el.removeEventListener('touchstart', handleTouchStart)
+      el.removeEventListener('touchmove', handleTouchMove)
+    }
+  }, [])
 
   // 1. ลงทะเบียน Guest Account ครั้งแรกในเบื้องหลัง
   useEffect(() => {
@@ -234,9 +289,13 @@ export function ChatRoom({
   }
 
   return (
-    <div className="flex-1 h-full flex flex-col bg-app-bg z-0 overflow-hidden relative min-w-0">
+    <div className="flex-1 h-full flex flex-col bg-app-bg z-0 overflow-hidden relative min-w-0 overscroll-none">
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col no-scrollbar relative overscroll-contain touch-pan-y">
+      <div 
+        ref={scrollContainerRef}
+        style={{ overscrollBehavior: 'none', overscrollBehaviorY: 'none' }}
+        className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col no-scrollbar relative overscroll-none touch-pan-y"
+      >
         {/* Floating Sticky Header (Frameless Glassmorphism Pills) */}
         <ChatRoomHeader
           chat={currentChat}

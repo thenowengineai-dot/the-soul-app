@@ -154,7 +154,10 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
         </div>
 
         {/* Scrollable HUD Content Body */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-3.5 space-y-3.5 sm:space-y-4 custom-scrollbar">
+        <div 
+          style={{ overscrollBehavior: 'none' }}
+          className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-3.5 space-y-3.5 sm:space-y-4 custom-scrollbar overscroll-none touch-pan-y"
+        >
           
           {/* 2. Zone 1: Visual State (ภาพตัวละคร 9:16 สว่างคมชัดเต็มใบ พร้อมป้ายกระจกฝ้าลอยแนบส่วนล่างอย่างหรูหรา) */}
           <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-[#121214] shadow-xl group aspect-[9/16] w-full">

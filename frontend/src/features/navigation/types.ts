@@ -90,6 +90,11 @@ export interface SidebarProps {
   followedCreators?: FollowedCreator[]
   onCreatorClick?: (creatorId: string) => void
   isHomeMode?: boolean
+  userName?: string
+  userInitial?: string
+  userHandle?: string
+  isLoggedIn?: boolean
+  onLoginClick?: () => void
 }
 
 

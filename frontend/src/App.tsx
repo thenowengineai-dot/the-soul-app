@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Sidebar, AuthModal, ProfileSettingsModal } from './features/navigation'
 import { HomeView, HomeTopBar } from './features/home'
+import { ProfileView } from './features/profile'
 import {
   ChatView,
   type ChatConversation,
@@ -15,7 +16,7 @@ import type { Character } from './features/characters'
 function App() {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState<boolean>(false);
   const [selectedMenu, setSelectedMenu] = useState<string>('home');
-  const [currentView, setCurrentView] = useState<'home' | 'chat'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'chat' | 'profile'>('home');
   const [activeChatCharacter, setActiveChatCharacter] = useState<ChatConversation | null>(null);
 
   // 1. Identity & Auth State
@@ -52,6 +53,9 @@ function App() {
     setSelectedMenu(id);
     if (id === 'home') {
       setCurrentView('home');
+    } else if (id === 'profile' || id === 'settings') {
+      setCurrentView('profile');
+      setIsSidebarExpanded(false);
     } else {
       setCurrentView('chat');
       setIsSidebarExpanded(false);
@@ -277,7 +281,7 @@ function App() {
   return (
     <div className="h-screen w-full bg-app-bg text-app-primary font-sans flex flex-col relative overflow-hidden">
       {/* 1. Main View Rendering */}
-      {currentView === 'home' ? (
+      {currentView === 'profile' ? (
         <>
           {/* Full-Width Top Bar */}
           <HomeTopBar 
@@ -297,7 +301,64 @@ function App() {
             onCloseProfileDropdown={() => setIsProfileDropdownOpen(false)}
             onEditProfileClick={() => {
               setIsProfileDropdownOpen(false);
-              setIsProfileModalOpen(true);
+              handleMenuClick('profile');
+            }}
+            onSignOut={handleSignOut}
+          />
+
+          {/* Lower Area: Sidebar + ProfileView */}
+          <div className="flex-1 flex relative overflow-hidden overscroll-none touch-pan-y">
+            <Sidebar 
+              isSidebarExpanded={isSidebarExpanded}
+              setIsSidebarExpanded={setIsSidebarExpanded}
+              selectedMenu={selectedMenu}
+              handleMenuClick={handleMenuClick}
+              onLogoClick={handleBackToHome}
+              onComposeClick={() => handleNavigateToChat()}
+              isHomeMode={true}
+              userName={userName}
+              userInitial={userInitial}
+              userHandle={userProfile.username}
+              isLoggedIn={isLoggedIn}
+              onLoginClick={handleLoginClick}
+            />
+            <ProfileView 
+              userName={userName}
+              userEmail={userEmail}
+              userInitial={userInitial}
+              coinBalance={coinBalance}
+              pronouns={userProfile.pronouns}
+              aboutMe={userProfile.aboutMe}
+              username={userProfile.username}
+              onSaveProfile={handleSaveProfile}
+              onRedeemCoupon={handleRedeemCoupon}
+              onSignOut={handleSignOut}
+              onBackToHome={handleBackToHome}
+              onTopUpCoins={handleCoinClick}
+            />
+          </div>
+        </>
+      ) : currentView === 'home' ? (
+        <>
+          {/* Full-Width Top Bar */}
+          <HomeTopBar 
+            onLogoClick={handleBackToHome}
+            coinBalance={coinBalance}
+            notificationCount={notificationCount}
+            onCoinClick={handleCoinClick}
+            onNotificationClick={handleNotificationClick}
+            onProfileClick={handleProfileClick}
+            userInitial={userInitial}
+            userName={userName}
+            userEmail={userEmail}
+            isLoggedIn={isLoggedIn}
+            onLoginClick={handleLoginClick}
+            onSignupClick={handleSignupClick}
+            isProfileDropdownOpen={isProfileDropdownOpen}
+            onCloseProfileDropdown={() => setIsProfileDropdownOpen(false)}
+            onEditProfileClick={() => {
+              setIsProfileDropdownOpen(false);
+              handleMenuClick('profile');
             }}
             onSignOut={handleSignOut}
           />
@@ -312,6 +373,11 @@ function App() {
               onLogoClick={handleBackToHome}
               onComposeClick={() => handleNavigateToChat()}
               isHomeMode={true}
+              userName={userName}
+              userInitial={userInitial}
+              userHandle={userProfile.username}
+              isLoggedIn={isLoggedIn}
+              onLoginClick={handleLoginClick}
             />
             <HomeView 
               onNavigateToChat={handleNavigateToChat}
@@ -338,6 +404,11 @@ function App() {
             onLogoClick={handleBackToHome}
             onComposeClick={() => handleNavigateToChat()}
             isHomeMode={false}
+            userName={userName}
+            userInitial={userInitial}
+            userHandle={userProfile.username}
+            isLoggedIn={isLoggedIn}
+            onLoginClick={handleLoginClick}
           />
           <ChatView 
             onBackToHome={handleBackToHome}
@@ -357,7 +428,7 @@ function App() {
             onCloseProfileDropdown={() => setIsProfileDropdownOpen(false)}
             onEditProfileClick={() => {
               setIsProfileDropdownOpen(false);
-              setIsProfileModalOpen(true);
+              handleMenuClick('profile');
             }}
             onSignOut={handleSignOut}
           />

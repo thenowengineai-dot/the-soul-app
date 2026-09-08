@@ -1,4 +1,4 @@
-import { Menu, SquarePlus, Settings } from 'lucide-react'
+import { Menu, SquarePlus, Settings, User } from 'lucide-react'
 import { SIDEBAR_MENU } from '../mockData'
 import CreatorSubscriptions from './CreatorSubscriptions'
 import type { SidebarProps } from '../types'
@@ -75,6 +75,11 @@ function Sidebar({
   followedCreators,
   onCreatorClick,
   isHomeMode = false,
+  userName = 'Alice',
+  userInitial = 'A',
+  userHandle = '@alice',
+  isLoggedIn = false,
+  onLoginClick,
 }: SidebarProps) {
   const handleLogo = onLogoClick || (() => handleMenuClick('home'));
   const handleCompose = onComposeClick || (() => handleMenuClick('chats'));
@@ -196,18 +201,97 @@ function Sidebar({
 
       </div>
 
-      {/* Settings at bottom (Fixed with hairline top border) - 44px Standard */}
-      <div className="mt-auto pt-2.5 border-t border-app-border w-full">
+      {/* Bottom Area: User Profile Dock (Twitter/X & ChatGPT Style) + Settings */}
+      <div className="mt-auto pt-2 border-t border-app-border w-full flex flex-col gap-1.5">
+        {/* User Profile Dock: คลิกเพื่อเข้าหน้าโปรไฟล์ & ศูนย์ควบคุม */}
+        {isLoggedIn ? (
+          isSidebarExpanded ? (
+            <button
+              type="button"
+              title="โปรไฟล์ & ศูนย์ควบคุมของคุณ"
+              onClick={() => handleMenuClick('profile')}
+              className={`w-full h-[48px] flex items-center gap-2.5 px-2 rounded-2xl cursor-pointer transition-all duration-150 text-left ${
+                selectedMenu === 'profile'
+                  ? 'bg-white/15 border border-white/20 text-white font-medium shadow-md'
+                  : 'hover:bg-white/10 text-app-primary border border-transparent'
+              }`}
+            >
+              <div className="relative shrink-0">
+                <div className="w-[34px] h-[34px] rounded-full ring-1 ring-[#2F3336] bg-gradient-to-br from-[#2D2D32] to-[#1C1C1E] flex items-center justify-center">
+                  <span className="text-[13px] font-bold text-app-primary leading-none">
+                    {userInitial}
+                  </span>
+                </div>
+                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-[rgb(13,13,13)]" />
+              </div>
+              <div className="flex-1 min-w-0 flex flex-col justify-center">
+                <span className="text-[13px] font-bold truncate leading-tight">
+                  {userName}
+                </span>
+                <span className="text-[11px] text-app-secondary truncate leading-tight">
+                  {userHandle || '@traveler'}
+                </span>
+              </div>
+            </button>
+          ) : (
+            <div className="relative flex items-center justify-center w-full">
+              <button
+                type="button"
+                title={`โปรไฟล์: ${userName}`}
+                onClick={() => handleMenuClick('profile')}
+                className={`w-[44px] h-[44px] flex items-center justify-center rounded-xl cursor-pointer transition-all duration-150 ${
+                  selectedMenu === 'profile'
+                    ? 'bg-white/15 border border-white/20'
+                    : 'hover:bg-white/10'
+                }`}
+              >
+                <div className="relative">
+                  <div className="w-[32px] h-[32px] rounded-full ring-1 ring-[#2F3336] bg-gradient-to-br from-[#2D2D32] to-[#1C1C1E] flex items-center justify-center">
+                    <span className="text-[12px] font-bold text-app-primary leading-none">
+                      {userInitial}
+                    </span>
+                  </div>
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 ring-1.5 ring-[rgb(13,13,13)]" />
+                </div>
+              </button>
+            </div>
+          )
+        ) : (
+          /* Guest Mode: ปุ่มเข้าสู่ระบบแบบกระชับ */
+          isSidebarExpanded ? (
+            <button
+              type="button"
+              onClick={onLoginClick}
+              className="w-full h-[40px] flex items-center justify-center gap-2 px-3 rounded-xl bg-[#EF264C] hover:bg-[#d91d40] text-white text-[13px] font-bold cursor-pointer transition-all shadow-sm active:scale-95"
+            >
+              <User size={15} />
+              <span>เข้าสู่ระบบ</span>
+            </button>
+          ) : (
+            <div className="relative flex items-center justify-center w-full">
+              <button
+                type="button"
+                title="เข้าสู่ระบบ"
+                onClick={onLoginClick}
+                className="w-[44px] h-[44px] flex items-center justify-center rounded-xl bg-[#EF264C]/15 hover:bg-[#EF264C]/25 text-[#EF264C] border border-[#EF264C]/30 cursor-pointer transition-all duration-150 active:scale-95"
+              >
+                <User size={18} strokeWidth={2.2} />
+              </button>
+            </div>
+          )
+        )}
+
+        {/* Settings Button */}
         {isSidebarExpanded ? (
           <button
             type="button"
             onClick={() => handleMenuClick('settings')}
-            className={`w-full h-[44px] flex items-center gap-3 px-2.5 rounded-xl cursor-pointer transition-all duration-150 text-left text-app-primary hover:bg-white/10 ${
-              selectedMenu === 'settings' ? 'font-medium' : ''
+            className={`w-full h-[40px] flex items-center gap-3 px-2.5 rounded-xl cursor-pointer transition-all duration-150 text-left text-app-secondary hover:text-app-primary hover:bg-white/5 ${
+              selectedMenu === 'settings' ? 'font-medium text-app-primary bg-white/5' : ''
             }`}
           >
-            <Settings strokeWidth={2.2} size={20} className="flex-shrink-0" />
-            <span className="text-[13.5px] truncate leading-tight">
+            <Settings strokeWidth={2.2} size={18} className="flex-shrink-0" />
+            <span className="text-[13px] truncate leading-tight">
               การตั้งค่า
             </span>
           </button>
@@ -217,9 +301,9 @@ function Sidebar({
               type="button"
               title="การตั้งค่า"
               onClick={() => handleMenuClick('settings')}
-              className="w-[44px] h-[44px] flex items-center justify-center rounded-xl cursor-pointer transition-all duration-150 text-app-primary hover:bg-white/10"
+              className="w-[44px] h-[40px] flex items-center justify-center rounded-xl cursor-pointer transition-all duration-150 text-app-secondary hover:text-app-primary hover:bg-white/5"
             >
-              <Settings strokeWidth={2.2} size={20} />
+              <Settings strokeWidth={2.2} size={18} />
             </button>
           </div>
         )}
@@ -230,3 +314,4 @@ function Sidebar({
 }
 
 export default Sidebar;
+

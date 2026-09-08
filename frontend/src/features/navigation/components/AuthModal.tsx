@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, Mail, Sparkles } from 'lucide-react'
+import { X } from 'lucide-react'
 import type { AuthModalProps } from '../types'
 
 export function AuthModal({
@@ -41,7 +41,6 @@ export function AuthModal({
   }
 
   const handleGoogleClick = () => {
-    // ส่ง demo credential หรือ trigger google auth callback
     onGoogleSuccess?.('demo_google_credential_token')
   }
 
@@ -53,8 +52,8 @@ export function AuthModal({
         className="fixed inset-0 bg-black/75 backdrop-blur-md transition-opacity duration-200" 
       />
 
-      {/* 2. Modal Box Shell (Glassmorphism Dark) */}
-      <div className="relative w-full max-w-[440px] bg-[#121214]/95 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 sm:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.8)] z-10 animate-in fade-in zoom-in-95 duration-200 select-none">
+      {/* 2. Modal Box Shell สไตล์ Minimal ตามรูปเรฟ */}
+      <div className="relative w-full max-w-[400px] bg-[#121214]/95 backdrop-blur-2xl border border-white/10 rounded-3xl p-7 sm:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.85)] z-10 animate-in fade-in zoom-in-95 duration-200 select-none text-center">
         {/* ปุ่มปิด (X) */}
         <button
           type="button"
@@ -65,93 +64,105 @@ export function AuthModal({
           <X size={18} strokeWidth={2} />
         </button>
 
-        {/* Header: โลโก้ และข้อความต้อนรับ */}
-        <div className="text-center pt-2 pb-6">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-[#EF264C]/20 to-transparent border border-[#EF264C]/30 mb-3 shadow-inner">
-            <Sparkles className="text-[#EF264C]" size={24} />
+        {/* 1. โลโก้แบรนด์ Maomoi AI กลมเด่นตรงกลาง */}
+        <div className="flex justify-center mb-3.5 pt-1">
+          <div className="w-[58px] h-[58px] rounded-full overflow-hidden bg-white/5 border border-white/10 p-1 flex items-center justify-center shadow-lg">
+            <img src="/logo/logo.png" alt="Maomoi AI" className="w-full h-full object-contain" />
           </div>
-          <h2 className="text-[24px] sm:text-[26px] font-bold text-app-primary tracking-tight">
-            ยินดีต้อนรับสู่ Maomoi AI
-          </h2>
-          <p className="text-[13.5px] text-app-secondary mt-1 max-w-[280px] mx-auto leading-relaxed">
-            {mode === 'login' 
-              ? 'เข้าสู่ระบบเพื่อบันทึกเรื่องราวและความทรงจำของคุณ' 
-              : 'สมัครสมาชิกเพื่อเริ่มบทสนทนาที่ไร้ขีดจำกัด'}
-          </p>
         </div>
 
-        {/* 3. ปุ่มโซเชียล: Google One-Click Sign-In (ปุ่มหลักเด่นสุด) */}
-        <div className="space-y-3">
-          <button
-            type="button"
-            onClick={handleGoogleClick}
-            disabled={isSubmitting}
-            className="w-full h-[48px] sm:h-[50px] rounded-full bg-white hover:bg-[#F2F2F5] text-zinc-900 font-semibold text-[15px] flex items-center justify-center gap-3 shadow-md hover:shadow-lg transition-all active:scale-[0.98] cursor-pointer"
-          >
-            {/* Google 4-Color SVG Icon */}
-            <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
-              <path
-                fill="#4285F4"
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-              />
-              <path
-                fill="#34A853"
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-              />
-              <path
-                fill="#FBBC05"
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-              />
-              <path
-                fill="#EA4335"
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-              />
-            </svg>
-            <span>ดำเนินการต่อด้วย Google</span>
-          </button>
+        {/* 2. ข้อความต้อนรับ Welcome back / ยินดีต้อนรับกลับ */}
+        <h2 className="text-[26px] sm:text-[28px] font-bold text-[#F2F2F5] tracking-tight mb-6">
+          {mode === 'login' ? 'ยินดีต้อนรับกลับ' : 'สร้างบัญชีใหม่'}
+        </h2>
+
+        {/* 3. ปุ่มแคปซูล Google One-Click */}
+        <button
+          type="button"
+          onClick={handleGoogleClick}
+          disabled={isSubmitting}
+          className="w-full rounded-full border border-[#2F3336] bg-[#1D1D1F] hover:bg-white/[0.08] hover:border-white/30 px-4 py-2.5 flex items-center justify-between transition-all cursor-pointer group active:scale-[0.98]"
+        >
+          <div className="flex items-center gap-3 text-left">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#EF264C]/30 to-amber-500/30 border border-white/10 flex items-center justify-center text-[#F2F2F5] font-bold text-[13px] shrink-0">
+              M
+            </div>
+            <div>
+              <p className="text-[13.5px] font-semibold text-[#F2F2F5] leading-tight">
+                ดำเนินการต่อด้วย Google
+              </p>
+              <p className="text-[11px] text-[#ACACB2] leading-tight mt-0.5">
+                เข้าสู่ระบบทันทีในคลิกเดียว
+              </p>
+            </div>
+          </div>
+
+          {/* Google 4-Color SVG Icon */}
+          <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
+            <path
+              fill="#4285F4"
+              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+            />
+            <path
+              fill="#34A853"
+              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+            />
+            <path
+              fill="#FBBC05"
+              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+            />
+            <path
+              fill="#EA4335"
+              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+            />
+          </svg>
+        </button>
+
+        {/* 4. เส้นคั่นหรือคำว่า "หรือ" ตามเรฟ */}
+        <div className="text-center my-4 text-[13px] text-[#ACACB2]">
+          หรือ
         </div>
 
-        {/* 4. เส้นคั่น "หรือ (OR)" */}
-        <div className="flex items-center gap-3 my-5">
-          <div className="h-[1px] flex-1 bg-white/10" />
-          <span className="text-[11px] font-bold text-app-secondary uppercase tracking-widest px-1">
-            หรือ
-          </span>
-          <div className="h-[1px] flex-1 bg-white/10" />
-        </div>
-
-        {/* 5. ฟอร์มกรอกอีเมล */}
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div className="relative">
+        {/* 5. กล่องกรอกอีเมลทรงสี่เหลี่ยมมุมมนตามรูปเรฟ */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="rounded-2xl border border-[#2F3336] bg-[#1D1D1F] px-4 py-3 focus-within:border-[#EF264C] transition-colors text-left">
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="กรอกอีเมลของคุณ (เช่น user@gmail.com)"
-              className="w-full h-[46px] sm:h-[48px] bg-white/5 border border-white/10 focus:border-[#EF264C] focus:bg-black/60 rounded-full px-5 text-app-primary placeholder:text-app-secondary/60 text-[14px] sm:text-[14.5px] outline-none transition-all"
+              placeholder="ระบุอีเมลของคุณ (เช่น user@gmail.com)"
+              className="w-full bg-transparent text-[#F2F2F5] text-[15px] outline-none p-0 border-none placeholder:text-[#ACACB2]/50 font-normal"
             />
-            <Mail size={17} className="absolute right-4 top-1/2 -translate-y-1/2 text-app-secondary/50 pointer-events-none" />
           </div>
 
+          {/* ปุ่ม Continue / ดำเนินการต่อ */}
           <button
             type="submit"
             disabled={isSubmitting || !email.trim()}
-            className="w-full h-[46px] sm:h-[48px] rounded-full bg-[#EF264C] hover:bg-[#d91d40] disabled:opacity-50 text-white font-bold text-[15px] shadow-sm transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center"
+            className="w-full h-[48px] rounded-full bg-[#EF264C] hover:bg-[#d91d40] disabled:opacity-50 text-white font-bold text-[15px] shadow-sm transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center"
           >
             {isSubmitting ? (
               <span className="inline-block animate-spin mr-2">⏳</span>
             ) : null}
-            <span>{mode === 'login' ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก'}</span>
+            <span>ดำเนินการต่อ</span>
           </button>
         </form>
 
-        {/* 6. สลับโหมด เข้าสู่ระบบ ↔ สมัครสมาชิก */}
-        <div className="text-center mt-5">
+        {/* 6. ข้อตกลงการใช้งานตามเรฟ */}
+        <p className="text-[12px] text-[#ACACB2]/80 mt-5 leading-normal">
+          การดำเนินการต่อ ถือว่าคุณยอมรับ{' '}
+          <span className="underline cursor-pointer hover:text-[#F2F2F5]">ข้อกำหนด</span>{' '}
+          และ{' '}
+          <span className="underline cursor-pointer hover:text-[#F2F2F5]">นโยบายความเป็นส่วนตัว</span>
+        </p>
+
+        {/* 7. สลับโหมด เข้าสู่ระบบ ↔ สมัครสมาชิก */}
+        <div className="mt-4">
           <button
             type="button"
             onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
-            className="text-[13px] text-app-secondary hover:text-white transition-colors cursor-pointer"
+            className="text-[13px] text-[#ACACB2] hover:text-[#F2F2F5] transition-colors cursor-pointer"
           >
             {mode === 'login' ? (
               <>ยังไม่มีบัญชีผู้ใช้? <span className="text-[#EF264C] font-semibold underline underline-offset-4 ml-1">สมัครสมาชิก</span></>
@@ -160,14 +171,6 @@ export function AuthModal({
             )}
           </button>
         </div>
-
-        {/* 7. ข้อตกลงและเงื่อนไข (18+) */}
-        <p className="text-[11px] text-app-secondary/60 text-center leading-relaxed mt-6 pt-4 border-t border-white/5">
-          การดำเนินการต่อถือว่าคุณยืนยันว่ามีอายุ 18 ปีขึ้นไป และยอมรับ{' '}
-          <span className="text-app-secondary underline cursor-pointer hover:text-white">ข้อกำหนดการให้บริการ</span>{' '}
-          และ{' '}
-          <span className="text-app-secondary underline cursor-pointer hover:text-white">นโยบายความเป็นส่วนตัว</span>
-        </p>
       </div>
     </div>
   )

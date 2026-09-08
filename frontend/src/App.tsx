@@ -1,7 +1,15 @@
 import { useState } from 'react'
-import { Sidebar } from './features/navigation'
+import { Sidebar, AuthModal, ProfileSettingsModal } from './features/navigation'
 import { HomeView, HomeTopBar } from './features/home'
-import { ChatView, type ChatConversation, getCurrentUser } from './features/chat'
+import {
+  ChatView,
+  type ChatConversation,
+  getCurrentUser,
+  loginWithGoogle,
+  signOutUser,
+  saveUserIdentity,
+  type UserIdentity
+} from './features/chat'
 import type { Character } from './features/characters'
 
 function App() {
@@ -10,16 +18,35 @@ function App() {
   const [currentView, setCurrentView] = useState<'home' | 'chat'>('home');
   const [activeChatCharacter, setActiveChatCharacter] = useState<ChatConversation | null>(null);
 
-  const [coinBalance, setCoinBalance] = useState<number>(1250);
+  // 1. Identity & Auth State
+  const [currentUser, setCurrentUser] = useState<UserIdentity>(() => getCurrentUser());
+  const isLoggedIn = !currentUser.is_guest;
+
+  const [userName, setUserName] = useState<string>(() => {
+    return currentUser.name && !currentUser.is_guest ? currentUser.name : 'นักเดินทาง';
+  });
+  const [userInitial, setUserInitial] = useState<string>(() => {
+    return currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'N';
+  });
+  const [userEmail, setUserEmail] = useState<string>(() => currentUser.email || '');
+  const [userProfile, setUserProfile] = useState({
+    pronouns: currentUser.pronouns || 'คุณ',
+    aboutMe: currentUser.about_me || 'ชอบบทสนทนาที่เป็นกันเอง อบอุ่น และหยอกล้อเบาๆ',
+    username: currentUser.username || `@${(currentUser.name || 'user').toLowerCase().replace(/\s+/g, '_')}`,
+  });
+
+  // 2. Modals & Dropdowns State
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'signup'>('login');
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState<boolean>(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
+
+  // 3. Economy & Notification State
+  const [coinBalance, setCoinBalance] = useState<number>(() => {
+    const saved = localStorage.getItem('the_soul_coin_balance');
+    return saved ? parseInt(saved, 10) : 1250;
+  });
   const [notificationCount] = useState<number>(3);
-  const [userName] = useState<string>(() => {
-    const user = getCurrentUser();
-    return user && user.name && !user.is_guest ? user.name : 'นักเดินทาง';
-  });
-  const [userInitial] = useState<string>(() => {
-    const user = getCurrentUser();
-    return user && user.name ? user.name.charAt(0).toUpperCase() : 'N';
-  });
 
   const handleMenuClick = (id: string) => {
     setSelectedMenu(id);
@@ -62,45 +89,198 @@ function App() {
   };
 
   const handleCoinClick = () => {
-    setCoinBalance(prev => prev + 50);
+    setCoinBalance(prev => {
+      const next = prev + 50;
+      localStorage.setItem('the_soul_coin_balance', next.toString());
+      return next;
+    });
   };
 
   const handleNotificationClick = () => {
-    // Open notification center
+    // Notification center
   };
 
   const handleProfileClick = () => {
-    // Open profile menu
+    setIsProfileDropdownOpen(prev => !prev);
   };
 
-  if (currentView === 'home') {
-    return (
-      <div className="h-screen w-full bg-app-bg text-app-primary font-sans flex flex-col relative overflow-hidden">
-        {/* 1. Full-Width Top Bar (โลโก้เต็ม + กล่องค้นหา + ปุ่ม Action + เส้นแนวนอนยาวเต็มจอ) */}
-        <HomeTopBar 
-          onLogoClick={handleBackToHome}
-          coinBalance={coinBalance}
-          notificationCount={notificationCount}
-          onCoinClick={handleCoinClick}
-          onNotificationClick={handleNotificationClick}
-          onProfileClick={handleProfileClick}
-          userInitial={userInitial}
-          userName={userName}
-        />
+  const handleLoginClick = () => {
+    setAuthModalMode('login');
+    setIsAuthModalOpen(true);
+  };
 
-        {/* 2. Lower Area: Sidebar (isHomeMode={true}) + HomeView */}
-        <div className="flex-1 flex relative overflow-hidden overscroll-none touch-pan-y">
-          <Sidebar 
-            isSidebarExpanded={isSidebarExpanded}
-            setIsSidebarExpanded={setIsSidebarExpanded}
-            selectedMenu={selectedMenu}
-            handleMenuClick={handleMenuClick}
+  const handleSignupClick = () => {
+    setAuthModalMode('signup');
+    setIsAuthModalOpen(true);
+  };
+
+  // Google Login Callback
+  const handleGoogleSuccess = async (credential: string) => {
+    try {
+      if (credential && credential !== 'demo_google_credential_token') {
+        const user = await loginWithGoogle(credential);
+        setCurrentUser(user);
+        setUserName(user.name);
+        setUserInitial(user.name.charAt(0).toUpperCase());
+        setUserEmail(user.email || '');
+      } else {
+        // Instant Google One-Click Experience
+        const demoUser: UserIdentity = {
+          user_id: `usr_google_${Date.now()}`,
+          name: 'Google Traveler',
+          email: 'traveler@gmail.com',
+          username: '@google_traveler',
+          is_guest: false,
+          pronouns: 'คุณ',
+          about_me: 'ผู้ใช้ผ่าน Google Account พร้อมท่องโลก The Soul',
+          migrated_sessions: 1,
+        };
+        saveUserIdentity(demoUser);
+        setCurrentUser(demoUser);
+        setUserName(demoUser.name);
+        setUserInitial(demoUser.name.charAt(0).toUpperCase());
+        setUserEmail(demoUser.email || '');
+        setUserProfile({
+          pronouns: demoUser.pronouns || 'คุณ',
+          aboutMe: demoUser.about_me || '',
+          username: demoUser.username || '@google_traveler',
+        });
+      }
+      setIsAuthModalOpen(false);
+    } catch (err) {
+      console.warn('Google login failed, using client session:', err);
+      const demoUser: UserIdentity = {
+        user_id: `usr_google_${Date.now()}`,
+        name: 'Google Traveler',
+        email: 'traveler@gmail.com',
+        username: '@google_traveler',
+        is_guest: false,
+      };
+      saveUserIdentity(demoUser);
+      setCurrentUser(demoUser);
+      setUserName(demoUser.name);
+      setUserInitial(demoUser.name.charAt(0).toUpperCase());
+      setUserEmail(demoUser.email || '');
+      setIsAuthModalOpen(false);
+    }
+  };
+
+  // Email Submit Callback
+  const handleEmailSubmit = (email: string, mode: 'login' | 'signup') => {
+    const rawName = email.split('@')[0] || (mode === 'login' ? 'ผู้ใช้งาน' : 'สมาชิกใหม่');
+    const formattedName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+    const newUser: UserIdentity = {
+      user_id: `usr_${Date.now()}`,
+      name: formattedName,
+      email: email,
+      username: `@${rawName.toLowerCase().replace(/[^a-z0-9_]/g, '')}`,
+      is_guest: false,
+      pronouns: 'คุณ',
+      about_me: 'ชอบบทสนทนาที่เป็นกันเอง อบอุ่น และหยอกล้อเบาๆ',
+    };
+    saveUserIdentity(newUser);
+    setCurrentUser(newUser);
+    setUserName(newUser.name);
+    setUserInitial(newUser.name.charAt(0).toUpperCase());
+    setUserEmail(newUser.email || '');
+    setUserProfile({
+      pronouns: newUser.pronouns || 'คุณ',
+      aboutMe: newUser.about_me || '',
+      username: newUser.username || `@${rawName.toLowerCase()}`,
+    });
+    setIsAuthModalOpen(false);
+  };
+
+  // Sign Out Handler
+  const handleSignOut = () => {
+    const guest = signOutUser();
+    setCurrentUser(guest);
+    setUserName('นักเดินทาง');
+    setUserInitial('N');
+    setUserEmail('');
+    setIsProfileDropdownOpen(false);
+    setIsProfileModalOpen(false);
+  };
+
+  // Profile Save Handler
+  const handleSaveProfile = (updatedData: {
+    name: string;
+    username: string;
+    pronouns: string;
+    aboutMe: string;
+    avatarUrl?: string;
+  }) => {
+    const updatedUser: UserIdentity = {
+      ...currentUser,
+      name: updatedData.name,
+      username: updatedData.username,
+      pronouns: updatedData.pronouns,
+      about_me: updatedData.aboutMe,
+      avatar_url: updatedData.avatarUrl || currentUser.avatar_url,
+    };
+    saveUserIdentity(updatedUser);
+    setCurrentUser(updatedUser);
+    setUserName(updatedData.name);
+    setUserInitial(updatedData.name.charAt(0).toUpperCase());
+    setUserProfile({
+      pronouns: updatedData.pronouns,
+      aboutMe: updatedData.aboutMe,
+      username: updatedData.username,
+    });
+  };
+
+  // Coupon Redeem Handler
+  const handleRedeemCoupon = (rawCode: string) => {
+    const code = rawCode.trim().toUpperCase();
+    const redeemedKey = 'the_soul_redeemed_coupons';
+    let redeemedList: string[] = [];
+    try {
+      const raw = localStorage.getItem(redeemedKey);
+      if (raw) redeemedList = JSON.parse(raw);
+    } catch {
+      redeemedList = [];
+    }
+
+    if (redeemedList.includes(code)) {
+      return { success: false, message: 'คุณเคยแลกรับโค้ดคูปองนี้ไปแล้ว' };
+    }
+
+    const couponValues: Record<string, number> = {
+      WELCOME100: 100,
+      SOULFREE: 200,
+      MAOMOI2026: 500,
+      ALICE: 150,
+      VIP2026: 1000,
+    };
+
+    if (couponValues[code]) {
+      const added = couponValues[code];
+      const newBalance = coinBalance + added;
+      setCoinBalance(newBalance);
+      localStorage.setItem('the_soul_coin_balance', newBalance.toString());
+      redeemedList.push(code);
+      localStorage.setItem(redeemedKey, JSON.stringify(redeemedList));
+      return {
+        success: true,
+        message: `แลกรับสำเร็จ! ได้รับ +${added.toLocaleString()} เหรียญ 🪙`,
+        coinsAdded: added,
+      };
+    }
+
+    return {
+      success: false,
+      message: 'รหัสคูปองไม่ถูกต้อง หรือหมดอายุการใช้งานแล้ว',
+    };
+  };
+
+  return (
+    <div className="h-screen w-full bg-app-bg text-app-primary font-sans flex flex-col relative overflow-hidden">
+      {/* 1. Main View Rendering */}
+      {currentView === 'home' ? (
+        <>
+          {/* Full-Width Top Bar */}
+          <HomeTopBar 
             onLogoClick={handleBackToHome}
-            onComposeClick={() => handleNavigateToChat()}
-            isHomeMode={true}
-          />
-          <HomeView 
-            onNavigateToChat={handleNavigateToChat}
             coinBalance={coinBalance}
             notificationCount={notificationCount}
             onCoinClick={handleCoinClick}
@@ -108,34 +288,104 @@ function App() {
             onProfileClick={handleProfileClick}
             userInitial={userInitial}
             userName={userName}
+            userEmail={userEmail}
+            isLoggedIn={isLoggedIn}
+            onLoginClick={handleLoginClick}
+            onSignupClick={handleSignupClick}
+            isProfileDropdownOpen={isProfileDropdownOpen}
+            onCloseProfileDropdown={() => setIsProfileDropdownOpen(false)}
+            onEditProfileClick={() => {
+              setIsProfileDropdownOpen(false);
+              setIsProfileModalOpen(true);
+            }}
+            onSignOut={handleSignOut}
+          />
+
+          {/* Lower Area: Sidebar + HomeView */}
+          <div className="flex-1 flex relative overflow-hidden overscroll-none touch-pan-y">
+            <Sidebar 
+              isSidebarExpanded={isSidebarExpanded}
+              setIsSidebarExpanded={setIsSidebarExpanded}
+              selectedMenu={selectedMenu}
+              handleMenuClick={handleMenuClick}
+              onLogoClick={handleBackToHome}
+              onComposeClick={() => handleNavigateToChat()}
+              isHomeMode={true}
+            />
+            <HomeView 
+              onNavigateToChat={handleNavigateToChat}
+              coinBalance={coinBalance}
+              notificationCount={notificationCount}
+              onCoinClick={handleCoinClick}
+              onNotificationClick={handleNotificationClick}
+              onProfileClick={handleProfileClick}
+              userInitial={userInitial}
+              userName={userName}
+              isLoggedIn={isLoggedIn}
+              onLoginClick={handleLoginClick}
+              onSignupClick={handleSignupClick}
+            />
+          </div>
+        </>
+      ) : (
+        <div className="h-screen w-full bg-app-bg text-app-primary font-sans flex relative overflow-hidden overscroll-none touch-pan-y">
+          <Sidebar 
+            isSidebarExpanded={isSidebarExpanded}
+            setIsSidebarExpanded={setIsSidebarExpanded}
+            selectedMenu={selectedMenu}
+            handleMenuClick={handleMenuClick}
+            onLogoClick={handleBackToHome}
+            onComposeClick={() => handleNavigateToChat()}
+            isHomeMode={false}
+          />
+          <ChatView 
+            onBackToHome={handleBackToHome}
+            activeCharacter={activeChatCharacter}
+            coinBalance={coinBalance}
+            notificationCount={notificationCount}
+            onCoinClick={handleCoinClick}
+            onNotificationClick={handleNotificationClick}
+            onProfileClick={handleProfileClick}
+            userInitial={userInitial}
+            userName={userName}
+            userEmail={userEmail}
+            isLoggedIn={isLoggedIn}
+            onLoginClick={handleLoginClick}
+            onSignupClick={handleSignupClick}
+            isProfileDropdownOpen={isProfileDropdownOpen}
+            onCloseProfileDropdown={() => setIsProfileDropdownOpen(false)}
+            onEditProfileClick={() => {
+              setIsProfileDropdownOpen(false);
+              setIsProfileModalOpen(true);
+            }}
+            onSignOut={handleSignOut}
           />
         </div>
-      </div>
-    );
-  }
+      )}
 
-  return (
-    <div className="h-screen w-full bg-app-bg text-app-primary font-sans flex relative overflow-hidden overscroll-none touch-pan-y">
-      {/* ห้องแชท: คงโครงสร้างเดิม 100% ตามความต้องการ */}
-      <Sidebar 
-        isSidebarExpanded={isSidebarExpanded}
-        setIsSidebarExpanded={setIsSidebarExpanded}
-        selectedMenu={selectedMenu}
-        handleMenuClick={handleMenuClick}
-        onLogoClick={handleBackToHome}
-        onComposeClick={() => handleNavigateToChat()}
-        isHomeMode={false}
+      {/* 2. Global Modals */}
+      {/* Auth Pop-up (CrushOn AI Inspired Modal) */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        initialMode={authModalMode}
+        onGoogleSuccess={handleGoogleSuccess}
+        onEmailSubmit={handleEmailSubmit}
       />
-      <ChatView 
-        onBackToHome={handleBackToHome}
-        activeCharacter={activeChatCharacter}
-        coinBalance={coinBalance}
-        notificationCount={notificationCount}
-        onCoinClick={handleCoinClick}
-        onNotificationClick={handleNotificationClick}
-        onProfileClick={handleProfileClick}
-        userInitial={userInitial}
+
+      {/* Profile Settings & Coupon Redeem Modal (Pinterest Inspired) */}
+      <ProfileSettingsModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
         userName={userName}
+        userEmail={userEmail}
+        userInitial={userInitial}
+        coinBalance={coinBalance}
+        pronouns={userProfile.pronouns}
+        aboutMe={userProfile.aboutMe}
+        onSaveProfile={handleSaveProfile}
+        onRedeemCoupon={handleRedeemCoupon}
+        onSignOut={handleSignOut}
       />
     </div>
   );

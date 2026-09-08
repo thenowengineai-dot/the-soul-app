@@ -17,6 +17,15 @@ export function ChatRoomHeader({
   onProfileClick,
   userInitial = 'A',
   userName = 'Alice',
+  userEmail = '',
+  planName = 'Free Plan',
+  isLoggedIn = false,
+  onLoginClick,
+  onSignupClick,
+  isProfileDropdownOpen = false,
+  onCloseProfileDropdown,
+  onEditProfileClick,
+  onSignOut,
 }: ChatRoomHeaderProps) {
   if (!chat) return null
 
@@ -74,7 +83,7 @@ export function ChatRoomHeader({
         </div>
       </div>
 
-      {/* Right: User Actions [Coin Balance Pill] [Notification Bell] [Profile] + [Toggle HUD Button] */}
+      {/* Right: User Actions [Coin Balance Pill] [Notification Bell] [Profile] or [Login/Signup] + [Toggle HUD Button] */}
       <div className="flex items-center gap-2 pointer-events-auto ml-auto">
         <HeaderActionGroup
           coinBalance={coinBalance}
@@ -84,6 +93,15 @@ export function ChatRoomHeader({
           onProfileClick={onProfileClick}
           userInitial={userInitial}
           userName={userName}
+          userEmail={userEmail}
+          planName={planName}
+          isLoggedIn={isLoggedIn}
+          onLoginClick={onLoginClick}
+          onSignupClick={onSignupClick}
+          isProfileDropdownOpen={isProfileDropdownOpen}
+          onCloseProfileDropdown={onCloseProfileDropdown}
+          onEditProfileClick={onEditProfileClick}
+          onSignOut={onSignOut}
         />
 
         {/* Toggle Character HUD Button (แสดงเฉพาะตอนที่ HUD ซ่อนอยู่ เพื่อให้มีปุ่มปิดเปิดเพียงปุ่มเดียวที่ขวาสุด) */}

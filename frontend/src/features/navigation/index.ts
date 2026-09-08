@@ -1,5 +1,8 @@
 export { default as Sidebar } from './components/Sidebar'
 export { default as CreatorSubscriptions } from './components/CreatorSubscriptions'
 export { default as HeaderActionGroup } from './components/HeaderActionGroup'
+export { default as AuthModal } from './components/AuthModal'
+export { default as ProfileDropdown } from './components/ProfileDropdown'
+export { default as ProfileSettingsModal } from './components/ProfileSettingsModal'
 export * from './types'
 export * from './mockData'

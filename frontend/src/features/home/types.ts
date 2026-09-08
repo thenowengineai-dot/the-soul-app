@@ -25,8 +25,17 @@ export interface HomeTopBarProps {
   onProfileClick?: () => void
   userInitial?: string
   userName?: string
+  userEmail?: string
+  planName?: string
   searchQuery?: string
   onSearchChange?: (query: string) => void
+  isLoggedIn?: boolean
+  onLoginClick?: () => void
+  onSignupClick?: () => void
+  isProfileDropdownOpen?: boolean
+  onCloseProfileDropdown?: () => void
+  onEditProfileClick?: () => void
+  onSignOut?: () => void
 }
 
 export interface HomeViewProps {
@@ -38,5 +47,8 @@ export interface HomeViewProps {
   onProfileClick?: () => void
   userInitial?: string
   userName?: string
+  isLoggedIn?: boolean
+  onLoginClick?: () => void
+  onSignupClick?: () => void
 }
 

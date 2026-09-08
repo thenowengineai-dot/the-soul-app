@@ -111,6 +111,15 @@ export function ChatRoom({
   onProfileClick,
   userInitial = 'A',
   userName = 'Alice',
+  userEmail = '',
+  planName = 'Free Plan',
+  isLoggedIn = false,
+  onLoginClick,
+  onSignupClick,
+  isProfileDropdownOpen = false,
+  onCloseProfileDropdown,
+  onEditProfileClick,
+  onSignOut,
   onHudUpdate,
 }: ChatRoomProps) {
   const currentChat = chat || MOCK_CHATS[0]
@@ -547,6 +556,15 @@ export function ChatRoom({
           onProfileClick={onProfileClick}
           userInitial={userInitial}
           userName={userName}
+          userEmail={userEmail}
+          planName={planName}
+          isLoggedIn={isLoggedIn}
+          onLoginClick={onLoginClick}
+          onSignupClick={onSignupClick}
+          isProfileDropdownOpen={isProfileDropdownOpen}
+          onCloseProfileDropdown={onCloseProfileDropdown}
+          onEditProfileClick={onEditProfileClick}
+          onSignOut={onSignOut}
         />
 
         {/* Loading Spinner for Session Fetch */}

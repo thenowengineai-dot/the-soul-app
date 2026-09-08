@@ -4,8 +4,11 @@ import type { UnifiedInteractionRound } from './types'
 export interface UserIdentity {
   user_id: string
   name: string
+  username?: string
   email?: string
   avatar_url?: string
+  pronouns?: string
+  about_me?: string
   is_guest: boolean
   migrated_sessions?: number
 }
@@ -156,6 +159,21 @@ export async function loginWithGoogle(credential: string): Promise<UserIdentity>
   }
   localStorage.setItem(USER_KEY, JSON.stringify(user))
   return user
+}
+
+/**
+ * บันทึกการอัปเดตข้อมูลผู้ใช้ลง LocalStorage
+ */
+export function saveUserIdentity(user: UserIdentity): void {
+  localStorage.setItem(USER_KEY, JSON.stringify(user))
+}
+
+/**
+ * ออกจากระบบ (สลับกลับเป็น Guest Mode)
+ */
+export function signOutUser(): UserIdentity {
+  localStorage.removeItem(USER_KEY)
+  return getCurrentUser()
 }
 
 /**

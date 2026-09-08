@@ -89,6 +89,15 @@ export interface ChatRoomHeaderProps {
   onProfileClick?: () => void
   userInitial?: string
   userName?: string
+  userEmail?: string
+  planName?: string
+  isLoggedIn?: boolean
+  onLoginClick?: () => void
+  onSignupClick?: () => void
+  isProfileDropdownOpen?: boolean
+  onCloseProfileDropdown?: () => void
+  onEditProfileClick?: () => void
+  onSignOut?: () => void
 }
 
 export interface MessageBubbleProps {
@@ -128,6 +137,15 @@ export interface ChatRoomProps {
   onProfileClick?: () => void
   userInitial?: string
   userName?: string
+  userEmail?: string
+  planName?: string
+  isLoggedIn?: boolean
+  onLoginClick?: () => void
+  onSignupClick?: () => void
+  isProfileDropdownOpen?: boolean
+  onCloseProfileDropdown?: () => void
+  onEditProfileClick?: () => void
+  onSignOut?: () => void
   onHudUpdate?: (data: {
     actor_posture?: string
     player_posture?: string
@@ -229,6 +247,15 @@ export interface ChatViewProps {
   onProfileClick?: () => void
   userInitial?: string
   userName?: string
+  userEmail?: string
+  planName?: string
+  isLoggedIn?: boolean
+  onLoginClick?: () => void
+  onSignupClick?: () => void
+  isProfileDropdownOpen?: boolean
+  onCloseProfileDropdown?: () => void
+  onEditProfileClick?: () => void
+  onSignOut?: () => void
 }
 
 // ----------------------------------------------------------------------

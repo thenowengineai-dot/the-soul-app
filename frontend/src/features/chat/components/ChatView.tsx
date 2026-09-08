@@ -18,6 +18,15 @@ function ChatView({
   onProfileClick,
   userInitial,
   userName,
+  userEmail,
+  planName,
+  isLoggedIn,
+  onLoginClick,
+  onSignupClick,
+  isProfileDropdownOpen,
+  onCloseProfileDropdown,
+  onEditProfileClick,
+  onSignOut,
 }: ChatViewProps) {
   const [prevActive, setPrevActive] = useState<ChatConversation | null | undefined>(activeCharacter);
   const [selectedChat, setSelectedChat] = useState<ChatConversation>(() => activeCharacter || MOCK_CHATS[0]);
@@ -108,6 +117,15 @@ function ChatView({
         onProfileClick={onProfileClick}
         userInitial={userInitial}
         userName={userName}
+        userEmail={userEmail}
+        planName={planName}
+        isLoggedIn={isLoggedIn}
+        onLoginClick={onLoginClick}
+        onSignupClick={onSignupClick}
+        isProfileDropdownOpen={isProfileDropdownOpen}
+        onCloseProfileDropdown={onCloseProfileDropdown}
+        onEditProfileClick={onEditProfileClick}
+        onSignOut={onSignOut}
         onHudUpdate={handleHudUpdate}
       />
       <CharacterHud 

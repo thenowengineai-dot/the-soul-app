@@ -13,8 +13,17 @@ export default function HomeTopBar({
   onProfileClick,
   userInitial = 'A',
   userName = 'Alice',
+  userEmail = '',
+  planName = 'Free Plan',
   searchQuery = '',
   onSearchChange,
+  isLoggedIn = false,
+  onLoginClick,
+  onSignupClick,
+  isProfileDropdownOpen = false,
+  onCloseProfileDropdown,
+  onEditProfileClick,
+  onSignOut,
 }: HomeTopBarProps) {
   return (
     <header className="w-full bg-[rgb(13,13,13)]/95 backdrop-blur-xl border-b border-app-border z-30 transition-all duration-200 flex items-center justify-between px-4 sm:px-6 md:px-8 pt-3.5 sm:pt-4 pb-3 sm:pb-3.5 shrink-0 select-none">
@@ -54,7 +63,7 @@ export default function HomeTopBar({
         </div>
       </div>
 
-      {/* 3. Far Right: Header Action Group (Coin, Notification, Profile) */}
+      {/* 3. Far Right: Header Action Group (Coin, Notification, Profile or Login/Signup) */}
       <div className="shrink-0 flex items-center">
         <HeaderActionGroup
           coinBalance={coinBalance}
@@ -64,6 +73,15 @@ export default function HomeTopBar({
           onProfileClick={onProfileClick}
           userInitial={userInitial}
           userName={userName}
+          userEmail={userEmail}
+          planName={planName}
+          isLoggedIn={isLoggedIn}
+          onLoginClick={onLoginClick}
+          onSignupClick={onSignupClick}
+          isProfileDropdownOpen={isProfileDropdownOpen}
+          onCloseProfileDropdown={onCloseProfileDropdown}
+          onEditProfileClick={onEditProfileClick}
+          onSignOut={onSignOut}
         />
       </div>
     </header>

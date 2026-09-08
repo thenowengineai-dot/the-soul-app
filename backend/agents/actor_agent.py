@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import time
@@ -83,14 +84,15 @@ class ActorAgent:
         logger.info(f"🕒 🎭 [ACTOR] Started... (Messages: {len(contents)} | Model: {self.model_name})")
 
         models_to_try = [self.model_name]
-        if self.model_name != "gemini-3.5-flash-lite":
-            models_to_try.append("gemini-3.5-flash-lite")
+        for fallback_m in ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-3.6-flash"]:
+            if fallback_m not in models_to_try:
+                models_to_try.append(fallback_m)
 
         try:
             response = None
             last_err = None
             used_model = self.model_name
-            for m in models_to_try:
+            for idx, m in enumerate(models_to_try):
                 try:
                     config_kwargs = {
                         "system_instruction": actor_prompt,
@@ -110,8 +112,10 @@ class ActorAgent:
                 except Exception as call_err:
                     last_err = call_err
                     err_str = str(call_err)
-                    if ("429" in err_str or "RESOURCE_EXHAUSTED" in err_str) and m != models_to_try[-1]:
-                        logger.warning(f"⚠️ [ACTOR] Model {m} hit 429 RESOURCE_EXHAUSTED. Retrying with fallback: {models_to_try[-1]}")
+                    if ("429" in err_str or "RESOURCE_EXHAUSTED" in err_str) and idx < len(models_to_try) - 1:
+                        next_model = models_to_try[idx + 1]
+                        logger.warning(f"⚠️ [ACTOR] Model {m} hit 429 RESOURCE_EXHAUSTED. Waiting 1.5s and retrying with fallback: {next_model}")
+                        await asyncio.sleep(1.5)
                         continue
                     raise call_err
 

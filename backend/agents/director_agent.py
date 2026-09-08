@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import time
@@ -75,16 +76,39 @@ class DirectorAgent:
                 
             else:
                 # 🌟 [GEMINI ENGINE]
-                config_kwargs = {}
-                if "gemini" in self.model_name.lower():
-                    config_kwargs["response_mime_type"] = "application/json"
-                    config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_level="medium")
-                    
-                response = await self.client.aio.models.generate_content(
-                    model=self.model_name,
-                    contents=[{"role": "user", "parts": [{"text": director_prompt}]}],
-                    config=types.GenerateContentConfig(**config_kwargs)
-                )
+                models_to_try = [self.model_name]
+                for fallback_m in ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.6-flash"]:
+                    if fallback_m not in models_to_try:
+                        models_to_try.append(fallback_m)
+
+                response = None
+                last_err = None
+                for idx, m in enumerate(models_to_try):
+                    try:
+                        config_kwargs = {}
+                        if "gemini" in m.lower():
+                            config_kwargs["response_mime_type"] = "application/json"
+                            config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_level="medium")
+                            
+                        response = await self.client.aio.models.generate_content(
+                            model=m,
+                            contents=[{"role": "user", "parts": [{"text": director_prompt}]}],
+                            config=types.GenerateContentConfig(**config_kwargs)
+                        )
+                        if response:
+                            break
+                    except Exception as call_err:
+                        last_err = call_err
+                        err_str = str(call_err)
+                        if ("429" in err_str or "RESOURCE_EXHAUSTED" in err_str) and idx < len(models_to_try) - 1:
+                            next_model = models_to_try[idx + 1]
+                            logger.warning(f"⚠️ [DIRECTOR] Model {m} hit 429 RESOURCE_EXHAUSTED. Waiting 1.5s and retrying with fallback: {next_model}")
+                            await asyncio.sleep(1.5)
+                            continue
+                        raise call_err
+
+                if not response and last_err:
+                    raise last_err
     
                 result_text = response.text or "{}"
                 

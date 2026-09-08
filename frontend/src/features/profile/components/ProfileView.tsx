@@ -21,7 +21,6 @@ export function ProfileView({
   onRedeemCoupon,
   onSignOut,
   onBackToHome,
-  onTopUpCoins,
 }: ProfileViewProps) {
   const [activeTab, setActiveTab] = useState<'profile' | 'coupon' | 'account'>('profile')
 
@@ -378,14 +377,6 @@ export function ProfileView({
                         <span className="text-[13px] text-[#ACACB2]">เหรียญ</span>
                       </div>
                     </div>
-
-                    <button
-                      type="button"
-                      onClick={onTopUpCoins}
-                      className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/15 text-[13px] font-semibold text-[#F2F2F5] border border-white/10 transition-all cursor-pointer"
-                    >
-                      + เติมเหรียญ
-                    </button>
                   </div>
                 </div>
 

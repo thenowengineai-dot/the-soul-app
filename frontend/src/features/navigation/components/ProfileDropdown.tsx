@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { User, LogOut, Plus } from 'lucide-react'
+import { User, LogOut } from 'lucide-react'
 import SingleCoinIcon from '../../home/components/SingleCoinIcon'
 import type { ProfileDropdownProps } from '../types'
 
@@ -13,7 +13,6 @@ export function ProfileDropdown({
   planName = 'Free Plan',
   onEditProfileClick,
   onSignOut,
-  onTopUpClick,
 }: ProfileDropdownProps) {
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -64,26 +63,15 @@ export function ProfileDropdown({
         )}
       </div>
 
-      {/* 2. Coin Wallet Snippet: ยอดเหรียญ + ปุ่มเติมเหรียญ */}
-      <div className="flex items-center justify-between bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 my-1">
-        <div className="flex items-center gap-2">
+      {/* 2. Coin Wallet Snippet: แสดงยอดเหรียญคงเหลือ */}
+      <div className="flex items-center justify-between bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 my-1">
+        <div className="flex items-center gap-2.5">
           <SingleCoinIcon size={16} />
           <div className="flex flex-col">
-            <span className="text-[10px] text-app-secondary uppercase tracking-wider font-semibold">ยอดเหรียญ</span>
-            <span className="text-[13px] font-bold text-app-primary">{coinBalance.toLocaleString()}</span>
+            <span className="text-[10px] text-app-secondary uppercase tracking-wider font-semibold">ยอดเหรียญคงเหลือ</span>
+            <span className="text-[13px] font-bold text-app-primary">{coinBalance.toLocaleString()} เหรียญ</span>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            onClose()
-            onTopUpClick?.()
-          }}
-          className="flex items-center gap-1 text-[11px] font-bold text-app-secondary hover:text-white bg-white/10 hover:bg-[#EF264C] px-2.5 py-1 rounded-full transition-all cursor-pointer"
-        >
-          <Plus size={12} strokeWidth={2.5} />
-          <span>เติม</span>
-        </button>
       </div>
 
       {/* 3. เส้นคั่น */}

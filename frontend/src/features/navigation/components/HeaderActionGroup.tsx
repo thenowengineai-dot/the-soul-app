@@ -1,4 +1,4 @@
-import { Plus, Bell, ChevronDown } from 'lucide-react'
+import { Bell, ChevronDown } from 'lucide-react'
 import SingleCoinIcon from '../../home/components/SingleCoinIcon'
 import ProfileDropdown from './ProfileDropdown'
 import type { HeaderActionGroupProps } from '../types'
@@ -24,12 +24,12 @@ export function HeaderActionGroup({
 }: HeaderActionGroupProps) {
   return (
     <div className={`relative flex items-center gap-1.5 sm:gap-2 ${className}`}>
-      {/* 1. Single Coin Balance Pill (ปุ่ม pill กระจก เส้นขอบบางจนแทบมองไม่เห็น) */}
+      {/* 1. Single Coin Balance Pill (ปุ่ม pill กระจกแสดงยอดเหรียญ) */}
       <button
         type="button"
         onClick={onCoinClick}
-        title={`ยอดเหรียญคงเหลือ ${coinBalance.toLocaleString()} เหรียญ (กดเพื่อเติมเหรียญ)`}
-        className="group flex items-center gap-1.5 pl-2.5 pr-1.5 h-[30px] sm:h-[32px] rounded-full bg-[#121212]/65 backdrop-blur-xl hover:bg-white/10 border border-white/[0.07] hover:border-white/20 transition-all duration-200 cursor-pointer shadow-lg active:scale-95 select-none"
+        title={`ยอดเหรียญคงเหลือ ${coinBalance.toLocaleString()} เหรียญ`}
+        className="group flex items-center gap-1.5 px-2.5 sm:px-3 h-[30px] sm:h-[32px] rounded-full bg-[#121212]/65 backdrop-blur-xl hover:bg-white/10 border border-white/[0.07] hover:border-white/20 transition-all duration-200 cursor-pointer shadow-lg active:scale-95 select-none"
       >
         <div className="flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-200">
           <SingleCoinIcon size={15} />
@@ -37,9 +37,6 @@ export function HeaderActionGroup({
         <span className="font-medium text-[12px] sm:text-[12.5px] text-app-primary tracking-tight">
           {coinBalance.toLocaleString()}
         </span>
-        <div className="w-[17px] h-[17px] rounded-full bg-white/10 group-hover:bg-amber-400/20 group-hover:text-amber-300 text-app-secondary flex items-center justify-center transition-all duration-150 ml-0.5 flex-shrink-0">
-          <Plus size={10} strokeWidth={2.5} />
-        </div>
       </button>
 
       {/* 2. สลับการแสดงผลตามสถานะการล็อกอิน */}
@@ -107,7 +104,6 @@ export function HeaderActionGroup({
             planName={planName}
             onEditProfileClick={onEditProfileClick || (() => {})}
             onSignOut={onSignOut || (() => {})}
-            onTopUpClick={onCoinClick}
           />
         </div>
       )}

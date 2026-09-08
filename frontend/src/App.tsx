@@ -111,11 +111,7 @@ function App() {
   };
 
   const handleCoinClick = () => {
-    setCoinBalance(prev => {
-      const next = prev + 50;
-      localStorage.setItem('the_soul_coin_balance', next.toString());
-      return next;
-    });
+    handleMenuClick('profile');
   };
 
   const handleNotificationClick = () => {
@@ -339,7 +335,6 @@ function App() {
               onRedeemCoupon={handleRedeemCoupon}
               onSignOut={handleSignOut}
               onBackToHome={handleBackToHome}
-              onTopUpCoins={handleCoinClick}
             />
           </div>
         </>

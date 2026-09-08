@@ -535,12 +535,16 @@ class DatabaseCore:
         char_uuid = await self.get_or_create_character(character_codename)
         
         try:
+            # 🌟 [UUID SANITIZATION] ถอด prefix 'sess_' ออก เพื่อให้เป็น UUID ที่ถูกต้องสำหรับ PostgreSQL
+            clean_session_id = session_id.replace("sess_", "") if session_id else None
             payload = {
                 "user_id": user_id,
                 "character_id": char_uuid,
                 "memory_text": memory_text,
-                "session_id": session_id
             }
+            if clean_session_id:
+                payload["session_id"] = clean_session_id
+
             await self._request("POST", "extracted_memories", json_data=payload)
             logger.opt(colors=True).info(f"🧠 <green>[SUPABASE MEMORY]</green> ฝังความจำสำเร็จ: {memory_text} (Save: {session_id[:8]})")
         except Exception as e:

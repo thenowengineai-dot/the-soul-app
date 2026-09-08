@@ -219,6 +219,17 @@ class ActorAgent:
 
     def _clean_json_text(self, result_text: str) -> Dict[str, Any]:
         """คลีนผลลัพธ์ Markdown backticks และ parse JSON อย่างปลอดภัย"""
+        if not result_text or not result_text.strip():
+            logger.warning("⚠️ [ACTOR] Received empty text from model.")
+            return {
+                "thinking": "Empty response from model stream",
+                "a_pos": "ยืน/นั่งอิสระตามบริบท",
+                "response_sequence": [
+                    {"type": "action", "content": "นิ่งคิดครู่หนึ่ง"},
+                    {"type": "dialogue", "content": "..."}
+                ]
+            }
+
         result_text = result_text.strip()
         backticks = "`" * 3
         if result_text.startswith(f"{backticks}json"):
@@ -228,12 +239,28 @@ class ActorAgent:
         if result_text.endswith(backticks):
             result_text = result_text[:-3]
 
+        result_text = result_text.strip()
+        if not result_text:
+            logger.warning("⚠️ [ACTOR] Text was empty after stripping markdown backticks.")
+            return {
+                "thinking": "Empty JSON after stripping markdown",
+                "a_pos": "ยืน/นั่งอิสระตามบริบท",
+                "response_sequence": [
+                    {"type": "action", "content": "นิ่งคิดครู่หนึ่ง"},
+                    {"type": "dialogue", "content": "..."}
+                ]
+            }
+
         try:
-            parsed_data = json.loads(result_text.strip(), strict=False)
+            parsed_data = json.loads(result_text, strict=False)
         except Exception:
             import re
-            cleaned_text = re.sub(r'[\x00-\x1F\x7F-\x9F]', ' ', result_text.strip())
-            parsed_data = json.loads(cleaned_text, strict=False)
+            cleaned_text = re.sub(r'[\x00-\x1F\x7F-\x9F]', ' ', result_text)
+            try:
+                parsed_data = json.loads(cleaned_text.strip(), strict=False)
+            except Exception as parse_err:
+                logger.warning(f"⚠️ [ACTOR] JSON parse failed completely: {parse_err}. Raw text: {result_text[:200]}")
+                parsed_data = {}
 
         if isinstance(parsed_data, list):
             parsed_data = parsed_data[0] if len(parsed_data) > 0 else {}

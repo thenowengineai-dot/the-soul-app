@@ -22,7 +22,7 @@ class ActorAgent:
     def __init__(
         self, 
         credentials=None, 
-        model_name: str = "gemini-3.8-flash", # 🌟 เปลี่ยนมาใช้ตัวเบาแต่เปิดโหมดคิดระดับ Medium
+        model_name: str = "gemini-3.5-flash-lite", # 🌟 ใช้ Basic Tier โควต้าพร้อมและเสถียร
         project_id: str = None
     ):
         """
@@ -82,20 +82,41 @@ class ActorAgent:
         start_time = time.time()
         logger.info(f"🕒 🎭 [ACTOR] Started... (Messages: {len(contents)} | Model: {self.model_name})")
 
+        models_to_try = [self.model_name]
+        if self.model_name != "gemini-3.5-flash-lite":
+            models_to_try.append("gemini-3.5-flash-lite")
+
         try:
-            config_kwargs = {
-                "system_instruction": actor_prompt,
-                "response_mime_type": "application/json",
-            }
-            if "gemini" in self.model_name.lower():
-                config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_level="medium")
-                
-            # ใช้ Vertex AI โดยบังคับให้ออกเป็น JSON เท่านั้น
-            response = await self.client.aio.models.generate_content(
-                model=self.model_name,
-                contents=contents,
-                config=types.GenerateContentConfig(**config_kwargs)
-            )
+            response = None
+            last_err = None
+            used_model = self.model_name
+            for m in models_to_try:
+                try:
+                    config_kwargs = {
+                        "system_instruction": actor_prompt,
+                        "response_mime_type": "application/json",
+                    }
+                    if "gemini" in m.lower():
+                        config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_level="medium")
+                        
+                    response = await self.client.aio.models.generate_content(
+                        model=m,
+                        contents=contents,
+                        config=types.GenerateContentConfig(**config_kwargs)
+                    )
+                    used_model = m
+                    if response:
+                        break
+                except Exception as call_err:
+                    last_err = call_err
+                    err_str = str(call_err)
+                    if ("429" in err_str or "RESOURCE_EXHAUSTED" in err_str) and m != models_to_try[-1]:
+                        logger.warning(f"⚠️ [ACTOR] Model {m} hit 429 RESOURCE_EXHAUSTED. Retrying with fallback: {models_to_try[-1]}")
+                        continue
+                    raise call_err
+
+            if not response and last_err:
+                raise last_err
 
             result_text = response.text or "{}"
             

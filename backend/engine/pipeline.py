@@ -762,7 +762,10 @@ class GamePipeline:
                 return ("director", res)
             
             async def timed_actor():
-                actor_history = chat_history if user_message.startswith("[SYSTEM]") else chat_history + [{"role": "user", "content": user_message}]
+                if user_message.startswith("[SYSTEM]"):
+                    actor_history = chat_history + [{"role": "user", "content": "[SYSTEM]: เริ่มต้นฉากเปิดตัว (Prologue) ให้แสดงท่าทางเปิดตัวและทักทายผู้เล่นเป็นคนแรกตามบทบาท"}]
+                else:
+                    actor_history = chat_history + [{"role": "user", "content": user_message}]
                 res = await self.actor.generate_response(actor_prompt=actor_prompt, chat_history=actor_history)
                 return ("actor", res)
                 

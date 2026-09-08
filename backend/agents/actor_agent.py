@@ -72,6 +72,13 @@ class ActorAgent:
                 
             contents.append({"role": role, "parts": [{"text": text}]})
             
+        # 🌟 [CRITICAL FIX] ป้องกัน Vertex AI บั๊ก "contents are required" กรณีเริ่มฉากใหม่ Turn 0 (Prologue)
+        if not contents:
+            contents.append({
+                "role": "user",
+                "parts": [{"text": "[SYSTEM]: เริ่มต้นฉากเปิดตัว (Prologue) ให้แสดงท่าทางเปิดตัวและทักทายผู้เล่นเป็นคนแรกตามบทบาท"}]
+            })
+
         start_time = time.time()
         logger.info(f"🕒 🎭 [ACTOR] Started... (Messages: {len(contents)} | Model: {self.model_name})")
 

@@ -468,10 +468,10 @@ export default function ScenarioEngineCard({
                 onChange={(e) => setEditPremise(e.target.value)}
                 rows={3}
                 placeholder="ปูมหลังและบริบทความอึดอัดของฉากนี้..."
-                className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#F2F2F5] text-[13px] rounded-xl p-2.5 outline-none resize-none leading-relaxed transition-colors font-normal"
+                className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#F2F2F5] text-[14px] rounded-xl p-3 outline-none resize-none leading-relaxed transition-colors font-normal"
               />
             ) : (
-              <p className="text-[13px] sm:text-[13.5px] text-[#F2F2F5]/90 leading-relaxed font-normal bg-black/20 p-2.5 rounded-lg border border-white/5">
+              <p className="text-[14px] text-[#F2F2F5] leading-relaxed font-normal bg-black/20 p-3 rounded-lg border border-white/5">
                 {currentScene.premise || 'ยังไม่มีการระบุปูมหลังของฉาก'}
               </p>
             )}
@@ -489,10 +489,10 @@ export default function ScenarioEngineCard({
                 value={editObjective}
                 onChange={(e) => setEditObjective(e.target.value)}
                 placeholder="เป้าหมายสูงสุดของ AI ในซีนนี้..."
-                className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#F2F2F5] text-[13px] font-semibold rounded-xl px-3 py-2 outline-none transition-colors"
+                className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#F2F2F5] text-[14px] font-normal rounded-xl px-3 py-2.5 outline-none transition-colors"
               />
             ) : (
-              <p className="text-[13px] sm:text-[13.5px] text-[#F2F2F5] font-semibold bg-black/20 p-2.5 rounded-lg border border-white/5">
+              <p className="text-[14px] text-[#F2F2F5] font-normal leading-relaxed bg-black/20 p-3 rounded-lg border border-white/5">
                 {currentScene.scene_objective}
               </p>
             )}
@@ -509,10 +509,10 @@ export default function ScenarioEngineCard({
                 onChange={(e) => setEditDirectorSetup(e.target.value)}
                 rows={2}
                 placeholder="คำสั่งคุมโทนภาพรวมของผู้กำกับ..."
-                className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#F2F2F5] text-[12.5px] rounded-xl p-2.5 outline-none resize-none leading-relaxed transition-colors font-normal"
+                className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#F2F2F5] text-[14px] rounded-xl p-3 outline-none resize-none leading-relaxed transition-colors font-normal"
               />
             ) : (
-              <p className="text-[12.5px] sm:text-[13px] text-[#ACACB2] leading-relaxed bg-black/20 p-2.5 rounded-lg border border-white/5">
+              <p className="text-[14px] text-[#F2F2F5] leading-relaxed font-normal bg-black/20 p-3 rounded-lg border border-white/5">
                 {currentScene.director_setup}
               </p>
             )}
@@ -562,7 +562,7 @@ export default function ScenarioEngineCard({
                   value={editEventMood}
                   onChange={(e) => setEditEventMood(e.target.value)}
                   placeholder="เช่น อบอุ่น อึดอัด ชื้นแฉะ..."
-                  className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#F2F2F5] text-[13px] rounded-lg px-2.5 py-1.5 outline-none transition-colors"
+                  className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#F2F2F5] text-[14px] font-normal rounded-lg px-2.5 py-1.5 outline-none transition-colors"
                 />
               </div>
               <div className="bg-black/30 border border-[#2F3336]/80 rounded-xl p-3">
@@ -574,7 +574,7 @@ export default function ScenarioEngineCard({
                   value={editDirectorVision}
                   onChange={(e) => setEditDirectorVision(e.target.value)}
                   placeholder="เช่น The Slow Burn: สร้างความกระอักกระอ่วน..."
-                  className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#F2F2F5] text-[13px] rounded-lg px-2.5 py-1.5 outline-none transition-colors"
+                  className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#F2F2F5] text-[14px] font-normal rounded-lg px-2.5 py-1.5 outline-none transition-colors"
                 />
               </div>
             </div>
@@ -584,7 +584,7 @@ export default function ScenarioEngineCard({
                 <span className="text-[10.5px] font-bold text-[#ACACB2] uppercase tracking-wider block mb-1">
                   🎭 EVENT MOOD (ฟิสิกส์/บรรยากาศ)
                 </span>
-                <p className="text-[13px] text-[#F2F2F5] font-medium">
+                <p className="text-[14px] text-[#F2F2F5] font-normal leading-relaxed">
                   {currentScene.event_mood || 'อบอุ่น อึดอัด'}
                 </p>
               </div>
@@ -592,7 +592,7 @@ export default function ScenarioEngineCard({
                 <span className="text-[10.5px] font-bold text-[#ACACB2] uppercase tracking-wider block mb-1">
                   🎬 DIRECTOR'S VISION (จังหวะหนัง)
                 </span>
-                <p className="text-[13px] text-[#F2F2F5] font-medium">
+                <p className="text-[14px] text-[#F2F2F5] font-normal leading-relaxed">
                   {currentScene.director_vision || 'The Slow Burn: สร้างความกระอักกระอ่วน'}
                 </p>
               </div>
@@ -724,18 +724,20 @@ export default function ScenarioEngineCard({
                           onChange={(e) => setEditBeatVo(e.target.value)}
                           placeholder="พิมพ์คำบรรยายเปิดฉาก/สภาพแวดล้อมก่อนเข้าบีต..."
                           rows={2}
-                          className="w-full bg-[#141416] border border-[#2F3336] focus:border-amber-400/60 text-[#F2F2F5] text-[12.5px] rounded-lg p-2.5 outline-none resize-none leading-relaxed"
+                          className="w-full bg-[#141416] border border-[#2F3336] focus:border-amber-400/60 text-[#F2F2F5] text-[14px] font-normal rounded-lg p-2.5 outline-none resize-none leading-relaxed"
                         />
                       </div>
                     ) : (
                       beat.director_setup && (
-                        <div className="bg-black/30 border border-[#2F3336] rounded-lg p-2.5 text-[12.5px] text-[#ACACB2] leading-relaxed flex items-start gap-2">
+                        <div className="bg-black/30 border border-[#2F3336] rounded-lg p-2.5 text-[14px] text-[#F2F2F5] leading-relaxed flex items-start gap-2 select-text">
                           <Volume2 size={14} className="text-amber-400 shrink-0 mt-0.5" />
                           <div>
                             <strong className="text-amber-300/90 text-[11px] uppercase tracking-wider block mb-0.5">
                               VO / DIRECTOR'S SETUP (GEAR 1)
                             </strong>
-                            <p>{beat.director_setup}</p>
+                            <p className="text-[14px] text-[#F2F2F5] font-normal leading-relaxed">
+                              {beat.director_setup}
+                            </p>
                           </div>
                         </div>
                       )
@@ -753,10 +755,10 @@ export default function ScenarioEngineCard({
                           onChange={(e) => setEditActorState(e.target.value)}
                           rows={5}
                           placeholder="Player Anchor: ... | 3D Geometry: ... | Skin Micro-Details: ... | Wardrobe Continuity: ..."
-                          className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#F2F2F5] text-[13px] rounded-xl p-3 outline-none resize-none leading-relaxed font-normal"
+                          className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#F2F2F5] text-[14px] rounded-xl p-3 outline-none resize-none leading-relaxed font-normal"
                         />
                       ) : (
-                        <div className="bg-black/25 border border-white/5 rounded-xl p-3.5 text-[13px] sm:text-[13.5px] text-[#F2F2F5]/90 leading-relaxed font-normal whitespace-pre-line select-text">
+                        <div className="bg-black/25 border border-white/5 rounded-xl p-3.5 text-[14px] text-[#F2F2F5] leading-relaxed font-normal whitespace-pre-line select-text">
                           {beat.actor_state}
                         </div>
                       )}
@@ -809,7 +811,7 @@ export default function ScenarioEngineCard({
                                           return next;
                                         });
                                       }}
-                                      className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#F2F2F5] text-[13px] rounded-lg px-2.5 py-1.5 outline-none font-medium"
+                                      className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#F2F2F5] text-[14px] font-normal rounded-lg px-2.5 py-1.5 outline-none"
                                     />
                                     <input
                                       type="text"
@@ -825,16 +827,16 @@ export default function ScenarioEngineCard({
                                         }));
                                       }}
                                       placeholder="💡 คำอธิบายฟีดแบ็ก..."
-                                      className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#ACACB2] text-[11.5px] rounded-lg px-2.5 py-1 outline-none"
+                                      className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#ACACB2] text-[13px] rounded-lg px-2.5 py-1 outline-none"
                                     />
                                   </div>
                                 ) : (
                                   <>
-                                    <p className="text-[13px] text-[#F2F2F5] font-medium leading-normal">
+                                    <p className="text-[14px] text-[#F2F2F5] font-normal leading-normal">
                                       {choiceText}
                                     </p>
                                     {choiceVal.feedback && (
-                                      <p className="text-[11.5px] text-[#ACACB2] mt-0.5 italic">
+                                      <p className="text-[12.5px] text-[#ACACB2] mt-0.5 italic">
                                         💡 {choiceVal.feedback}
                                       </p>
                                     )}
@@ -943,7 +945,7 @@ export default function ScenarioEngineCard({
                         </div>
                       </div>
 
-                      <div className="text-[12.5px] sm:text-[13px] text-[#F2F2F5]/85 leading-relaxed bg-black/30 p-2.5 rounded-lg border border-amber-500/20">
+                      <div className="text-[14px] text-[#F2F2F5] leading-relaxed bg-black/30 p-2.5 rounded-lg border border-amber-500/20 select-text">
                         <strong className="text-amber-400 text-[11px] uppercase tracking-wider block mb-0.5">
                           เหตุการณ์บังคับ (FORCED EVENT เมื่อครบโควต้าเทิร์น):
                         </strong>
@@ -953,10 +955,12 @@ export default function ScenarioEngineCard({
                             onChange={(e) => setEditInevitableConsequence(e.target.value)}
                             rows={2}
                             placeholder="บทลงโทษหรือเหตุการณ์บังคับเมื่อผู้เล่นคุยยืดเยื้อ..."
-                            className="w-full bg-[#141416] border border-[#2F3336] focus:border-amber-400 text-[#F2F2F5] text-[12.5px] rounded-lg p-2 outline-none resize-none leading-relaxed mt-1"
+                            className="w-full bg-[#141416] border border-[#2F3336] focus:border-amber-400 text-[#F2F2F5] text-[14px] font-normal rounded-lg p-2 outline-none resize-none leading-relaxed mt-1"
                           />
                         ) : (
-                          <p>{beat.pacing_control?.inevitable_consequence}</p>
+                          <p className="text-[14px] text-[#F2F2F5] font-normal leading-relaxed">
+                            {beat.pacing_control?.inevitable_consequence}
+                          </p>
                         )}
                       </div>
                     </div>

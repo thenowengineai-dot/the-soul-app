@@ -18,6 +18,7 @@ import {
   ChevronUp,
   ChevronLeft,
   ChevronRight,
+  MoreVertical,
 } from 'lucide-react';
 import type { CreatorMode, VaultDraft, PassivePerk, WorldScenario } from '../types';
 import ScenarioEngineCard from './ScenarioEngineCard';
@@ -58,6 +59,7 @@ const SPECIAL_STATS_CONFIG = [
 
 interface InspectorPanelProps {
   width: number;
+  onWidthChange?: (width: number) => void;
   isCollapsed: boolean;
   onCollapse: () => void;
   activeMode: CreatorMode;
@@ -113,6 +115,7 @@ type EditableCard =
 
 export default function InspectorPanel({
   width,
+  onWidthChange,
   isCollapsed,
   onCollapse,
   activeMode,
@@ -124,6 +127,10 @@ export default function InspectorPanel({
 }: InspectorPanelProps) {
   // สถานะการ์ดที่กำลังเปิดโหมดแก้ไข
   const [editingCard, setEditingCard] = useState<EditableCard>(null);
+
+  // Dropdown เมนูเลือก Preset ความกว้างหน้าต่าง (460px / 600px)
+  const [isSizeMenuOpen, setIsSizeMenuOpen] = useState(false);
+  const sizeMenuRef = useRef<HTMLDivElement>(null);
 
   // Buffer state สำหรับ Hero Anchor (ชื่อ, สเตตัสคำพูด, แฮชแท็ก)
   const [editHeroTitle, setEditHeroTitle] = useState<string>('');
@@ -410,6 +417,30 @@ export default function InspectorPanel({
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [width]);
+
+  // ปิดเมนูเลือกขนาดเมื่อคลิกพื้นที่อื่น หรือกดปุ่ม Escape
+  useEffect(() => {
+    if (!isSizeMenuOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (sizeMenuRef.current && !sizeMenuRef.current.contains(e.target as Node)) {
+        setIsSizeMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsSizeMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isSizeMenuOpen]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = e.currentTarget.scrollTop;
@@ -732,7 +763,7 @@ export default function InspectorPanel({
   return (
     <aside
       style={{ width: `${width}px` }}
-      className="h-full shrink-0 bg-[#090909] flex flex-col z-20 select-none overflow-hidden transition-[width] duration-75 ease-out relative"
+      className="h-full shrink-0 bg-[#090909] flex flex-col z-20 select-none overflow-hidden transition-[width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] relative"
     >
       {/* 1. All-in-One Unified Navigation Bar (Single Row Apple Dock: สูงเพียง 48px ประหยัดพื้นที่แนวตั้ง 60%!) */}
       <div className="px-3 sm:px-4 py-1.5 flex items-center gap-1.5 sm:gap-2 shrink-0 border-b border-[#2F3336]/40 bg-[#090909] h-[48px]">
@@ -869,15 +900,86 @@ export default function InspectorPanel({
           )}
         </div>
 
-        {/* Right: ปุ่มพับเก็บหน้าต่าง Inspector */}
-        <button
-          type="button"
-          onClick={onCollapse}
-          title="พับเก็บหน้าต่าง Inspector"
-          className="w-7 h-7 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-[#ACACB2] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0"
-        >
-          <PanelRightClose size={14} strokeWidth={1.8} />
-        </button>
+        {/* Right: ปุ่มจุดไข่ปลาเลือกขนาดหน้าต่าง และปุ่มพับเก็บ */}
+        <div className="flex items-center gap-1.5 shrink-0 relative" ref={sizeMenuRef}>
+          {onWidthChange && (
+            <button
+              type="button"
+              onClick={() => setIsSizeMenuOpen((prev) => !prev)}
+              title="ตั้งค่าขนาดหน้าต่าง Inspector"
+              className={`w-7 h-7 rounded-full backdrop-blur-xl border transition-all cursor-pointer shadow-lg active:scale-95 flex items-center justify-center select-none ${
+                isSizeMenuOpen
+                  ? 'bg-white/15 border-white/30 text-[#F2F2F5]'
+                  : 'bg-transparent border border-[#2F3336] hover:border-white/30 text-[#ACACB2] hover:text-[#F2F2F5]'
+              }`}
+            >
+              <MoreVertical size={14} strokeWidth={1.8} />
+            </button>
+          )}
+
+          {/* ปุ่มพับเก็บหน้าต่าง Inspector */}
+          <button
+            type="button"
+            onClick={onCollapse}
+            title="พับเก็บหน้าต่าง Inspector"
+            className="w-7 h-7 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-[#ACACB2] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0"
+          >
+            <PanelRightClose size={14} strokeWidth={1.8} />
+          </button>
+
+          {/* Dropdown Menu (Glassmorphism Luxury) */}
+          {isSizeMenuOpen && (
+            <div className="absolute top-full right-0 mt-1.5 w-[220px] p-1.5 rounded-2xl bg-[#121214]/95 backdrop-blur-2xl border border-white/10 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 select-none">
+              <div className="px-2.5 py-1.5 text-[10px] uppercase tracking-wider text-[#ACACB2] font-semibold border-b border-white/[0.06] mb-1">
+                ขนาดหน้าต่าง (INSPECTOR)
+              </div>
+
+              {/* Option 1: มาตรฐาน (460px) */}
+              <button
+                type="button"
+                onClick={() => {
+                  onWidthChange?.(460);
+                  setIsSizeMenuOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-[12.5px] transition-all cursor-pointer ${
+                  Math.abs(width - 460) < 30
+                    ? 'bg-white/[0.08] text-[#F2F2F5] font-medium'
+                    : 'text-[#ACACB2] hover:text-[#F2F2F5] hover:bg-white/[0.04]'
+                }`}
+              >
+                <div className="flex flex-col text-left">
+                  <span className="leading-tight">มาตรฐาน (460px)</span>
+                  <span className="text-[10px] text-[#ACACB2]/80">สมดุลพอดีสายตา (ค่าเริ่มต้น)</span>
+                </div>
+                {Math.abs(width - 460) < 30 && (
+                  <Check size={14} className="text-[#EF264C] shrink-0" strokeWidth={2.5} />
+                )}
+              </button>
+
+              {/* Option 2: สตูดิโอกว้างเต็มตา (600px) */}
+              <button
+                type="button"
+                onClick={() => {
+                  onWidthChange?.(600);
+                  setIsSizeMenuOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-[12.5px] transition-all cursor-pointer ${
+                  Math.abs(width - 600) < 30
+                    ? 'bg-white/[0.08] text-[#F2F2F5] font-medium'
+                    : 'text-[#ACACB2] hover:text-[#F2F2F5] hover:bg-white/[0.04]'
+                }`}
+              >
+                <div className="flex flex-col text-left">
+                  <span className="leading-tight">สตูดิโอกว้างเต็มตา (600px)</span>
+                  <span className="text-[10px] text-[#ACACB2]/80">กว้างเต็มตา สำหรับจัดการเควส</span>
+                </div>
+                {Math.abs(width - 600) < 30 && (
+                  <Check size={14} className="text-[#EF264C] shrink-0" strokeWidth={2.5} />
+                )}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Floating Apple Slim Sticky Bar (Outside scroll container - Zero Layout Shift) */}

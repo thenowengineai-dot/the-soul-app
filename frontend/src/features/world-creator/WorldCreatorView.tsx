@@ -27,8 +27,12 @@ export default function WorldCreatorView({ onExit }: WorldCreatorViewProps) {
   const [visualAnchorWidth, setVisualAnchorWidth] = useState<number>(340);
   const [isVisualAnchorCollapsed, setIsVisualAnchorCollapsed] = useState<boolean>(false);
 
-  // Inspector Panel State (ความกว้างและการเปิด/ปิด)
-  const [rightPanelWidth, setRightPanelWidth] = useState<number>(460);
+  // Inspector Panel State (ความกว้างและการเปิด/ปิด พร้อมจดจำขนาดไว้ใน localStorage)
+  const [rightPanelWidth, setRightPanelWidth] = useState<number>(() => {
+    const saved = localStorage.getItem('solccai_inspector_width');
+    const parsed = saved ? parseInt(saved, 10) : 460;
+    return isNaN(parsed) ? 460 : parsed;
+  });
   const [isRightPanelCollapsed, setIsRightPanelCollapsed] = useState<boolean>(false);
 
   // The Muse Chat Messages State
@@ -132,9 +136,10 @@ export default function WorldCreatorView({ onExit }: WorldCreatorViewProps) {
     }, 600);
   };
 
-  // ปรับขนาดหน้าต่าง Inspector ฝั่งขวา
+  // ปรับขนาดหน้าต่าง Inspector ฝั่งขวา พร้อมจดจำค่า
   const handleResize = (newWidth: number) => {
     setRightPanelWidth(newWidth);
+    localStorage.setItem('solccai_inspector_width', newWidth.toString());
     if (isRightPanelCollapsed) {
       setIsRightPanelCollapsed(false);
     }
@@ -143,6 +148,7 @@ export default function WorldCreatorView({ onExit }: WorldCreatorViewProps) {
   // รีเซ็ตขนาดหน้าต่าง Inspector กลับสู่ค่าเริ่มต้น (460px)
   const handleResetWidth = () => {
     setRightPanelWidth(460);
+    localStorage.setItem('solccai_inspector_width', '460');
     setIsRightPanelCollapsed(false);
   };
 
@@ -245,6 +251,7 @@ export default function WorldCreatorView({ onExit }: WorldCreatorViewProps) {
       {/* 6. Right Panel: Dynamic Inspector & Cards (เปิด/ปิดได้) */}
       <InspectorPanel
         width={rightPanelWidth}
+        onWidthChange={handleResize}
         isCollapsed={isRightPanelCollapsed}
         onCollapse={() => setIsRightPanelCollapsed(true)}
         activeMode={activeMode}

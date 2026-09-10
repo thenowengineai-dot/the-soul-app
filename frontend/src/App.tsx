@@ -14,11 +14,12 @@ import {
   redeemCouponApi,
 } from './features/chat'
 import type { Character } from './features/characters'
+import { WorldCreatorView } from './features/world-creator'
 
 function App() {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState<boolean>(false);
   const [selectedMenu, setSelectedMenu] = useState<string>('home');
-  const [currentView, setCurrentView] = useState<'home' | 'chat' | 'profile'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'chat' | 'profile' | 'world-creator'>('home');
   const [activeChatCharacter, setActiveChatCharacter] = useState<ChatConversation | null>(null);
 
   // 1. Identity & Auth State
@@ -73,6 +74,9 @@ function App() {
       setCurrentView('home');
     } else if (id === 'profile' || id === 'settings') {
       setCurrentView('profile');
+      setIsSidebarExpanded(false);
+    } else if (id === 'world-creator' || id === 'genesis') {
+      setCurrentView('world-creator');
       setIsSidebarExpanded(false);
     } else {
       setCurrentView('chat');
@@ -282,7 +286,9 @@ function App() {
   return (
     <div className="h-screen w-full bg-app-bg text-app-primary font-sans flex flex-col relative overflow-hidden">
       {/* 1. Main View Rendering */}
-      {currentView === 'profile' ? (
+      {currentView === 'world-creator' ? (
+        <WorldCreatorView onExit={handleBackToHome} />
+      ) : currentView === 'profile' ? (
         <>
           {/* Full-Width Top Bar */}
           <HomeTopBar 

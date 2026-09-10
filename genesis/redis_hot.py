@@ -106,6 +106,19 @@ class GenesisRedisHotCache:
             self.execute_command(["SET", f"char:{character_id}:data", char_json])
             self.execute_command(["SET", f"world:{world_id}:data", world_json])
 
+            # Store combined campaign for the chat engine (the-soul-backend Service 1)
+            combined_campaign = {
+                "id": world_id,
+                "name": world_data.get("name") or world_data.get("world_name") or "Untitled World",
+                "character_id": character_id,
+                "character_data": character_data,
+                "world_data": world_data,
+                "status": "published"
+            }
+            combined_json = json.dumps(combined_campaign, ensure_ascii=False)
+            self.execute_command(["SET", f"campaign_v3:{world_id}", combined_json])
+            self.execute_command(["SET", f"campaign_v3:{character_id}", combined_json])
+
             # Add to published sets for instant catalog display
             self.execute_command(["SADD", "published_character_ids", character_id])
             self.execute_command(["SADD", "published_world_ids", world_id])
@@ -123,6 +136,8 @@ class GenesisRedisHotCache:
             self.execute_command(["SREM", "published_world_ids", world_id])
             self.execute_command(["DEL", f"char:{character_id}:data"])
             self.execute_command(["DEL", f"world:{world_id}:data"])
+            self.execute_command(["DEL", f"campaign_v3:{world_id}"])
+            self.execute_command(["DEL", f"campaign_v3:{character_id}"])
             logger.info(f"🔙 [HOT CACHE CLEARED] Removed {character_id} and {world_id} from Redis RAM.")
             return True
         except Exception as e:

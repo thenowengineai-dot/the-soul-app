@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Image as ImageIcon } from 'lucide-react';
 import CreatorSidebar from './components/CreatorSidebar';
 import CharacterVisualAnchor from './components/CharacterVisualAnchor';
@@ -6,7 +6,14 @@ import TheMuseChat from './components/TheMuseChat';
 import ResizableSplitter from './components/ResizableSplitter';
 import InspectorPanel from './components/InspectorPanel';
 import { INITIAL_VAULT_DRAFTS, INITIAL_MUSE_MESSAGES } from './mockData';
-import { sendMuseMessage } from './genesisApi';
+import {
+  sendMuseMessage,
+  fetchUserDrafts,
+  fetchDraftDetail,
+  saveDraftToVault,
+  deleteDraftFromVault,
+  fetchMuseHistory,
+} from './genesisApi';
 import { getCurrentUser } from '../chat/chatApi';
 import type { CreatorMode, VaultDraft, MuseMessage } from './types';
 
@@ -21,6 +28,7 @@ export default function WorldCreatorView({ onExit }: WorldCreatorViewProps) {
     INITIAL_VAULT_DRAFTS[0]?.id || null
   );
   const [isThinking, setIsThinking] = useState<boolean>(false);
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Sidebar Expanded State (เริ่มต้นจะขยายแถบด้านซ้ายเสมอ ทุกครั้งที่เข้าหน้านี้มา)
   const [isSidebarExpanded, setIsSidebarExpanded] = useState<boolean>(true);
@@ -44,15 +52,107 @@ export default function WorldCreatorView({ onExit }: WorldCreatorViewProps) {
   // ดึงข้อมูล Draft ปัจจุบันที่กำลังโฟกัส
   const activeDraft = drafts.find((d) => d.id === activeDraftId) || drafts[0];
 
-  // ปักหมุด / ยกเลิกการปักหมุด Draft
-  const handleTogglePin = (id: string) => {
+  // 1. โหลดรายการ Drafts จาก Neon PostgreSQL เมื่อเปิดหน้าจอ
+  useEffect(() => {
+    let isMounted = true;
+    async function loadVault() {
+      try {
+        const user = getCurrentUser();
+        const serverDrafts = await fetchUserDrafts(user.user_id);
+        if (isMounted && serverDrafts && serverDrafts.length > 0) {
+          setDrafts(serverDrafts);
+          setActiveDraftId(serverDrafts[0].id);
+        }
+      } catch (err) {
+        console.warn('Could not load drafts from Neon, using default:', err);
+      }
+    }
+    loadVault();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // 2. โหลดข้อมูลรายละเอียดและประวัติ Muse Chat เมื่อสลับ Active Draft
+  useEffect(() => {
+    if (!activeDraftId) return;
+    const targetDraftId = activeDraftId;
+    let isMounted = true;
+    async function loadDraftContext() {
+      try {
+        const user = getCurrentUser();
+        // โหลดประวัติแชท The Muse ของ Draft นี้จาก Neon
+        const history = await fetchMuseHistory(targetDraftId);
+        if (isMounted && history && history.length > 0) {
+          setMessages(history);
+        } else if (isMounted) {
+          // ถ้าเป็นร่างใหม่ที่ยังไม่มีประวัติแชท ให้เปิดด้วยคำทักทายของ The Muse
+          const target = drafts.find((d) => d.id === targetDraftId);
+          const charTitle = target?.title || 'ตัวละครใหม่';
+          const worldTitle = target?.worldTitle || 'โลกใบใหม่';
+          setMessages([
+            {
+              id: `muse-${Date.now()}`,
+              sender: 'muse',
+              text: `ยินดีต้อนรับสู่สตูดิโอสร้างโลกครับ! เรากำลังโฟกัสอยู่ที่ **${charTitle}** ในโลก **${worldTitle}** 🚀\n\nอยากให้ฉากเปิดและบุคลิกของตัวละครนี้มีความขัดแย้งหรือเสน่ห์แบบไหนดีครับ?`,
+              timestamp: 'ตอนนี้',
+              actionSuggestions: [
+                '🏙️ โลกยุคปัจจุบันที่มีความลับดำมืด',
+                '🏰 มหาอาณาจักรแฟนตาซีเวทมนตร์',
+                '🌌 ไซไฟอวกาศและการเอาชีวิตรอด',
+              ],
+            },
+          ]);
+        }
+
+        // โหลดข้อมูลรายละเอียดการ์ดของ Draft นี้จาก Neon
+        const detail = await fetchDraftDetail(user.user_id, targetDraftId);
+        if (isMounted && detail) {
+          setDrafts((prev) =>
+            prev.map((d) => (d.id === targetDraftId ? { ...d, ...detail } : d))
+          );
+        }
+      } catch (err) {
+        console.warn('Could not load draft context:', err);
+      }
+    }
+    loadDraftContext();
+    return () => {
+      isMounted = false;
+    };
+  }, [activeDraftId, drafts]);
+
+  // ปักหมุด / ยกเลิกการปักหมุด Draft (พร้อมบันทึกลง Neon)
+  const handleTogglePin = async (id: string) => {
+    const user = getCurrentUser();
+    let nextPinned = false;
     setDrafts((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, isPinned: !d.isPinned } : d))
+      prev.map((d) => {
+        if (d.id === id) {
+          nextPinned = !d.isPinned;
+          return { ...d, isPinned: nextPinned };
+        }
+        return d;
+      })
     );
+
+    try {
+      const target = drafts.find((d) => d.id === id);
+      if (target) {
+        await saveDraftToVault({
+          userId: user.user_id,
+          data: { ...target, isPinned: nextPinned } as Record<string, unknown>,
+          mode: activeMode,
+        });
+      }
+    } catch (err) {
+      console.error('Failed to sync pin to Neon:', err);
+    }
   };
 
-  // ลบ Draft
-  const handleDeleteDraft = (id: string) => {
+  // ลบ Draft (พร้อมลบออกจาก Neon)
+  const handleDeleteDraft = async (id: string) => {
+    const user = getCurrentUser();
     setDrafts((prev) => {
       const remaining = prev.filter((d) => d.id !== id);
       if (activeDraftId === id) {
@@ -60,11 +160,19 @@ export default function WorldCreatorView({ onExit }: WorldCreatorViewProps) {
       }
       return remaining;
     });
+
+    try {
+      await deleteDraftFromVault(user.user_id, id);
+    } catch (err) {
+      console.error('Failed to delete draft from Neon:', err);
+    }
   };
 
-  // สร้าง Draft ตัวละครและโลกคู่กันใหม่
-  const handleNewDraft = () => {
-    const newId = `char_${Date.now()}`;
+  // สร้าง Draft ตัวละครและโลกคู่กันใหม่ (พร้อมบันทึกลง Neon)
+  const handleNewDraft = async () => {
+    const user = getCurrentUser();
+    const newId = `world_${Date.now()}`;
+    const newCharId = `char_${Date.now()}`;
     const newTitle = 'ตัวละครใหม่ (New Character)';
     const newWorld = 'โลกใบใหม่ (New World)';
     const newDraft: VaultDraft = {
@@ -77,39 +185,51 @@ export default function WorldCreatorView({ onExit }: WorldCreatorViewProps) {
       description: 'ตัวละครและโลกคู่กันที่พร้อมให้คุณสร้างสรรค์ร่วมกับ The Muse',
       status: 'draft',
       isPinned: false,
-      authorName: 'You',
+      authorName: user.name || 'You',
       themeColor: '#EF264C',
     };
 
     setDrafts((prev) => [newDraft, ...prev]);
     setActiveDraftId(newId);
 
-    // ส่งข้อความแนะนำจาก The Muse สำหรับงานร่างใหม่
-    const welcomeNewDraft: MuseMessage = {
-      id: `muse-${Date.now()}`,
-      sender: 'muse',
-      text: `เยี่ยมเลยครับสถาปนิก! เรามาเริ่มสร้าง **${newTitle}** และโลก **${newWorld}** กันดีกว่า 🚀\n\nอยากให้ฉากเปิดและบุคลิกของตัวละครนี้มีความขัดแย้งหรือเสน่ห์แบบไหนดีครับ?`,
-      timestamp: 'ตอนนี้',
-      actionSuggestions: [
-        '🏙️ โลกยุคปัจจุบันที่มีความลับดำมืด',
-        '🏰 มหาอาณาจักรแฟนตาซีเวทมนตร์',
-        '🌌 ไซไฟอวกาศและการเอาชีวิตรอด',
-      ],
-    };
-    setMessages((prev) => [...prev, welcomeNewDraft]);
+    try {
+      await saveDraftToVault({
+        userId: user.user_id,
+        data: {
+          ...newDraft,
+          character_id: newCharId,
+        } as Record<string, unknown>,
+        mode: 'character',
+      });
+    } catch (err) {
+      console.error('Failed to save new draft to Neon:', err);
+    }
   };
 
-  // อัปเดตข้อมูล Draft ปัจจุบัน (แก้ไขข้อมูลแบบ Real-time จาก Inspector Panel)
-  const handleUpdateDraft = (updated: Partial<VaultDraft>) => {
+  // อัปเดตข้อมูล Draft ปัจจุบัน (แก้ไขแบบ Real-time พร้อม Debounced Auto-save สู่ Neon)
+  const handleUpdateDraft = useCallback((updated: Partial<VaultDraft>) => {
     if (!activeDraft?.id) return;
+    const updatedDraft = { ...activeDraft, ...updated, updatedAt: 'เมื่อสักครู่' };
     setDrafts((prev) =>
-      prev.map((d) =>
-        d.id === activeDraft.id
-          ? { ...d, ...updated, updatedAt: 'เมื่อสักครู่' }
-          : d
-      )
+      prev.map((d) => (d.id === activeDraft.id ? updatedDraft : d))
     );
-  };
+
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
+    autoSaveTimerRef.current = setTimeout(async () => {
+      try {
+        const user = getCurrentUser();
+        await saveDraftToVault({
+          userId: user.user_id,
+          data: updatedDraft as unknown as Record<string, unknown>,
+          mode: activeMode,
+        });
+      } catch (err) {
+        console.warn('Auto-save draft to Neon failed:', err);
+      }
+    }, 1500);
+  }, [activeDraft, activeMode]);
 
   // ส่งข้อความคุยกับ The Muse จริงผ่าน Cloud Run & Vertex AI
   const handleSendMessage = async (text: string) => {

@@ -109,7 +109,7 @@ class PostgresWorld:
             async with conn.transaction():
                 # 0. Ensure creator user exists in users table
                 await conn.execute("""
-                    INSERT INTO users (id, name, is_guest, created_at, updated_at)
+                    INSERT INTO users (id, name, is_guest, created_at, last_login_at)
                     VALUES ($1, 'Creator', TRUE, NOW(), NOW())
                     ON CONFLICT (id) DO NOTHING;
                 """, creator_id)
@@ -353,7 +353,7 @@ class PostgresWorld:
         async with pool.acquire() as conn:
             # Ensure creator user exists in users table
             await conn.execute("""
-                INSERT INTO users (id, name, is_guest, created_at, updated_at)
+                INSERT INTO users (id, name, is_guest, created_at, last_login_at)
                 VALUES ($1, 'Creator', TRUE, NOW(), NOW())
                 ON CONFLICT (id) DO NOTHING;
             """, creator_id)

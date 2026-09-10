@@ -78,6 +78,12 @@ export interface VaultDraft {
   // Real-world Event / Scenario Engine
   scenario?: WorldScenario;
   prologue?: WorldPrologue;
+
+  // Real-world World extensions (5-Pillar World Model)
+  starting_state?: WorldStartingState;
+  locations_detail?: WorldLocationDetail[];
+  time_weather?: WorldTimeWeather;
+  rules_tension?: WorldRulesTension;
 }
 
 export type PlayerTriggerAction =
@@ -123,6 +129,67 @@ export interface WorldScenario {
   name?: string;
   scenes: WorldScene[];
 }
+
+// =========================================================================
+// 🌍 WORLD ARCHITECTURE TYPES (5-PILLAR WORLD MODEL)
+// =========================================================================
+
+export interface WorldStartingState {
+  starting_time?: string;
+  starting_location?: string;
+  starting_weather?: string;
+  initial_outfit_key?: string;
+  initial_a_pos?: string; // ท่าทาง/ตำแหน่งตัวละครวินาทีแรก
+  initial_p_pos?: string; // ตำแหน่ง/มุมมองผู้เล่นวินาทีแรก
+}
+
+export interface WorldLocationDetail {
+  id: string;
+  name: string;
+  tag?: string;
+  spatial_layout?: string;
+  choke_points?: string; // จุดบีบระยะประชิด & จุดอับสายตา
+  base_mood?: string;
+  ambient_cues?: string[]; // ประสาทสัมผัสเฉพาะจุด (เสียง กลิ่น ไอน้ำ)
+}
+
+export interface WorldTimePeriod {
+  time: string;
+  atmosphere: string;
+}
+
+export interface WorldWeatherChainItem {
+  weather: string;
+  next: string;
+  sensory: string;
+}
+
+export interface WorldTimeWeather {
+  time_periods?: WorldTimePeriod[];
+  weather_chain?: WorldWeatherChainItem[];
+}
+
+export interface WorldRulesTension {
+  taboos?: string[]; // ข้อห้ามในโลกนี้
+  exposure_risk?: string; // ผลลัพธ์เมื่อความลับแตก
+  npc_interference?: string[]; // บุคคลที่ 3 ที่อาจโผล่มาขัดจังหวะ
+}
+
+export interface FullWorldData {
+  world_id?: string;
+  name?: string;
+  thai_name?: string;
+  description?: string;
+  visual_palette?: string;
+  soundscape?: string;
+  core_paradox?: string;
+  starting_state?: WorldStartingState;
+  locations?: WorldLocationDetail[];
+  time_weather?: WorldTimeWeather;
+  rules_tension?: WorldRulesTension;
+  scenario?: WorldScenario;
+}
+
 
 export interface WorldPrologueChoice {
   text: string;

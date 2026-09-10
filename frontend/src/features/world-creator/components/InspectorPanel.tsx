@@ -22,6 +22,10 @@ import {
 } from 'lucide-react';
 import type { CreatorMode, VaultDraft, PassivePerk, WorldScenario } from '../types';
 import ScenarioEngineCard from './ScenarioEngineCard';
+import WorldSpawnCoreCard from './WorldSpawnCoreCard';
+import WorldLocationsCard from './WorldLocationsCard';
+import WorldWeatherCard from './WorldWeatherCard';
+import WorldRulesCard from './WorldRulesCard';
 import { DEFAULT_WORLD_SCENARIO } from '../mockData';
 
 const CHARACTER_SUBTOPICS = [
@@ -34,8 +38,10 @@ const CHARACTER_SUBTOPICS = [
 
 const WORLD_SUBTOPICS = [
   { id: 'scenario', label: 'เควส & ไทม์ไลน์' },
-  { id: 'world_core', label: 'แก่นโลก' },
-  { id: 'locations', label: 'สถานที่สำคัญ' },
+  { id: 'spawn_core', label: 'จุดเกิด & แก่นโลก' },
+  { id: 'locations', label: 'สถาปัตยกรรมฉาก' },
+  { id: 'weather', label: 'กาลเวลา & อากาศ' },
+  { id: 'rules', label: 'กฎเกณฑ์ & ความเสี่ยง' },
   { id: 'blueprint', label: 'ซิงค์พิมพ์เขียว' },
 ] as const;
 
@@ -70,38 +76,6 @@ interface InspectorPanelProps {
   onUpdateDraft?: (updated: Partial<VaultDraft>) => void;
 }
 
-interface WorldLocation {
-  id: string;
-  tag: string;
-  time: string;
-  name: string;
-  description: string;
-}
-
-const INITIAL_LOCATIONS: WorldLocation[] = [
-  {
-    id: 'loc-1',
-    tag: 'ฉากเปิด (Opening Sanctuary)',
-    time: 'ตีสอง',
-    name: 'ร้านสะดวกซื้อ 02:00 น.',
-    description: 'จุดปะทะทางอารมณ์ที่หน้าตู้แช่เครื่องดื่มตอนตีสอง ท่ามกลางค่ำคืนฝนตก',
-  },
-  {
-    id: 'loc-2',
-    tag: 'เขตหวงห้าม (Restricted)',
-    time: 'หลังเวที',
-    name: 'ห้องแต่งตัวพนักงานคาเฟ่',
-    description: 'สถานที่ที่เธอถอดชุดลูกไม้และเก็บรอยยิ้มสินค้าใส่กระเป๋า',
-  },
-  {
-    id: 'loc-3',
-    tag: 'จุดตัดสินใจ (Branching Point)',
-    time: 'ทางกลับบ้าน',
-    name: 'ป้ายรถเมล์ใต้แสงไฟสลัว',
-    description: 'ที่พักพิงริมถนนก่อนแยกย้าย เป็นจุดที่ผู้เล่นเลือกยื่นร่มให้เธอ',
-  },
-];
-
 type EditableCard =
   | 'hero'
   | 'psychology'
@@ -109,8 +83,10 @@ type EditableCard =
   | 'stats'
   | 'perks'
   | 'lore'
-  | 'world_core'
+  | 'spawn_core'
   | 'locations'
+  | 'weather'
+  | 'rules'
   | null;
 
 export default function InspectorPanel({
@@ -165,13 +141,6 @@ export default function InspectorPanel({
   const [editDesireMin, setEditDesireMin] = useState<number>(40);
   const [editAffectionMin, setEditAffectionMin] = useState<number>(60);
 
-  // Buffer state สำหรับ World Mode: แก่นโลก & สถานที่
-  const [editWorldTitle, setEditWorldTitle] = useState<string>('');
-  const [editWorldVisual, setEditWorldVisual] = useState<string>('');
-  const [editWorldSound, setEditWorldSound] = useState<string>('');
-  const [editWorldConflict, setEditWorldConflict] = useState<string>('');
-  const [locations, setLocations] = useState<WorldLocation[]>(INITIAL_LOCATIONS);
-  const [editLocations, setEditLocations] = useState<WorldLocation[]>(INITIAL_LOCATIONS);
   const [syncedFeedback, setSyncedFeedback] = useState<boolean>(false);
 
   // Data สำหรับ Scenario Engine (Dungeon Master Quest System)
@@ -319,8 +288,10 @@ export default function InspectorPanel({
   const perksCardRef = useRef<HTMLDivElement>(null);
   const loreCardRef = useRef<HTMLDivElement>(null);
   const scenarioCardRef = useRef<HTMLDivElement>(null);
-  const worldCoreCardRef = useRef<HTMLDivElement>(null);
+  const spawnCoreCardRef = useRef<HTMLDivElement>(null);
   const locationsCardRef = useRef<HTMLDivElement>(null);
+  const weatherCardRef = useRef<HTMLDivElement>(null);
+  const rulesCardRef = useRef<HTMLDivElement>(null);
   const blueprintCardRef = useRef<HTMLDivElement>(null);
 
   const cardRefMap: Record<string, React.RefObject<HTMLDivElement | null>> = {
@@ -330,8 +301,10 @@ export default function InspectorPanel({
     perks: perksCardRef,
     lore: loreCardRef,
     scenario: scenarioCardRef,
-    world_core: worldCoreCardRef,
+    spawn_core: spawnCoreCardRef,
     locations: locationsCardRef,
+    weather: weatherCardRef,
+    rules: rulesCardRef,
     blueprint: blueprintCardRef,
   };
 
@@ -715,41 +688,6 @@ export default function InspectorPanel({
         },
       },
     });
-    setEditingCard(null);
-  };
-
-  // World Mode Handlers
-  const handleStartEditWorldCore = () => {
-    setEditWorldTitle(draft?.worldTitle || activeWorldTitle || 'The Paid Smile & Off-Duty Ice');
-    setEditWorldVisual(
-      draft?.worldVisual || 'แสงนีออนสีชมพูซีด สะท้อนผิวน้ำขังบนพื้นถนนยางมะตอยเปียกฝน'
-    );
-    setEditWorldSound(
-      draft?.worldSound || 'เสียงฝนซัดสาดกระจกหน้าร้านสะดวกซื้อ สลับกับเสียงลมหายใจแผ่วเบา'
-    );
-    setEditWorldConflict(
-      draft?.worldConflict || 'ในเวลางานเธอถูกทุกคนจับจ้อง แต่นอกเวลางานเธอขอเป็นเพียงอากาศธาตุ'
-    );
-    setEditingCard('world_core');
-  };
-
-  const handleSaveWorldCore = () => {
-    onUpdateDraft?.({
-      worldTitle: editWorldTitle.trim() || draft?.worldTitle || 'โลกใบใหม่',
-      worldVisual: editWorldVisual.trim(),
-      worldSound: editWorldSound.trim(),
-      worldConflict: editWorldConflict.trim(),
-    });
-    setEditingCard(null);
-  };
-
-  const handleStartEditLocations = () => {
-    setEditLocations([...locations]);
-    setEditingCard('locations');
-  };
-
-  const handleSaveLocations = () => {
-    setLocations(editLocations);
     setEditingCard(null);
   };
 
@@ -2155,257 +2093,80 @@ export default function InspectorPanel({
               />
             </div>
 
-            {/* Card 2: แก่นโลก & บรรยากาศ (มีปุ่มดินสอกลมขวาบน และแก้ไขได้จริงแบบ Real-time) */}
-            <div
-              ref={worldCoreCardRef}
-              className={`mt-4 scroll-mt-4 p-4 sm:p-5 rounded-2xl bg-transparent transition-all flex flex-col gap-3 ${
-                editingCard === 'world_core'
-                  ? 'border border-[#EF264C]/60 shadow-[0_0_16px_rgba(239,38,76,0.12)]'
-                  : 'border border-[#2F3336]'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <h3
-                  className={`text-[18px] sm:text-[19px] font-bold tracking-tight ${
-                    editingCard === 'world_core' ? 'text-[#EF264C]' : 'text-[#F2F2F5]'
-                  }`}
-                >
-                  {editingCard === 'world_core'
-                    ? 'แก้ไขแก่นโลก & บรรยากาศ'
-                    : 'แก่นโลก & บรรยากาศ'}
-                </h3>
-
-                {editingCard === 'world_core' ? (
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => setEditingCard(null)}
-                      title="ยกเลิกการแก้ไข"
-                      className="w-8 h-8 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-[#ACACB2] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0"
-                    >
-                      <X size={14} strokeWidth={2} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleSaveWorldCore}
-                      title="บันทึกข้อมูลแก่นโลก"
-                      className="w-8 h-8 rounded-full border border-[#EF264C]/70 bg-[#EF264C]/15 hover:bg-[#EF264C] text-[#EF264C] hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0 shadow-[0_0_10px_rgba(239,38,76,0.2)]"
-                    >
-                      <Check size={14} strokeWidth={2.2} />
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleStartEditWorldCore}
-                    title="แก้ไขแก่นโลกและบรรยากาศ"
-                    className="w-8 h-8 rounded-full bg-transparent border border-[#2F3336] hover:border-[#EF264C]/60 text-app-secondary hover:text-[#EF264C] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0"
-                  >
-                    <Pencil size={14} strokeWidth={1.8} />
-                  </button>
-                )}
-              </div>
-
-              {editingCard === 'world_core' ? (
-                /* โหมดแก้ไขแก่นโลกและบรรยากาศ */
-                <div className="space-y-3 pt-1">
-                  <div>
-                    <label className="text-[12px] font-semibold text-[#ACACB2] uppercase tracking-wider block mb-1">
-                      ชื่อโลกคู่กัน (Paired World Name)
-                    </label>
-                    <input
-                      type="text"
-                      value={editWorldTitle}
-                      onChange={(e) => setEditWorldTitle(e.target.value)}
-                      placeholder="ชื่อโลก..."
-                      className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#F2F2F5] text-[13.5px] rounded-xl px-3 py-2 outline-none transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[12px] font-semibold text-[#ACACB2] uppercase tracking-wider block mb-1">
-                      🌃 Visual Palette (โทนภาพและแสงสี)
-                    </label>
-                    <input
-                      type="text"
-                      value={editWorldVisual}
-                      onChange={(e) => setEditWorldVisual(e.target.value)}
-                      placeholder="เช่น แสงนีออนสีชมพูซีด สะท้อนผิวน้ำขัง..."
-                      className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#F2F2F5] text-[13.5px] rounded-xl px-3 py-2 outline-none transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[12px] font-semibold text-[#ACACB2] uppercase tracking-wider block mb-1">
-                      🎧 Soundscape (บรรยากาศเสียง)
-                    </label>
-                    <input
-                      type="text"
-                      value={editWorldSound}
-                      onChange={(e) => setEditWorldSound(e.target.value)}
-                      placeholder="เช่น เสียงฝนตกกระทบกระจกหน้าร้านสะดวกซื้อ..."
-                      className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#F2F2F5] text-[13.5px] rounded-xl px-3 py-2 outline-none transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[12px] font-semibold text-[#ACACB2] uppercase tracking-wider block mb-1">
-                      ⚡ Core Paradox (ความขัดแย้งหลักของโลก)
-                    </label>
-                    <input
-                      type="text"
-                      value={editWorldConflict}
-                      onChange={(e) => setEditWorldConflict(e.target.value)}
-                      placeholder="เช่น ในเวลางานเธอถูกทุกคนจับจ้อง แต่นอกเวลางาน..."
-                      className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#F2F2F5] text-[13.5px] rounded-xl px-3 py-2 outline-none transition-colors"
-                    />
-                  </div>
-                </div>
-              ) : (
-                /* โหมดแสดงผลปกติ */
-                <>
-                  <div className="text-[13.5px] sm:text-[14px] text-[#ACACB2] leading-relaxed space-y-2.5">
-                    <p className="text-[#F2F2F5] font-bold text-[15px]">
-                      {draft?.worldTitle || activeWorldTitle || 'The Paid Smile & Off-Duty Ice'}
-                    </p>
-                    <div className="space-y-1.5 text-[13.5px] sm:text-[14px]">
-                      <p>
-                        <strong className="text-[#F2F2F5]">🌃 Visual Palette:</strong>{' '}
-                        {draft?.worldVisual ||
-                          'แสงนีออนสีชมพูซีด สะท้อนผิวน้ำขังบนพื้นถนนยางมะตอยเปียกฝน'}
-                      </p>
-                      <p>
-                        <strong className="text-[#F2F2F5]">🎧 Soundscape:</strong>{' '}
-                        {draft?.worldSound ||
-                          'เสียงฝนซัดสาดกระจกหน้าร้านสะดวกซื้อ สลับกับเสียงลมหายใจแผ่วเบา'}
-                      </p>
-                      <p>
-                        <strong className="text-[#F2F2F5]">⚡ Core Paradox:</strong>{' '}
-                        {draft?.worldConflict ||
-                          'ในเวลางานเธอถูกทุกคนจับจ้อง แต่นอกเวลางานเธอขอเป็นเพียงอากาศธาตุ'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="pt-2.5 flex flex-wrap gap-2 border-t border-[#2F3336]/60">
-                    <span className="text-[12.5px] sm:text-[13px] text-[#ACACB2] hover:text-[#EF264C] cursor-pointer transition-colors">
-                      #AkihabaraNoir
-                    </span>
-                    <span className="text-[12.5px] sm:text-[13px] text-[#ACACB2] hover:text-[#EF264C] cursor-pointer transition-colors">
-                      #OffDutyIce
-                    </span>
-                    <span className="text-[12.5px] sm:text-[13px] text-[#ACACB2] hover:text-[#EF264C] cursor-pointer transition-colors">
-                      #2AMSanctuary
-                    </span>
-                  </div>
-                </>
-              )}
+            {/* Card 2: จุดเกิดตั้งต้น & แก่นโลก (World Spawn & Core Atmosphere) */}
+            <div className="mt-4">
+              <WorldSpawnCoreCard
+                cardRef={spawnCoreCardRef}
+                isEditing={editingCard === 'spawn_core'}
+                onStartEdit={() => setEditingCard('spawn_core')}
+                onCancelEdit={() => setEditingCard(null)}
+                onSave={(data) => {
+                  onUpdateDraft?.({
+                    worldTitle: data.worldTitle,
+                    worldVisual: data.worldVisual,
+                    worldSound: data.worldSound,
+                    worldConflict: data.worldConflict,
+                    starting_state: data.startingState,
+                  });
+                  setEditingCard(null);
+                }}
+                worldTitle={draft?.worldTitle || activeWorldTitle}
+                worldVisual={draft?.worldVisual}
+                worldSound={draft?.worldSound}
+                worldConflict={draft?.worldConflict}
+                startingState={draft?.starting_state}
+              />
             </div>
 
-            {/* Card 2: สถานที่สำคัญ (มีปุ่มดินสอกลมขวาบน และแก้ไขชื่อพิกัดได้จริง) */}
-            <div
-              ref={locationsCardRef}
-              className={`scroll-mt-4 p-4 sm:p-5 rounded-2xl bg-transparent transition-all flex flex-col gap-3 ${
-                editingCard === 'locations'
-                  ? 'border border-[#EF264C]/60 shadow-[0_0_16px_rgba(239,38,76,0.12)]'
-                  : 'border border-[#2F3336]'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-baseline gap-2">
-                  <h3
-                    className={`text-[18px] sm:text-[19px] font-bold tracking-tight ${
-                      editingCard === 'locations' ? 'text-[#EF264C]' : 'text-[#F2F2F5]'
-                    }`}
-                  >
-                    {editingCard === 'locations' ? 'แก้ไขสถานที่สำคัญ' : 'สถานที่สำคัญ'}
-                  </h3>
-                  <span className="text-[12.5px] text-[#ACACB2]">{locations.length} พิกัดหลัก</span>
-                </div>
+            {/* Card 3: สถาปัตยกรรมฉาก & จุดอับสายตา (Stage Geography & Choke Points) */}
+            <div className="mt-4">
+              <WorldLocationsCard
+                cardRef={locationsCardRef}
+                isEditing={editingCard === 'locations'}
+                onStartEdit={() => setEditingCard('locations')}
+                onCancelEdit={() => setEditingCard(null)}
+                onSave={(newLocs) => {
+                  onUpdateDraft?.({
+                    locations_detail: newLocs,
+                  });
+                  setEditingCard(null);
+                }}
+                locations={draft?.locations_detail}
+              />
+            </div>
 
-                {editingCard === 'locations' ? (
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => setEditingCard(null)}
-                      title="ยกเลิกการแก้ไข"
-                      className="w-8 h-8 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-[#ACACB2] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0"
-                    >
-                      <X size={14} strokeWidth={2} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleSaveLocations}
-                      title="บันทึกสถานที่"
-                      className="w-8 h-8 rounded-full border border-[#EF264C]/70 bg-[#EF264C]/15 hover:bg-[#EF264C] text-[#EF264C] hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0 shadow-[0_0_10px_rgba(239,38,76,0.2)]"
-                    >
-                      <Check size={14} strokeWidth={2.2} />
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleStartEditLocations}
-                    title="แก้ไขสถานที่สำคัญ"
-                    className="w-8 h-8 rounded-full bg-transparent border border-[#2F3336] hover:border-[#EF264C]/60 text-app-secondary hover:text-[#EF264C] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0"
-                  >
-                    <Pencil size={14} strokeWidth={1.8} />
-                  </button>
-                )}
-              </div>
+            {/* Card 4: ระบบกาลเวลา & พลวัตสภาพอากาศ (Chronology & Weather Logic) */}
+            <div className="mt-4">
+              <WorldWeatherCard
+                cardRef={weatherCardRef}
+                isEditing={editingCard === 'weather'}
+                onStartEdit={() => setEditingCard('weather')}
+                onCancelEdit={() => setEditingCard(null)}
+                onSave={(newWeather) => {
+                  onUpdateDraft?.({
+                    time_weather: newWeather,
+                  });
+                  setEditingCard(null);
+                }}
+                timeWeather={draft?.time_weather}
+              />
+            </div>
 
-              <div className="divide-y divide-[#2F3336]/60">
-                {(editingCard === 'locations' ? editLocations : locations).map(
-                  (loc, index) => (
-                    <div key={loc.id} className="py-3 first:pt-1 last:pb-0">
-                      <div className="flex items-center gap-1.5 text-[12px] text-[#ACACB2] mb-0.5">
-                        <span>{loc.tag}</span>
-                        <span className="text-white/20">·</span>
-                        <span>{loc.time}</span>
-                      </div>
-                      {editingCard === 'locations' ? (
-                        <div className="space-y-1 mt-1">
-                          <input
-                            type="text"
-                            value={loc.name}
-                            onChange={(e) => {
-                              const newName = e.target.value;
-                              setEditLocations((prev) =>
-                                prev.map((item, idx) =>
-                                  idx === index ? { ...item, name: newName } : item
-                                )
-                              );
-                            }}
-                            className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#F2F2F5] text-[13.5px] rounded-lg px-2.5 py-1.5 outline-none"
-                          />
-                          <input
-                            type="text"
-                            value={loc.description}
-                            onChange={(e) => {
-                              const newDesc = e.target.value;
-                              setEditLocations((prev) =>
-                                prev.map((item, idx) =>
-                                  idx === index ? { ...item, description: newDesc } : item
-                                )
-                              );
-                            }}
-                            className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#ACACB2] text-[13px] rounded-lg px-2.5 py-1.5 outline-none"
-                          />
-                        </div>
-                      ) : (
-                        <>
-                          <h4 className="text-[14px] font-bold text-[#F2F2F5]">
-                            {loc.name}
-                          </h4>
-                          <p className="text-[13px] text-[#ACACB2] mt-0.5 leading-relaxed">
-                            {loc.description}
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  )
-                )}
-              </div>
+            {/* Card 5: กฎเกณฑ์โลก & ระดับความเสี่ยง (World Laws & Exposure Risk) */}
+            <div className="mt-4">
+              <WorldRulesCard
+                cardRef={rulesCardRef}
+                isEditing={editingCard === 'rules'}
+                onStartEdit={() => setEditingCard('rules')}
+                onCancelEdit={() => setEditingCard(null)}
+                onSave={(newRules) => {
+                  onUpdateDraft?.({
+                    rules_tension: newRules,
+                  });
+                  setEditingCard(null);
+                }}
+                rulesTension={draft?.rules_tension}
+              />
             </div>
 
             {/* Card 3: ซิงค์พิมพ์เขียว (สไตล์ Twitter Subscribe to Premium: ปุ่มสีชมพูหลักของเรา) */}

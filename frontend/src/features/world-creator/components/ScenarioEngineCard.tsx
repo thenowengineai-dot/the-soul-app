@@ -14,6 +14,10 @@ import {
   Volume2,
   Pencil,
   Check,
+  Clapperboard,
+  BookOpen,
+  Video,
+  Users,
 } from 'lucide-react';
 import type {
   WorldScenario,
@@ -327,10 +331,9 @@ export default function ScenarioEngineCard({
       <div className="sticky top-0 z-20 bg-[#090909]/90 backdrop-blur-xl border-b border-[#2F3336]/80 px-4 sm:px-5 py-3.5 transition-all">
         <div className="flex items-center justify-between gap-3 mb-2.5">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#EF264C] shadow-[0_0_8px_rgba(239,38,76,0.5)]" />
-            <h3 className="text-[13px] sm:text-[14px] font-bold text-[#F2F2F5] tracking-wider uppercase flex items-center gap-1.5">
-              <Film size={14} className="text-[#EF264C]" />
-              <span>TIMELINE RAIL (แผงรางรถไฟ)</span>
+            <Film size={15} className="text-[#EF264C] shrink-0" />
+            <h3 className="text-[13px] sm:text-[14px] font-bold text-[#F2F2F5] tracking-wider uppercase">
+              TIMELINE RAIL (แผงรางรถไฟ)
             </h3>
           </div>
           <span className="text-[11px] font-medium text-[#ACACB2] tracking-wider uppercase bg-white/5 px-2 py-0.5 rounded-md border border-white/5">
@@ -415,13 +418,13 @@ export default function ScenarioEngineCard({
           {/* Briefing Header พร้อมปุ่มดินสอกลม [ ✏️ ] / [ ✕ ] [ ✓ ] */}
           <div className="flex items-center justify-between border-b border-[#2F3336]/60 pb-2.5">
             <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#EF264C]" />
+              <Clapperboard size={15} className="text-[#EF264C] shrink-0" />
               <h4
                 className={`text-[12.5px] sm:text-[13px] font-bold uppercase tracking-wider ${
                   isEditingBriefing ? 'text-[#EF264C]' : 'text-[#F2F2F5]'
                 }`}
               >
-                🎬 {isEditingBriefing ? 'แก้ไขบรีฟภาพรวมประจำซีน' : "DIRECTOR'S BRIEFING (บรีฟภาพรวมประจำซีน)"}
+                {isEditingBriefing ? 'แก้ไขบรีฟภาพรวมประจำซีน' : "DIRECTOR'S BRIEFING (บรีฟภาพรวมประจำซีน)"}
               </h4>
             </div>
 
@@ -459,8 +462,9 @@ export default function ScenarioEngineCard({
 
           {/* THE SCENE PREMISE */}
           <div className="space-y-1">
-            <div className="flex items-center justify-between text-[11.5px] font-bold text-[#EF264C] uppercase tracking-wider">
-              <span>📖 THE SCENE PREMISE (ปูมหลัง & บริบทความอึดอัด)</span>
+            <div className="flex items-center gap-1.5 text-[11.5px] font-bold text-[#EF264C] uppercase tracking-wider">
+              <BookOpen size={13} className="text-[#EF264C] shrink-0" />
+              <span>THE SCENE PREMISE (ปูมหลัง & บริบทความอึดอัด)</span>
             </div>
             {isEditingBriefing ? (
               <textarea
@@ -500,8 +504,9 @@ export default function ScenarioEngineCard({
 
           {/* DIRECTOR'S BRIEF */}
           <div className="space-y-1">
-            <div className="text-[11.5px] font-bold text-[#ACACB2] uppercase tracking-wider">
-              🎥 DIRECTOR'S BRIEF (คำสั่งคุมโทนผู้กำกับ)
+            <div className="flex items-center gap-1.5 text-[11.5px] font-bold text-[#ACACB2] uppercase tracking-wider">
+              <Video size={13} className="text-[#EF264C] shrink-0" />
+              <span>DIRECTOR'S BRIEF (คำสั่งคุมโทนผู้กำกับ)</span>
             </div>
             {isEditingBriefing ? (
               <textarea
@@ -554,8 +559,9 @@ export default function ScenarioEngineCard({
           {isEditingBriefing ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
               <div className="bg-black/30 border border-[#2F3336]/80 rounded-xl p-3">
-                <span className="text-[10.5px] font-bold text-[#ACACB2] uppercase tracking-wider block mb-1">
-                  🎭 EVENT MOOD (ฟิสิกส์/บรรยากาศ)
+                <span className="text-[10.5px] font-bold text-[#ACACB2] uppercase tracking-wider flex items-center gap-1 mb-1">
+                  <Sparkles size={11} className="text-[#EF264C] shrink-0" />
+                  <span>EVENT MOOD (ฟิสิกส์/บรรยากาศ)</span>
                 </span>
                 <input
                   type="text"
@@ -566,8 +572,9 @@ export default function ScenarioEngineCard({
                 />
               </div>
               <div className="bg-black/30 border border-[#2F3336]/80 rounded-xl p-3">
-                <span className="text-[10.5px] font-bold text-[#ACACB2] uppercase tracking-wider block mb-1">
-                  🎬 DIRECTOR'S VISION (จังหวะหนัง)
+                <span className="text-[10.5px] font-bold text-[#ACACB2] uppercase tracking-wider flex items-center gap-1 mb-1">
+                  <Film size={11} className="text-[#EF264C] shrink-0" />
+                  <span>DIRECTOR'S VISION (จังหวะหนัง)</span>
                 </span>
                 <input
                   type="text"
@@ -581,16 +588,18 @@ export default function ScenarioEngineCard({
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
               <div className="bg-black/30 border border-[#2F3336]/80 rounded-xl p-3">
-                <span className="text-[10.5px] font-bold text-[#ACACB2] uppercase tracking-wider block mb-1">
-                  🎭 EVENT MOOD (ฟิสิกส์/บรรยากาศ)
+                <span className="text-[10.5px] font-bold text-[#ACACB2] uppercase tracking-wider flex items-center gap-1 mb-1">
+                  <Sparkles size={11} className="text-[#EF264C] shrink-0" />
+                  <span>EVENT MOOD (ฟิสิกส์/บรรยากาศ)</span>
                 </span>
                 <p className="text-[14px] text-[#F2F2F5] font-normal leading-relaxed">
                   {currentScene.event_mood || 'อบอุ่น อึดอัด'}
                 </p>
               </div>
               <div className="bg-black/30 border border-[#2F3336]/80 rounded-xl p-3">
-                <span className="text-[10.5px] font-bold text-[#ACACB2] uppercase tracking-wider block mb-1">
-                  🎬 DIRECTOR'S VISION (จังหวะหนัง)
+                <span className="text-[10.5px] font-bold text-[#ACACB2] uppercase tracking-wider flex items-center gap-1 mb-1">
+                  <Film size={11} className="text-[#EF264C] shrink-0" />
+                  <span>DIRECTOR'S VISION (จังหวะหนัง)</span>
                 </span>
                 <p className="text-[14px] text-[#F2F2F5] font-normal leading-relaxed">
                   {currentScene.director_vision || 'The Slow Burn: สร้างความกระอักกระอ่วน'}
@@ -606,10 +615,9 @@ export default function ScenarioEngineCard({
         <div className="space-y-3 pt-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#EF264C]" />
-              <h4 className="text-[13px] sm:text-[14px] font-bold text-[#F2F2F5] uppercase tracking-wider flex items-center gap-1.5">
-                <Clock size={14} className="text-[#EF264C]" />
-                <span>BEATS & CHOICES (จังหวะเหตุการณ์ย่อย)</span>
+              <Clock size={15} className="text-[#EF264C] shrink-0" />
+              <h4 className="text-[13px] sm:text-[14px] font-bold text-[#F2F2F5] uppercase tracking-wider">
+                BEATS & CHOICES (จังหวะเหตุการณ์ย่อย)
               </h4>
             </div>
             <span className="text-[11px] text-[#ACACB2]">
@@ -767,8 +775,9 @@ export default function ScenarioEngineCard({
                     {/* 👤 ตาข่ายดักจับผู้เล่น (PLAYER TRIGGERS) พร้อม SEMANTIC COLOR TAGS */}
                     <div className="space-y-2 pt-1">
                       <div className="flex items-center justify-between">
-                        <span className="text-[11.5px] font-bold text-[#ACACB2] uppercase tracking-wider">
-                          👤 ตาข่ายดักจับผู้เล่น (PLAYER TRIGGERS)
+                        <span className="text-[11.5px] font-bold text-[#ACACB2] uppercase tracking-wider flex items-center gap-1.5">
+                          <Users size={13} className="text-[#EF264C] shrink-0" />
+                          <span>ตาข่ายดักจับผู้เล่น (PLAYER TRIGGERS)</span>
                         </span>
                         {!isEditingThisBeat && (
                           <button

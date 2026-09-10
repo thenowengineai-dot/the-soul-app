@@ -1,6 +1,5 @@
 import { useState, type RefObject } from 'react';
 import {
-  MapPin,
   Pencil,
   X,
   Check,
@@ -99,19 +98,15 @@ export default function WorldLocationsCard({
       ref={cardRef}
       className="scroll-mt-4 rounded-2xl bg-[#111112] border border-[#2F3336] p-4 sm:p-5 flex flex-col gap-4 text-left transition-all duration-200"
     >
-      {/* Header Bar - Contained Director's Briefing Style */}
-      <div className="flex items-center justify-between border-b border-[#2F3336]/60 pb-2.5">
-        <div className="flex items-center gap-2">
-          <MapPin size={16} className="text-[#EF264C] shrink-0" />
-          <div>
-            <h3 className="text-[13px] sm:text-[14px] font-bold text-[#F2F2F5] tracking-wider uppercase">
-              สถาปัตยกรรมฉาก & จุดคอขวด (Locations & Choke Points)
-            </h3>
-            <span className="text-[11px] text-[#ACACB2]">
-              {locationNames.length} ฉากพิกัดปิดตายและจุดชี้ชะตา
-            </span>
-          </div>
-        </div>
+      {/* Header Bar */}
+      <div className="flex items-center justify-between">
+        <h3
+          className={`text-[18px] sm:text-[19px] font-bold tracking-tight ${
+            isEditing ? 'text-[#EF264C]' : 'text-[#F2F2F5]'
+          }`}
+        >
+          {isEditing ? 'แก้ไขสถาปัตยกรรมฉาก & จุดคอขวด' : 'สถาปัตยกรรมฉาก & จุดคอขวด'}
+        </h3>
 
         {isEditing ? (
           <div className="flex items-center gap-2">
@@ -216,7 +211,7 @@ export default function WorldLocationsCard({
                 });
               }}
               rows={2}
-              className="w-full px-3 py-2 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[13.5px] outline-none resize-none leading-relaxed"
+              className="w-full px-3 py-2 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[14px] font-normal outline-none resize-none leading-relaxed"
             />
           </div>
 
@@ -234,7 +229,7 @@ export default function WorldLocationsCard({
                   [activeName]: { ...editLocation, key_furniture: e.target.value },
                 });
               }}
-              className="w-full px-3 py-2 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[13.5px] outline-none"
+              className="w-full px-3 py-2 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[14px] font-normal outline-none"
             />
           </div>
 
@@ -257,7 +252,7 @@ export default function WorldLocationsCard({
                 });
               }}
               rows={3}
-              className="w-full px-3 py-2 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[13.5px] outline-none resize-none leading-relaxed"
+              className="w-full px-3 py-2 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[14px] font-normal outline-none resize-none leading-relaxed"
             />
           </div>
         </div>
@@ -290,7 +285,7 @@ export default function WorldLocationsCard({
               <Maximize2 size={12} className="text-[#EF264C]" />
               <span>ผังพื้นที่กายภาพ (Spatial Layout)</span>
             </div>
-            <p className="text-[13px] text-[#F2F2F5] leading-relaxed">
+            <p className="text-[14px] text-[#F2F2F5] leading-relaxed font-normal">
               {activeLocation.spatial_layout}
             </p>
           </div>
@@ -302,7 +297,7 @@ export default function WorldLocationsCard({
               <span className="text-[11px] uppercase tracking-wider text-[#ACACB2]">
                 วัตถุประกอบฉากสำคัญ (Key Furniture / Props)
               </span>
-              <span className="text-[13px] text-[#F2F2F5] font-normal">
+              <span className="text-[14px] text-[#F2F2F5] font-normal">
                 {activeLocation.key_furniture}
               </span>
             </div>
@@ -316,7 +311,7 @@ export default function WorldLocationsCard({
             </div>
             <div className="flex flex-col gap-1.5">
               {(activeLocation.sensory_cues?.ambient_cues || []).map((cue, idx) => (
-                <div key={idx} className="flex items-center gap-2 text-[13px] text-[#F2F2F5]">
+                <div key={idx} className="flex items-center gap-2 text-[14px] text-[#F2F2F5] font-normal">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#EF264C] shrink-0" />
                   <span>{cue}</span>
                 </div>

@@ -1,5 +1,5 @@
 import { useState, type RefObject } from 'react';
-import { UserCheck, ShieldAlert, Scale, Target, Pencil, Check, X, Lock } from 'lucide-react';
+import { ShieldAlert, Scale, Target, Pencil, Check, X, Lock } from 'lucide-react';
 import type { PlayerPersona } from '../types';
 
 interface WorldPersonaCardProps {
@@ -87,14 +87,15 @@ export default function WorldPersonaCard({
       ref={cardRef}
       className="scroll-mt-4 rounded-2xl bg-[#111112] border border-[#2F3336] p-4 sm:p-5 flex flex-col gap-4 text-left transition-all duration-200"
     >
-      {/* Header - Director's Briefing Style (border-b contained inside padding) */}
-      <div className="flex items-center justify-between border-b border-[#2F3336]/60 pb-2.5">
-        <div className="flex items-center gap-2">
-          <UserCheck size={16} className="text-[#EF264C] shrink-0" />
-          <h3 className="text-[13px] sm:text-[14px] font-bold text-[#F2F2F5] tracking-wider uppercase">
-            ตัวตนผู้เล่น & พลวัตอำนาจ (Player Persona & Power Dynamics)
-          </h3>
-        </div>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h3
+          className={`text-[18px] sm:text-[19px] font-bold tracking-tight ${
+            isEditing ? 'text-[#EF264C]' : 'text-[#F2F2F5]'
+          }`}
+        >
+          {isEditing ? 'แก้ไขผู้เล่น & ความสัมพันธ์' : 'ผู้เล่น & ความสัมพันธ์'}
+        </h3>
 
         {isEditing ? (
           <div className="flex items-center gap-2">

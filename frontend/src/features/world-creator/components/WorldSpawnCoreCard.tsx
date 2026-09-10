@@ -11,7 +11,6 @@ import {
   Zap,
   Shirt,
   User,
-  Compass,
 } from 'lucide-react';
 import type { WorldStartingState, WorldInitialStates } from '../types';
 
@@ -54,9 +53,6 @@ export default function WorldSpawnCoreCard({
   onSave,
   startingState = DEFAULT_STARTING_STATE,
   initialStates = DEFAULT_INITIAL_STATES,
-  worldTitle = 'The Botanical Poison & Dragon Water Ritual',
-  thaiName = 'พฤกษศาสตร์ถอดหน้ากาก: พิษร้อนและน้ำมังกร',
-  worldId = 'draft_1785469936321',
 }: WorldSpawnCoreCardProps) {
   const [editLocation, setEditLocation] = useState(startingState?.location || DEFAULT_STARTING_STATE.location);
   const [editTime, setEditTime] = useState(startingState?.time || DEFAULT_STARTING_STATE.time);
@@ -108,19 +104,15 @@ export default function WorldSpawnCoreCard({
       ref={cardRef}
       className="scroll-mt-4 rounded-2xl bg-[#111112] border border-[#2F3336] p-4 sm:p-5 flex flex-col gap-4 text-left transition-all duration-200"
     >
-      {/* Header - Director's Briefing Style (border-b contained inside padding) */}
-      <div className="flex items-center justify-between border-b border-[#2F3336]/60 pb-2.5">
-        <div className="flex items-center gap-2">
-          <Compass size={16} className="text-[#EF264C] shrink-0" />
-          <div>
-            <h3 className="text-[13px] sm:text-[14px] font-bold text-[#F2F2F5] tracking-wider uppercase">
-              จุดเกิด & สถานะเริ่มต้น (World Spawn & Initial Gauges)
-            </h3>
-            <span className="text-[11px] text-[#ACACB2]">
-              {thaiName || worldTitle} ({worldId})
-            </span>
-          </div>
-        </div>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h3
+          className={`text-[18px] sm:text-[19px] font-bold tracking-tight ${
+            isEditing ? 'text-[#EF264C]' : 'text-[#F2F2F5]'
+          }`}
+        >
+          {isEditing ? 'แก้ไขจุดเกิด & สถานะเริ่มต้น' : 'จุดเกิด & สถานะเริ่มต้น'}
+        </h3>
 
         {isEditing ? (
           <div className="flex items-center gap-2">

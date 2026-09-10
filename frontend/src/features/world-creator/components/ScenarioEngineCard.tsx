@@ -25,17 +25,22 @@ import type {
   WorldBeat,
   PlayerTriggerAction,
 } from '../types';
+import TokenBadgeText from './TokenBadgeText';
 
 interface ScenarioEngineCardProps {
   scenario: WorldScenario;
   onUpdateScenario?: (updated: WorldScenario) => void;
   cardRef?: React.RefObject<HTMLDivElement | null>;
+  actorName?: string;
+  playerName?: string;
 }
 
 export default function ScenarioEngineCard({
   scenario,
   onUpdateScenario,
   cardRef,
+  actorName = 'ตัวละคร',
+  playerName = 'คุณ',
 }: ScenarioEngineCardProps) {
   const [selectedSceneIndex, setSelectedSceneIndex] = useState<number>(0);
   const [isCrossfading, setIsCrossfading] = useState<boolean>(false);
@@ -476,7 +481,11 @@ export default function ScenarioEngineCard({
               />
             ) : (
               <p className="text-[14px] text-[#F2F2F5] leading-relaxed font-normal bg-black/20 p-3 rounded-lg border border-white/5">
-                {currentScene.premise || 'ยังไม่มีการระบุปูมหลังของฉาก'}
+                <TokenBadgeText
+                  text={currentScene.premise || 'ยังไม่มีการระบุปูมหลังของฉาก'}
+                  actorName={actorName}
+                  playerName={playerName}
+                />
               </p>
             )}
           </div>
@@ -497,7 +506,11 @@ export default function ScenarioEngineCard({
               />
             ) : (
               <p className="text-[14px] text-[#F2F2F5] font-normal leading-relaxed bg-black/20 p-3 rounded-lg border border-white/5">
-                {currentScene.scene_objective}
+                <TokenBadgeText
+                  text={currentScene.scene_objective}
+                  actorName={actorName}
+                  playerName={playerName}
+                />
               </p>
             )}
           </div>
@@ -518,7 +531,11 @@ export default function ScenarioEngineCard({
               />
             ) : (
               <p className="text-[14px] text-[#F2F2F5] leading-relaxed font-normal bg-black/20 p-3 rounded-lg border border-white/5">
-                {currentScene.director_setup}
+                <TokenBadgeText
+                  text={currentScene.director_setup}
+                  actorName={actorName}
+                  playerName={playerName}
+                />
               </p>
             )}
           </div>
@@ -593,7 +610,11 @@ export default function ScenarioEngineCard({
                   <span>EVENT MOOD (ฟิสิกส์/บรรยากาศ)</span>
                 </span>
                 <p className="text-[14px] text-[#F2F2F5] font-normal leading-relaxed">
-                  {currentScene.event_mood || 'อบอุ่น อึดอัด'}
+                  <TokenBadgeText
+                    text={currentScene.event_mood || 'อบอุ่น อึดอัด'}
+                    actorName={actorName}
+                    playerName={playerName}
+                  />
                 </p>
               </div>
               <div className="bg-black/30 border border-[#2F3336]/80 rounded-xl p-3">
@@ -602,7 +623,11 @@ export default function ScenarioEngineCard({
                   <span>DIRECTOR'S VISION (จังหวะหนัง)</span>
                 </span>
                 <p className="text-[14px] text-[#F2F2F5] font-normal leading-relaxed">
-                  {currentScene.director_vision || 'The Slow Burn: สร้างความกระอักกระอ่วน'}
+                  <TokenBadgeText
+                    text={currentScene.director_vision || 'The Slow Burn: สร้างความกระอักกระอ่วน'}
+                    actorName={actorName}
+                    playerName={playerName}
+                  />
                 </p>
               </div>
             </div>
@@ -744,7 +769,11 @@ export default function ScenarioEngineCard({
                               VO / DIRECTOR'S SETUP (GEAR 1)
                             </strong>
                             <p className="text-[14px] text-[#F2F2F5] font-normal leading-relaxed">
-                              {beat.director_setup}
+                              <TokenBadgeText
+                                text={beat.director_setup}
+                                actorName={actorName}
+                                playerName={playerName}
+                              />
                             </p>
                           </div>
                         </div>
@@ -767,7 +796,11 @@ export default function ScenarioEngineCard({
                         />
                       ) : (
                         <div className="bg-black/25 border border-white/5 rounded-xl p-3.5 text-[14px] text-[#F2F2F5] leading-relaxed font-normal whitespace-pre-line select-text">
-                          {beat.actor_state}
+                          <TokenBadgeText
+                            text={beat.actor_state}
+                            actorName={actorName}
+                            playerName={playerName}
+                          />
                         </div>
                       )}
                     </div>
@@ -842,11 +875,20 @@ export default function ScenarioEngineCard({
                                 ) : (
                                   <>
                                     <p className="text-[14px] text-[#F2F2F5] font-normal leading-normal">
-                                      {choiceText}
+                                      <TokenBadgeText
+                                        text={choiceText}
+                                        actorName={actorName}
+                                        playerName={playerName}
+                                      />
                                     </p>
                                     {choiceVal.feedback && (
                                       <p className="text-[12.5px] text-[#ACACB2] mt-0.5 italic">
-                                        💡 {choiceVal.feedback}
+                                        💡{' '}
+                                        <TokenBadgeText
+                                          text={choiceVal.feedback}
+                                          actorName={actorName}
+                                          playerName={playerName}
+                                        />
                                       </p>
                                     )}
                                   </>
@@ -968,7 +1010,11 @@ export default function ScenarioEngineCard({
                           />
                         ) : (
                           <p className="text-[14px] text-[#F2F2F5] font-normal leading-relaxed">
-                            {beat.pacing_control?.inevitable_consequence}
+                            <TokenBadgeText
+                              text={beat.pacing_control?.inevitable_consequence}
+                              actorName={actorName}
+                              playerName={playerName}
+                            />
                           </p>
                         )}
                       </div>

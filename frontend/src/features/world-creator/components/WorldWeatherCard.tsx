@@ -1,6 +1,5 @@
 import { useState, type RefObject } from 'react';
 import {
-  CloudSun,
   Pencil,
   X,
   Check,
@@ -85,19 +84,15 @@ export default function WorldWeatherCard({
       ref={cardRef}
       className="scroll-mt-4 rounded-2xl bg-[#111112] border border-[#2F3336] p-4 sm:p-5 flex flex-col gap-4 text-left transition-all duration-200"
     >
-      {/* Header Bar - Contained Director's Briefing Style */}
-      <div className="flex items-center justify-between border-b border-[#2F3336]/60 pb-2.5">
-        <div className="flex items-center gap-2">
-          <CloudSun size={16} className="text-[#EF264C] shrink-0" />
-          <div>
-            <h3 className="text-[13px] sm:text-[14px] font-bold text-[#F2F2F5] tracking-wider uppercase">
-              กาลเวลา & ห่วงโซ่สภาพอากาศ (Time Periods & Weather System)
-            </h3>
-            <span className="text-[11px] text-[#ACACB2]">
-              ระบบควบคุมตรรกะการไหลของสภาพแวดล้อม
-            </span>
-          </div>
-        </div>
+      {/* Header Bar */}
+      <div className="flex items-center justify-between">
+        <h3
+          className={`text-[18px] sm:text-[19px] font-bold tracking-tight ${
+            isEditing ? 'text-[#EF264C]' : 'text-[#F2F2F5]'
+          }`}
+        >
+          {isEditing ? 'แก้ไขกาลเวลา & ห่วงโซ่สภาพอากาศ' : 'กาลเวลา & ห่วงโซ่สภาพอากาศ'}
+        </h3>
 
         {isEditing ? (
           <div className="flex items-center gap-2">

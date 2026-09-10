@@ -6,7 +6,7 @@ import TheMuseChat from './components/TheMuseChat';
 import ResizableSplitter from './components/ResizableSplitter';
 import InspectorPanel from './components/InspectorPanel';
 import CelebrationPublishModal from './components/CelebrationPublishModal';
-import { INITIAL_VAULT_DRAFTS, INITIAL_MUSE_MESSAGES } from './mockData';
+import { INITIAL_MUSE_MESSAGES, DEMO_SHOWCASE_DRAFT } from './mockData';
 import {
   sendMuseMessage,
   fetchUserDrafts,
@@ -16,7 +16,10 @@ import {
   fetchMuseHistory,
   compileBlueprint,
   publishWorldCampaign,
+  unpublishWorldCampaign,
+  uploadImageToStorage,
 } from './genesisApi';
+import { processMultipleImages } from './utils/imageUtils';
 import { getCurrentUser } from '../chat/chatApi';
 import type {
   CreatorMode,
@@ -38,15 +41,50 @@ interface WorldCreatorViewProps {
   }) => void;
 }
 
+// สร้างพิมพ์เขียวร่างใหม่ที่ว่างเปล่า สะอาด 100%
+function createFreshNewDraft(userName?: string): VaultDraft {
+  const newId = `draft_${Date.now()}`;
+  return {
+    id: newId,
+    title: 'ตัวละครใหม่ (New Character)',
+    worldTitle: 'โลกใบใหม่ (New World)',
+    mode: 'character',
+    createdAt: 'วันนี้',
+    updatedAt: 'เมื่อสักครู่',
+    description: 'ตัวละครและโลกคู่กันที่พร้อมให้คุณสร้างสรรค์ร่วมกับ The Muse',
+    status: 'draft',
+    isPinned: false,
+    authorName: userName || 'You',
+    themeColor: '#EF264C',
+  };
+}
+
+const FRESH_WELCOME_MESSAGE: MuseMessage = {
+  id: `muse-welcome-${Date.now()}`,
+  sender: 'muse',
+  text: 'ยินดีต้อนรับสู่ The Muse ครับ! สตูดิโอร่วมสถาปัตย์ตัวละครและโลกเสมือนจริง 🏛️✨\n\nวันนี้คุณอยากสร้างตัวละครแบบไหน หรือมีพล็อตเรื่องในใจที่อยากให้ผมช่วยร่างพิมพ์เขียวขึ้นมาครับ? ลองพิมพ์ไอเดียเริ่มต้นสั้นๆ หรือเลือกแนวทางด้านล่างได้เลย!',
+  timestamp: 'ตอนนี้',
+  actionSuggestions: [
+    '🎭 รุ่นพี่สาวแว่นผู้มีความลับซ่อนอยู่ใต้หน้ากาก',
+    '⚔️ อัศวินสาวผู้เยือกเย็นกับคำสาปในเงามืด',
+    '🏙️ นักสืบสาวในมหานครนีออนดิสโทเปีย',
+    '✨ แม่มดฝึกหัดจอมซุ่มซ่ามในร้านเวทมนตร์',
+  ],
+};
+
 export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreatorViewProps) {
+  // ร่างเริ่มต้นที่ว่างเปล่า สะอาด 100% เมื่อเข้าห้อง The Muse
+  const [initialFreshDraft] = useState<VaultDraft>(() => createFreshNewDraft('You'));
   const [activeMode, setActiveMode] = useState<CreatorMode>('world');
-  const [drafts, setDrafts] = useState<VaultDraft[]>(INITIAL_VAULT_DRAFTS);
-  const [activeDraftId, setActiveDraftId] = useState<string | null>(
-    INITIAL_VAULT_DRAFTS[0]?.id || null
-  );
+  const [drafts, setDrafts] = useState<VaultDraft[]>(() => [
+    initialFreshDraft,
+    DEMO_SHOWCASE_DRAFT,
+  ]);
+  const [activeDraftId, setActiveDraftId] = useState<string | null>(() => initialFreshDraft.id);
   const [isThinking, setIsThinking] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isPublishing, setIsPublishing] = useState<boolean>(false);
+  const [isUploadingImages, setIsUploadingImages] = useState<boolean>(false);
   const [isCelebrationModalOpen, setIsCelebrationModalOpen] = useState<boolean>(false);
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -66,8 +104,8 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
   });
   const [isRightPanelCollapsed, setIsRightPanelCollapsed] = useState<boolean>(false);
 
-  // The Muse Chat Messages State
-  const [messages, setMessages] = useState<MuseMessage[]>(INITIAL_MUSE_MESSAGES);
+  // The Muse Chat Messages State (เริ่มด้วยข้อความต้อนรับของห้องใหม่เอี่ยม)
+  const [messages, setMessages] = useState<MuseMessage[]>([FRESH_WELCOME_MESSAGE]);
 
   // ดึงข้อมูล Draft ปัจจุบันที่กำลังโฟกัส
   const activeDraft = drafts.find((d) => d.id === activeDraftId) || drafts[0];
@@ -83,9 +121,18 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
       try {
         const user = getCurrentUser();
         const serverDrafts = await fetchUserDrafts(user.user_id);
-        if (isMounted && serverDrafts && serverDrafts.length > 0) {
-          setDrafts(serverDrafts);
-          setActiveDraftId(serverDrafts[0].id);
+        if (isMounted) {
+          // กรองไม่ให้มี demo_mahiro_showcase หรือ draft ที่ซ้ำกับ fresh draft
+          const userDrafts = (serverDrafts || []).filter(
+            (d) => d.id !== DEMO_SHOWCASE_DRAFT.id && d.id !== initialFreshDraft.id
+          );
+          setDrafts((prev) => {
+            const currentFresh = prev.find((d) => d.id === initialFreshDraft.id) || prev[0];
+            return currentFresh
+              ? [currentFresh, DEMO_SHOWCASE_DRAFT, ...userDrafts]
+              : [DEMO_SHOWCASE_DRAFT, ...userDrafts];
+          });
+          // โฟกัสยังคงอยู่ที่ Fresh Draft เสมอเมื่อเปิดเข้ามาใหม่
         }
       } catch (err) {
         console.warn('Could not load drafts from Neon, using default:', err);
@@ -95,7 +142,7 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [initialFreshDraft.id]);
 
   // 2. โหลดข้อมูลรายละเอียดและประวัติ Muse Chat เมื่อสลับ Active Draft
   useEffect(() => {
@@ -103,6 +150,22 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
     const targetDraftId = activeDraftId;
     let isMounted = true;
     async function loadDraftContext() {
+      // 🌟 2.1 กรณีคลิกเลือกตัวอย่างสำหรับพรีเซนต์ลูกค้า (DEMO_SHOWCASE_DRAFT: มาฮิโระ)
+      if (targetDraftId === DEMO_SHOWCASE_DRAFT.id) {
+        setMessages(INITIAL_MUSE_MESSAGES);
+        setDrafts((prev) =>
+          prev.map((d) => (d.id === DEMO_SHOWCASE_DRAFT.id ? { ...d, ...DEMO_SHOWCASE_DRAFT } : d))
+        );
+        return;
+      }
+
+      // 🌟 2.2 กรณีเลือก Fresh Draft ที่เพิ่งสร้างใหม่และยังไม่มีประวัติ
+      if (targetDraftId === initialFreshDraft.id) {
+        setMessages([FRESH_WELCOME_MESSAGE]);
+        return;
+      }
+
+      // 🌟 2.3 กรณีเป็น Draft ของผู้ใช้จาก Neon DB
       try {
         const user = getCurrentUser();
         // โหลดประวัติแชท The Muse ของ Draft นี้จาก Neon
@@ -118,12 +181,13 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
             {
               id: `muse-${Date.now()}`,
               sender: 'muse',
-              text: `ยินดีต้อนรับสู่สตูดิโอสร้างโลกครับ! เรากำลังโฟกัสอยู่ที่ **${charTitle}** ในโลก **${worldTitle}** 🚀\n\nอยากให้ฉากเปิดและบุคลิกของตัวละครนี้มีความขัดแย้งหรือเสน่ห์แบบไหนดีครับ?`,
+              text: `ยินดีต้อนรับสู่ The Muse ครับ! สตูดิโอร่วมสถาปัตย์ตัวละครและโลกเสมือนจริง 🏛️✨\n\nเรากำลังโฟกัสอยู่ที่ **${charTitle}** ในโลก **${worldTitle}**\nอยากให้ตัวละครนี้มีบุคลิก หรือเริ่มต้นฉากเปิดแบบไหนดีครับ? พิมพ์ไอเดียเริ่มต้นสั้นๆ หรือเลือกแนวทางด้านล่างได้เลย!`,
               timestamp: 'ตอนนี้',
               actionSuggestions: [
-                '🏙️ โลกยุคปัจจุบันที่มีความลับดำมืด',
-                '🏰 มหาอาณาจักรแฟนตาซีเวทมนตร์',
-                '🌌 ไซไฟอวกาศและการเอาชีวิตรอด',
+                '🎭 รุ่นพี่สาวแว่นผู้มีความลับซ่อนอยู่ใต้หน้ากาก',
+                '⚔️ อัศวินสาวผู้เยือกเย็นกับคำสาปในเงามืด',
+                '🏙️ นักสืบสาวในมหานครนีออนดิสโทเปีย',
+                '✨ แม่มดฝึกหัดจอมซุ่มซ่ามในร้านเวทมนตร์',
               ],
             },
           ]);
@@ -144,11 +208,10 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
     return () => {
       isMounted = false;
     };
-  }, [activeDraftId]);
+  }, [activeDraftId, initialFreshDraft.id]);
 
   // ปักหมุด / ยกเลิกการปักหมุด Draft (พร้อมบันทึกลง Neon)
   const handleTogglePin = async (id: string) => {
-    const user = getCurrentUser();
     let nextPinned = false;
     setDrafts((prev) =>
       prev.map((d) => {
@@ -160,7 +223,11 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
       })
     );
 
+    // ตัวอย่างสำหรับ Showcase ไม่ต้องบันทึกลง Neon
+    if (id === DEMO_SHOWCASE_DRAFT.id) return;
+
     try {
+      const user = getCurrentUser();
       const target = drafts.find((d) => d.id === id);
       if (target) {
         await saveDraftToVault({
@@ -176,6 +243,9 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
 
   // ลบ Draft (พร้อมลบออกจาก Neon)
   const handleDeleteDraft = async (id: string) => {
+    // ป้องกันการลบตัวอย่าง Showcase
+    if (id === DEMO_SHOWCASE_DRAFT.id) return;
+
     const user = getCurrentUser();
     setDrafts((prev) => {
       const remaining = prev.filter((d) => d.id !== id);
@@ -195,33 +265,18 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
   // สร้าง Draft ตัวละครและโลกคู่กันใหม่ (พร้อมบันทึกลง Neon)
   const handleNewDraft = async () => {
     const user = getCurrentUser();
-    const newId = `world_${Date.now()}`;
-    const newCharId = `char_${Date.now()}`;
-    const newTitle = 'ตัวละครใหม่ (New Character)';
-    const newWorld = 'โลกใบใหม่ (New World)';
-    const newDraft: VaultDraft = {
-      id: newId,
-      title: newTitle,
-      worldTitle: newWorld,
-      mode: 'character',
-      createdAt: 'วันนี้',
-      updatedAt: 'เมื่อสักครู่',
-      description: 'ตัวละครและโลกคู่กันที่พร้อมให้คุณสร้างสรรค์ร่วมกับ The Muse',
-      status: 'draft',
-      isPinned: false,
-      authorName: user.name || 'You',
-      themeColor: '#EF264C',
-    };
+    const newDraft = createFreshNewDraft(user.name);
 
     setDrafts((prev) => [newDraft, ...prev]);
-    setActiveDraftId(newId);
+    setActiveDraftId(newDraft.id);
+    setMessages([FRESH_WELCOME_MESSAGE]);
 
     try {
       await saveDraftToVault({
         userId: user.user_id,
         data: {
           ...newDraft,
-          character_id: newCharId,
+          character_id: `char_${Date.now()}`,
         } as Record<string, unknown>,
         mode: 'character',
       });
@@ -237,6 +292,9 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
     setDrafts((prev) =>
       prev.map((d) => (d.id === activeDraft.id ? updatedDraft : d))
     );
+
+    // ป้องกันการเซฟทับตัวอย่าง Showcase ไปยัง Neon
+    if (activeDraft.id === DEMO_SHOWCASE_DRAFT.id) return;
 
     if (autoSaveTimerRef.current) {
       clearTimeout(autoSaveTimerRef.current);
@@ -254,6 +312,133 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
       }
     }, 1500);
   }, [activeDraft, activeMode]);
+
+  // สลับสถานะ Publish / Draft จากเมนู The Vault
+  const handleTogglePublish = async (id: string, currentStatus: 'draft' | 'published') => {
+    const nextStatus = currentStatus === 'published' ? 'draft' : 'published';
+
+    // กรณีสลับสถานะของตัวอย่าง Showcase ให้ทำเฉพาะใน state หน้าจอ
+    if (id === DEMO_SHOWCASE_DRAFT.id) {
+      setDrafts((prev) =>
+        prev.map((d) => (d.id === id ? { ...d, status: nextStatus, updatedAt: 'เมื่อสักครู่' } : d))
+      );
+      if (nextStatus === 'published' && id === activeDraftId) {
+        setIsCelebrationModalOpen(true);
+      }
+      return;
+    }
+
+    const user = getCurrentUser();
+    const target = drafts.find((d) => d.id === id);
+    if (!target) return;
+
+    if (currentStatus === 'published') {
+      // 📦 เปลี่ยนเป็นฉบับร่าง (Unpublish)
+      try {
+        const success = await unpublishWorldCampaign(id, user.user_id);
+        if (success) {
+          setDrafts((prev) =>
+            prev.map((d) => (d.id === id ? { ...d, status: 'draft', updatedAt: 'เมื่อสักครู่' } : d))
+          );
+        }
+      } catch (err) {
+        console.error('Failed to unpublish draft:', err);
+      }
+    } else {
+      // 🚀 เผยแพร่ทันที (Publish)
+      try {
+        // 1. บันทึกลง Neon ก่อน
+        await saveDraftToVault({
+          userId: user.user_id,
+          data: target as unknown as Record<string, unknown>,
+          mode: target.mode || activeMode,
+        });
+
+        // 2. Publish ขึ้น Neon และ Upstash Redis Hot Cache
+        const success = await publishWorldCampaign(id, user.user_id);
+        if (success) {
+          setDrafts((prev) =>
+            prev.map((d) => (d.id === id ? { ...d, status: 'published', updatedAt: 'เมื่อสักครู่' } : d))
+          );
+          if (id === activeDraftId) {
+            setIsCelebrationModalOpen(true);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to publish draft:', err);
+      }
+    }
+  };
+
+  // อัปเดตชุดรูปภาพและรูปหน้าปกของ Draft ปัจจุบัน (พร้อมบันทึกลง Neon ทันที)
+  const handleUpdateDraftImages = async (newImages: string[], coverImage: string) => {
+    if (!activeDraft?.id) return;
+
+    const updatedDraft: VaultDraft = {
+      ...activeDraft,
+      images: newImages,
+      image: coverImage || newImages[0] || activeDraft.image,
+      avatar_url: coverImage || newImages[0] || activeDraft.image,
+      updatedAt: 'เมื่อสักครู่',
+    };
+
+    setDrafts((prev) =>
+      prev.map((d) => (d.id === activeDraft.id ? updatedDraft : d))
+    );
+
+    // ตัวอย่างสำหรับ Showcase ให้อัปเดตเฉพาะในเครื่อง
+    if (activeDraft.id === DEMO_SHOWCASE_DRAFT.id) return;
+
+    try {
+      const user = getCurrentUser();
+      await saveDraftToVault({
+        userId: user.user_id,
+        data: updatedDraft as unknown as Record<string, unknown>,
+        mode: activeMode,
+      });
+    } catch (err) {
+      console.error('Failed to save updated images to Neon:', err);
+    }
+  };
+
+  // จัดการอัปโหลดไฟล์รูปภาพใหม่ (แปลงเป็น WebP คมชัด เบา และอัปโหลดขึ้น GCS Bucket ถาวร)
+  const handleUploadImages = async (files: FileList | File[]) => {
+    if (!activeDraft?.id || !files || files.length === 0) return;
+    try {
+      setIsUploadingImages(true);
+      // 1. ย่อและบีบอัดภาพฝั่งไคลเอนต์เป็น WebP คุณภาพสูงแต่ขนาดเล็ก (50-120KB)
+      const converted = await processMultipleImages(files);
+      if (converted.length === 0) {
+        setIsUploadingImages(false);
+        return;
+      }
+
+      const currentUser = getCurrentUser();
+
+      // 2. อัปโหลดขึ้น Google Cloud Storage (Bucket: the-soul-media-storage)
+      const uploadTasks = converted.map((b64) =>
+        uploadImageToStorage(b64, currentUser.user_id, 'characters')
+      );
+      const uploadedUrls = await Promise.all(uploadTasks);
+
+      const currentImages =
+        activeDraft.images && activeDraft.images.length > 0
+          ? activeDraft.images
+          : activeDraft.image
+          ? [activeDraft.image]
+          : [];
+
+      // 3. รวมรูปภาพใหม่ที่ได้จาก GCS ต่อท้ายรูปภาพเดิม
+      const combined = [...currentImages, ...uploadedUrls];
+      const cover = activeDraft.image || combined[0];
+
+      await handleUpdateDraftImages(combined, cover);
+    } catch (err) {
+      console.error('Image upload & processing failed:', err);
+    } finally {
+      setIsUploadingImages(false);
+    }
+  };
 
   // ส่งข้อความคุยกับ The Muse จริงผ่าน Cloud Run & Vertex AI
   const handleSendMessage = async (text: string) => {
@@ -441,12 +626,14 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
           prev.map((d) => (d.id === activeDraft.id ? updatedDraft : d))
         );
 
-        // บันทึกลง Neon PostgreSQL ทันที
-        await saveDraftToVault({
-          userId: user.user_id,
-          data: updatedDraft as unknown as Record<string, unknown>,
-          mode: activeMode,
-        });
+        // บันทึกลง Neon PostgreSQL ทันที (ยกเว้น Showcase Draft)
+        if (activeDraft.id !== DEMO_SHOWCASE_DRAFT.id) {
+          await saveDraftToVault({
+            userId: user.user_id,
+            data: updatedDraft as unknown as Record<string, unknown>,
+            mode: activeMode,
+          });
+        }
 
         // ส่งข้อความแจ้งในประวัติแชท The Muse
         setMessages((prev) => [
@@ -482,6 +669,21 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
   // ⚡ เผยแพร่สู่ห้องเล่น (Publish to Upstash Redis Hot Cache & Neon PostgreSQL)
   const handlePublishCampaign = async () => {
     if (!activeDraft?.id || isPublishing) return;
+
+    // สำหรับตัวอย่าง Showcase เปิดฉลองและปรับสถานะในเครื่องได้ทันที
+    if (activeDraft.id === DEMO_SHOWCASE_DRAFT.id) {
+      const updatedDraft = {
+        ...activeDraft,
+        status: 'published' as const,
+        updatedAt: 'เมื่อสักครู่',
+      };
+      setDrafts((prev) =>
+        prev.map((d) => (d.id === activeDraft.id ? updatedDraft : d))
+      );
+      setIsCelebrationModalOpen(true);
+      return;
+    }
+
     setIsPublishing(true);
     try {
       const user = getCurrentUser();
@@ -559,6 +761,7 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
           onNewDraft={handleNewDraft}
           onTogglePin={handleTogglePin}
           onDeleteDraft={handleDeleteDraft}
+          onTogglePublish={handleTogglePublish}
           onExit={onExit}
         />
 
@@ -585,6 +788,9 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
           key={activeDraft?.id}
           draft={activeDraft}
           width={visualAnchorWidth}
+          isUploading={isUploadingImages}
+          onUploadImages={handleUploadImages}
+          onUpdateDraftImages={handleUpdateDraftImages}
         />
       )}
 
@@ -624,6 +830,7 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
         messages={messages}
         onSendMessage={handleSendMessage}
         onSelectSuggestion={handleSendMessage}
+        onUploadImages={handleUploadImages}
         isRightPanelCollapsed={isRightPanelCollapsed}
         onToggleRightPanel={() => setIsRightPanelCollapsed(!isRightPanelCollapsed)}
         activeMode={activeMode}

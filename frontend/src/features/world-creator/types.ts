@@ -50,9 +50,11 @@ export interface VaultDraft {
   description?: string;
   status: 'draft' | 'published';
   isPinned?: boolean;     // ปักหมุดไว้บนสุด
+  isExample?: boolean;    // ตัวอย่างตัวละครสำหรับนำเสนอลูกค้า (Showcase Mockup)
   authorName?: string;
   themeColor?: string;
   image?: string;         // รูปภาพหลักของตัวละคร (Main Character Portrait)
+  avatar_url?: string;    // Avatar URL สำหรับซิงค์กับ DB
   images?: string[];      // ชุดรูปภาพเพิ่มเติม / เครื่องแต่งกาย / สีหน้า (Gallery / Outfits)
   stats?: Record<string, number>;
   hashtags?: string[];

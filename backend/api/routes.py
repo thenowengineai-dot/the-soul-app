@@ -18,6 +18,7 @@ from engine.redis_cache import RedisHotCache
 # 🌟 นำเข้า Database Core เดิมสำหรับดึงแคมเปญ (Read-only Catalog)
 from engine.db_core import DatabaseCore
 from engine.transitions import SceneTransitionManager, resolve_world_file_path
+from engine.gcs_storage import upload_base64_image
 
 logger = logging.getLogger("API_ROUTES")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - \033[96m[ROUTER]\033[0m - %(message)s")
@@ -250,8 +251,11 @@ CACHE_TTL_SECONDS = 300 # 5 นาที
 @router.post("/clear_cache")
 async def clear_cache(request: Request):
     """ล้างแคชหน้า Hub และลบ Redis ทันทีเพื่อรองรับ Real-time Publish"""
-    data = await request.json()
-    world_id = data.get("world_id")
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+    world_id = data.get("world_id") or request.query_params.get("world_id")
     
     # 1. ล้างแคชหน้า Hub (5 นาที) ให้เป็นศูนย์
     global HUB_CATALOG_CACHE
@@ -268,6 +272,35 @@ async def clear_cache(request: Request):
             logger.error(f"❌ [CACHE CLEAR] เกิดข้อผิดพลาดในการลบ Redis Cache: {e}")
             
     return {"status": "success", "message": "Cache cleared in real-time"}
+ 
+# ==========================================
+# ☁️ GOOGLE CLOUD STORAGE UPLOAD ENDPOINT
+# ==========================================
+
+class UploadImageRequest(BaseModel):
+    image_base64: str
+    user_id: Optional[str] = "anonymous"
+    folder: Optional[str] = "characters"
+    filename: Optional[str] = None
+
+@router.post("/upload-image")
+@router.post("/api/upload-image")
+async def upload_image_endpoint(req: UploadImageRequest):
+    """
+    Uploads an image to Google Cloud Storage (Bucket: the-soul-media-storage).
+    Returns public CDN URL to avoid database bloat and ensure cross-device consistency.
+    """
+    try:
+        result = upload_base64_image(
+            image_base64=req.image_base64,
+            user_id=req.user_id,
+            folder=req.folder or "characters",
+            filename=req.filename
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Error in /upload-image: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/published_campaigns")
 async def get_published_campaigns():
@@ -298,10 +331,19 @@ async def get_published_campaigns():
                 else:
                     avatar_url = char_data.get("avatar_url")
                 
-                # รวมรูปภาพทั้งหมด (รูปหลัก + รูปอ้างอิง)
-                photos = [avatar_url or "https://img2.pic.in.th/dontlove3.png"]
+                # รวมรูปภาพทั้งหมด (รูปในแกลเลอรี + รูปหลัก + รูปอ้างอิง)
+                photos = []
+                if char_data.get("images") and isinstance(char_data.get("images"), list) and len(char_data.get("images")) > 0:
+                    photos = [img for img in char_data["images"] if img]
+                elif avatar_url:
+                    photos = [avatar_url]
+                else:
+                    photos = ["https://img2.pic.in.th/dontlove3.png"]
+
                 if char_data.get("reference_urls"):
-                    photos.extend(char_data.get("reference_urls"))
+                    for ref in char_data.get("reference_urls"):
+                        if ref and ref not in photos:
+                            photos.append(ref)
 
                 starting_state = world_data.get("starting_state", {})
                 initial_scene = world_data.get("initial_scene", {})

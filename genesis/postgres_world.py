@@ -100,8 +100,10 @@ class PostgresWorld:
         char_name = character_data.get("name") or name or "Unknown Character"
 
         avatar_url = (
-            workspace_meta.get("character_image_base64")
-            or character_data.get("avatar_url")
+            character_data.get("avatar_url")
+            or character_data.get("image")
+            or (character_data.get("images")[0] if isinstance(character_data.get("images"), list) and character_data.get("images") else "")
+            or workspace_meta.get("character_image_base64")
             or ""
         )
 
@@ -205,6 +207,18 @@ class PostgresWorld:
             if row["char_avatar"] and not character_data.get("avatar_url"):
                 character_data["avatar_url"] = row["char_avatar"]
 
+            # Preserve images list and cover portrait
+            images = (
+                world_data.get("images")
+                or character_data.get("images")
+                or ([character_data.get("avatar_url")] if character_data.get("avatar_url") else [])
+            )
+            cover_image = (
+                world_data.get("image")
+                or character_data.get("avatar_url")
+                or (images[0] if images else "")
+            )
+
             return {
                 "world_id": row["id"],
                 "name": row["name"],
@@ -215,6 +229,9 @@ class PostgresWorld:
                 "character_data": character_data,
                 "linked_character": character_data,
                 "workspace_meta": workspace_meta,
+                "images": images,
+                "image": cover_image,
+                "avatar_url": cover_image,
                 "created_at": row["created_at"].isoformat() if row["created_at"] else None,
                 "updated_at": row["updated_at"].isoformat() if row["updated_at"] else None,
             }
@@ -225,7 +242,7 @@ class PostgresWorld:
         async with pool.acquire() as conn:
             rows = await conn.fetch("""
                 SELECT wc.id, wc.name, wc.character_id, wc.status, wc.created_at, wc.updated_at,
-                       wc.workspace_meta, ch.name as character_name, ch.avatar_url
+                       wc.workspace_meta, wc.world_data, ch.name as character_name, ch.avatar_url, ch.character_data
                 FROM world_campaigns wc
                 LEFT JOIN world_characters ch ON wc.character_id = ch.id
                 WHERE wc.creator_id = $1
@@ -241,7 +258,35 @@ class PostgresWorld:
                     except Exception:
                         meta = {}
 
-                avatar = r["avatar_url"] or meta.get("character_image_base64") or ""
+                world_data = r["world_data"] or {}
+                if isinstance(world_data, str):
+                    try:
+                        world_data = json.loads(world_data)
+                    except Exception:
+                        world_data = {}
+
+                char_data = r["character_data"] or {}
+                if isinstance(char_data, str):
+                    try:
+                        char_data = json.loads(char_data)
+                    except Exception:
+                        char_data = {}
+
+                images = (
+                    world_data.get("images")
+                    or char_data.get("images")
+                    or []
+                )
+
+                avatar = (
+                    r["avatar_url"]
+                    or char_data.get("avatar_url")
+                    or world_data.get("image")
+                    or (images[0] if images else "")
+                    or meta.get("character_image_base64")
+                    or ""
+                )
+
                 drafts.append({
                     "id": r["id"],
                     "title": r["character_name"] or r["name"] or "Untitled",
@@ -250,6 +295,7 @@ class PostgresWorld:
                     "status": r["status"],
                     "avatar_url": avatar,
                     "image": avatar,
+                    "images": images,
                     "createdAt": r["created_at"].strftime("%Y-%m-%d %H:%M") if r["created_at"] else "วันนี้",
                     "updatedAt": r["updated_at"].strftime("%Y-%m-%d %H:%M") if r["updated_at"] else "เมื่อสักครู่",
                     "workspace_meta": meta

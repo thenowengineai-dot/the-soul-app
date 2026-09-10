@@ -23,6 +23,11 @@ try:
 except (ImportError, ModuleNotFoundError):
     from pipeline import GenesisPipeline
 
+try:
+    from genesis.gcs_storage import upload_base64_image
+except (ImportError, ModuleNotFoundError):
+    from gcs_storage import upload_base64_image
+
 logger = logging.getLogger("GENESIS_SERVER")
 if not logger.handlers:
     handler = logging.StreamHandler()
@@ -119,6 +124,12 @@ class MuseHistorySaveRequest(BaseModel):
     user_id: str
     messages: List[Dict[str, Any]]
     scratchpad: Optional[Dict[str, Any]] = None
+
+class UploadImageRequest(BaseModel):
+    image_base64: str
+    user_id: Optional[str] = "anonymous"
+    folder: Optional[str] = "characters"
+    filename: Optional[str] = None
 
 
 # =========================================================================
@@ -357,6 +368,24 @@ async def improve_beat(req: ImproveBeatRequest):
         return {"status": "success", "beats": beats}
     except Exception as e:
         logger.error(f"Error in improve_beat: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/genesis/upload-image")
+async def genesis_upload_image(req: UploadImageRequest):
+    """
+    Uploads an image to Google Cloud Storage (Bucket: the-soul-media-storage).
+    Returns public CDN URL to avoid database table bloat and support cross-device sync.
+    """
+    try:
+        result = upload_base64_image(
+            image_base64=req.image_base64,
+            user_id=req.user_id,
+            folder=req.folder or "characters",
+            filename=req.filename
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Error in /api/genesis/upload-image: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 

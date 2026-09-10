@@ -148,6 +148,7 @@ interface TheMuseChatProps {
   activeMode: CreatorMode;
   activeDraftTitle?: string;
   isThinking?: boolean;
+  onUploadImages?: (files: FileList | File[]) => void;
 }
 
 export default function TheMuseChat({
@@ -158,6 +159,7 @@ export default function TheMuseChat({
   onToggleRightPanel,
   activeMode,
   isThinking = false,
+  onUploadImages,
 }: TheMuseChatProps) {
   const [inputText, setInputText] = useState('');
   // บันทึกสถานะการยืด-หดของแต่ละข้อความผู้ใช้
@@ -167,6 +169,7 @@ export default function TheMuseChat({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // เลื่อนลงล่างสุดอัตโนมัติเมื่อมีข้อความใหม่หรือเมื่อ The Muse กำลังคิด (Twitter Style Auto-Scroll)
   const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
@@ -263,13 +266,13 @@ export default function TheMuseChat({
                 <div key={msg.id} className="w-full flex justify-end">
                   <div
                     onClick={() => isLongText && toggleExpand(msg.id)}
-                    className={`max-w-[85%] sm:max-w-[78%] px-5 py-3.5 sm:px-6 sm:py-4 rounded-[24px] bg-[#1D1D1F] border border-[#2F3336] shadow-sm transition-all text-[#F2F2F5] select-text relative ${
-                      isLongText ? 'cursor-pointer hover:border-white/30' : ''
+                    className={`max-w-[85%] sm:max-w-[78%] px-5 py-3.5 sm:px-6 sm:py-4 rounded-[24px] bg-[#1D1D1F] border border-[#2F3336] shadow-sm text-[#F2F2F5] select-text relative ${
+                      isLongText ? 'cursor-pointer' : ''
                     }`}
                   >
-                    {/* เนื้อหาข้อความผู้ใช้ ฟอนต์ขนาด 16px สไตล์เรา */}
+                    {/* เนื้อหาข้อความผู้ใช้ ฟอนต์ขนาด 15px น้ำหนัก 400 */}
                     <div
-                      className={`text-[16px] leading-[1.65] whitespace-pre-wrap break-words text-[#F2F2F5] ${
+                      className={`text-[15px] font-normal leading-[1.65] whitespace-pre-wrap break-words text-[#F2F2F5] ${
                         !isExpanded && isLongText ? 'line-clamp-4 pr-8' : isLongText ? 'pr-8' : ''
                       }`}
                     >
@@ -345,8 +348,8 @@ export default function TheMuseChat({
                   </div>
                 )}
 
-                {/* 2. ข้อความบทสนทนาหลักของ AI ฟอนต์ 16px อ่านสบายตา สี #F2F2F5 ไร้โค้ด/JSON ปน */}
-                <div className="text-[16px] leading-[1.75] text-[#F2F2F5] whitespace-pre-wrap break-words font-normal">
+                {/* 2. ข้อความบทสนทนาหลักของ AI ฟอนต์ 15px น้ำหนัก 400 (font-normal) อ่านสบายตา สี #F2F2F5 ไร้โค้ด/JSON ปน */}
+                <div className="text-[15px] font-normal leading-[1.75] text-[#F2F2F5] whitespace-pre-wrap break-words">
                   {parsed.dialogueText}
                 </div>
 
@@ -419,9 +422,9 @@ export default function TheMuseChat({
 
           <form
             onSubmit={handleSubmit}
-            className="px-4 py-2.5 sm:px-5 sm:py-3 rounded-[24px] bg-[#1D1D1F] border border-[#2F3336] focus-within:border-white/30 transition-all shadow-2xl flex flex-col"
+            className="px-4 py-2.5 sm:px-5 sm:py-3 rounded-[24px] bg-[#1D1D1F] border border-[#2F3336] shadow-2xl flex flex-col"
           >
-            {/* กล่องพิมพ์หลายบรรทัด ฟอนต์ 16px เท่ากับคำตอบ AI สี #F2F2F5 */}
+            {/* กล่องพิมพ์หลายบรรทัด ฟอนต์ 15px น้ำหนัก 400 เท่ากับคำตอบ AI สี #F2F2F5 */}
             <textarea
               ref={textareaRef}
               value={inputText}
@@ -431,21 +434,40 @@ export default function TheMuseChat({
                 activeMode === 'world' ? 'โลก...' : 'ตัวละคร...'
               }`}
               rows={1}
-              className="w-full bg-transparent text-[#F2F2F5] placeholder-[#ACACB2]/60 text-[16px] outline-none resize-none leading-relaxed min-h-[26px] max-h-[220px] overflow-y-auto no-scrollbar py-0.5"
+              className="w-full bg-transparent text-[#F2F2F5] placeholder-[#ACACB2]/60 text-[15px] font-normal outline-none resize-none leading-relaxed min-h-[26px] max-h-[220px] overflow-y-auto no-scrollbar py-0.5"
             />
 
             {/* แถวล่างสุด: ไร้เส้นคั่นแนวนอน */}
             <div className="flex items-center justify-between pt-1.5">
+              {/* Hidden File Input สำหรับอัปโหลดรูปภาพ */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files.length > 0 && onUploadImages) {
+                    onUploadImages(e.target.files);
+                  }
+                  if (e.target) e.target.value = '';
+                }}
+                className="hidden"
+              />
+
               {/* ด้านซ้าย: ไอคอนเครื่องหมายบวกแยกเดี่ยว + คำบรรยายบอกสิ่งที่จะเพิ่ม */}
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  title="เพิ่มรูปภาพหรือเอกสารอ้างอิง"
+                  onClick={() => fileInputRef.current?.click()}
+                  title="เพิ่มรูปภาพหรือเอกสารอ้างอิง (เลือกได้หลายรูป)"
                   className="w-7 h-7 rounded-full bg-transparent hover:bg-white/[0.08] border border-transparent hover:border-white/30 text-[#ACACB2] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-90 select-none shrink-0"
                 >
                   <Plus size={16} strokeWidth={2} />
                 </button>
-                <span className="text-[12px] text-[#ACACB2] select-none hidden sm:inline">
+                <span 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-[12px] text-[#ACACB2] hover:text-[#F2F2F5] cursor-pointer select-none hidden sm:inline transition-colors"
+                >
                   เพิ่มรูปภาพ / เอกสารอ้างอิง
                 </span>
               </div>

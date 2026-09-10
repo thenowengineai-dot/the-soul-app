@@ -76,12 +76,26 @@ function App() {
       setCurrentView('profile');
       setIsSidebarExpanded(false);
     } else if (id === 'world-creator' || id === 'genesis') {
-      setCurrentView('world-creator');
-      setIsSidebarExpanded(false);
+      handleCreateClick();
     } else {
       setCurrentView('chat');
       setIsSidebarExpanded(false);
     }
+  };
+
+  // 🏛️ ทางเข้าสู่หน้า The Muse (ปุ่ม "สร้าง" บน Sidebar พร้อมระบบตรวจสอบสิทธิ์ Guest)
+  const handleCreateClick = () => {
+    // 🛡️ หากเป็น Guest หรือยังไม่ได้ล็อกอิน ให้เด้ง Pop-up ล็อกอิน/สมัครสมาชิก ทันที
+    const isGuest = !isLoggedIn || !currentUser || currentUser.is_guest || currentUser.user_id.startsWith('gst_');
+    if (isGuest) {
+      setAuthModalMode('login');
+      setIsAuthModalOpen(true);
+      return;
+    }
+
+    // 🚀 หากล็อกอินแล้ว นำเข้าสู่หน้า The Muse (World & Character Creator)
+    setCurrentView('world-creator');
+    setIsSidebarExpanded(false);
   };
 
   const handleNavigateToChat = (char?: Character, options?: { forceNewSession?: boolean }) => {
@@ -331,7 +345,7 @@ function App() {
               selectedMenu={selectedMenu}
               handleMenuClick={handleMenuClick}
               onLogoClick={handleBackToHome}
-              onComposeClick={() => handleNavigateToChat()}
+              onComposeClick={handleCreateClick}
               isHomeMode={true}
               userName={userName}
               userInitial={userInitial}
@@ -387,7 +401,7 @@ function App() {
               selectedMenu={selectedMenu}
               handleMenuClick={handleMenuClick}
               onLogoClick={handleBackToHome}
-              onComposeClick={() => handleNavigateToChat()}
+              onComposeClick={handleCreateClick}
               isHomeMode={true}
               userName={userName}
               userInitial={userInitial}
@@ -418,7 +432,7 @@ function App() {
             selectedMenu={selectedMenu}
             handleMenuClick={handleMenuClick}
             onLogoClick={handleBackToHome}
-            onComposeClick={() => handleNavigateToChat()}
+            onComposeClick={handleCreateClick}
             isHomeMode={false}
             userName={userName}
             userInitial={userInitial}

@@ -128,8 +128,12 @@ class GenesisPipeline:
         if isinstance(character_data, dict):
             if not character_data.get("name") and data.get("title"):
                 character_data["name"] = data.get("title")
-            if not character_data.get("avatar_url") and data.get("image"):
+            if data.get("image"):
                 character_data["avatar_url"] = data.get("image")
+            elif not character_data.get("avatar_url") and data.get("avatar_url"):
+                character_data["avatar_url"] = data.get("avatar_url")
+            if data.get("images") and isinstance(data.get("images"), list):
+                character_data["images"] = data.get("images")
 
         workspace_meta = data.get("workspace_meta") or {
             "isPinned": data.get("isPinned", False),

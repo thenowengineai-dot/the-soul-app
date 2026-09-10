@@ -110,7 +110,23 @@ export async function fetchUserDrafts(userId: string): Promise<VaultDraft[]> {
     throw new Error(`Failed to load drafts (${response.status})`);
   }
   const result = await response.json();
-  return result.data || [];
+  const rawDrafts = result.data || [];
+  return rawDrafts.map((d: any) => {
+    const images: string[] = Array.isArray(d.images) && d.images.length > 0
+      ? d.images
+      : d.image
+      ? [d.image]
+      : d.avatar_url
+      ? [d.avatar_url]
+      : [];
+    const mainImg = d.image || d.avatar_url || images[0] || '';
+    return {
+      ...d,
+      images,
+      image: mainImg,
+      avatar_url: mainImg,
+    };
+  });
 }
 
 /**
@@ -125,7 +141,33 @@ export async function fetchDraftDetail(userId: string, worldId: string) {
       return null;
     }
     const result = await response.json();
-    return result.data;
+    const data = result.data;
+    if (!data) return null;
+
+    const worldData = (typeof data.world_data === 'object' && data.world_data) ? data.world_data : {};
+    const charData = (typeof data.character_data === 'object' && data.character_data) ? data.character_data : {};
+
+    const rawImages = (
+      (Array.isArray(data.images) && data.images.length > 0 ? data.images : null) ||
+      (Array.isArray(worldData.images) && worldData.images.length > 0 ? worldData.images : null) ||
+      (Array.isArray(charData.images) && charData.images.length > 0 ? charData.images : null) ||
+      (data.image ? [data.image] : null) ||
+      (data.avatar_url ? [data.avatar_url] : null) ||
+      (charData.avatar_url ? [charData.avatar_url] : [])
+    );
+
+    const images: string[] = Array.isArray(rawImages) ? rawImages.filter(Boolean) : [];
+    const cover = data.image || worldData.image || charData.avatar_url || images[0] || '';
+
+    return {
+      ...data,
+      ...worldData,
+      images,
+      image: cover,
+      avatar_url: cover,
+      world_data: worldData,
+      character_data: charData,
+    };
   } catch (err) {
     console.warn('Could not fetch draft detail:', err);
     return null;
@@ -192,8 +234,10 @@ export async function publishWorldCampaign(worldId: string, userId: string): Pro
 
   // ล้างแคชใน the-soul-backend เพื่อให้ Hub Catalog ที่หน้า Home อัปเดตทันที
   try {
-    await fetch(`${API_BASE_URL}/api/clear_cache?world_id=${encodeURIComponent(worldId)}`, {
+    await fetch(`${API_BASE_URL}/api/clear_cache`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ world_id: worldId }),
     });
   } catch (err) {
     console.warn('Cache clear trigger on backend failed:', err);
@@ -221,8 +265,10 @@ export async function unpublishWorldCampaign(worldId: string, userId: string): P
   const result = await response.json();
 
   try {
-    await fetch(`${API_BASE_URL}/api/clear_cache?world_id=${encodeURIComponent(worldId)}`, {
+    await fetch(`${API_BASE_URL}/api/clear_cache`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ world_id: worldId }),
     });
   } catch (err) {
     console.warn('Cache clear trigger on backend failed:', err);
@@ -289,4 +335,58 @@ export async function fetchMuseHistory(draftId: string): Promise<MuseMessage[]> 
   } catch {
     return [];
   }
+}
+
+/**
+ * ☁️ อัปโหลดรูปภาพขึ้น Google Cloud Storage (GCS Bucket: the-soul-media-storage)
+ * รองรับทั้ง Base64 และ Data URL คืนค่าเป็น URL ถาวรบน GCS CDN
+ */
+export async function uploadImageToStorage(
+  imageBase64: string,
+  userId?: string,
+  folder: string = 'characters'
+): Promise<string> {
+  // หากเป็น URL ภายนอกหรือ GCS URL อยู่แล้ว ให้คืนค่าเดิมทันที
+  if (imageBase64.startsWith('http://') || imageBase64.startsWith('https://')) {
+    return imageBase64;
+  }
+
+  const payload = {
+    image_base64: imageBase64,
+    user_id: userId || 'anonymous',
+    folder,
+  };
+
+  // ยิงไปที่ Genesis API เป็นหลัก และมี Fallback ไปที่ Main Backend API
+  const endpoints = [
+    `${GENESIS_API_BASE_URL}/api/genesis/upload-image`,
+    `${API_BASE_URL}/upload-image`,
+    `${API_BASE_URL}/api/upload-image`,
+  ];
+
+  let lastError: unknown = null;
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.url) {
+          return result.url;
+        }
+      } else {
+        const errText = await response.text();
+        lastError = new Error(`Upload to ${endpoint} failed (${response.status}): ${errText}`);
+      }
+    } catch (err) {
+      lastError = err;
+    }
+  }
+
+  console.warn('GCS upload endpoint unavailable, keeping local data URL as fallback:', lastError);
+  return imageBase64;
 }

@@ -9,7 +9,9 @@ import {
   CheckCircle2, 
   MoreVertical, 
   Pin, 
-  Trash2 
+  Trash2,
+  Rocket,
+  FileEdit
 } from 'lucide-react';
 import type { VaultDraft } from '../types';
 
@@ -23,6 +25,7 @@ interface CreatorSidebarProps {
   onTogglePin: (id: string) => void;
   onDeleteDraft: (id: string) => void;
   onExit: () => void;
+  onTogglePublish?: (id: string, currentStatus: 'draft' | 'published') => void;
 }
 
 export default function CreatorSidebar({
@@ -35,6 +38,7 @@ export default function CreatorSidebar({
   onTogglePin,
   onDeleteDraft,
   onExit,
+  onTogglePublish,
 }: CreatorSidebarProps) {
   // สถานะเปิด/ปิดเมนู Dropdown ของแต่ละรายการ (เก็บ id ของ draft)
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -171,6 +175,11 @@ export default function CreatorSidebar({
                         <span className={`text-[13px] truncate leading-tight ${isActive ? 'font-semibold text-white' : 'font-medium text-app-primary'}`}>
                           {draft.title}
                         </span>
+                        {(draft.isExample || draft.id === 'demo_mahiro_showcase') && (
+                          <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded-md font-semibold bg-[#EF264C]/15 border border-[#EF264C]/30 text-[#EF264C]">
+                            ตัวอย่าง
+                          </span>
+                        )}
                       </div>
 
                       {/* ปุ่มสามจุดจุดไข่ปลา (More Actions) */}
@@ -191,7 +200,7 @@ export default function CreatorSidebar({
                         {isMenuOpen && (
                           <div
                             ref={dropdownRef}
-                            className="absolute right-0 top-6 w-[150px] py-1 px-1 rounded-xl bg-[#161618]/95 backdrop-blur-2xl border border-white/15 shadow-2xl z-50 flex flex-col gap-0.5 animate-in fade-in zoom-in-95 duration-100"
+                            className="absolute right-0 top-6 w-[165px] py-1 px-1 rounded-xl bg-[#161618]/95 backdrop-blur-2xl border border-white/15 shadow-2xl z-50 flex flex-col gap-0.5 animate-in fade-in zoom-in-95 duration-100"
                           >
                             {/* ปักหมุด / เลิกปักหมุด */}
                             <button
@@ -206,20 +215,51 @@ export default function CreatorSidebar({
                               <span>{draft.isPinned ? 'ยกเลิกการปักหมุด' : 'ปักหมุดด้านบน'}</span>
                             </button>
 
-                            <div className="w-full h-[1px] bg-white/10 my-0.5" />
+                            {/* สลับสถานะ Publish / Draft */}
+                            {onTogglePublish && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  onTogglePublish(draft.id, draft.status);
+                                  setOpenMenuId(null);
+                                }}
+                                className={`w-full flex items-center gap-2 px-2.5 py-1.5 text-xs rounded-lg transition-colors text-left cursor-pointer ${
+                                  draft.status === 'published'
+                                    ? 'text-amber-300 hover:bg-amber-500/15'
+                                    : 'text-emerald-400 hover:bg-emerald-500/15 font-medium'
+                                }`}
+                              >
+                                {draft.status === 'published' ? (
+                                  <>
+                                    <FileEdit size={13} className="text-amber-400 shrink-0" />
+                                    <span>เก็บเป็นฉบับร่าง</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Rocket size={13} className="text-emerald-400 shrink-0" />
+                                    <span>เผยแพร่ตัวละคร</span>
+                                  </>
+                                )}
+                              </button>
+                            )}
 
-                            {/* ลบตัวละคร */}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                onDeleteDraft(draft.id);
-                                setOpenMenuId(null);
-                              }}
-                              className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-red-400 hover:bg-red-500/15 rounded-lg transition-colors text-left cursor-pointer"
-                            >
-                              <Trash2 size={13} className="text-red-400" />
-                              <span>ลบตัวละคร</span>
-                            </button>
+                            {/* ลบตัวละคร (ซ่อนสำหรับตัวอย่าง Showcase เพื่อป้องกันการลบโดยไม่ตั้งใจ) */}
+                            {!(draft.isExample || draft.id === 'demo_mahiro_showcase') && (
+                              <>
+                                <div className="w-full h-[1px] bg-white/10 my-0.5" />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    onDeleteDraft(draft.id);
+                                    setOpenMenuId(null);
+                                  }}
+                                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-red-400 hover:bg-red-500/15 rounded-lg transition-colors text-left cursor-pointer"
+                                >
+                                  <Trash2 size={13} className="text-red-400" />
+                                  <span>ลบตัวละคร</span>
+                                </button>
+                              </>
+                            )}
                           </div>
                         )}
                       </div>

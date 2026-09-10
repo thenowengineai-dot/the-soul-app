@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   ArrowRight,
   PanelRightOpen,
@@ -164,13 +164,25 @@ export default function TheMuseChat({
   const [expandedUserMessages, setExpandedUserMessages] = useState<Record<string, boolean>>({});
   // บันทึกสถานะการเปิด-ปิด Thinking Accordion ของ The Muse
   const [expandedThinking, setExpandedThinking] = useState<Record<string, boolean>>({});
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // เลื่อนลงล่างสุดอัตโนมัติเมื่อมีข้อความใหม่
+  // เลื่อนลงล่างสุดอัตโนมัติเมื่อมีข้อความใหม่หรือเมื่อ The Muse กำลังคิด (Twitter Style Auto-Scroll)
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior, block: 'end' });
+    } else if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        top: scrollContainerRef.current.scrollHeight,
+        behavior,
+      });
+    }
+  }, []);
+
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    scrollToBottom('smooth');
+  }, [messages, isThinking, scrollToBottom]);
 
   // ปรับความสูงของ Textarea อัตโนมัติตามเนื้อหาที่พิมพ์จริง (กล่องยืดขยายได้ตามบรรทัดที่พิมพ์)
   useEffect(() => {
@@ -188,6 +200,7 @@ export default function TheMuseChat({
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
+    setTimeout(() => scrollToBottom('smooth'), 40);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -226,7 +239,10 @@ export default function TheMuseChat({
       )}
 
       {/* 2. Central Conversation Stream: คอลัมน์เดียวตรงกลาง ไม่แบ่งซ้ายขวา */}
-      <div className="flex-1 overflow-y-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-44 overscroll-contain touch-pan-y no-scrollbar">
+      <div 
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-48 overscroll-contain touch-pan-y no-scrollbar"
+      >
         <div className="max-w-[720px] w-full mx-auto flex flex-col gap-6">
           {messages.map((msg) => {
             const isUser = msg.sender === 'user';
@@ -384,21 +400,23 @@ export default function TheMuseChat({
               </div>
             );
           })}
+          <div ref={messagesEndRef} className="h-4 shrink-0" />
+        </div>
+      </div>
+
+      {/* 3. Floating Composer Bar (ความกว้าง 720px พอดีสายตา พร้อม Docked Typing Indicator สไตล์ Twitter) */}
+      <div className="absolute bottom-0 left-0 right-0 pt-6 pb-4 px-4 bg-gradient-to-t from-[#090909] from-65% via-[#090909]/90 via-40% to-transparent pointer-events-none z-20">
+        <div className="max-w-[720px] w-full mx-auto pointer-events-auto flex flex-col gap-2.5">
+          {/* 💬 Typing Indicator Docked Right Above Input Box (Twitter / X Style) */}
           {isThinking && (
-            <div className="w-full py-1.5 select-none">
+            <div className="pl-1 animate-in fade-in slide-in-from-bottom-2 duration-200">
               <TypingIndicator
                 name="The Muse"
                 dotColor="#EF264C"
               />
             </div>
           )}
-          <div ref={messagesEndRef} />
-        </div>
-      </div>
 
-      {/* 3. Floating Composer Bar (ความกว้าง 720px พอดีสายตา) */}
-      <div className="absolute bottom-0 left-0 right-0 pt-8 pb-4 px-4 bg-gradient-to-t from-[#090909] from-65% via-[#090909]/90 via-40% to-transparent pointer-events-none z-20">
-        <div className="max-w-[720px] w-full mx-auto pointer-events-auto">
           <form
             onSubmit={handleSubmit}
             className="px-4 py-2.5 sm:px-5 sm:py-3 rounded-[24px] bg-[#1D1D1F] border border-[#2F3336] focus-within:border-white/30 transition-all shadow-2xl flex flex-col"

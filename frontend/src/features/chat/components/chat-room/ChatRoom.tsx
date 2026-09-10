@@ -1,8 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import ChatRoomHeader from './ChatRoomHeader'
 import MessageList from './MessageList'
 import ChatInputBar from './ChatInputBar'
-import { TypingIndicator } from '../../../../components/common'
 import { MOCK_CHATS } from '../../mockData'
 import type { ChatRoomProps, ChatMessage } from '../../types'
 import {
@@ -590,10 +589,15 @@ export function ChatRoom({
     }
   }, [currentChat.id, currentChat.sessionTriggerKey, currentChat.forceNewSession, currentChat.defaultWorld])
 
-  // 3. เลื่อน Scroll ลงด้านล่างสุดเสมอเมื่อมีข้อความใหม่หรือกำลังสตรีม
+  // 3. เลื่อน Scroll ลงด้านล่างสุดเสมอเมื่อมีข้อความใหม่หรือกำลังสตรีม (Twitter Style Auto-Scroll)
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
+    messagesEndRef.current?.scrollIntoView({ behavior })
+  }, [])
+
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [chatMessages, isStreaming])
+    // เมื่อกำลังสตรีมข้อความใช้ 'auto' เพื่อความนิ่ง ไม่กระตุก เมื่อจบหรือมีข้อความใหม่ใช้ 'smooth'
+    scrollToBottom(isStreaming ? 'auto' : 'smooth')
+  }, [chatMessages, isStreaming, scrollToBottom])
 
   // 4. ส่งข้อความและเชื่อมต่อ Real-time SSE Stream กับ Cloud Run Backend
   const handleSendMessage = async () => {
@@ -610,6 +614,7 @@ export function ChatRoom({
     setChatMessages(prev => [...prev, userMsg])
     setInputText('')
     setIsStreaming(true)
+    setTimeout(() => scrollToBottom('smooth'), 40)
 
     try {
       let activeSessionId = sessionId
@@ -878,20 +883,13 @@ export function ChatRoom({
           endRef={messagesEndRef}
         />
 
-        {/* 💬 Streaming / Typing Indicator (Apple iMessage & Twitter X Style) */}
-        {isStreaming && (
-          <div className="w-full max-w-[800px] mx-auto px-4 sm:px-6 pb-2.5 select-none">
-            <TypingIndicator
-              name={currentChat.name}
-            />
-          </div>
-        )}
-
-        {/* Sticky Bottom Bar */}
+        {/* Sticky Bottom Bar with Docked Typing Indicator (Twitter X Style) */}
         <ChatInputBar
           inputMessage={inputText}
           onInputChange={setInputText}
           onSendMessage={handleSendMessage}
+          isStreaming={isStreaming}
+          chatName={currentChat.name}
         />
       </div>
 

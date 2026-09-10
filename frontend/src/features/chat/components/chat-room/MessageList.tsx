@@ -36,8 +36,8 @@ export function MessageList({ messages, chatAvatar, chatName, endRef }: MessageL
         )
       })}
       
-      {/* ดันบรรทัดล่างสุดให้มีที่ว่างนิดหน่อยก่อนชนแถบ sticky และใช้เป็นจุด Anchor สำหรับ Auto Scroll */}
-      <div ref={endRef} className="h-6 shrink-0" />
+      {/* ดันบรรทัดล่างสุดให้มีระยะหายใจพอดีเหนือแถบ Sticky Input Bar เพื่อให้เห็นข้อความล่าสุดชัดเจน 100% */}
+      <div ref={endRef} className="h-20 shrink-0" />
     </div>
   )
 }

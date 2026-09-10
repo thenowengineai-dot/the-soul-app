@@ -1,5 +1,6 @@
 import type React from 'react'
 import { Plus, ArrowUp } from 'lucide-react'
+import { TypingIndicator } from '../../../../components/common'
 import type { ChatInputBarProps } from '../../types'
 
 export type { ChatInputBarProps }
@@ -9,6 +10,8 @@ export function ChatInputBar({
   onInputChange,
   onSendMessage,
   onKeyDown,
+  isStreaming = false,
+  chatName = '',
 }: ChatInputBarProps) {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -19,8 +22,16 @@ export function ChatInputBar({
   }
 
   return (
-    <div className="sticky bottom-0 z-20 w-full pt-7 pb-4 mt-auto bg-gradient-to-t from-app-bg from-60% via-app-bg/95 via-35% to-transparent pointer-events-none">
-      <div className="w-full max-w-[800px] mx-auto px-4 sm:px-6 flex items-center gap-3 pointer-events-auto">
+    <div className="sticky bottom-0 z-20 w-full pt-4 pb-4 mt-auto bg-gradient-to-t from-app-bg from-60% via-app-bg/95 via-35% to-transparent pointer-events-none">
+      <div className="w-full max-w-[800px] mx-auto px-4 sm:px-6 flex flex-col gap-2.5 pointer-events-auto">
+        {/* 💬 Typing Indicator Docked Right Above Input Box (Twitter / X Style) */}
+        {isStreaming && (
+          <div className="pl-1 animate-in fade-in slide-in-from-bottom-2 duration-200">
+            <TypingIndicator name={chatName} />
+          </div>
+        )}
+
+        <div className="w-full flex items-center gap-3">
         {/* Plus Button */}
         <button 
           type="button"
@@ -52,6 +63,7 @@ export function ChatInputBar({
         </div>
       </div>
     </div>
+  </div>
   )
 }
 

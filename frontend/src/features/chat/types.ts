@@ -124,6 +124,8 @@ export interface ChatInputBarProps {
   onInputChange?: (value: string) => void
   onSendMessage?: () => void
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void
+  isStreaming?: boolean
+  chatName?: string
 }
 
 export interface ChatRoomProps {

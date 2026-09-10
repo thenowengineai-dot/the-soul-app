@@ -120,12 +120,23 @@ class GenesisPipeline:
 
     async def save_draft(self, data: Dict[str, Any], mode: str, user_id: str) -> str:
         """Saves world and character draft to Neon Postgres and caches active state."""
-        world_id = data.get("world_id") or f"draft_{int(time.time())}"
+        world_id = data.get("id") or data.get("world_id") or f"draft_{int(time.time())}"
         data["world_id"] = world_id
-        name = data.get("name") or data.get("thai_name") or "Untitled World"
+        name = data.get("worldTitle") or data.get("name") or data.get("thai_name") or "Untitled World"
 
         character_data = data.get("linked_character") or data.get("character_data") or {}
-        workspace_meta = data.get("workspace_meta") or {}
+        if isinstance(character_data, dict):
+            if not character_data.get("name") and data.get("title"):
+                character_data["name"] = data.get("title")
+            if not character_data.get("avatar_url") and data.get("image"):
+                character_data["avatar_url"] = data.get("image")
+
+        workspace_meta = data.get("workspace_meta") or {
+            "isPinned": data.get("isPinned", False),
+            "themeColor": data.get("themeColor", "#EF264C"),
+            "description": data.get("description", ""),
+            "mode": mode,
+        }
 
         # Save to Neon Postgres
         saved_id = await self.db.save_draft(

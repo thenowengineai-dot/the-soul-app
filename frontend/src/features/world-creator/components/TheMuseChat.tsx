@@ -9,6 +9,7 @@ import {
   Sparkles,
   Brain,
 } from 'lucide-react';
+import { TypingIndicator } from '../../../components/common';
 import type { CreatorMode, MuseIdeaItem, MuseMessage } from '../types';
 
 interface ParsedMuseMessage {
@@ -366,16 +367,13 @@ export default function TheMuseChat({
             );
           })}
           {isThinking && (
-            <div className="w-full flex flex-col gap-2 py-2 select-none animate-in fade-in duration-200">
-              <div className="flex items-center gap-2.5 text-[#ACACB2] text-[14px]">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#EF264C] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#EF264C]"></span>
-                </span>
-                <span className="font-normal text-[#ACACB2] tracking-wide">
-                  The Muse กำลังคิดและถักทอโครงสร้าง...
-                </span>
-              </div>
+            <div className="w-full py-1.5 select-none">
+              <TypingIndicator
+                name="The Muse"
+                subtext="กำลังคิดและถักทอโครงสร้าง..."
+                dotColor="#EF264C"
+                variant="with-text"
+              />
             </div>
           )}
           <div ref={messagesEndRef} />

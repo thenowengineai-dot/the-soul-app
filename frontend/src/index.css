@@ -34,3 +34,31 @@ body {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+/* 💬 iMessage & Twitter X Style 3-Dot Typing Animation */
+@keyframes typing-bounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+.animate-typing-dot-1 {
+  animation: typing-bounce 1.35s infinite ease-in-out;
+  animation-delay: 0s;
+}
+
+.animate-typing-dot-2 {
+  animation: typing-bounce 1.35s infinite ease-in-out;
+  animation-delay: 0.18s;
+}
+
+.animate-typing-dot-3 {
+  animation: typing-bounce 1.35s infinite ease-in-out;
+  animation-delay: 0.36s;
+}
+

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import ChatRoomHeader from './ChatRoomHeader'
 import MessageList from './MessageList'
 import ChatInputBar from './ChatInputBar'
+import { TypingIndicator } from '../../../../components/common'
 import { MOCK_CHATS } from '../../mockData'
 import type { ChatRoomProps, ChatMessage } from '../../types'
 import {
@@ -877,13 +878,15 @@ export function ChatRoom({
           endRef={messagesEndRef}
         />
 
-        {/* Streaming Indicator */}
+        {/* 💬 Streaming / Typing Indicator (Apple iMessage & Twitter X Style) */}
         {isStreaming && (
-          <div className="w-full max-w-[800px] mx-auto px-4 sm:px-6 pb-2 select-none">
-            <div className="flex items-center gap-2 text-[12px] text-app-secondary/70">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#EF264C] animate-pulse" />
-              <span>{currentChat.name} กำลังตอบกลับ...</span>
-            </div>
+          <div className="w-full max-w-[800px] mx-auto px-4 sm:px-6 pb-2.5 select-none">
+            <TypingIndicator
+              avatarUrl={currentChat.avatar}
+              name={currentChat.name}
+              subtext="กำลังพิมพ์..."
+              variant="with-text"
+            />
           </div>
         )}
 

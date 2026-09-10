@@ -13,6 +13,7 @@ export function ChatItem({
   time, 
   unread, 
   isActive, 
+  isTyping = false,
   onClick 
 }: ChatItemProps) {
   const isImage = avatar?.startsWith('http')
@@ -49,12 +50,23 @@ export function ChatItem({
           </span>
         </div>
         
-        {/* แถวที่ 2: ข้อความล่าสุด & จุดแจ้งเตือน (#EF264C) */}
+        {/* แถวที่ 2: ข้อความล่าสุด หรือ Text Accent กำลังพิมพ์ (Telegram / WhatsApp Style) & จุดแจ้งเตือน (#EF264C) */}
         <div className="flex items-center justify-between gap-2 min-w-0">
-          <p className="flex-1 min-w-0 text-[13.5px] sm:text-[14px] text-[rgb(113,118,123)] truncate leading-snug">
-            {message}
-          </p>
-          {unread && (
+          {isTyping ? (
+            <div className="flex-1 min-w-0 flex items-center gap-1.5 text-[13.5px] sm:text-[14px] text-[#EF264C] font-medium leading-snug truncate animate-in fade-in duration-200">
+              <span>กำลังพิมพ์</span>
+              <span className="inline-flex items-center gap-0.5 ml-0.5">
+                <span className="w-1 h-1 rounded-full bg-[#EF264C] animate-typing-dot-1 shrink-0" />
+                <span className="w-1 h-1 rounded-full bg-[#EF264C] animate-typing-dot-2 shrink-0" />
+                <span className="w-1 h-1 rounded-full bg-[#EF264C] animate-typing-dot-3 shrink-0" />
+              </span>
+            </div>
+          ) : (
+            <p className="flex-1 min-w-0 text-[13.5px] sm:text-[14px] text-[rgb(113,118,123)] truncate leading-snug">
+              {message}
+            </p>
+          )}
+          {unread && !isTyping && (
             <span className="w-1.5 h-1.5 rounded-full bg-[#EF264C] shrink-0" />
           )}
         </div>

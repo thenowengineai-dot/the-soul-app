@@ -31,6 +31,12 @@ function ChatView({
 }: ChatViewProps) {
   const [prevActive, setPrevActive] = useState<ChatConversation | null | undefined>(activeCharacter);
   const [selectedChat, setSelectedChat] = useState<ChatConversation>(() => activeCharacter || MOCK_CHATS[0]);
+  const [isCurrentStreaming, setIsCurrentStreaming] = useState<boolean>(false);
+  const [allChats, setAllChats] = useState<ChatConversation[]>(() => {
+    const initial = activeCharacter || MOCK_CHATS[0];
+    const others = MOCK_CHATS.filter(c => String(c.id) !== String(initial.id));
+    return [initial, ...others];
+  });
   const [isChatListOpen, setIsChatListOpen] = useState<boolean>(true);
   const [activeRightPanel, setActiveRightPanel] = useState<'none' | 'hud' | 'inspector'>('hud');
   const [liveHudData, setLiveHudData] = useState<CharacterHudData>(() => getCharacterHudData(activeCharacter || MOCK_CHATS[0]));
@@ -62,12 +68,28 @@ function ChatView({
     setPrevActive(activeCharacter);
     setSelectedChat(activeCharacter);
     setLiveHudData(getCharacterHudData(activeCharacter));
+    setAllChats(prev => {
+      const exists = prev.some(c => String(c.id) === String(activeCharacter.id));
+      if (exists) {
+        return prev.map(c => String(c.id) === String(activeCharacter.id) ? activeCharacter : c);
+      }
+      return [activeCharacter, ...prev];
+    });
   }
 
   const handleSelectChat = (chat: ChatConversation) => {
     setSelectedChat(chat);
     setLiveHudData(getCharacterHudData(chat));
     onSelectChat?.(chat);
+  };
+
+  const handleLatestMessageChange = (lastText: string) => {
+    setAllChats(prev => prev.map(c => {
+      if (String(c.id) === String(selectedChat.id)) {
+        return { ...c, message: lastText, time: 'เมื่อสักครู่' };
+      }
+      return c;
+    }));
   };
 
   const handleHudUpdate = (data: {
@@ -118,11 +140,16 @@ function ChatView({
     })
   }
 
+  const chatsForList = allChats.map(c => ({
+    ...c,
+    isTyping: String(c.id) === String(selectedChat.id) ? isCurrentStreaming : (c.isTyping ?? false),
+  }));
+
   return (
     <div className="flex-1 h-screen overflow-hidden flex relative">
       <ChatList 
         onBackToHome={onBackToHome} 
-        chats={selectedChat ? [selectedChat] : []}
+        chats={chatsForList}
         selectedChatId={selectedChat.id}
         onSelectChat={handleSelectChat} 
         isOpen={isChatListOpen}
@@ -156,6 +183,8 @@ function ChatView({
         onSignOut={onSignOut}
         onCoinBalanceUpdate={onCoinBalanceUpdate}
         onHudUpdate={handleHudUpdate}
+        onStreamingChange={setIsCurrentStreaming}
+        onLatestMessageChange={handleLatestMessageChange}
       />
       <CharacterHud 
         data={liveHudData}

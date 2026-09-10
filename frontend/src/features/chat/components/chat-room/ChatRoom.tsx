@@ -133,6 +133,8 @@ export function ChatRoom({
   onSwitchToHud,
   onCoinBalanceUpdate,
   onHudUpdate,
+  onStreamingChange,
+  onLatestMessageChange,
 }: ChatRoomProps) {
   const currentChat = chat || MOCK_CHATS[0]
   const [sessionId, setSessionId] = useState<string | null>(null)
@@ -598,6 +600,20 @@ export function ChatRoom({
     // เมื่อกำลังสตรีมข้อความใช้ 'auto' เพื่อความนิ่ง ไม่กระตุก เมื่อจบหรือมีข้อความใหม่ใช้ 'smooth'
     scrollToBottom(isStreaming ? 'auto' : 'smooth')
   }, [chatMessages, isStreaming, scrollToBottom])
+
+  // แจ้งสถานะกำลังพิมพ์และข้อความล่าสุดให้ ChatList ทราบ
+  useEffect(() => {
+    onStreamingChange?.(isStreaming)
+  }, [isStreaming, onStreamingChange])
+
+  useEffect(() => {
+    if (chatMessages.length > 0) {
+      const lastMsg = chatMessages[chatMessages.length - 1]
+      if (lastMsg && lastMsg.text && lastMsg.type !== 'vo') {
+        onLatestMessageChange?.(lastMsg.text)
+      }
+    }
+  }, [chatMessages, onLatestMessageChange])
 
   // 4. ส่งข้อความและเชื่อมต่อ Real-time SSE Stream กับ Cloud Run Backend
   const handleSendMessage = async () => {

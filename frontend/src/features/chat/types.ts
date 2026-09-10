@@ -34,6 +34,7 @@ export interface ChatConversation {
   forceNewSession?: boolean
   sessionTriggerKey?: number
   isCreator?: boolean
+  isTyping?: boolean
 }
 
 // ----------------------------------------------------------------------
@@ -52,6 +53,7 @@ export interface ChatItemProps {
   unread?: boolean
   unreadCount?: number
   isActive?: boolean
+  isTyping?: boolean
   onClick?: () => void
 }
 
@@ -171,6 +173,8 @@ export interface ChatRoomProps {
       weather: string
     }
   }) => void
+  onStreamingChange?: (isStreaming: boolean) => void
+  onLatestMessageChange?: (lastMessageText: string) => void
 }
 
 // ----------------------------------------------------------------------

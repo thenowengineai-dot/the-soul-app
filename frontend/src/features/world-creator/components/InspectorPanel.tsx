@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback, useLayoutEffect } from 'react';
 import {
   PanelRightClose,
   UserRound,
@@ -15,12 +15,28 @@ import {
   ThumbsDown,
   Layers,
   Heart,
-  Eye,
-  MessageCircle,
-  Clock,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
-import type { CreatorMode, VaultDraft, PassivePerk } from '../types';
+import type { CreatorMode, VaultDraft, PassivePerk, WorldScenario } from '../types';
+import ScenarioEngineCard from './ScenarioEngineCard';
+import { DEFAULT_WORLD_SCENARIO } from '../mockData';
+
+const CHARACTER_SUBTOPICS = [
+  { id: 'psychology', label: 'จิตวิทยา' },
+  { id: 'appearance', label: 'สรีระ & ภาษากาย' },
+  { id: 'stats', label: 'สเตตัส & แรงขับ' },
+  { id: 'perks', label: 'สกิล & รสนิยม' },
+  { id: 'lore', label: 'ปูมหลัง & วิวัฒนาการ' },
+] as const;
+
+const WORLD_SUBTOPICS = [
+  { id: 'scenario', label: 'เควส & ไทม์ไลน์' },
+  { id: 'world_core', label: 'แก่นโลก' },
+  { id: 'locations', label: 'สถานที่สำคัญ' },
+  { id: 'blueprint', label: 'ซิงค์พิมพ์เขียว' },
+] as const;
 
 const PRIMARY_STATS_CONFIG = [
   { key: 'initiative', label: 'การริเริ่ม', en: 'Initiative', defaultVal: 8 },
@@ -151,14 +167,276 @@ export default function InspectorPanel({
   const [editLocations, setEditLocations] = useState<WorldLocation[]>(INITIAL_LOCATIONS);
   const [syncedFeedback, setSyncedFeedback] = useState<boolean>(false);
 
+  // Data สำหรับ Scenario Engine (Dungeon Master Quest System)
+  const scenarioData = draft?.scenario || DEFAULT_WORLD_SCENARIO;
+
+  const handleUpdateScenario = (updated: WorldScenario) => {
+    onUpdateDraft?.({ scenario: updated });
+  };
+
   // Scroll container ref & Smart-Collapse state (Dynamic Collapse on scroll)
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [isScrolled, setIsScrolled] = useState<boolean>(false);
 
+  // Active Subtopic for horizontal navigation bar (Option 1: Two-Tier Apple Architecture)
+  const [activeSubtopic, setActiveSubtopic] = useState<string>('psychology');
+  const [canScrollLeft, setCanScrollLeft] = useState<boolean>(false);
+  const [canScrollRight, setCanScrollRight] = useState<boolean>(true);
+
+  const subtopicsNavRef = useRef<HTMLDivElement>(null);
+  const pillRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+  // Dynamic Apple Sliding Pill Indicator State
+  const [pillIndicator, setPillIndicator] = useState<{
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+    ready: boolean;
+  }>({
+    left: 0,
+    top: 0,
+    width: 0,
+    height: 0,
+    ready: false,
+  });
+
+  const updatePillIndicator = useCallback(() => {
+    const activeEl = pillRefs.current[activeSubtopic];
+    if (activeEl && subtopicsNavRef.current) {
+      setPillIndicator({
+        left: activeEl.offsetLeft,
+        top: activeEl.offsetTop,
+        width: activeEl.offsetWidth,
+        height: activeEl.offsetHeight,
+        ready: true,
+      });
+    }
+  }, [activeSubtopic]);
+
+  // Dynamic Apple Sliding Pill Indicator State (Scope Switcher: ตัวละคร vs โลก)
+  const modeRefs = useRef<Record<CreatorMode, HTMLButtonElement | null>>({
+    character: null,
+    world: null,
+  });
+
+  const [modeIndicator, setModeIndicator] = useState<{
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+    ready: boolean;
+  }>({
+    left: 0,
+    top: 0,
+    width: 0,
+    height: 0,
+    ready: false,
+  });
+
+  const updateModeIndicator = useCallback(() => {
+    const activeEl = modeRefs.current[activeMode];
+    if (activeEl) {
+      setModeIndicator({
+        left: activeEl.offsetLeft,
+        top: activeEl.offsetTop,
+        width: activeEl.offsetWidth,
+        height: activeEl.offsetHeight,
+        ready: true,
+      });
+    }
+  }, [activeMode]);
+
+  const handleModeSwitch = (mode: CreatorMode) => {
+    if (mode === activeMode) return;
+
+    // Instant launch: อัปเดต Indicator ทันทีใน Tick เดียวกัน
+    const targetEl = modeRefs.current[mode];
+    if (targetEl) {
+      setModeIndicator({
+        left: targetEl.offsetLeft,
+        top: targetEl.offsetTop,
+        width: targetEl.offsetWidth,
+        height: targetEl.offsetHeight,
+        ready: true,
+      });
+    }
+
+    onModeChange?.(mode);
+    setActiveSubtopic(mode === 'character' ? 'psychology' : 'scenario');
+  };
+
+  useLayoutEffect(() => {
+    updatePillIndicator();
+    updateModeIndicator();
+  }, [updatePillIndicator, updateModeIndicator, activeMode, width]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      updatePillIndicator();
+      updateModeIndicator();
+    }, 60);
+    const handleResize = () => {
+      updatePillIndicator();
+      updateModeIndicator();
+    };
+    window.addEventListener('resize', handleResize);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [updatePillIndicator, updateModeIndicator]);
+
+  // เลื่อน Pill Bar แนวนอนเฉพาะเมื่อปุ่มที่เลือกตกขอบจอจริง เพื่อไม่ให้เกิดการสั่นไหว
+  useEffect(() => {
+    const activeEl = pillRefs.current[activeSubtopic];
+    if (activeEl && subtopicsNavRef.current) {
+      const container = subtopicsNavRef.current;
+      const elLeft = activeEl.offsetLeft;
+      const elRight = elLeft + activeEl.offsetWidth;
+      const scrollLeft = container.scrollLeft;
+      const clientWidth = container.clientWidth;
+
+      if (elLeft < scrollLeft) {
+        container.scrollTo({ left: Math.max(0, elLeft - 8), behavior: 'smooth' });
+      } else if (elRight > scrollLeft + clientWidth) {
+        container.scrollTo({ left: elRight - clientWidth + 8, behavior: 'smooth' });
+      }
+    }
+  }, [activeSubtopic]);
+
+  // Card refs สำหรับการเลื่อน Smooth-scroll ไปยังการ์ดแต่ละใบโดยตรง
+  const psychologyCardRef = useRef<HTMLDivElement>(null);
+  const appearanceCardRef = useRef<HTMLDivElement>(null);
+  const statsCardRef = useRef<HTMLDivElement>(null);
+  const perksCardRef = useRef<HTMLDivElement>(null);
+  const loreCardRef = useRef<HTMLDivElement>(null);
+  const scenarioCardRef = useRef<HTMLDivElement>(null);
+  const worldCoreCardRef = useRef<HTMLDivElement>(null);
+  const locationsCardRef = useRef<HTMLDivElement>(null);
+  const blueprintCardRef = useRef<HTMLDivElement>(null);
+
+  const cardRefMap: Record<string, React.RefObject<HTMLDivElement | null>> = {
+    psychology: psychologyCardRef,
+    appearance: appearanceCardRef,
+    stats: statsCardRef,
+    perks: perksCardRef,
+    lore: loreCardRef,
+    scenario: scenarioCardRef,
+    world_core: worldCoreCardRef,
+    locations: locationsCardRef,
+    blueprint: blueprintCardRef,
+  };
+
+  const checkSubtopicsScroll = () => {
+    if (subtopicsNavRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = subtopicsNavRef.current;
+      setCanScrollLeft(scrollLeft > 4);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 4);
+    }
+  };
+
+  const handleScrollSubtopics = (direction: 'left' | 'right') => {
+    if (subtopicsNavRef.current) {
+      const scrollAmount = 140;
+      subtopicsNavRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth',
+      });
+      setTimeout(checkSubtopicsScroll, 250);
+    }
+  };
+
+  // Programmatic scroll lock สำหรับป้องกัน Scroll-Spy สลับค่ากลับขณะกำลัง Smooth Scroll จากการคลิก
+  const isProgrammaticScrollRef = useRef<boolean>(false);
+  const programmaticScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleSubtopicClick = (id: string) => {
+    // 1. ตั้งค่า Subtopic ที่เลือกทันที
+    setActiveSubtopic(id);
+
+    // 2. อัปเดตพิกัด Pill Indicator ทันทีใน Tick เดียวกัน (Instant launch — สไลด์ทันที ไม่รอรอบ Render ถัดไป)
+    const targetEl = pillRefs.current[id];
+    if (targetEl && subtopicsNavRef.current) {
+      setPillIndicator({
+        left: targetEl.offsetLeft,
+        top: targetEl.offsetTop,
+        width: targetEl.offsetWidth,
+        height: targetEl.offsetHeight,
+        ready: true,
+      });
+    }
+
+    // 3. ล็อก Scroll-Spy ไว้ 650ms เพื่อป้องกันไม่ให้ Scroll-Spy แทรกแซงระหว่างที่การ์ดกำลังเลื่อน
+    isProgrammaticScrollRef.current = true;
+    if (programmaticScrollTimerRef.current) {
+      clearTimeout(programmaticScrollTimerRef.current);
+    }
+    programmaticScrollTimerRef.current = setTimeout(() => {
+      isProgrammaticScrollRef.current = false;
+    }, 650);
+
+    // 4. เลื่อนหน้าจอไปยังการ์ดเป้าหมายแบบ Smooth
+    const targetCard = cardRefMap[id]?.current;
+    if (targetCard) {
+      targetCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // สลับ default activeSubtopic เมื่อ activeMode เปลี่ยนแปลง
+  const [prevMode, setPrevMode] = useState<CreatorMode>(activeMode);
+  if (prevMode !== activeMode) {
+    setPrevMode(activeMode);
+    setActiveSubtopic(activeMode === 'character' ? 'psychology' : 'scenario');
+  }
+
+  // อัปเดตสถานะลูกศรเลื่อนแนวนอนของ Pill Bar เมื่อเปลี่ยนโหมด
+  useEffect(() => {
+    const timer = setTimeout(checkSubtopicsScroll, 80);
+    const indTimer = setTimeout(() => {
+      updatePillIndicator();
+      updateModeIndicator();
+    }, 80);
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(indTimer);
+    };
+  }, [activeMode, updatePillIndicator, updateModeIndicator]);
+
+  // ตรวจสอบสถานะการเลื่อนของ Pill Bar เมื่อเปลี่ยนความกว้าง Inspector
+  useEffect(() => {
+    checkSubtopicsScroll();
+    const handleResize = () => checkSubtopicsScroll();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [width]);
+
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const scrolled = e.currentTarget.scrollTop > 24;
-    if (scrolled !== isScrolled) {
-      setIsScrolled(scrolled);
+    const scrollTop = e.currentTarget.scrollTop;
+    
+    // Apple iOS Large Title: Hysteresis Threshold (75px to collapse, 35px to expand)
+    // มีระยะ Buffer 40px กันการสลับสถานะไปมา (Anti-jitter / Zero Layout Shift)
+    setIsScrolled((prev) => {
+      if (!prev && scrollTop > 75) return true;
+      if (prev && scrollTop < 35) return false;
+      return prev;
+    });
+
+    // Scroll-Spy อัปเดต Subtopic Pill ที่กำลังแสดงผลอยู่ให้อัตโนมัติ (จะทำงานเฉพาะเมื่อผู้ใช้เลื่อนหน้าจอเอง ไม่อยู่ในโหมดคลิก)
+    if (!isProgrammaticScrollRef.current) {
+      const currentList = activeMode === 'character' ? CHARACTER_SUBTOPICS : WORLD_SUBTOPICS;
+      const containerTop = e.currentTarget.getBoundingClientRect().top;
+      for (let i = currentList.length - 1; i >= 0; i--) {
+        const id = currentList[i].id;
+        const el = cardRefMap[id]?.current;
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top - containerTop <= 140) {
+            setActiveSubtopic((prev) => (prev !== id ? id : prev));
+            break;
+          }
+        }
+      }
     }
   };
 
@@ -199,6 +477,7 @@ export default function InspectorPanel({
       ).join(', ')
     );
     setEditingCard('hero');
+    handleScrollToTop();
   };
 
   const handleSaveHero = () => {
@@ -453,62 +732,225 @@ export default function InspectorPanel({
   return (
     <aside
       style={{ width: `${width}px` }}
-      className="h-full shrink-0 bg-[#090909] flex flex-col z-20 select-none overflow-hidden transition-[width] duration-75 ease-out"
+      className="h-full shrink-0 bg-[#090909] flex flex-col z-20 select-none overflow-hidden transition-[width] duration-75 ease-out relative"
     >
-      {/* 1. Mode Switcher Tabs & Collapse Button (สไตล์ X ไร้พื้นหลัง เส้นขอบเพรียวบาง) */}
-      <div className="px-5 sm:px-6 pt-4 pb-2 flex items-center gap-2.5 shrink-0">
-        <button
-          type="button"
-          onClick={() => onModeChange?.('character')}
-          className={`flex-1 py-1.5 px-3 rounded-xl text-[13px] sm:text-[13.5px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer select-none ${
-            activeMode === 'character'
-              ? 'bg-transparent border border-[#EF264C] text-[#EF264C] shadow-[0_0_12px_rgba(239,38,76,0.25)]'
-              : 'bg-transparent border border-[#2F3336] hover:border-white/30 text-app-secondary hover:text-app-primary'
-          }`}
-        >
-          <UserRound size={14} />
-          <span>อัตลักษณ์ตัวละคร</span>
-        </button>
+      {/* 1. All-in-One Unified Navigation Bar (Single Row Apple Dock: สูงเพียง 48px ประหยัดพื้นที่แนวตั้ง 60%!) */}
+      <div className="px-3 sm:px-4 py-1.5 flex items-center gap-1.5 sm:gap-2 shrink-0 border-b border-[#2F3336]/40 bg-[#090909] h-[48px]">
+        {/* Left: Scope Mode Switcher Capsule [ 👤 ตัวละคร | 🌐 โลก ] */}
+        <div className="flex items-center p-0.5 rounded-full bg-[#141416] border border-[#2F3336]/80 shrink-0 relative">
+          {/* Apple Dynamic Sliding Indicator for Scope Switcher */}
+          {modeIndicator.ready && (
+            <div
+              className="absolute top-0.5 left-0 rounded-full bg-[#222226] border border-white/10 shadow-sm pointer-events-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] z-0 will-change-transform"
+              style={{
+                transform: `translate3d(${modeIndicator.left}px, ${modeIndicator.top}px, 0)`,
+                width: `${modeIndicator.width}px`,
+                height: `${modeIndicator.height}px`,
+              }}
+            />
+          )}
 
-        <button
-          type="button"
-          onClick={() => onModeChange?.('world')}
-          className={`flex-1 py-1.5 px-3 rounded-xl text-[13px] sm:text-[13.5px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer select-none ${
-            activeMode === 'world'
-              ? 'bg-transparent border border-[#EF264C] text-[#EF264C] shadow-[0_0_12px_rgba(239,38,76,0.25)]'
-              : 'bg-transparent border border-[#2F3336] hover:border-white/30 text-app-secondary hover:text-app-primary'
-          }`}
-        >
-          <Globe size={14} />
-          <span>โครงสร้างโลก</span>
-        </button>
+          {/* ปุ่มสลับโหมด: ตัวละคร */}
+          <button
+            ref={(el) => {
+              modeRefs.current.character = el;
+            }}
+            type="button"
+            onClick={() => handleModeSwitch('character')}
+            title="อัตลักษณ์ตัวละคร"
+            className={`relative z-10 px-2.5 py-1 rounded-full text-[12px] flex items-center gap-1.5 transition-colors duration-200 cursor-pointer select-none ${
+              activeMode === 'character'
+                ? `text-[#F2F2F5] font-bold ${!modeIndicator.ready ? 'bg-[#222226] text-[#F2F2F5] font-bold shadow-sm border border-white/10' : ''}`
+                : 'text-[#ACACB2] hover:text-[#F2F2F5] font-medium'
+            }`}
+          >
+            <UserRound
+              size={13}
+              className={`transition-colors duration-200 ${
+                activeMode === 'character' ? 'text-[#EF264C]' : 'text-[#ACACB2]'
+              }`}
+            />
+            <span className="hidden sm:inline">ตัวละคร</span>
+          </button>
 
-        {/* ปุ่มพับเก็บหน้าต่าง Inspector อยู่ท้ายแถวของแท็บ สะอาดตาและกลืนกับดีไซน์ */}
+          {/* ปุ่มสลับโหมด: โครงสร้างโลก */}
+          <button
+            ref={(el) => {
+              modeRefs.current.world = el;
+            }}
+            type="button"
+            onClick={() => handleModeSwitch('world')}
+            title="โครงสร้างโลก"
+            className={`relative z-10 px-2.5 py-1 rounded-full text-[12px] flex items-center gap-1.5 transition-colors duration-200 cursor-pointer select-none ${
+              activeMode === 'world'
+                ? `text-[#F2F2F5] font-bold ${!modeIndicator.ready ? 'bg-[#222226] text-[#F2F2F5] font-bold shadow-sm border border-white/10' : ''}`
+                : 'text-[#ACACB2] hover:text-[#F2F2F5] font-medium'
+            }`}
+          >
+            <Globe
+              size={13}
+              className={`transition-colors duration-200 ${
+                activeMode === 'world' ? 'text-[#EF264C]' : 'text-[#ACACB2]'
+              }`}
+            />
+            <span className="hidden sm:inline">โลก</span>
+          </button>
+        </div>
+
+        {/* Divider เส้นแบ่งบางเบา */}
+        <div className="h-4 w-[1px] bg-[#2F3336]/70 shrink-0" />
+
+        {/* Center: Apple Horizontal Subtopic Pill Slider */}
+        <div className="flex-1 flex items-center gap-1 min-w-0">
+          {/* ปุ่มเลื่อนซ้าย (เมื่อเลื่อนบาร์ไปทางขวา) */}
+          {canScrollLeft && (
+            <button
+              type="button"
+              onClick={() => handleScrollSubtopics('left')}
+              title="เลื่อนซ้าย"
+              className="shrink-0 w-5 h-5 rounded-full bg-[#141416] border border-[#2F3336] text-[#ACACB2] hover:text-[#F2F2F5] hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer select-none"
+            >
+              <ChevronLeft size={12} strokeWidth={2.2} />
+            </button>
+          )}
+
+          {/* แทร็กหัวข้อย่อยเลื่อนแนวนอน */}
+          <div
+            ref={subtopicsNavRef}
+            onScroll={checkSubtopicsScroll}
+            className="flex-1 flex items-center gap-1 overflow-x-auto no-scrollbar scroll-smooth px-0.5 relative py-0.5"
+          >
+            {/* Apple Dynamic Sliding Pill Indicator (สไลด์ลื่นไหลสไตล์ Apple) */}
+            {pillIndicator.ready && (
+              <div
+                className="absolute top-0 left-0 rounded-full bg-[#F2F2F5] shadow-sm pointer-events-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] z-0 will-change-transform"
+                style={{
+                  transform: `translate3d(${pillIndicator.left}px, ${pillIndicator.top}px, 0)`,
+                  width: `${pillIndicator.width}px`,
+                  height: `${pillIndicator.height}px`,
+                }}
+              />
+            )}
+
+            {(activeMode === 'character' ? CHARACTER_SUBTOPICS : WORLD_SUBTOPICS).map((item) => {
+              const isActive = activeSubtopic === item.id;
+              return (
+                <button
+                  key={item.id}
+                  ref={(el) => {
+                    pillRefs.current[item.id] = el;
+                  }}
+                  type="button"
+                  onClick={() => {
+                    handleSubtopicClick(item.id);
+                  }}
+                  className={`relative z-10 px-2.5 py-1 rounded-full text-[12px] whitespace-nowrap transition-colors duration-200 cursor-pointer select-none shrink-0 ${
+                    isActive
+                      ? `text-[#090909] font-bold ${!pillIndicator.ready ? 'bg-[#F2F2F5]' : ''}`
+                      : 'text-[#ACACB2] hover:text-[#F2F2F5] hover:bg-white/5 font-medium'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* ปุ่มเลื่อนขวา Apple Chevron > */}
+          {canScrollRight && (
+            <button
+              type="button"
+              onClick={() => handleScrollSubtopics('right')}
+              title="เลื่อนขวา"
+              className="shrink-0 w-5 h-5 rounded-full bg-[#141416] border border-[#2F3336] text-[#ACACB2] hover:text-[#F2F2F5] hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer select-none"
+            >
+              <ChevronRight size={12} strokeWidth={2.2} />
+            </button>
+          )}
+        </div>
+
+        {/* Right: ปุ่มพับเก็บหน้าต่าง Inspector */}
         <button
           type="button"
           onClick={onCollapse}
           title="พับเก็บหน้าต่าง Inspector"
-          className="w-8 h-8 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-app-secondary hover:text-app-primary flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0"
+          className="w-7 h-7 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-[#ACACB2] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0"
         >
-          <PanelRightClose size={16} strokeWidth={1.8} />
+          <PanelRightClose size={14} strokeWidth={1.8} />
         </button>
       </div>
+
+      {/* Floating Apple Slim Sticky Bar (Outside scroll container - Zero Layout Shift) */}
+      {activeMode === 'character' && (
+        <div
+          className={`absolute top-[48px] left-0 right-0 z-20 bg-[#090909]/95 backdrop-blur-md border-b border-[#2F3336]/60 shadow-lg shadow-black/80 px-5 sm:px-6 py-2 transition-all duration-250 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            isScrolled && editingCard !== 'hero'
+              ? 'opacity-100 translate-y-0 pointer-events-auto'
+              : 'opacity-0 -translate-y-2 pointer-events-none'
+          }`}
+        >
+          <div className="flex items-center justify-between gap-3 h-8">
+            <button
+              type="button"
+              onClick={handleScrollToTop}
+              title="คลิกเพื่อเลื่อนกลับขึ้นด้านบนสุด"
+              className="flex items-center gap-2 min-w-0 text-left cursor-pointer group bg-transparent border-0 p-0"
+            >
+              <div className="w-2 h-2 rounded-full bg-[#EF264C] shrink-0" />
+              <h2 className="text-[16px] sm:text-[17px] font-bold text-app-primary tracking-tight truncate group-hover:text-[#EF264C] transition-colors">
+                {draft?.title || activeDraftTitle || 'ตัวละครใหม่'}
+              </h2>
+              {/* แฮชแท็กหลักอันแรก เพื่อเป็นจุดยึดเหนี่ยวสายตา */}
+              {draft?.hashtags?.[0] ? (
+                <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-[#18181b] text-[12px] sm:text-[12.5px] text-[#ACACB2] truncate max-w-[150px] group-hover:border-[#EF264C]/40 border border-transparent transition-all">
+                  {draft.hashtags[0]}
+                </span>
+              ) : (
+                <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full border border-[#EF264C]/40 text-[12px] sm:text-[12.5px] text-[#EF264C]">
+                  {draft?.archetype || 'The Cloaked Predator'}
+                </span>
+              )}
+            </button>
+
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={handleScrollToTop}
+                title="เลื่อนกลับขึ้นด้านบนสุด"
+                className="w-7 h-7 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-app-secondary hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none"
+              >
+                <ChevronUp size={14} strokeWidth={2} />
+              </button>
+              <button
+                type="button"
+                onClick={handleStartEditHero}
+                title="แก้ไขข้อมูลหลักและสเตตัส"
+                className="w-7 h-7 rounded-full bg-transparent border border-[#2F3336] hover:border-[#EF264C]/60 text-app-secondary hover:text-[#EF264C] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none"
+              >
+                <Pencil size={12} strokeWidth={1.8} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 2. Scrollable Cards Container (สไตล์ Twitter X & CharacterDetailModal: เส้นขอบอย่างเดียว ไม่มีพื้นหลัง) */}
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 space-y-4 no-scrollbar"
+        onWheel={() => {
+          isProgrammaticScrollRef.current = false;
+        }}
+        onTouchStart={() => {
+          isProgrammaticScrollRef.current = false;
+        }}
+        className="flex-1 overflow-y-auto px-5 sm:px-6 pb-6 pt-0 space-y-4 no-scrollbar"
       >
         {activeMode === 'character' ? (
           /* ================= CHARACTER MODE CARDS (THE 5-CARD PILLAR) ================= */
           <>
-            {/* ================= HERO ANCHOR (OUTSIDE CARDS, STICKY AT TOP) ================= */}
-            <div
-              className={`sticky top-0 z-20 bg-[#090909]/95 backdrop-blur-xl -mx-5 px-5 sm:-mx-6 sm:px-6 border-b border-[#2F3336]/60 transition-all duration-200 ${
-                isScrolled && editingCard !== 'hero' ? 'py-2 shadow-md' : 'pb-4 pt-1'
-              }`}
-            >
+            {/* ================= IN-FLOW LARGE HERO (SCROLLS NATURALLY IN FEED) ================= */}
+            <div className="pt-3.5 pb-4 border-b border-[#2F3336]/60">
               {editingCard === 'hero' ? (
                 <div className="flex flex-col gap-3 py-1">
                   {/* Header with Save/Cancel buttons */}
@@ -578,50 +1020,6 @@ export default function InspectorPanel({
                     />
                   </div>
                 </div>
-              ) : isScrolled ? (
-                /* ================= SLIM COMPACT BAR (เมื่อ Scroll เลื่อนอ่านการ์ด - คืนพื้นที่แนวตั้ง 80%) ================= */
-                <div className="flex items-center justify-between gap-3 h-8">
-                  <button
-                    type="button"
-                    onClick={handleScrollToTop}
-                    title="คลิกเพื่อเลื่อนกลับขึ้นด้านบนสุด"
-                    className="flex items-center gap-2 min-w-0 text-left cursor-pointer group bg-transparent border-0 p-0"
-                  >
-                    <div className="w-2 h-2 rounded-full bg-[#EF264C] shrink-0" />
-                    <h2 className="text-[16px] sm:text-[17px] font-bold text-app-primary tracking-tight truncate group-hover:text-[#EF264C] transition-colors">
-                      {draft?.title || activeDraftTitle || 'ตัวละครใหม่'}
-                    </h2>
-                    {/* แฮชแท็กหลักอันแรก เพื่อเป็นจุดยึดเหนี่ยวสายตา */}
-                    {draft?.hashtags?.[0] ? (
-                      <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-[#18181b] text-[12px] sm:text-[12.5px] text-[#ACACB2] truncate max-w-[150px] group-hover:border-[#EF264C]/40 border border-transparent transition-all">
-                        {draft.hashtags[0]}
-                      </span>
-                    ) : (
-                      <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full border border-[#EF264C]/40 text-[12px] sm:text-[12.5px] text-[#EF264C]">
-                        {draft?.archetype || 'The Cloaked Predator'}
-                      </span>
-                    )}
-                  </button>
-
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <button
-                      type="button"
-                      onClick={handleScrollToTop}
-                      title="เลื่อนกลับขึ้นด้านบนสุด"
-                      className="w-7 h-7 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-app-secondary hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none"
-                    >
-                      <ChevronUp size={14} strokeWidth={2} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleStartEditHero}
-                      title="แก้ไขข้อมูลหลักและสเตตัส"
-                      className="w-7 h-7 rounded-full bg-transparent border border-[#2F3336] hover:border-[#EF264C]/60 text-app-secondary hover:text-[#EF264C] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none"
-                    >
-                      <Pencil size={12} strokeWidth={1.8} />
-                    </button>
-                  </div>
-                </div>
               ) : (
                 <div>
                   {/* แถวบน: ชื่อตัวละคร + ปุ่ม Pencil ต่อท้ายชื่อแบบไร้กรอบ ขนาดสมดุล */}
@@ -647,26 +1045,8 @@ export default function InspectorPanel({
                       '"อย่าขยับสิคะ... ถ้าขยับพิษจากละอองเกสรจะยิ่งแล่นเข้าสู่กระแสเลือดนะ ให้รุ่นพี่ช่วยรีดมันออกจะดีกว่า..."'}
                   </p>
 
-                  {/* แถบสถิติ: 3,842,100 ครั้ง · 118,400 · เมื่อสักครู่ (น้ำหนัก 400 font-normal) */}
-                  <div className="flex items-center flex-wrap gap-2.5 sm:gap-3 mt-3 text-[13.5px] sm:text-[14.5px] text-[#ACACB2] font-normal">
-                    <span className="flex items-center gap-1.5">
-                      <Eye size={16} strokeWidth={1.8} className="flex-shrink-0 text-[#ACACB2]" />
-                      <span>{draft?.views || '3,842,100'} ครั้ง</span>
-                    </span>
-                    <span className="text-white/20">·</span>
-                    <span className="flex items-center gap-1.5">
-                      <MessageCircle size={16} strokeWidth={1.8} className="flex-shrink-0 text-[#ACACB2]" />
-                      <span>{draft?.messages || '118,400'}</span>
-                    </span>
-                    <span className="text-white/20">·</span>
-                    <span className="flex items-center gap-1.5">
-                      <Clock size={16} strokeWidth={1.8} className="flex-shrink-0 text-[#ACACB2]" />
-                      <span>{draft?.updatedAt || 'เมื่อสักครู่'}</span>
-                    </span>
-                  </div>
-
                   {/* ชุด Hashtags ทรงแคปซูล Pill ขนาดพอดีคำ อ่านสบายตา */}
-                  <div className="flex flex-wrap gap-2 mt-3.5 sm:mt-4">
+                  <div className="flex flex-wrap gap-2 mt-3 sm:mt-3.5">
                     {(
                       draft?.hashtags || [
                         '#รุ่นพี่สาวแว่น',
@@ -690,7 +1070,8 @@ export default function InspectorPanel({
 
             {/* Card 1: จิตวิทยาสองขั้ว & อัตลักษณ์ (Dual Identity & Mask) */}
             <div
-              className={`p-4 sm:p-5 rounded-2xl bg-transparent transition-all flex flex-col gap-3.5 ${
+              ref={psychologyCardRef}
+              className={`scroll-mt-16 p-4 sm:p-5 rounded-2xl bg-transparent transition-all flex flex-col gap-3.5 ${
                 editingCard === 'psychology'
                   ? 'border border-[#EF264C]/60 shadow-[0_0_16px_rgba(239,38,76,0.12)]'
                   : 'border border-[#2F3336]'
@@ -862,7 +1243,8 @@ export default function InspectorPanel({
 
             {/* Card 2: สรีระซ่อนรูป & ภาษากาย (Sensory Anatomy & Wardrobe) */}
             <div
-              className={`p-4 sm:p-5 rounded-2xl bg-transparent transition-all flex flex-col gap-3.5 ${
+              ref={appearanceCardRef}
+              className={`scroll-mt-16 p-4 sm:p-5 rounded-2xl bg-transparent transition-all flex flex-col gap-3.5 ${
                 editingCard === 'appearance'
                   ? 'border border-[#EF264C]/60 shadow-[0_0_16px_rgba(239,38,76,0.12)]'
                   : 'border border-[#2F3336]'
@@ -1031,7 +1413,8 @@ export default function InspectorPanel({
 
             {/* Card 3: ดัชนีสเตตัส & สเกลแรงขับปรารถนา (Core Stats & Hidden Drives - Single Card, 2 Sections) */}
             <div
-              className={`p-4 sm:p-5 rounded-2xl bg-transparent transition-all flex flex-col gap-3.5 ${
+              ref={statsCardRef}
+              className={`scroll-mt-16 p-4 sm:p-5 rounded-2xl bg-transparent transition-all flex flex-col gap-3.5 ${
                 editingCard === 'stats'
                   ? 'border border-[#EF264C]/60 shadow-[0_0_16px_rgba(239,38,76,0.12)]'
                   : 'border border-[#2F3336]'
@@ -1245,7 +1628,8 @@ export default function InspectorPanel({
 
             {/* Card 4: จุดสติหลุด & สกิลติดตัว (Passive Perks & Sensual Quirks) */}
             <div
-              className={`p-4 sm:p-5 rounded-2xl bg-transparent transition-all flex flex-col gap-3.5 ${
+              ref={perksCardRef}
+              className={`scroll-mt-16 p-4 sm:p-5 rounded-2xl bg-transparent transition-all flex flex-col gap-3.5 ${
                 editingCard === 'perks'
                   ? 'border border-[#EF264C]/60 shadow-[0_0_16px_rgba(239,38,76,0.12)]'
                   : 'border border-[#2F3336]'
@@ -1472,7 +1856,8 @@ export default function InspectorPanel({
 
             {/* Card 5: ปูมหลัง & วิวัฒนาการความสัมพันธ์ (Lore & Phase Evolution) */}
             <div
-              className={`p-4 sm:p-5 rounded-2xl bg-transparent transition-all flex flex-col gap-3.5 ${
+              ref={loreCardRef}
+              className={`scroll-mt-16 p-4 sm:p-5 rounded-2xl bg-transparent transition-all flex flex-col gap-3.5 ${
                 editingCard === 'lore'
                   ? 'border border-[#EF264C]/60 shadow-[0_0_16px_rgba(239,38,76,0.12)]'
                   : 'border border-[#2F3336]'
@@ -1659,9 +2044,19 @@ export default function InspectorPanel({
         ) : (
           /* ================= WORLD MODE CARDS ================= */
           <>
-            {/* Card 1: แก่นโลก & บรรยากาศ (มีปุ่มดินสอกลมขวาบน และแก้ไขได้จริงแบบ Real-time) */}
+            {/* Card 1 (Hero Card): เควส & ไทม์ไลน์ฉากเหตุการณ์ (Dungeon Master Quest Engine) */}
+            <div className="mt-4">
+              <ScenarioEngineCard
+                scenario={scenarioData}
+                onUpdateScenario={handleUpdateScenario}
+                cardRef={scenarioCardRef}
+              />
+            </div>
+
+            {/* Card 2: แก่นโลก & บรรยากาศ (มีปุ่มดินสอกลมขวาบน และแก้ไขได้จริงแบบ Real-time) */}
             <div
-              className={`p-4 sm:p-5 rounded-2xl bg-transparent transition-all flex flex-col gap-3 ${
+              ref={worldCoreCardRef}
+              className={`mt-4 scroll-mt-4 p-4 sm:p-5 rounded-2xl bg-transparent transition-all flex flex-col gap-3 ${
                 editingCard === 'world_core'
                   ? 'border border-[#EF264C]/60 shadow-[0_0_16px_rgba(239,38,76,0.12)]'
                   : 'border border-[#2F3336]'
@@ -1807,7 +2202,8 @@ export default function InspectorPanel({
 
             {/* Card 2: สถานที่สำคัญ (มีปุ่มดินสอกลมขวาบน และแก้ไขชื่อพิกัดได้จริง) */}
             <div
-              className={`p-4 sm:p-5 rounded-2xl bg-transparent transition-all flex flex-col gap-3 ${
+              ref={locationsCardRef}
+              className={`scroll-mt-4 p-4 sm:p-5 rounded-2xl bg-transparent transition-all flex flex-col gap-3 ${
                 editingCard === 'locations'
                   ? 'border border-[#EF264C]/60 shadow-[0_0_16px_rgba(239,38,76,0.12)]'
                   : 'border border-[#2F3336]'
@@ -1911,7 +2307,10 @@ export default function InspectorPanel({
             </div>
 
             {/* Card 3: ซิงค์พิมพ์เขียว (สไตล์ Twitter Subscribe to Premium: ปุ่มสีชมพูหลักของเรา) */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-transparent border border-[#2F3336] flex flex-col gap-2.5">
+            <div
+              ref={blueprintCardRef}
+              className="scroll-mt-4 p-4 sm:p-5 rounded-2xl bg-transparent border border-[#2F3336] flex flex-col gap-2.5"
+            >
               <h3 className="text-[18px] sm:text-[19px] font-bold text-[#F2F2F5] tracking-tight">
                 ซิงค์พิมพ์เขียวกับ The Muse
               </h3>

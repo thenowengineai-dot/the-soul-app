@@ -27,7 +27,8 @@ class GenesisFactory:
     def __init__(self, project_id: Optional[str] = None, location: Optional[str] = None):
         self.project_id = project_id or os.getenv("VERTEX_PROJECT") or os.getenv("GOOGLE_CLOUD_PROJECT")
         self.location = location or os.getenv("VERTEX_LOCATION", "global")
-        self.model_name = os.getenv("FACTORY_MODEL", "gemini-2.5-flash")
+        self.model_name = os.getenv("FACTORY_MODEL", "gemini-3.8-flash")
+        self.thinking_level = os.getenv("FACTORY_THINKING_LEVEL", "medium")
 
         self._client = None
 
@@ -67,21 +68,28 @@ class GenesisFactory:
 
         from google.genai import types
         logger.info(f"📤 [FACTORY GENAI] ส่ง Request ไปที่ {self.model_name}")
+        config_args = {
+            "temperature": 1.0,
+            "max_output_tokens": 65535,
+            "response_mime_type": "application/json",
+            "safety_settings": [
+                types.SafetySetting(category="HARM_CATEGORY_HARASSMENT", threshold="OFF"),
+                types.SafetySetting(category="HARM_CATEGORY_HATE_SPEECH", threshold="OFF"),
+                types.SafetySetting(category="HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold="OFF"),
+                types.SafetySetting(category="HARM_CATEGORY_DANGEROUS_CONTENT", threshold="OFF")
+            ]
+        }
+        if "gemini" in self.model_name.lower() and self.thinking_level:
+            try:
+                config_args["thinking_config"] = types.ThinkingConfig(thinking_level=self.thinking_level)
+            except Exception as ex:
+                logger.debug(f"ThinkingConfig init skipped/failed: {ex}")
+
         try:
             response = self.client.models.generate_content(
                 model=self.model_name,
                 contents=[{"role": "user", "parts": [{"text": prompt}]}],
-                config=types.GenerateContentConfig(
-                    temperature=1.0,
-                    max_output_tokens=65535,
-                    response_mime_type="application/json",
-                    safety_settings=[
-                        types.SafetySetting(category="HARM_CATEGORY_HARASSMENT", threshold="OFF"),
-                        types.SafetySetting(category="HARM_CATEGORY_HATE_SPEECH", threshold="OFF"),
-                        types.SafetySetting(category="HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold="OFF"),
-                        types.SafetySetting(category="HARM_CATEGORY_DANGEROUS_CONTENT", threshold="OFF")
-                    ]
-                )
+                config=types.GenerateContentConfig(**config_args)
             )
             content = response.text or "{}"
             logger.info(f"📥 [FACTORY GENAI] ได้รับ Response ความยาว: {len(content)} ตัวอักษร")

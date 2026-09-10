@@ -18,7 +18,8 @@ class TheAuditor:
         """
         self.project_id = project_id or os.getenv("VERTEX_PROJECT") or os.getenv("GOOGLE_CLOUD_PROJECT")
         self.location = location or os.getenv("VERTEX_LOCATION", "global")
-        self.model_name = os.getenv("AUDITOR_MODEL", "gemini-2.5-flash")
+        self.model_name = os.getenv("AUDITOR_MODEL", "gemini-3.5-flash-lite")
+        self.thinking_level = os.getenv("AUDITOR_THINKING_LEVEL", "medium")
 
         self._client = None
 
@@ -88,14 +89,21 @@ class TheAuditor:
             contents = [types.Content(role="user", parts=[types.Part.from_text(text=messages[0]["content"])])]
 
             logger.info("🔍 [AUDITOR] กำลังตรวจสอบความถูกต้องของ The Engine Manifesto...")
+            config_args = {
+                "system_instruction": system_instruction,
+                "temperature": 0.2,
+                "response_mime_type": "application/json",
+            }
+            if "gemini" in self.model_name.lower() and self.thinking_level:
+                try:
+                    config_args["thinking_config"] = types.ThinkingConfig(thinking_level=self.thinking_level)
+                except Exception as ex:
+                    logger.debug(f"ThinkingConfig init skipped/failed: {ex}")
+
             response = self.client.models.generate_content(
                 model=self.model_name,
                 contents=contents,
-                config=types.GenerateContentConfig(
-                    system_instruction=system_instruction,
-                    temperature=0.2,
-                    response_mime_type="application/json"
-                )
+                config=types.GenerateContentConfig(**config_args)
             )
 
             result_text = response.text.strip()

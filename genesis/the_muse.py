@@ -28,7 +28,8 @@ class TheMuse:
         """
         self.project_id = project_id or os.getenv("VERTEX_PROJECT") or os.getenv("GOOGLE_CLOUD_PROJECT")
         self.location = location or os.getenv("VERTEX_LOCATION", "global")
-        self.model_name = os.getenv("MUSE_MODEL", "gemini-2.5-flash")
+        self.model_name = os.getenv("MUSE_MODEL", "gemini-3.8-flash")
+        self.thinking_level = os.getenv("MUSE_THINKING_LEVEL", "medium")
 
         self._client = None
 
@@ -153,6 +154,11 @@ class TheMuse:
                 config_args["response_mime_type"] = "application/json"
             if response_schema:
                 config_args["response_schema"] = response_schema
+            if "gemini" in self.model_name.lower() and self.thinking_level:
+                try:
+                    config_args["thinking_config"] = types.ThinkingConfig(thinking_level=self.thinking_level)
+                except Exception as ex:
+                    logger.debug(f"ThinkingConfig init skipped/failed: {ex}")
                 
             response = self.client.models.generate_content(
                 model=self.model_name,

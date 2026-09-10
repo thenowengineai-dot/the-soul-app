@@ -77,13 +77,16 @@ export interface VaultDraft {
 
   // Real-world Event / Scenario Engine
   scenario?: WorldScenario;
+  // Real-world World schema (Production Architecture)
+  thai_name?: string;
+  world_id?: string;
   prologue?: WorldPrologue;
-
-  // Real-world World extensions (5-Pillar World Model)
+  player_persona?: PlayerPersona;
+  initial_states?: WorldInitialStates;
   starting_state?: WorldStartingState;
-  locations_detail?: WorldLocationDetail[];
-  time_weather?: WorldTimeWeather;
-  rules_tension?: WorldRulesTension;
+  real_locations?: WorldLocationsMap;
+  time_periods?: WorldTimePeriodsMap;
+  weather_system?: WorldWeatherSystem;
 }
 
 export type PlayerTriggerAction =
@@ -131,48 +134,81 @@ export interface WorldScenario {
 }
 
 // =========================================================================
-// 🌍 WORLD ARCHITECTURE TYPES (5-PILLAR WORLD MODEL)
+// 🌍 WORLD ARCHITECTURE TYPES (1:1 PRODUCTION ENGINE SCHEMA)
 // =========================================================================
 
+export interface WorldPrologueChoice {
+  text: string;
+  hidden_trait: string;
+}
+
+export interface WorldPrologue {
+  premise: string;
+  question: string;
+  choices: WorldPrologueChoice[];
+}
+
+export interface PlayerPersonaIdentity {
+  brief: string;
+  title: string;
+}
+
+export interface PlayerPersonaDynamicAndPower {
+  label: string;
+  actor_secret: string;
+  power_balance: string;
+}
+
+export interface PlayerPersona {
+  identity: PlayerPersonaIdentity;
+  pronouns: string;
+  nicknames: string;
+  main_quest: string;
+  personality_vibe: string;
+  dynamic_and_power: PlayerPersonaDynamicAndPower;
+}
+
+export interface WorldInitialStates {
+  desire: number;
+  affection: number;
+  shatter_count: number;
+}
+
 export interface WorldStartingState {
-  starting_time?: string;
-  starting_location?: string;
-  starting_weather?: string;
-  initial_outfit_key?: string;
-  initial_a_pos?: string; // ท่าทาง/ตำแหน่งตัวละครวินาทีแรก
-  initial_p_pos?: string; // ตำแหน่ง/มุมมองผู้เล่นวินาทีแรก
-}
-
-export interface WorldLocationDetail {
-  id: string;
-  name: string;
-  tag?: string;
-  spatial_layout?: string;
-  choke_points?: string; // จุดบีบระยะประชิด & จุดอับสายตา
-  base_mood?: string;
-  ambient_cues?: string[]; // ประสาทสัมผัสเฉพาะจุด (เสียง กลิ่น ไอน้ำ)
-}
-
-export interface WorldTimePeriod {
   time: string;
+  weather: string;
+  location: string;
+  initial_a_pos: string;
+  initial_p_pos: string;
+  initial_outfit_key: string;
+}
+
+export interface WorldLocationSensoryCues {
+  ambient_cues: string[];
+}
+
+export interface WorldLocationItem {
+  base_mood: string;
+  choke_points: string;
+  key_furniture: string;
+  spatial_layout: string;
+  sensory_cues: WorldLocationSensoryCues;
+}
+
+export type WorldLocationsMap = Record<string, WorldLocationItem>;
+
+export interface WorldTimePeriodItem {
   atmosphere: string;
 }
 
-export interface WorldWeatherChainItem {
-  weather: string;
-  next: string;
-  sensory: string;
+export type WorldTimePeriodsMap = Record<string, WorldTimePeriodItem>;
+
+export interface WeatherLogicalNode {
+  next: string[];
 }
 
-export interface WorldTimeWeather {
-  time_periods?: WorldTimePeriod[];
-  weather_chain?: WorldWeatherChainItem[];
-}
-
-export interface WorldRulesTension {
-  taboos?: string[]; // ข้อห้ามในโลกนี้
-  exposure_risk?: string; // ผลลัพธ์เมื่อความลับแตก
-  npc_interference?: string[]; // บุคคลที่ 3 ที่อาจโผล่มาขัดจังหวะ
+export interface WorldWeatherSystem {
+  logical_chain: Record<string, WeatherLogicalNode>;
 }
 
 export interface FullWorldData {
@@ -180,28 +216,14 @@ export interface FullWorldData {
   name?: string;
   thai_name?: string;
   description?: string;
-  visual_palette?: string;
-  soundscape?: string;
-  core_paradox?: string;
+  prologue?: WorldPrologue;
+  player_persona?: PlayerPersona;
+  initial_states?: WorldInitialStates;
   starting_state?: WorldStartingState;
-  locations?: WorldLocationDetail[];
-  time_weather?: WorldTimeWeather;
-  rules_tension?: WorldRulesTension;
-  scenario?: WorldScenario;
-}
-
-
-export interface WorldPrologueChoice {
-  text: string;
-  action: string;
-  feedback?: string;
-  target_beat?: string;
-}
-
-export interface WorldPrologue {
-  prologue_objective?: string;
-  initial_scene?: string;
-  choices?: WorldPrologueChoice[];
+  locations?: WorldLocationsMap;
+  time_periods?: WorldTimePeriodsMap;
+  weather_system?: WorldWeatherSystem;
+  opening_scenarios?: WorldScenario[];
 }
 
 export interface MuseMessage {

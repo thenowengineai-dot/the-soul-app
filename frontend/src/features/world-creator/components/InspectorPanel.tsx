@@ -22,10 +22,11 @@ import {
 } from 'lucide-react';
 import type { CreatorMode, VaultDraft, PassivePerk, WorldScenario } from '../types';
 import ScenarioEngineCard from './ScenarioEngineCard';
+import WorldPrologueCard from './WorldPrologueCard';
+import WorldPersonaCard from './WorldPersonaCard';
 import WorldSpawnCoreCard from './WorldSpawnCoreCard';
 import WorldLocationsCard from './WorldLocationsCard';
 import WorldWeatherCard from './WorldWeatherCard';
-import WorldRulesCard from './WorldRulesCard';
 import { DEFAULT_WORLD_SCENARIO } from '../mockData';
 
 const CHARACTER_SUBTOPICS = [
@@ -38,10 +39,11 @@ const CHARACTER_SUBTOPICS = [
 
 const WORLD_SUBTOPICS = [
   { id: 'scenario', label: 'เควส & ไทม์ไลน์' },
-  { id: 'spawn_core', label: 'จุดเกิด & แก่นโลก' },
+  { id: 'prologue', label: 'บทนำ & เจตจำนง' },
+  { id: 'persona', label: 'ตัวตน & พลวัตอำนาจ' },
+  { id: 'spawn_core', label: 'จุดเกิด & สถานะ' },
   { id: 'locations', label: 'สถาปัตยกรรมฉาก' },
   { id: 'weather', label: 'กาลเวลา & อากาศ' },
-  { id: 'rules', label: 'กฎเกณฑ์ & ความเสี่ยง' },
   { id: 'blueprint', label: 'ซิงค์พิมพ์เขียว' },
 ] as const;
 
@@ -83,10 +85,12 @@ type EditableCard =
   | 'stats'
   | 'perks'
   | 'lore'
+  | 'scenario'
+  | 'prologue'
+  | 'persona'
   | 'spawn_core'
   | 'locations'
   | 'weather'
-  | 'rules'
   | null;
 
 export default function InspectorPanel({
@@ -288,10 +292,11 @@ export default function InspectorPanel({
   const perksCardRef = useRef<HTMLDivElement>(null);
   const loreCardRef = useRef<HTMLDivElement>(null);
   const scenarioCardRef = useRef<HTMLDivElement>(null);
+  const prologueCardRef = useRef<HTMLDivElement>(null);
+  const personaCardRef = useRef<HTMLDivElement>(null);
   const spawnCoreCardRef = useRef<HTMLDivElement>(null);
   const locationsCardRef = useRef<HTMLDivElement>(null);
   const weatherCardRef = useRef<HTMLDivElement>(null);
-  const rulesCardRef = useRef<HTMLDivElement>(null);
   const blueprintCardRef = useRef<HTMLDivElement>(null);
 
   const cardRefMap: Record<string, React.RefObject<HTMLDivElement | null>> = {
@@ -301,10 +306,11 @@ export default function InspectorPanel({
     perks: perksCardRef,
     lore: loreCardRef,
     scenario: scenarioCardRef,
+    prologue: prologueCardRef,
+    persona: personaCardRef,
     spawn_core: spawnCoreCardRef,
     locations: locationsCardRef,
     weather: weatherCardRef,
-    rules: rulesCardRef,
     blueprint: blueprintCardRef,
   };
 
@@ -2084,7 +2090,7 @@ export default function InspectorPanel({
         ) : (
           /* ================= WORLD MODE CARDS ================= */
           <>
-            {/* Card 1 (Hero Card): เควส & ไทม์ไลน์ฉากเหตุการณ์ (Dungeon Master Quest Engine) */}
+            {/* Card 1: เควส & ไทม์ไลน์ฉากเหตุการณ์ (Dungeon Master Quest Engine) */}
             <div className="mt-4">
               <ScenarioEngineCard
                 scenario={scenarioData}
@@ -2093,7 +2099,37 @@ export default function InspectorPanel({
               />
             </div>
 
-            {/* Card 2: จุดเกิดตั้งต้น & แก่นโลก (World Spawn & Core Atmosphere) */}
+            {/* Card 2: บทนำ & ทางเลือกเจตจำนง (Prologue & Role Intent) */}
+            <div className="mt-4">
+              <WorldPrologueCard
+                cardRef={prologueCardRef}
+                prologue={draft?.prologue}
+                isEditing={editingCard === 'prologue'}
+                onStartEdit={() => setEditingCard('prologue')}
+                onCancelEdit={() => setEditingCard(null)}
+                onSave={(updated) => {
+                  onUpdateDraft?.({ prologue: updated });
+                  setEditingCard(null);
+                }}
+              />
+            </div>
+
+            {/* Card 3: ตัวตนผู้เล่น & พลวัตอำนาจ (Player Persona & Power Dynamics) */}
+            <div className="mt-4">
+              <WorldPersonaCard
+                cardRef={personaCardRef}
+                persona={draft?.player_persona}
+                isEditing={editingCard === 'persona'}
+                onStartEdit={() => setEditingCard('persona')}
+                onCancelEdit={() => setEditingCard(null)}
+                onSave={(updated) => {
+                  onUpdateDraft?.({ player_persona: updated });
+                  setEditingCard(null);
+                }}
+              />
+            </div>
+
+            {/* Card 4: จุดเกิด & สถานะเริ่มต้น (World Spawn & Initial Gauges) */}
             <div className="mt-4">
               <WorldSpawnCoreCard
                 cardRef={spawnCoreCardRef}
@@ -2102,23 +2138,20 @@ export default function InspectorPanel({
                 onCancelEdit={() => setEditingCard(null)}
                 onSave={(data) => {
                   onUpdateDraft?.({
-                    worldTitle: data.worldTitle,
-                    worldVisual: data.worldVisual,
-                    worldSound: data.worldSound,
-                    worldConflict: data.worldConflict,
                     starting_state: data.startingState,
+                    initial_states: data.initialStates,
                   });
                   setEditingCard(null);
                 }}
                 worldTitle={draft?.worldTitle || activeWorldTitle}
-                worldVisual={draft?.worldVisual}
-                worldSound={draft?.worldSound}
-                worldConflict={draft?.worldConflict}
+                thaiName={draft?.thai_name}
+                worldId={draft?.world_id}
                 startingState={draft?.starting_state}
+                initialStates={draft?.initial_states}
               />
             </div>
 
-            {/* Card 3: สถาปัตยกรรมฉาก & จุดอับสายตา (Stage Geography & Choke Points) */}
+            {/* Card 5: สถาปัตยกรรมฉาก & จุดคอขวด (Locations & Choke Points) */}
             <div className="mt-4">
               <WorldLocationsCard
                 cardRef={locationsCardRef}
@@ -2127,45 +2160,30 @@ export default function InspectorPanel({
                 onCancelEdit={() => setEditingCard(null)}
                 onSave={(newLocs) => {
                   onUpdateDraft?.({
-                    locations_detail: newLocs,
+                    real_locations: newLocs,
                   });
                   setEditingCard(null);
                 }}
-                locations={draft?.locations_detail}
+                locations={draft?.real_locations}
               />
             </div>
 
-            {/* Card 4: ระบบกาลเวลา & พลวัตสภาพอากาศ (Chronology & Weather Logic) */}
+            {/* Card 6: กาลเวลา & ห่วงโซ่สภาพอากาศ (Time Periods & Weather System) */}
             <div className="mt-4">
               <WorldWeatherCard
                 cardRef={weatherCardRef}
                 isEditing={editingCard === 'weather'}
                 onStartEdit={() => setEditingCard('weather')}
                 onCancelEdit={() => setEditingCard(null)}
-                onSave={(newWeather) => {
+                onSave={(data) => {
                   onUpdateDraft?.({
-                    time_weather: newWeather,
+                    time_periods: data.timePeriods,
+                    weather_system: data.weatherSystem,
                   });
                   setEditingCard(null);
                 }}
-                timeWeather={draft?.time_weather}
-              />
-            </div>
-
-            {/* Card 5: กฎเกณฑ์โลก & ระดับความเสี่ยง (World Laws & Exposure Risk) */}
-            <div className="mt-4">
-              <WorldRulesCard
-                cardRef={rulesCardRef}
-                isEditing={editingCard === 'rules'}
-                onStartEdit={() => setEditingCard('rules')}
-                onCancelEdit={() => setEditingCard(null)}
-                onSave={(newRules) => {
-                  onUpdateDraft?.({
-                    rules_tension: newRules,
-                  });
-                  setEditingCard(null);
-                }}
-                rulesTension={draft?.rules_tension}
+                timePeriods={draft?.time_periods}
+                weatherSystem={draft?.weather_system}
               />
             </div>
 

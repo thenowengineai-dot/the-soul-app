@@ -36,12 +36,25 @@ class GenesisFactory:
         if self._client is None:
             try:
                 from google import genai
-                if self.project_id:
-                    self._client = genai.Client(vertexai=True, project=self.project_id, location=self.location)
-                    logger.info(f"✅ [FACTORY] Initialized Vertex AI client (Project: {self.project_id}, Region: {self.location})")
+                project = self.project_id
+                if not project:
+                    try:
+                        import google.auth
+                        _, default_project = google.auth.default()
+                        project = default_project
+                        self.project_id = project
+                    except Exception:
+                        pass
+
+                if project:
+                    self._client = genai.Client(vertexai=True, project=project, location=self.location)
+                    logger.info(f"✅ [FACTORY] Initialized Vertex AI client (Project: {project}, Region: {self.location})")
+                elif os.getenv("GEMINI_API_KEY"):
+                    self._client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+                    logger.info("ℹ️ [FACTORY] Initialized Gemini API client with GEMINI_API_KEY")
                 else:
-                    self._client = genai.Client()
-                    logger.info("ℹ️ [FACTORY] Initialized default GenAI client")
+                    self._client = genai.Client(vertexai=True)
+                    logger.info("ℹ️ [FACTORY] Initialized Keyless Vertex AI Client via ADC")
             except Exception as e:
                 logger.warning(f"⚠️ [FACTORY] Could not initialize Vertex AI client: {e}")
                 self._client = None

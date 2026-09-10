@@ -37,12 +37,25 @@ class TheMuse:
         if self._client is None:
             try:
                 from google import genai
-                if self.project_id:
-                    self._client = genai.Client(vertexai=True, project=self.project_id, location=self.location)
-                    logger.info(f"✅ [THE_MUSE] Initialized Vertex AI client (Project: {self.project_id}, Region: {self.location}, Model: {self.model_name})")
+                project = self.project_id
+                if not project:
+                    try:
+                        import google.auth
+                        _, default_project = google.auth.default()
+                        project = default_project
+                        self.project_id = project
+                    except Exception:
+                        pass
+
+                if project:
+                    self._client = genai.Client(vertexai=True, project=project, location=self.location)
+                    logger.info(f"✅ [THE_MUSE] Initialized Vertex AI client (Project: {project}, Region: {self.location}, Model: {self.model_name})")
+                elif os.getenv("GEMINI_API_KEY"):
+                    self._client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+                    logger.info("ℹ️ [THE_MUSE] Initialized Gemini API client with GEMINI_API_KEY")
                 else:
-                    self._client = genai.Client()
-                    logger.info("ℹ️ [THE_MUSE] Initialized default GenAI client")
+                    self._client = genai.Client(vertexai=True)
+                    logger.info("ℹ️ [THE_MUSE] Initialized Keyless Vertex AI Client via ADC")
             except Exception as e:
                 logger.warning(f"⚠️ [THE_MUSE] Could not initialize Vertex AI client: {e}")
                 self._client = None

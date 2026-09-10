@@ -882,10 +882,7 @@ export function ChatRoom({
         {isStreaming && (
           <div className="w-full max-w-[800px] mx-auto px-4 sm:px-6 pb-2.5 select-none">
             <TypingIndicator
-              avatarUrl={currentChat.avatar}
               name={currentChat.name}
-              subtext="กำลังพิมพ์..."
-              variant="with-text"
             />
           </div>
         )}

@@ -1,39 +1,43 @@
 import React from 'react';
 
 export interface TypingIndicatorProps {
-  /** รูป Avatar ขนาดจิ๋วสไตล์ Twitter DM (ถ้ามี) */
-  avatarUrl?: string;
-  /** ชื่อผู้พิมพ์ เช่น "The Muse", "Kira" */
-  name?: string;
-  /** ข้อความอธิบายสถานะเพิ่มเติม เช่น "กำลังคิดและถักทอโครงสร้าง..." หรือ "กำลังตอบกลับ..." */
-  subtext?: string;
-  /** สีของจุด (default: #ACACB2 หรือกำหนดเป็นสีเฉพาะของตัวละคร / แบรนด์ #EF264C) */
+  /** สีของจุด (default: #ACACB2 หรือกำหนดเป็นสีเฉพาะของตัวละคร / แบรนด์ เช่น #EF264C) */
   dotColor?: string;
-  /** รูปแบบ: 'bubble' (บับเบิ้ล 3 จุดสไตล์ iMessage) หรือ 'with-text' (มีข้อความกำกับใต้บับเบิ้ล) */
+  /** รูป Avatar ขนาดจิ๋วสไตล์ Twitter DM (ถ้าต้องการแสดงเคียงข้างบับเบิ้ล) */
+  avatarUrl?: string;
+  /** แสดง Avatar หรือไม่ (default: false เพื่อให้ตำแหน่งและความสูงตรงกับบับเบิ้ล AI เป๊ะๆ) */
+  showAvatar?: boolean;
+  /** ชื่อผู้พิมพ์ (สำหรับ aria-label) */
+  name?: string;
+  /** ข้อความอธิบายสถานะเพิ่มเติม (deprecated: เพื่อความคลีน ไม่แสดงผลใต้บับเบิ้ล) */
+  subtext?: string;
+  /** รูปแบบการแสดงผล */
   variant?: 'bubble' | 'with-text';
-  /** คลาส CSS เพิ่มเติม */
+  /** คลาส CSS เพิ่มเติมสำหรับ wrapper */
   className?: string;
 }
 
 /**
  * 💬 Reusable Typing Indicator Component (Apple iMessage & Twitter X Style)
- * ใช้แสดงสถานะกำลังพิมพ์/กำลังประมวลผล ทั้งในห้องแชทหลัก (ChatRoom) และสตูดิโอ The Muse (TheMuseChat)
+ * ดีไซน์เดียวกับบับเบิ้ลข้อความฝั่ง AI เป๊ะๆ 1:1 ทั้งความสูง (34.5px/35px), สีพื้นหลัง (#1D1D1F),
+ * มุมโค้ง (rounded-[18px] rounded-bl-none), และ Padding (px-[15px] py-1.5)
+ * ไร้ข้อความอธิบายด้านล่างตามหลักมินิมอล เพื่อความคลีน สวยงาม และเป็นธรรมชาติ
  */
 export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
-  avatarUrl,
-  name,
-  subtext,
   dotColor,
-  variant = 'bubble',
+  avatarUrl,
+  showAvatar = false,
+  name,
   className = '',
 }) => {
   return (
     <div
-      className={`inline-flex items-end gap-2.5 py-1 select-none animate-in fade-in duration-200 ${className}`}
-      aria-label={`${name || 'AI'} is typing`}
+      className={`inline-flex items-center gap-2 select-none animate-in fade-in duration-200 ${className}`}
+      role="status"
+      aria-label={`${name || 'AI'} is typing...`}
     >
-      {/* 1. Avatar จิ๋วสไตล์ Twitter DM (ถ้ามี) */}
-      {avatarUrl && (
+      {/* 1. Avatar จิ๋ว (แสดงเฉพาะเมื่อเปิด showAvatar เป็น true) */}
+      {showAvatar && avatarUrl && (
         <img
           src={avatarUrl}
           alt={name || 'Avatar'}
@@ -41,10 +45,9 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
         />
       )}
 
-      {/* 2. Bubble & Subtext */}
-      <div className="flex flex-col gap-1 items-start">
-        {/* บับเบิ้ล 3 จุด สไตล์ Apple iMessage & X Lights Out */}
-        <div className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[18px] rounded-bl-none bg-[#1D1D1F] border border-[#2F3336] shadow-sm">
+      {/* 2. บับเบิ้ล 3 จุด สไตล์ Apple iMessage & X Lights Out (สเปกเดียวกับ AI MessageBubble 1:1) */}
+      <div className="inline-flex items-center justify-center px-[15px] py-1.5 min-h-[34.5px] h-[34.5px] bg-app-surface rounded-[18px] rounded-bl-none">
+        <div className="inline-flex items-center gap-1.5">
           <span
             className="w-1.5 h-1.5 rounded-full animate-typing-dot-1 shrink-0"
             style={{ backgroundColor: dotColor || '#ACACB2' }}
@@ -58,14 +61,6 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
             style={{ backgroundColor: dotColor || '#ACACB2' }}
           />
         </div>
-
-        {/* ข้อความกำกับ (ถ้าเลือก variant="with-text" หรือมีข้อความ subtext / name) */}
-        {(variant === 'with-text' || subtext) && (
-          <div className="flex items-center gap-1.5 text-[12px] text-[#ACACB2] pl-1 font-normal tracking-wide">
-            {name && <span className="text-[#F2F2F5] font-medium">{name}</span>}
-            {subtext && <span>{subtext}</span>}
-          </div>
-        )}
       </div>
     </div>
   );

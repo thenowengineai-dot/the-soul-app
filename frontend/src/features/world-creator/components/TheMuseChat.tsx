@@ -388,9 +388,7 @@ export default function TheMuseChat({
             <div className="w-full py-1.5 select-none">
               <TypingIndicator
                 name="The Muse"
-                subtext="กำลังคิดและถักทอโครงสร้าง..."
                 dotColor="#EF264C"
-                variant="with-text"
               />
             </div>
           )}

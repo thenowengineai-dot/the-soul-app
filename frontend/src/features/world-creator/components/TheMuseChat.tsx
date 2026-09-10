@@ -17,6 +17,7 @@ interface TheMuseChatProps {
   onToggleRightPanel: () => void;
   activeMode: CreatorMode;
   activeDraftTitle?: string;
+  isThinking?: boolean;
 }
 
 export default function TheMuseChat({
@@ -26,6 +27,7 @@ export default function TheMuseChat({
   isRightPanelCollapsed,
   onToggleRightPanel,
   activeMode,
+  isThinking = false,
 }: TheMuseChatProps) {
   const [inputText, setInputText] = useState('');
   // บันทึกสถานะการยืด-หดของแต่ละข้อความผู้ใช้
@@ -161,6 +163,19 @@ export default function TheMuseChat({
               </div>
             );
           })}
+          {isThinking && (
+            <div className="w-full flex flex-col gap-2 py-2 select-none animate-in fade-in duration-200">
+              <div className="flex items-center gap-2.5 text-[#ACACB2] text-[14px]">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#EF264C] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#EF264C]"></span>
+                </span>
+                <span className="font-normal text-[#ACACB2] tracking-wide">
+                  The Muse กำลังคิดและถักทอโครงสร้าง...
+                </span>
+              </div>
+            </div>
+          )}
           <div ref={messagesEndRef} />
         </div>
       </div>
@@ -216,8 +231,11 @@ export default function TheMuseChat({
                 {inputText.trim() ? (
                   <button
                     type="submit"
+                    disabled={isThinking}
                     title="ส่งข้อความ"
-                    className="w-8 h-8 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-[#F2F2F5] flex items-center justify-center transition-all shadow-md active:scale-90 cursor-pointer animate-in fade-in zoom-in-75 duration-150"
+                    className={`w-8 h-8 rounded-full ${
+                      isThinking ? 'bg-[#EF264C]/50 cursor-not-allowed' : 'bg-[#EF264C] hover:bg-[#d91d40] cursor-pointer'
+                    } text-[#F2F2F5] flex items-center justify-center transition-all shadow-md active:scale-90 animate-in fade-in zoom-in-75 duration-150`}
                   >
                     <ArrowRight size={17} strokeWidth={2.5} />
                   </button>

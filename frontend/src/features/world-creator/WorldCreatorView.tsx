@@ -6,6 +6,8 @@ import TheMuseChat from './components/TheMuseChat';
 import ResizableSplitter from './components/ResizableSplitter';
 import InspectorPanel from './components/InspectorPanel';
 import { INITIAL_VAULT_DRAFTS, INITIAL_MUSE_MESSAGES } from './mockData';
+import { sendMuseMessage } from './genesisApi';
+import { getCurrentUser } from '../chat/chatApi';
 import type { CreatorMode, VaultDraft, MuseMessage } from './types';
 
 interface WorldCreatorViewProps {
@@ -18,6 +20,7 @@ export default function WorldCreatorView({ onExit }: WorldCreatorViewProps) {
   const [activeDraftId, setActiveDraftId] = useState<string | null>(
     INITIAL_VAULT_DRAFTS[0]?.id || null
   );
+  const [isThinking, setIsThinking] = useState<boolean>(false);
 
   // Sidebar Expanded State (เริ่มต้นจะขยายแถบด้านซ้ายเสมอ ทุกครั้งที่เข้าหน้านี้มา)
   const [isSidebarExpanded, setIsSidebarExpanded] = useState<boolean>(true);
@@ -108,8 +111,8 @@ export default function WorldCreatorView({ onExit }: WorldCreatorViewProps) {
     );
   };
 
-  // ส่งข้อความคุยกับ The Muse
-  const handleSendMessage = (text: string) => {
+  // ส่งข้อความคุยกับ The Muse จริงผ่าน Cloud Run & Vertex AI
+  const handleSendMessage = async (text: string) => {
     const userMsg: MuseMessage = {
       id: `user-${Date.now()}`,
       sender: 'user',
@@ -117,23 +120,42 @@ export default function WorldCreatorView({ onExit }: WorldCreatorViewProps) {
       timestamp: 'ตอนนี้',
     };
 
-    setMessages((prev) => [...prev, userMsg]);
+    const newMessages = [...messages, userMsg];
+    setMessages(newMessages);
+    setIsThinking(true);
 
-    // จำลอง The Muse วิเคราะห์และตอบกลับใน Phase 1 (เพื่อเช็กการไหลลื่นของแชท)
-    setTimeout(() => {
+    try {
+      const currentUser = getCurrentUser();
+      const response = await sendMuseMessage({
+        message: text,
+        history: newMessages,
+        mode: activeMode,
+        draftId: activeDraftId,
+        userId: currentUser.user_id,
+      });
+
       const botReply: MuseMessage = {
         id: `muse-${Date.now()}`,
         sender: 'muse',
-        text: `รับทราบครับ! ไอเดียนี้ยอดเยี่ยมมาก ผมกำลังบันทึกโครงสร้างนี้ลงในพิมพ์เขียวฝั่งขวา... \n\nในสเต็ปถัดไป (Phase 2 & 3) การสนทนานี้จะส่งข้อมูลไปอัปเดตลงการ์ดข้อมูลแบบ Real-time ทันทีครับ ✨`,
+        text: response.text,
         timestamp: 'ตอนนี้',
-        actionSuggestions: [
-          '✨ สกัดเป็นบีตฉากเปิด (Opening Beats)',
-          '🎭 กำหนดจุดปะทะทางอารมณ์',
-          '🗺️ ลงรายละเอียดสถานที่หลัก',
-        ],
+        actionSuggestions: response.actionSuggestions,
       };
+
       setMessages((prev) => [...prev, botReply]);
-    }, 600);
+    } catch (err) {
+      console.error('The Muse Chat Error:', err);
+      const fallbackReply: MuseMessage = {
+        id: `muse-${Date.now()}`,
+        sender: 'muse',
+        text: 'ขออภัยครับ เกิดข้อขัดข้องชั่วคราวในการเชื่อมต่อกับสมองกล The Muse กรุณาลองใหม่อีกครั้งนะครับ',
+        timestamp: 'ตอนนี้',
+        actionSuggestions: ['ลองส่งใหม่อีกครั้ง'],
+      };
+      setMessages((prev) => [...prev, fallbackReply]);
+    } finally {
+      setIsThinking(false);
+    }
   };
 
   // ปรับขนาดหน้าต่าง Inspector ฝั่งขวา พร้อมจดจำค่า
@@ -234,6 +256,7 @@ export default function WorldCreatorView({ onExit }: WorldCreatorViewProps) {
         onToggleRightPanel={() => setIsRightPanelCollapsed(!isRightPanelCollapsed)}
         activeMode={activeMode}
         activeDraftTitle={activeDraft?.title}
+        isThinking={isThinking}
       />
 
       {/* 5. Right Resizable Splitter (ลากเมาส์เพื่อยืด/หดพื้นที่ฝั่งขวา) */}

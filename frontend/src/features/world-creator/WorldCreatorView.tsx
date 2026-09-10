@@ -280,6 +280,10 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
         text: response.text,
         timestamp: 'ตอนนี้',
         actionSuggestions: response.actionSuggestions,
+        thinking: response.thinking,
+        extractedIdeas: response.rawIdeas,
+        part1: response.part1,
+        part2: response.part2,
       };
 
       setMessages((prev) => [...prev, botReply]);

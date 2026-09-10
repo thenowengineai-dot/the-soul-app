@@ -152,13 +152,30 @@ async def genesis_chat(req: ChatRequest):
             updated_messages = list(req.history)
             updated_messages.append({"sender": "user", "text": req.message, "timestamp": "now"})
             try:
-                parsed_resp = json.loads(response_str)
-                bot_text = parsed_resp.get("reply_text_part1", "") + "\n" + parsed_resp.get("reply_text_part2", "")
-                suggestions = [item.get("text", "") for item in parsed_resp.get("extracted_ideas", [])]
+                clean_str = response_str.strip()
+                if clean_str.startswith("```"):
+                    lines = clean_str.split("\n")
+                    if lines and lines[0].startswith("```"):
+                        lines = lines[1:]
+                    if lines and lines[-1].strip() == "```":
+                        lines = lines[:-1]
+                    clean_str = "\n".join(lines).strip()
+
+                parsed_resp = json.loads(clean_str)
+                part1 = parsed_resp.get("reply_text_part1", "")
+                part2 = parsed_resp.get("reply_text_part2", "")
+                bot_text = f"{part1}\n\n{part2}".strip() or clean_str
+                suggestions = [
+                    item.get("text", "")
+                    for item in parsed_resp.get("extracted_ideas", [])
+                    if isinstance(item, dict) and item.get("text")
+                ]
                 updated_messages.append({
                     "sender": "muse",
-                    "text": bot_text.strip(),
+                    "text": bot_text,
                     "timestamp": "now",
+                    "thinking": parsed_resp.get("thinking", ""),
+                    "extractedIdeas": parsed_resp.get("extracted_ideas", []),
                     "actionSuggestions": suggestions
                 })
             except Exception:

@@ -6,6 +6,8 @@ export interface MuseChatResponse {
   actionSuggestions: string[];
   rawIdeas?: Array<{ type: string; text: string }>;
   thinking?: string;
+  part1?: string;
+  part2?: string;
 }
 
 /**
@@ -54,12 +56,23 @@ export async function sendMuseMessage(params: {
   const result = await response.json();
   const rawResponse = result.response;
 
+  // ทำความสะอาด Markdown Code Blocks ก่อนพยายาม Parse JSON
+  let cleanStr = typeof rawResponse === 'string' ? rawResponse.trim() : '';
+  if (cleanStr.startsWith('```json')) cleanStr = cleanStr.slice(7);
+  if (cleanStr.startsWith('```')) cleanStr = cleanStr.slice(3);
+  if (cleanStr.endsWith('```')) cleanStr = cleanStr.slice(0, -3);
+  cleanStr = cleanStr.trim();
+
   // พยายาม Parse ผลลัพธ์ที่เป็น JSON จาก The Muse Engine
   try {
-    const parsed = typeof rawResponse === 'string' ? JSON.parse(rawResponse) : rawResponse;
+    const parsed =
+      typeof cleanStr === 'string' && (cleanStr.startsWith('{') || cleanStr.startsWith('['))
+        ? JSON.parse(cleanStr)
+        : rawResponse;
+
     const part1 = parsed.reply_text_part1 || '';
     const part2 = parsed.reply_text_part2 || '';
-    const fullText = [part1, part2].filter(Boolean).join('\n\n') || parsed.text || rawResponse;
+    const fullText = [part1, part2].filter(Boolean).join('\n\n') || parsed.text || cleanStr;
 
     const suggestions: string[] = [];
     if (Array.isArray(parsed.extracted_ideas)) {
@@ -75,7 +88,9 @@ export async function sendMuseMessage(params: {
       text: fullText,
       actionSuggestions: suggestions.length > 0 ? suggestions : (parsed.actionSuggestions || []),
       rawIdeas: parsed.extracted_ideas || [],
-      thinking: parsed.thinking,
+      thinking: parsed.thinking || '',
+      part1,
+      part2,
     };
   } catch {
     // ถ้าผลลัพธ์เป็นข้อความธรรมดา

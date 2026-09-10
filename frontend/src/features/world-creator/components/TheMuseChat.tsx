@@ -6,8 +6,126 @@ import {
   ChevronUp,
   Plus,
   Mic,
+  Sparkles,
+  Brain,
 } from 'lucide-react';
-import type { CreatorMode, MuseMessage } from '../types';
+import type { CreatorMode, MuseIdeaItem, MuseMessage } from '../types';
+
+interface ParsedMuseMessage {
+  dialogueText: string;
+  thinking?: string;
+  extractedIdeas?: MuseIdeaItem[];
+  actionSuggestions?: string[];
+}
+
+/**
+ * แปลงและแยกข้อมูลข้อความของ The Muse ให้เป็นมิตรต่อผู้ใช้งาน
+ * รองรับทั้งข้อความใหม่ที่ parse มาแล้ว และข้อความเก่าที่บันทึกเป็น raw JSON
+ */
+function parseMuseMessage(msg: MuseMessage): ParsedMuseMessage {
+  // 1. ถ้าข้อความมีฟิลด์ thinking หรือ extractedIdeas ติดมาอยู่แล้ว
+  if (msg.thinking || (msg.extractedIdeas && msg.extractedIdeas.length > 0)) {
+    return {
+      dialogueText: msg.text,
+      thinking: msg.thinking,
+      extractedIdeas: msg.extractedIdeas,
+      actionSuggestions: msg.actionSuggestions,
+    };
+  }
+
+  // 2. ถ้าข้อความถูกบันทึกเป็น Raw JSON หรือมี Markdown Code Blocks ครอบ
+  let text = msg.text.trim();
+  if (text.startsWith('```json')) text = text.slice(7);
+  if (text.startsWith('```')) text = text.slice(3);
+  if (text.endsWith('```')) text = text.slice(0, -3);
+  text = text.trim();
+
+  if (
+    text.startsWith('{') &&
+    (text.includes('"thinking"') ||
+      text.includes('"reply_text_part1"') ||
+      text.includes('"extracted_ideas"'))
+  ) {
+    try {
+      const parsed = JSON.parse(text);
+      const part1 = parsed.reply_text_part1 || '';
+      const part2 = parsed.reply_text_part2 || '';
+      const dialogueText =
+        [part1, part2].filter(Boolean).join('\n\n') || parsed.text || text;
+
+      const suggestions: string[] = [];
+      if (Array.isArray(parsed.extracted_ideas)) {
+        parsed.extracted_ideas.forEach((item: { text?: string; type?: string }) => {
+          if (item?.text) {
+            const prefix =
+              item.type === 'vo'
+                ? '🎬 '
+                : item.type === 'actor_state'
+                ? '🎭 '
+                : item.type === 'illusion'
+                ? '✨ '
+                : '⚡ ';
+            suggestions.push(`${prefix}${item.text}`);
+          }
+        });
+      }
+
+      return {
+        dialogueText,
+        thinking: typeof parsed.thinking === 'string' ? parsed.thinking : undefined,
+        extractedIdeas: Array.isArray(parsed.extracted_ideas)
+          ? parsed.extracted_ideas
+          : undefined,
+        actionSuggestions:
+          suggestions.length > 0 ? suggestions : msg.actionSuggestions,
+      };
+    } catch {
+      // ถ้า parse ไม่ผ่าน ให้คืนข้อความเดิม
+    }
+  }
+
+  return {
+    dialogueText: msg.text,
+    thinking: msg.thinking,
+    extractedIdeas: msg.extractedIdeas,
+    actionSuggestions: msg.actionSuggestions,
+  };
+}
+
+function getIdeaBadgeConfig(type: string) {
+  switch (type) {
+    case 'vo':
+      return {
+        icon: '🎬',
+        label: 'Voice Over',
+        badgeClass: 'bg-[#181d28] border-[#3b82f6]/30 text-[#93c5fd]',
+      };
+    case 'actor_state':
+      return {
+        icon: '🎭',
+        label: 'Actor State',
+        badgeClass: 'bg-[#251d18] border-[#f59e0b]/30 text-[#fcd34d]',
+      };
+    case 'illusion':
+      return {
+        icon: '✨',
+        label: 'Illusion Trigger',
+        badgeClass: 'bg-[#261520] border-[#ec4899]/30 text-[#f472b6]',
+      };
+    case 'chaos':
+      return {
+        icon: '⚡',
+        label: 'Chaos Escalation',
+        badgeClass: 'bg-[#291419] border-[#EF264C]/35 text-[#fda4af]',
+      };
+    default:
+      return {
+        icon: '💡',
+        label: 'Idea',
+        badgeClass: 'bg-[#18181b] border-white/10 text-[#ACACB2]',
+      };
+  }
+}
 
 interface TheMuseChatProps {
   messages: MuseMessage[];
@@ -32,6 +150,8 @@ export default function TheMuseChat({
   const [inputText, setInputText] = useState('');
   // บันทึกสถานะการยืด-หดของแต่ละข้อความผู้ใช้
   const [expandedUserMessages, setExpandedUserMessages] = useState<Record<string, boolean>>({});
+  // บันทึกสถานะการเปิด-ปิด Thinking Accordion ของ The Muse
+  const [expandedThinking, setExpandedThinking] = useState<Record<string, boolean>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -67,6 +187,13 @@ export default function TheMuseChat({
 
   const toggleExpand = (msgId: string) => {
     setExpandedUserMessages((prev) => ({
+      ...prev,
+      [msgId]: !prev[msgId],
+    }));
+  };
+
+  const toggleThinking = (msgId: string) => {
+    setExpandedThinking((prev) => ({
       ...prev,
       [msgId]: !prev[msgId],
     }));
@@ -137,18 +264,93 @@ export default function TheMuseChat({
               );
             }
 
-            // 🏛️ ข้อความ The Muse: เนื้อหาหลักทอดตัวลงมาตรงๆ ฟอนต์ขนาด 16px ไร้ไอคอนบ็อต
+            // 🏛️ ข้อความ The Muse: ผสาน Thinking Accordion + บทสนทนาคลีน + Idea Shelf
+            const parsed = parseMuseMessage(msg);
+            const hasThinking = Boolean(parsed.thinking && parsed.thinking.trim().length > 0);
+            const isThinkingOpen = expandedThinking[msg.id] ?? false;
+            const hasIdeas = Boolean(parsed.extractedIdeas && parsed.extractedIdeas.length > 0);
+            const suggestions =
+              parsed.actionSuggestions && parsed.actionSuggestions.length > 0
+                ? parsed.actionSuggestions
+                : msg.actionSuggestions;
+
             return (
-              <div key={msg.id} className="w-full flex flex-col gap-4 py-1 select-text">
-                {/* ข้อความและมาร์กดาวน์ของ AI ฟอนต์ 16px อ่านสบายตา สี #F2F2F5 */}
+              <div key={msg.id} className="w-full flex flex-col gap-3.5 py-1 select-text">
+                {/* 1. Gemini-Style Thinking Process Accordion */}
+                {hasThinking && (
+                  <div className="w-full">
+                    <button
+                      type="button"
+                      onClick={() => toggleThinking(msg.id)}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/20 text-[#ACACB2] hover:text-[#F2F2F5] transition-all cursor-pointer text-[13px] select-none group"
+                    >
+                      <Sparkles size={13} className="text-[#EF264C] group-hover:scale-110 transition-transform" />
+                      <span className="font-medium text-[#F2F2F5]">กระบวนการคิดของ The Muse</span>
+                      <span className="text-[11.5px] text-[#ACACB2] hidden sm:inline">
+                        (Thinking Process)
+                      </span>
+                      {isThinkingOpen ? (
+                        <ChevronUp size={13} className="text-[#ACACB2] ml-0.5 group-hover:text-[#F2F2F5]" />
+                      ) : (
+                        <ChevronDown size={13} className="text-[#ACACB2] ml-0.5 group-hover:text-[#F2F2F5]" />
+                      )}
+                    </button>
+
+                    {isThinkingOpen && (
+                      <div className="mt-2.5 p-4 rounded-2xl bg-[#121214]/90 border border-white/[0.08] backdrop-blur-md shadow-inner animate-in fade-in slide-in-from-top-1 duration-150">
+                        <div className="flex items-center gap-2 pb-2 mb-2 border-b border-white/[0.06] text-[12px] font-medium text-[#ACACB2]">
+                          <Brain size={13} className="text-[#EF264C]" />
+                          <span>Internal Monologue & Sensory Physics</span>
+                        </div>
+                        <div className="text-[13.5px] leading-[1.7] text-[#ACACB2] whitespace-pre-wrap break-words font-mono select-text">
+                          {parsed.thinking}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 2. ข้อความบทสนทนาหลักของ AI ฟอนต์ 16px อ่านสบายตา สี #F2F2F5 ไร้โค้ด/JSON ปน */}
                 <div className="text-[16px] leading-[1.75] text-[#F2F2F5] whitespace-pre-wrap break-words font-normal">
-                  {msg.text}
+                  {parsed.dialogueText}
                 </div>
 
-                {/* Suggestion Action Pills (สไตล์แคปซูลเดียวกับ Hashtags ในหน้ารายละเอียดตัวละคร) */}
-                {msg.actionSuggestions && msg.actionSuggestions.length > 0 && (
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    {msg.actionSuggestions.map((sugg, idx) => (
+                {/* 3. The Scratchpad / Extracted Ideas Shelf */}
+                {hasIdeas && parsed.extractedIdeas && (
+                  <div className="pt-1 flex flex-col gap-2">
+                    <div className="flex items-center gap-1.5 text-[12px] font-medium text-[#ACACB2]">
+                      <Sparkles size={12} className="text-[#EF264C]" />
+                      <span>ไอเดียที่สกัดเข้า The Scratchpad:</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {parsed.extractedIdeas.map((idea, idx) => {
+                        const config = getIdeaBadgeConfig(idea.type);
+                        return (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => onSelectSuggestion(idea.text)}
+                            title="คลิกเพื่อนำไอเดียนี้ไปพิมพ์ต่อในช่องแชท"
+                            className={`inline-flex items-start gap-2 px-3 py-1.5 rounded-xl border text-[13px] leading-relaxed transition-all cursor-pointer active:scale-95 text-left ${config.badgeClass} hover:brightness-125`}
+                          >
+                            <span className="shrink-0 select-none text-[13px]">{config.icon}</span>
+                            <span className="break-words">
+                              <span className="font-medium mr-1.5 opacity-80 select-none text-[11px] uppercase tracking-wider">
+                                [{config.label}]
+                              </span>
+                              {idea.text}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. Suggestion Action Pills (สไตล์แคปซูลเดียวกับ Hashtags ในหน้ารายละเอียดตัวละคร) */}
+                {suggestions && suggestions.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {suggestions.map((sugg, idx) => (
                       <button
                         key={idx}
                         type="button"

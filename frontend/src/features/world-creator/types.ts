@@ -226,6 +226,11 @@ export interface FullWorldData {
   opening_scenarios?: WorldScenario[];
 }
 
+export interface MuseIdeaItem {
+  type: 'vo' | 'actor_state' | 'illusion' | 'chaos' | string;
+  text: string;
+}
+
 export interface MuseMessage {
   id: string;
   sender: 'muse' | 'user';
@@ -233,6 +238,10 @@ export interface MuseMessage {
   timestamp: string;
   actionSuggestions?: string[];
   isTyping?: boolean;
+  thinking?: string;
+  extractedIdeas?: MuseIdeaItem[];
+  part1?: string;
+  part2?: string;
 }
 
 export interface WorldCreatorState {

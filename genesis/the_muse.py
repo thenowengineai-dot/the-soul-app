@@ -30,17 +30,23 @@ class TheMuse:
         self.location = location or os.getenv("VERTEX_LOCATION", "global")
         self.model_name = os.getenv("MUSE_MODEL", "gemini-2.5-flash")
 
-        try:
-            from google import genai
-            if self.project_id:
-                self.client = genai.Client(vertexai=True, project=self.project_id, location=self.location)
-                logger.info(f"✅ [THE_MUSE] Initialized Vertex AI client (Project: {self.project_id}, Region: {self.location}, Model: {self.model_name})")
-            else:
-                self.client = genai.Client()
-                logger.info("ℹ️ [THE_MUSE] Initialized default GenAI client")
-        except Exception as e:
-            logger.warning(f"⚠️ [THE_MUSE] Could not initialize Vertex AI client: {e}")
-            self.client = None
+        self._client = None
+
+    @property
+    def client(self):
+        if self._client is None:
+            try:
+                from google import genai
+                if self.project_id:
+                    self._client = genai.Client(vertexai=True, project=self.project_id, location=self.location)
+                    logger.info(f"✅ [THE_MUSE] Initialized Vertex AI client (Project: {self.project_id}, Region: {self.location}, Model: {self.model_name})")
+                else:
+                    self._client = genai.Client()
+                    logger.info("ℹ️ [THE_MUSE] Initialized default GenAI client")
+            except Exception as e:
+                logger.warning(f"⚠️ [THE_MUSE] Could not initialize Vertex AI client: {e}")
+                self._client = None
+        return self._client
 
     def _get_system_instruction(self, mode: str, turn_count: int = 0) -> str:
         """

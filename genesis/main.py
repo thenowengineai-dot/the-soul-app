@@ -8,12 +8,20 @@ from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
 
-# Ensure genesis directory is on sys.path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Ensure both current directory and parent directory are on sys.path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
 
 load_dotenv()
 
-from genesis.pipeline import GenesisPipeline
+try:
+    from genesis.pipeline import GenesisPipeline
+except (ImportError, ModuleNotFoundError):
+    from pipeline import GenesisPipeline
 
 logger = logging.getLogger("GENESIS_SERVER")
 if not logger.handlers:
@@ -118,6 +126,7 @@ class MuseHistorySaveRequest(BaseModel):
 # =========================================================================
 
 @app.get("/")
+@app.get("/health")
 async def health_check():
     return {
         "status": "ok",

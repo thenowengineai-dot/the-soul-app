@@ -3,11 +3,18 @@ import json
 import time
 import logging
 from typing import Dict, Any, List, Optional
-from genesis.the_muse import TheMuse
-from genesis.factory import GenesisFactory
-from genesis.the_auditor import TheAuditor
-from genesis.postgres_world import PostgresWorld
-from genesis.redis_hot import GenesisRedisHotCache
+try:
+    from genesis.the_muse import TheMuse
+    from genesis.factory import GenesisFactory
+    from genesis.the_auditor import TheAuditor
+    from genesis.postgres_world import PostgresWorld
+    from genesis.redis_hot import GenesisRedisHotCache
+except (ImportError, ModuleNotFoundError):
+    from the_muse import TheMuse
+    from factory import GenesisFactory
+    from the_auditor import TheAuditor
+    from postgres_world import PostgresWorld
+    from redis_hot import GenesisRedisHotCache
 
 logger = logging.getLogger("GENESIS_PIPELINE")
 if not logger.handlers:

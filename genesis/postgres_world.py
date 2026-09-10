@@ -107,6 +107,13 @@ class PostgresWorld:
 
         async with pool.acquire() as conn:
             async with conn.transaction():
+                # 0. Ensure creator user exists in users table
+                await conn.execute("""
+                    INSERT INTO users (id, name, is_guest, created_at, updated_at)
+                    VALUES ($1, 'Creator', TRUE, NOW(), NOW())
+                    ON CONFLICT (id) DO NOTHING;
+                """, creator_id)
+
                 # 1. Upsert world_characters
                 await conn.execute("""
                     INSERT INTO world_characters (id, creator_id, name, avatar_url, status, character_data, updated_at)
@@ -344,6 +351,13 @@ class PostgresWorld:
         """Saves conversation history with The Muse as JSONB."""
         pool = await self.get_pool()
         async with pool.acquire() as conn:
+            # Ensure creator user exists in users table
+            await conn.execute("""
+                INSERT INTO users (id, name, is_guest, created_at, updated_at)
+                VALUES ($1, 'Creator', TRUE, NOW(), NOW())
+                ON CONFLICT (id) DO NOTHING;
+            """, creator_id)
+
             await conn.execute("""
                 INSERT INTO the_muse_conversations (draft_id, creator_id, messages, scratchpad, updated_at)
                 VALUES ($1, $2, $3::jsonb, $4::jsonb, NOW())

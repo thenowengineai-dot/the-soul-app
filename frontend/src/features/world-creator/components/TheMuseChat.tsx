@@ -24,18 +24,29 @@ interface ParsedMuseMessage {
  * รองรับทั้งข้อความใหม่ที่ parse มาแล้ว และข้อความเก่าที่บันทึกเป็น raw JSON
  */
 function parseMuseMessage(msg: MuseMessage): ParsedMuseMessage {
+  if (!msg) {
+    return { dialogueText: '' };
+  }
+
+  const rawText =
+    typeof msg.text === 'string'
+      ? msg.text
+      : typeof (msg as unknown as Record<string, unknown>).content === 'string'
+      ? ((msg as unknown as Record<string, unknown>).content as string)
+      : '';
+
   // 1. ถ้าข้อความมีฟิลด์ thinking หรือ extractedIdeas ติดมาอยู่แล้ว
   if (msg.thinking || (msg.extractedIdeas && msg.extractedIdeas.length > 0)) {
     return {
-      dialogueText: msg.text,
-      thinking: msg.thinking,
+      dialogueText: rawText,
+      thinking: typeof msg.thinking === 'string' ? msg.thinking : undefined,
       extractedIdeas: msg.extractedIdeas,
       actionSuggestions: msg.actionSuggestions,
     };
   }
 
   // 2. ถ้าข้อความถูกบันทึกเป็น Raw JSON หรือมี Markdown Code Blocks ครอบ
-  let text = msg.text.trim();
+  let text = rawText.trim();
   if (text.startsWith('```json')) text = text.slice(7);
   if (text.startsWith('```')) text = text.slice(3);
   if (text.endsWith('```')) text = text.slice(0, -3);
@@ -86,8 +97,8 @@ function parseMuseMessage(msg: MuseMessage): ParsedMuseMessage {
   }
 
   return {
-    dialogueText: msg.text,
-    thinking: msg.thinking,
+    dialogueText: rawText,
+    thinking: typeof msg.thinking === 'string' ? msg.thinking : undefined,
     extractedIdeas: msg.extractedIdeas,
     actionSuggestions: msg.actionSuggestions,
   };
@@ -221,9 +232,16 @@ export default function TheMuseChat({
             const isUser = msg.sender === 'user';
 
             // 👤 ข้อความฝั่งผู้ใช้ (สไตล์ Gemini Web: ชิดขวา, กล่องสีเทาหลัก #1D1D1F ขอบ #2F3336, ฟอนต์ 16px #F2F2F5)
+            const msgText =
+              typeof msg.text === 'string'
+                ? msg.text
+                : typeof (msg as unknown as Record<string, unknown>).content === 'string'
+                ? ((msg as unknown as Record<string, unknown>).content as string)
+                : '';
+
             if (isUser) {
               const isExpanded = expandedUserMessages[msg.id] ?? false;
-              const isLongText = msg.text.length > 110 || msg.text.includes('\n');
+              const isLongText = msgText.length > 110 || msgText.includes('\n');
 
               return (
                 <div key={msg.id} className="w-full flex justify-end">
@@ -239,7 +257,7 @@ export default function TheMuseChat({
                         !isExpanded && isLongText ? 'line-clamp-4 pr-8' : isLongText ? 'pr-8' : ''
                       }`}
                     >
-                      {msg.text}
+                      {msgText}
                     </div>
 
                     {/* ปุ่มลูกศรชี้ลง (ขยาย) / ชี้ขึ้น (ย่อ) อยู่ระนาบเดียวกับบรรทัดล่างสุด (ไร้พื้นหลัง กลืนกับกล่อง เมื่อ hover จะมีเส้นชัดขึ้น) */}
@@ -267,7 +285,7 @@ export default function TheMuseChat({
 
             // 🏛️ ข้อความ The Muse: ผสาน Thinking Accordion + บทสนทนาคลีน + Idea Shelf
             const parsed = parseMuseMessage(msg);
-            const hasThinking = Boolean(parsed.thinking && parsed.thinking.trim().length > 0);
+            const hasThinking = Boolean(typeof parsed.thinking === 'string' && parsed.thinking.trim().length > 0);
             const isThinkingOpen = expandedThinking[msg.id] ?? false;
             const hasIdeas = Boolean(parsed.extractedIdeas && parsed.extractedIdeas.length > 0);
             const suggestions =

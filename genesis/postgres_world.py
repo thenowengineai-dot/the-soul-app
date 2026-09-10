@@ -149,17 +149,45 @@ class PostgresWorld:
                     SELECT wc.*, wc.character_id as linked_char_id, ch.character_data, ch.avatar_url as char_avatar
                     FROM world_campaigns wc
                     LEFT JOIN world_characters ch ON wc.character_id = ch.id
-                    WHERE wc.id = $1 AND wc.creator_id = $2;
+                    WHERE (wc.id = $1 OR wc.character_id = $1) AND wc.creator_id = $2;
                 """, world_id, creator_id)
             else:
                 row = await conn.fetchrow("""
                     SELECT wc.*, wc.character_id as linked_char_id, ch.character_data, ch.avatar_url as char_avatar
                     FROM world_campaigns wc
                     LEFT JOIN world_characters ch ON wc.character_id = ch.id
-                    WHERE wc.id = $1;
+                    WHERE (wc.id = $1 OR wc.character_id = $1);
                 """, world_id)
 
             if not row:
+                # ตรวจสอบว่ามีข้อมูลใน world_characters โดยตรงหรือไม่
+                if creator_id:
+                    char_row = await conn.fetchrow("""
+                        SELECT * FROM world_characters WHERE id = $1 AND creator_id = $2;
+                    """, world_id, creator_id)
+                else:
+                    char_row = await conn.fetchrow("""
+                        SELECT * FROM world_characters WHERE id = $1;
+                    """, world_id)
+
+                if char_row:
+                    char_data = char_row["character_data"]
+                    if isinstance(char_data, str):
+                        char_data = json.loads(char_data)
+                    return {
+                        "world_id": char_row["id"],
+                        "name": char_row["name"],
+                        "status": char_row["status"],
+                        "creator_id": char_row["creator_id"],
+                        "character_id": char_row["id"],
+                        "world_data": {},
+                        "character_data": char_data,
+                        "linked_character": char_data,
+                        "workspace_meta": {},
+                        "created_at": char_row["created_at"].isoformat() if char_row["created_at"] else None,
+                        "updated_at": char_row["updated_at"].isoformat() if char_row["updated_at"] else None,
+                    }
+
                 return None
 
             world_data = row["world_data"]

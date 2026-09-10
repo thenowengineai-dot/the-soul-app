@@ -117,12 +117,19 @@ export async function fetchUserDrafts(userId: string): Promise<VaultDraft[]> {
  * 📂 โหลดข้อมูล Draft ฉบับเต็มจาก Neon
  */
 export async function fetchDraftDetail(userId: string, worldId: string) {
-  const response = await fetch(`${GENESIS_API_BASE_URL}/api/genesis/drafts/${encodeURIComponent(userId)}/${encodeURIComponent(worldId)}`);
-  if (!response.ok) {
-    throw new Error(`Failed to load draft detail (${response.status})`);
+  try {
+    const response = await fetch(`${GENESIS_API_BASE_URL}/api/genesis/drafts/${encodeURIComponent(userId)}/${encodeURIComponent(worldId)}`);
+    if (!response.ok) {
+      if (response.status === 404) return null;
+      console.warn(`Draft detail returned status ${response.status}`);
+      return null;
+    }
+    const result = await response.json();
+    return result.data;
+  } catch (err) {
+    console.warn('Could not fetch draft detail:', err);
+    return null;
   }
-  const result = await response.json();
-  return result.data;
 }
 
 /**
@@ -259,8 +266,27 @@ export async function compileBlueprint(params: {
  * 📜 โหลดประวัติแชท The Muse ของ Draft นั้นๆ
  */
 export async function fetchMuseHistory(draftId: string): Promise<MuseMessage[]> {
-  const response = await fetch(`${GENESIS_API_BASE_URL}/api/genesis/muse/${encodeURIComponent(draftId)}`);
-  if (!response.ok) return [];
-  const result = await response.json();
-  return result.data?.messages || [];
+  try {
+    const response = await fetch(`${GENESIS_API_BASE_URL}/api/genesis/muse/${encodeURIComponent(draftId)}`);
+    if (!response.ok) return [];
+    const result = await response.json();
+    const rawMessages = result.data?.messages;
+    if (!Array.isArray(rawMessages)) return [];
+
+    return rawMessages.map((m: any, idx: number) => ({
+      id: m.id || `muse-hist-${idx}-${Date.now()}`,
+      sender: m.sender === 'user' ? 'user' : 'muse',
+      text: typeof m.text === 'string' ? m.text : (typeof m.content === 'string' ? m.content : ''),
+      timestamp: m.timestamp || 'ตอนนี้',
+      actionSuggestions: Array.isArray(m.actionSuggestions)
+        ? m.actionSuggestions.map((s: any) => (typeof s === 'string' ? s : (s?.text || String(s))))
+        : [],
+      thinking: typeof m.thinking === 'string' ? m.thinking : undefined,
+      extractedIdeas: Array.isArray(m.extractedIdeas) ? m.extractedIdeas : undefined,
+      part1: typeof m.part1 === 'string' ? m.part1 : undefined,
+      part2: typeof m.part2 === 'string' ? m.part2 : undefined,
+    }));
+  } catch {
+    return [];
+  }
 }

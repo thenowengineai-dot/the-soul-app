@@ -71,6 +71,10 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
 
   // ดึงข้อมูล Draft ปัจจุบันที่กำลังโฟกัส
   const activeDraft = drafts.find((d) => d.id === activeDraftId) || drafts[0];
+  const draftsRef = useRef(drafts);
+  useEffect(() => {
+    draftsRef.current = drafts;
+  }, [drafts]);
 
   // 1. โหลดรายการ Drafts จาก Neon PostgreSQL เมื่อเปิดหน้าจอ
   useEffect(() => {
@@ -107,7 +111,7 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
           setMessages(history);
         } else if (isMounted) {
           // ถ้าเป็นร่างใหม่ที่ยังไม่มีประวัติแชท ให้เปิดด้วยคำทักทายของ The Muse
-          const target = drafts.find((d) => d.id === targetDraftId);
+          const target = draftsRef.current.find((d) => d.id === targetDraftId);
           const charTitle = target?.title || 'ตัวละครใหม่';
           const worldTitle = target?.worldTitle || 'โลกใบใหม่';
           setMessages([
@@ -140,7 +144,7 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
     return () => {
       isMounted = false;
     };
-  }, [activeDraftId, drafts]);
+  }, [activeDraftId]);
 
   // ปักหมุด / ยกเลิกการปักหมุด Draft (พร้อมบันทึกลง Neon)
   const handleTogglePin = async (id: string) => {

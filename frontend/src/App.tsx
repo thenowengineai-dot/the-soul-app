@@ -287,7 +287,17 @@ function App() {
     <div className="h-screen w-full bg-app-bg text-app-primary font-sans flex flex-col relative overflow-hidden">
       {/* 1. Main View Rendering */}
       {currentView === 'world-creator' ? (
-        <WorldCreatorView onExit={handleBackToHome} />
+        <WorldCreatorView
+          onExit={handleBackToHome}
+          onPlayCampaign={(campaign) => {
+            handleNavigateToChat({
+              id: campaign.id,
+              name: campaign.name,
+              image: campaign.avatar,
+              defaultWorld: campaign.defaultWorld,
+            } as Character, { forceNewSession: true });
+          }}
+        />
       ) : currentView === 'profile' ? (
         <>
           {/* Full-Width Top Bar */}

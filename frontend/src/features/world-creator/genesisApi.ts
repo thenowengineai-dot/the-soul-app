@@ -1,4 +1,4 @@
-import { GENESIS_API_BASE_URL } from '../../config';
+import { GENESIS_API_BASE_URL, API_BASE_URL } from '../../config';
 import type { CreatorMode, MuseMessage, VaultDraft } from './types';
 
 export interface MuseChatResponse {
@@ -167,7 +167,77 @@ export async function publishWorldCampaign(worldId: string, userId: string): Pro
     throw new Error(`Failed to publish campaign (${response.status})`);
   }
   const result = await response.json();
+
+  // ล้างแคชใน the-soul-backend เพื่อให้ Hub Catalog ที่หน้า Home อัปเดตทันที
+  try {
+    await fetch(`${API_BASE_URL}/api/clear_cache?world_id=${encodeURIComponent(worldId)}`, {
+      method: 'POST',
+    });
+  } catch (err) {
+    console.warn('Cache clear trigger on backend failed:', err);
+  }
+
   return result.status === 'success';
+}
+
+/**
+ * 🔙 ยกเลิกการเผยแพร่แคมเปญกลับเป็นร่างแบบ (Unpublish)
+ */
+export async function unpublishWorldCampaign(worldId: string, userId: string): Promise<boolean> {
+  const response = await fetch(`${GENESIS_API_BASE_URL}/api/genesis/unpublish`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      world_id: worldId,
+      user_id: userId,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to unpublish campaign (${response.status})`);
+  }
+  const result = await response.json();
+
+  try {
+    await fetch(`${API_BASE_URL}/api/clear_cache?world_id=${encodeURIComponent(worldId)}`, {
+      method: 'POST',
+    });
+  } catch (err) {
+    console.warn('Cache clear trigger on backend failed:', err);
+  }
+
+  return result.status === 'success';
+}
+
+/**
+ * 🏭 สร้างหรือซิงค์พิมพ์เขียวฉบับสมบูรณ์ (Character or World Blueprint) ผ่าน Vertex AI บน Cloud Run
+ */
+export async function compileBlueprint(params: {
+  history: MuseMessage[];
+  mode: CreatorMode;
+  characterData?: Record<string, unknown>;
+  masterBrief?: string;
+}): Promise<Record<string, unknown>> {
+  const payload = {
+    history: formatHistoryForBackend(params.history),
+    mode: params.mode,
+    character_data: params.characterData || undefined,
+    master_brief: params.masterBrief || undefined,
+  };
+
+  const response = await fetch(`${GENESIS_API_BASE_URL}/api/genesis/build`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Compile Blueprint Error (${response.status}): ${errText}`);
+  }
+
+  const result = await response.json();
+  return result.data || {};
 }
 
 /**

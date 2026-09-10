@@ -35,6 +35,7 @@ const CHARACTER_SUBTOPICS = [
   { id: 'stats', label: 'สเตตัส & แรงขับ' },
   { id: 'perks', label: 'สกิล & รสนิยม' },
   { id: 'lore', label: 'ปูมหลัง & วิวัฒนาการ' },
+  { id: 'blueprint', label: 'พิมพ์เขียว & เผยแพร่' },
 ] as const;
 
 const WORLD_SUBTOPICS = [
@@ -44,7 +45,7 @@ const WORLD_SUBTOPICS = [
   { id: 'spawn_core', label: 'จุดเกิด & สถานะ' },
   { id: 'locations', label: 'สถาปัตยกรรมฉาก' },
   { id: 'weather', label: 'กาลเวลา & อากาศ' },
-  { id: 'blueprint', label: 'ซิงค์พิมพ์เขียว' },
+  { id: 'blueprint', label: 'พิมพ์เขียว & เผยแพร่' },
 ] as const;
 
 const PRIMARY_STATS_CONFIG = [
@@ -76,6 +77,10 @@ interface InspectorPanelProps {
   activeWorldTitle?: string;
   draft?: VaultDraft;
   onUpdateDraft?: (updated: Partial<VaultDraft>) => void;
+  onSyncBlueprint?: () => Promise<void>;
+  onPublishCampaign?: () => Promise<void>;
+  isSyncing?: boolean;
+  isPublishing?: boolean;
 }
 
 type EditableCard =
@@ -104,6 +109,10 @@ export default function InspectorPanel({
   activeWorldTitle,
   draft,
   onUpdateDraft,
+  onSyncBlueprint,
+  onPublishCampaign,
+  isSyncing = false,
+  isPublishing = false,
 }: InspectorPanelProps) {
   // สถานะการ์ดที่กำลังเปิดโหมดแก้ไข
   const [editingCard, setEditingCard] = useState<EditableCard>(null);
@@ -697,11 +706,23 @@ export default function InspectorPanel({
     setEditingCard(null);
   };
 
-  const handleSyncBlueprint = () => {
-    setSyncedFeedback(true);
-    setTimeout(() => {
-      setSyncedFeedback(false);
-    }, 2000);
+  const handleSyncBlueprint = async () => {
+    if (onSyncBlueprint) {
+      try {
+        await onSyncBlueprint();
+        setSyncedFeedback(true);
+        setTimeout(() => {
+          setSyncedFeedback(false);
+        }, 2500);
+      } catch (err) {
+        console.error('Failed to sync blueprint:', err);
+      }
+    } else {
+      setSyncedFeedback(true);
+      setTimeout(() => {
+        setSyncedFeedback(false);
+      }, 2000);
+    }
   };
 
   return (
@@ -2090,6 +2111,93 @@ export default function InspectorPanel({
                 </div>
               )}
             </div>
+
+            {/* Card 6 (Character Mode): พิมพ์เขียวและการเผยแพร่ (Blueprint & Campaign Deployment) */}
+            <div
+              ref={blueprintCardRef}
+              className="scroll-mt-4 p-4 sm:p-5 rounded-2xl bg-[#121214]/60 backdrop-blur-md border border-[#2F3336] flex flex-col gap-3"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-[17px] sm:text-[18px] font-bold text-[#F2F2F5] tracking-tight flex items-center gap-2">
+                  <Sparkles size={16} className="text-[#EF264C]" />
+                  <span>พิมพ์เขียว & เผยแพร่แคมเปญ</span>
+                </h3>
+                {draft?.status === 'published' ? (
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold tracking-wide flex items-center gap-1">
+                    <Zap size={11} className="fill-current" />
+                    <span>Live Hot Cache</span>
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[11px] font-bold tracking-wide">
+                    ร่างแบบ (Draft)
+                  </span>
+                )}
+              </div>
+
+              <p className="text-[13px] sm:text-[13.5px] text-[#ACACB2] leading-relaxed">
+                สังเคราะห์ข้อมูลจากบทสนทนากับ The Muse บันทึกลงพิมพ์เขียวตัวละครและโลกคู่กันอัตโนมัติ และเผยแพร่สู่ Upstash Redis Hot Cache เพื่อเริ่มเล่นในห้องแชทได้ทันทีภายใน 0.002 วินาที
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-1">
+                {/* ปุ่มซิงค์และสังเคราะห์พิมพ์เขียว */}
+                <button
+                  type="button"
+                  onClick={handleSyncBlueprint}
+                  disabled={isSyncing || isPublishing}
+                  className={`flex-1 px-4 py-2 rounded-full font-bold text-[13.5px] transition-all active:scale-95 shadow-sm cursor-pointer select-none flex items-center justify-center gap-1.5 ${
+                    syncedFeedback
+                      ? 'bg-emerald-500 text-white'
+                      : 'border border-[#2F3336] bg-transparent hover:bg-white/[0.08] hover:border-white/35 text-[#F2F2F5]'
+                  } ${isSyncing ? 'opacity-60 cursor-wait' : ''}`}
+                >
+                  {isSyncing ? (
+                    <>
+                      <Sparkles size={14} className="animate-spin text-[#EF264C]" />
+                      <span>กำลังสังเคราะห์...</span>
+                    </>
+                  ) : syncedFeedback ? (
+                    <>
+                      <Check size={14} strokeWidth={2.2} />
+                      <span>ซิงค์พิมพ์เขียวแล้ว!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={14} className="text-[#EF264C]" />
+                      <span>ซิงค์พิมพ์เขียว (Sync)</span>
+                    </>
+                  )}
+                </button>
+
+                {/* ปุ่มเผยแพร่สู่ห้องเล่น */}
+                <button
+                  type="button"
+                  onClick={onPublishCampaign}
+                  disabled={isSyncing || isPublishing}
+                  className={`flex-1 px-4 py-2 rounded-full font-bold text-[13.5px] transition-all active:scale-95 shadow-sm cursor-pointer select-none flex items-center justify-center gap-1.5 ${
+                    draft?.status === 'published'
+                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                      : 'bg-[#EF264C] hover:bg-[#d91d40] text-white'
+                  } ${isPublishing ? 'opacity-70 cursor-wait' : ''}`}
+                >
+                  {isPublishing ? (
+                    <>
+                      <Zap size={14} className="animate-pulse fill-current" />
+                      <span>กำลังอัดฉีด RAM...</span>
+                    </>
+                  ) : draft?.status === 'published' ? (
+                    <>
+                      <Zap size={14} className="fill-current" />
+                      <span>อัปเดตห้องเล่น (Live)</span>
+                    </>
+                  ) : (
+                    <>
+                      <Zap size={14} className="fill-current" />
+                      <span>⚡ เผยแพร่สู่ห้องเล่น</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           </>
         ) : (
           /* ================= WORLD MODE CARDS ================= */
@@ -2193,35 +2301,91 @@ export default function InspectorPanel({
               />
             </div>
 
-            {/* Card 3: ซิงค์พิมพ์เขียว (สไตล์ Twitter Subscribe to Premium: ปุ่มสีชมพูหลักของเรา) */}
+            {/* Card 7: พิมพ์เขียวและการเผยแพร่ (Blueprint & Campaign Deployment) */}
             <div
               ref={blueprintCardRef}
-              className="scroll-mt-4 p-4 sm:p-5 rounded-2xl bg-transparent border border-[#2F3336] flex flex-col gap-2.5"
+              className="scroll-mt-4 p-4 sm:p-5 rounded-2xl bg-[#121214]/60 backdrop-blur-md border border-[#2F3336] flex flex-col gap-3"
             >
-              <h3 className="text-[18px] sm:text-[19px] font-bold text-[#F2F2F5] tracking-tight">
-                ซิงค์พิมพ์เขียวกับ The Muse
-              </h3>
-              <p className="text-[13.5px] sm:text-[14px] text-[#ACACB2] leading-relaxed">
-                นำข้อมูลบีตฉากเปิดและโครงสร้างโลกที่คุยกับ The Muse บันทึกลงพิมพ์เขียวโลกและตัวละครโดยอัตโนมัติ
-              </p>
-              <button
-                type="button"
-                onClick={handleSyncBlueprint}
-                className={`self-start mt-1 px-5 py-2 rounded-full font-bold text-[14px] transition-all active:scale-95 shadow-sm cursor-pointer select-none flex items-center gap-1.5 ${
-                  syncedFeedback
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-[#EF264C] hover:bg-[#d91d40] text-white'
-                }`}
-              >
-                {syncedFeedback ? (
-                  <>
-                    <Check size={15} strokeWidth={2.2} />
-                    <span>ซิงค์เรียบร้อยแล้ว!</span>
-                  </>
+              <div className="flex items-center justify-between">
+                <h3 className="text-[17px] sm:text-[18px] font-bold text-[#F2F2F5] tracking-tight flex items-center gap-2">
+                  <Sparkles size={16} className="text-[#EF264C]" />
+                  <span>พิมพ์เขียว & เผยแพร่แคมเปญ</span>
+                </h3>
+                {draft?.status === 'published' ? (
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold tracking-wide flex items-center gap-1">
+                    <Zap size={11} className="fill-current" />
+                    <span>Live Hot Cache</span>
+                  </span>
                 ) : (
-                  <span>ซิงค์พิมพ์เขียว (Sync)</span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[11px] font-bold tracking-wide">
+                    ร่างแบบ (Draft)
+                  </span>
                 )}
-              </button>
+              </div>
+
+              <p className="text-[13px] sm:text-[13.5px] text-[#ACACB2] leading-relaxed">
+                สังเคราะห์ข้อมูลจากบทสนทนากับ The Muse บันทึกลงพิมพ์เขียวโลกและตัวละครอัตโนมัติ และเผยแพร่สู่ Upstash Redis Hot Cache เพื่อเริ่มเล่นในห้องแชทได้ทันทีภายใน 0.002 วินาที
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-1">
+                {/* ปุ่มซิงค์และสังเคราะห์พิมพ์เขียว */}
+                <button
+                  type="button"
+                  onClick={handleSyncBlueprint}
+                  disabled={isSyncing || isPublishing}
+                  className={`flex-1 px-4 py-2 rounded-full font-bold text-[13.5px] transition-all active:scale-95 shadow-sm cursor-pointer select-none flex items-center justify-center gap-1.5 ${
+                    syncedFeedback
+                      ? 'bg-emerald-500 text-white'
+                      : 'border border-[#2F3336] bg-transparent hover:bg-white/[0.08] hover:border-white/35 text-[#F2F2F5]'
+                  } ${isSyncing ? 'opacity-60 cursor-wait' : ''}`}
+                >
+                  {isSyncing ? (
+                    <>
+                      <Sparkles size={14} className="animate-spin text-[#EF264C]" />
+                      <span>กำลังสังเคราะห์...</span>
+                    </>
+                  ) : syncedFeedback ? (
+                    <>
+                      <Check size={14} strokeWidth={2.2} />
+                      <span>ซิงค์พิมพ์เขียวแล้ว!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={14} className="text-[#EF264C]" />
+                      <span>ซิงค์พิมพ์เขียว (Sync)</span>
+                    </>
+                  )}
+                </button>
+
+                {/* ปุ่มเผยแพร่สู่ห้องเล่น */}
+                <button
+                  type="button"
+                  onClick={onPublishCampaign}
+                  disabled={isSyncing || isPublishing}
+                  className={`flex-1 px-4 py-2 rounded-full font-bold text-[13.5px] transition-all active:scale-95 shadow-sm cursor-pointer select-none flex items-center justify-center gap-1.5 ${
+                    draft?.status === 'published'
+                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                      : 'bg-[#EF264C] hover:bg-[#d91d40] text-white'
+                  } ${isPublishing ? 'opacity-70 cursor-wait' : ''}`}
+                >
+                  {isPublishing ? (
+                    <>
+                      <Zap size={14} className="animate-pulse fill-current" />
+                      <span>กำลังอัดฉีด RAM...</span>
+                    </>
+                  ) : draft?.status === 'published' ? (
+                    <>
+                      <Zap size={14} className="fill-current" />
+                      <span>อัปเดตห้องเล่น (Live)</span>
+                    </>
+                  ) : (
+                    <>
+                      <Zap size={14} className="fill-current" />
+                      <span>⚡ เผยแพร่สู่ห้องเล่น</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </>
         )}

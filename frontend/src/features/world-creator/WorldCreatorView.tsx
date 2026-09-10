@@ -5,6 +5,7 @@ import CharacterVisualAnchor from './components/CharacterVisualAnchor';
 import TheMuseChat from './components/TheMuseChat';
 import ResizableSplitter from './components/ResizableSplitter';
 import InspectorPanel from './components/InspectorPanel';
+import CelebrationPublishModal from './components/CelebrationPublishModal';
 import { INITIAL_VAULT_DRAFTS, INITIAL_MUSE_MESSAGES } from './mockData';
 import {
   sendMuseMessage,
@@ -13,21 +14,40 @@ import {
   saveDraftToVault,
   deleteDraftFromVault,
   fetchMuseHistory,
+  compileBlueprint,
+  publishWorldCampaign,
 } from './genesisApi';
 import { getCurrentUser } from '../chat/chatApi';
-import type { CreatorMode, VaultDraft, MuseMessage } from './types';
+import type {
+  CreatorMode,
+  VaultDraft,
+  MuseMessage,
+  WorldLocationsMap,
+  WorldTimePeriodsMap,
+  WorldWeatherSystem,
+  WorldScene,
+} from './types';
 
 interface WorldCreatorViewProps {
   onExit: () => void;
+  onPlayCampaign?: (campaign: {
+    id: string;
+    name: string;
+    avatar?: string;
+    defaultWorld?: string;
+  }) => void;
 }
 
-export default function WorldCreatorView({ onExit }: WorldCreatorViewProps) {
+export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreatorViewProps) {
   const [activeMode, setActiveMode] = useState<CreatorMode>('world');
   const [drafts, setDrafts] = useState<VaultDraft[]>(INITIAL_VAULT_DRAFTS);
   const [activeDraftId, setActiveDraftId] = useState<string | null>(
     INITIAL_VAULT_DRAFTS[0]?.id || null
   );
   const [isThinking, setIsThinking] = useState<boolean>(false);
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [isPublishing, setIsPublishing] = useState<boolean>(false);
+  const [isCelebrationModalOpen, setIsCelebrationModalOpen] = useState<boolean>(false);
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Sidebar Expanded State (เริ่มต้นจะขยายแถบด้านซ้ายเสมอ ทุกครั้งที่เข้าหน้านี้มา)
@@ -278,6 +298,230 @@ export default function WorldCreatorView({ onExit }: WorldCreatorViewProps) {
     }
   };
 
+  // สังเคราะห์และแปลงข้อมูล JSON ที่ได้รับจาก Vertex AI / The Muse Backend ให้เข้ากับโครงสร้าง VaultDraft
+  const normalizeCompiledData = useCallback(
+    (
+      compiled: Record<string, unknown>,
+      mode: CreatorMode,
+      currentDraft: VaultDraft
+    ): Partial<VaultDraft> => {
+      if (mode === 'world') {
+        const updates: Partial<VaultDraft> = {};
+        if (compiled.name && typeof compiled.name === 'string') updates.worldTitle = compiled.name;
+        if (compiled.thai_name && typeof compiled.thai_name === 'string') updates.thai_name = compiled.thai_name;
+        if (compiled.description && typeof compiled.description === 'string') updates.description = compiled.description;
+        if (compiled.world_id && typeof compiled.world_id === 'string') updates.world_id = compiled.world_id;
+        if (compiled.prologue) updates.prologue = compiled.prologue as VaultDraft['prologue'];
+        if (compiled.player_persona) updates.player_persona = compiled.player_persona as VaultDraft['player_persona'];
+        if (compiled.initial_states) updates.initial_states = compiled.initial_states as VaultDraft['initial_states'];
+        if (compiled.starting_state) updates.starting_state = compiled.starting_state as VaultDraft['starting_state'];
+
+        // Normalize locations
+        if (Array.isArray(compiled.locations)) {
+          const locMap: WorldLocationsMap = {};
+          compiled.locations.forEach((loc: Record<string, unknown>) => {
+            const key = String(loc.name || loc.id || 'สถานที่');
+            const desc = String(loc.description || loc.base_mood || '');
+            locMap[key] = {
+              base_mood: desc,
+              choke_points: String(loc.choke_points || 'ทางเข้าออกหลัก'),
+              key_furniture: String(loc.key_furniture || 'อุปกรณ์และโต๊ะทำงาน'),
+              spatial_layout: String(loc.spatial_layout || desc),
+              sensory_cues: {
+                ambient_cues: Array.isArray((loc.sensory_cues as Record<string, unknown>)?.ambient_cues)
+                  ? ((loc.sensory_cues as Record<string, unknown>).ambient_cues as string[])
+                  : [desc || 'บรรยากาศโดยรอบ'],
+              },
+            };
+          });
+          updates.real_locations = locMap;
+        } else if (compiled.locations && typeof compiled.locations === 'object') {
+          updates.real_locations = compiled.locations as WorldLocationsMap;
+        }
+
+        // Normalize time periods
+        if (Array.isArray(compiled.time_periods)) {
+          const tpMap: WorldTimePeriodsMap = {};
+          compiled.time_periods.forEach((tp: Record<string, unknown>) => {
+            const key = String(tp.name || tp.id || 'ช่วงเวลา');
+            tpMap[key] = {
+              atmosphere: String(tp.description || tp.atmosphere || ''),
+            };
+          });
+          updates.time_periods = tpMap;
+        } else if (compiled.time_periods && typeof compiled.time_periods === 'object') {
+          updates.time_periods = compiled.time_periods as WorldTimePeriodsMap;
+        }
+
+        // Normalize weather system
+        if (Array.isArray(compiled.weather_system)) {
+          const chain: Record<string, { next: string[] }> = {};
+          const rawArr = compiled.weather_system as Array<Record<string, unknown>>;
+          rawArr.forEach((w, idx) => {
+            const key = String(w.name || w.id || `สภาพอากาศ ${idx + 1}`);
+            const nextItem = rawArr[idx + 1]?.name || rawArr[idx + 1]?.id;
+            chain[key] = { next: nextItem ? [String(nextItem)] : [] };
+          });
+          updates.weather_system = { logical_chain: chain };
+        } else if (compiled.weather_system && typeof compiled.weather_system === 'object') {
+          updates.weather_system = compiled.weather_system as WorldWeatherSystem;
+        }
+
+        // Normalize opening_scenarios
+        const rawScenarios = compiled.opening_scenarios as Record<string, unknown> | Array<unknown> | undefined;
+        if (rawScenarios) {
+          if (typeof rawScenarios === 'object' && 'scenes' in rawScenarios && Array.isArray((rawScenarios as { scenes: unknown[] }).scenes)) {
+            updates.scenario = {
+              id: currentDraft.scenario?.id || 'scenario_01',
+              name: String(rawScenarios.name || compiled.name || 'ฉากเปิดเรื่องราว'),
+              scenes: (rawScenarios as { scenes: unknown[] }).scenes as WorldScene[],
+            };
+          } else if (Array.isArray(rawScenarios)) {
+            updates.scenario = {
+              id: currentDraft.scenario?.id || 'scenario_01',
+              name: String(compiled.name || 'ฉากเปิดเรื่องราว'),
+              scenes: rawScenarios as WorldScene[],
+            };
+          }
+        }
+
+        return updates;
+      } else {
+        // Character mode
+        const updates: Partial<VaultDraft> = {};
+        if (compiled.name && typeof compiled.name === 'string') updates.title = compiled.name;
+        if (compiled.archetype && typeof compiled.archetype === 'string') updates.archetype = compiled.archetype;
+        if (Array.isArray(compiled.hashtag_dna)) updates.hashtags = compiled.hashtag_dna as string[];
+        else if (Array.isArray(compiled.hashtags)) updates.hashtags = compiled.hashtags as string[];
+
+        if (compiled.appearance) updates.appearance = compiled.appearance as VaultDraft['appearance'];
+        if (compiled.psychology) updates.psychology = compiled.psychology as VaultDraft['psychology'];
+        if (compiled.core_stats && typeof compiled.core_stats === 'object') {
+          updates.core_stats = compiled.core_stats as Record<string, number>;
+          updates.stats = compiled.core_stats as Record<string, number>;
+        }
+        if (compiled.preferences) updates.preferences = compiled.preferences as VaultDraft['preferences'];
+        if (Array.isArray(compiled.background_story)) updates.background_story = compiled.background_story as string[];
+        if (Array.isArray(compiled.passive_perks)) updates.passive_perks = compiled.passive_perks as VaultDraft['passive_perks'];
+        if (compiled.micro_expressions) updates.micro_expressions = compiled.micro_expressions as VaultDraft['micro_expressions'];
+        if (typeof compiled.max_desire === 'number') updates.max_desire = compiled.max_desire;
+
+        return updates;
+      }
+    },
+    []
+  );
+
+  // 🏭 ซิงค์และสังเคราะห์พิมพ์เขียวร่วมกับ The Muse AI (Build Blueprint)
+  const handleSyncBlueprint = async () => {
+    if (!activeDraft?.id || isSyncing) return;
+    setIsSyncing(true);
+    try {
+      const user = getCurrentUser();
+      const compiled = await compileBlueprint({
+        history: messages,
+        mode: activeMode,
+        characterData: activeDraft as unknown as Record<string, unknown>,
+        masterBrief: activeDraft.description,
+      });
+
+      if (compiled && Object.keys(compiled).length > 0) {
+        const updates = normalizeCompiledData(compiled, activeMode, activeDraft);
+        const updatedDraft = { ...activeDraft, ...updates, updatedAt: 'เมื่อสักครู่' };
+
+        setDrafts((prev) =>
+          prev.map((d) => (d.id === activeDraft.id ? updatedDraft : d))
+        );
+
+        // บันทึกลง Neon PostgreSQL ทันที
+        await saveDraftToVault({
+          userId: user.user_id,
+          data: updatedDraft as unknown as Record<string, unknown>,
+          mode: activeMode,
+        });
+
+        // ส่งข้อความแจ้งในประวัติแชท The Muse
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `muse-${Date.now()}`,
+            sender: 'muse',
+            text: `✨ **The Muse ได้สังเคราะห์พิมพ์เขียวและลงบันทึกในแผง Inspector เรียบร้อยแล้วครับ!**\n\nข้อมูลโครงสร้าง ${activeMode === 'world' ? 'โลก (บทนำ, เควสฉากเปิด, สถาปัตยกรรมฉาก, และสภาพอากาศ)' : 'ตัวละคร (จิตวิทยาสองขั้ว, สเตตัส, สรีระ, และสกิล)'} ได้รับการถักทอเข้าสู่ระบบแล้ว ตรวจสอบและปรับแก้ต่อได้ตามต้องการเลยครับ 🏛️`,
+            timestamp: 'ตอนนี้',
+            actionSuggestions: [
+              '⚡ เผยแพร่สู่ห้องเล่นทันที',
+              'ปรับแต่งรายละเอียดบีตฉากเพิ่มเติม',
+            ],
+          },
+        ]);
+      }
+    } catch (err) {
+      console.error('Compile Blueprint Failed:', err);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `muse-${Date.now()}`,
+          sender: 'muse',
+          text: 'ขออภัยครับ เกิดข้อขัดข้องระหว่างการสังเคราะห์พิมพ์เขียว กรุณาลองใหม่อีกครั้งนะครับ',
+          timestamp: 'ตอนนี้',
+        },
+      ]);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  // ⚡ เผยแพร่สู่ห้องเล่น (Publish to Upstash Redis Hot Cache & Neon PostgreSQL)
+  const handlePublishCampaign = async () => {
+    if (!activeDraft?.id || isPublishing) return;
+    setIsPublishing(true);
+    try {
+      const user = getCurrentUser();
+      // 1. บันทึก Draft ล่าสุดลง Neon ก่อน
+      await saveDraftToVault({
+        userId: user.user_id,
+        data: activeDraft as unknown as Record<string, unknown>,
+        mode: activeMode,
+      });
+
+      // 2. เผยแพร่สู่ Neon (status = 'published') และอัดฉีดเข้า Upstash Redis Hot Cache
+      const success = await publishWorldCampaign(activeDraft.id, user.user_id);
+      if (success) {
+        const updatedDraft = {
+          ...activeDraft,
+          status: 'published' as const,
+          updatedAt: 'เมื่อสักครู่',
+        };
+        setDrafts((prev) =>
+          prev.map((d) => (d.id === activeDraft.id ? updatedDraft : d))
+        );
+
+        // 3. เปิด Modal แสดงความยินดีและปุ่ม Play Now
+        setIsCelebrationModalOpen(true);
+      }
+    } catch (err) {
+      console.error('Publish Campaign Failed:', err);
+      alert('เกิดข้อผิดพลาดในการเผยแพร่แคมเปญ กรุณาลองใหม่อีกครั้ง');
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  // 🎮 เข้าเล่นทันที (Play Now)
+  const handlePlayNow = () => {
+    setIsCelebrationModalOpen(false);
+    if (onPlayCampaign && activeDraft) {
+      onPlayCampaign({
+        id: activeDraft.id,
+        name: activeDraft.title,
+        avatar: activeDraft.image || activeDraft.images?.[0],
+        defaultWorld: activeDraft.id,
+      });
+    } else {
+      onExit();
+    }
+  };
+
   // ปรับขนาดหน้าต่าง Inspector ฝั่งขวา พร้อมจดจำค่า
   const handleResize = (newWidth: number) => {
     setRightPanelWidth(newWidth);
@@ -403,7 +647,21 @@ export default function WorldCreatorView({ onExit }: WorldCreatorViewProps) {
         activeWorldTitle={activeDraft?.worldTitle}
         draft={activeDraft}
         onUpdateDraft={handleUpdateDraft}
+        onSyncBlueprint={handleSyncBlueprint}
+        onPublishCampaign={handlePublishCampaign}
+        isSyncing={isSyncing}
+        isPublishing={isPublishing}
       />
+
+      {/* 7. Celebration Modal when campaign is published to Hot Cache */}
+      {activeDraft && (
+        <CelebrationPublishModal
+          isOpen={isCelebrationModalOpen}
+          onClose={() => setIsCelebrationModalOpen(false)}
+          onPlayNow={handlePlayNow}
+          draft={activeDraft}
+        />
+      )}
     </div>
   );
 }

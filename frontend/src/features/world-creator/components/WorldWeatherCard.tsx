@@ -83,14 +83,14 @@ export default function WorldWeatherCard({
   return (
     <div
       ref={cardRef}
-      className="p-5 sm:p-6 rounded-2xl bg-[#121214]/95 backdrop-blur-2xl border border-white/10 flex flex-col gap-5 text-left relative overflow-hidden transition-all duration-200 hover:border-white/20"
+      className="scroll-mt-4 rounded-2xl bg-[#111112] border border-[#2F3336] p-4 sm:p-5 flex flex-col gap-4 text-left transition-all duration-200"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-[#2F3336]">
+      {/* Header Bar - Contained Director's Briefing Style */}
+      <div className="flex items-center justify-between border-b border-[#2F3336]/60 pb-2.5">
         <div className="flex items-center gap-2">
-          <CloudSun size={16} className="text-[#EF264C]" />
+          <CloudSun size={16} className="text-[#EF264C] shrink-0" />
           <div>
-            <h3 className="text-[15px] font-medium text-[#F2F2F5] tracking-wide">
+            <h3 className="text-[13px] sm:text-[14px] font-bold text-[#F2F2F5] tracking-wider uppercase">
               กาลเวลา & ห่วงโซ่สภาพอากาศ (Time Periods & Weather System)
             </h3>
             <span className="text-[11px] text-[#ACACB2]">
@@ -103,14 +103,14 @@ export default function WorldWeatherCard({
           <div className="flex items-center gap-2">
             <button
               onClick={handleSave}
-              className="px-3 py-1.5 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white text-[13px] font-medium transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
+              className="px-3 py-1.5 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white text-[12.5px] font-medium transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
             >
               <Check size={14} />
               <span>บันทึก</span>
             </button>
             <button
               onClick={onCancelEdit}
-              className="px-3 py-1.5 rounded-full border border-[#2F3336] hover:bg-white/[0.08] hover:border-white/35 text-[#ACACB2] text-[13px] transition-all flex items-center gap-1.5 active:scale-95"
+              className="px-3 py-1.5 rounded-full border border-[#2F3336] hover:bg-white/[0.08] hover:border-white/35 text-[#ACACB2] text-[12.5px] transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
             >
               <X size={14} />
               <span>ยกเลิก</span>
@@ -127,6 +127,7 @@ export default function WorldWeatherCard({
         )}
       </div>
 
+      {/* Card Content Body */}
       {isEditing ? (
         <div className="flex flex-col gap-5">
           {/* Edit Time Periods */}
@@ -136,12 +137,12 @@ export default function WorldWeatherCard({
               ช่วงเวลาในโลก (Time Periods)
             </span>
             {Object.entries(editPeriods).map(([name, val], idx) => (
-              <div key={idx} className="p-3 rounded-xl bg-[#1D1D1F] border border-white/10 flex flex-col gap-2">
+              <div key={idx} className="p-3.5 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex flex-col gap-2">
                 <input
                   type="text"
                   value={name}
                   disabled
-                  className="w-full px-2.5 py-1 bg-black/40 border border-white/10 rounded-lg text-[#EF264C] text-[13px] font-medium"
+                  className="w-full px-2.5 py-1 bg-black/40 border border-[#2F3336] rounded-lg text-[#EF264C] text-[13px] font-medium"
                 />
                 <textarea
                   value={val.atmosphere}
@@ -152,7 +153,7 @@ export default function WorldWeatherCard({
                     });
                   }}
                   rows={2}
-                  className="w-full px-2.5 py-1.5 bg-black/30 border border-white/10 rounded-lg text-[#F2F2F5] text-[13px] outline-none resize-none"
+                  className="w-full px-2.5 py-1.5 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-lg text-[#F2F2F5] text-[13px] outline-none resize-none leading-relaxed"
                 />
               </div>
             ))}
@@ -165,7 +166,7 @@ export default function WorldWeatherCard({
               ห่วงโซ่สภาพอากาศ (Weather Logical Chain)
             </span>
             {Object.entries(editChain).map(([weatherName, node], idx) => (
-              <div key={idx} className="p-3 rounded-xl bg-[#1D1D1F] border border-white/10 flex flex-col gap-2">
+              <div key={idx} className="p-3.5 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[13px] text-[#F2F2F5] font-medium">{weatherName}</span>
                   <button
@@ -174,13 +175,13 @@ export default function WorldWeatherCard({
                       delete updated[weatherName];
                       setEditChain(updated);
                     }}
-                    className="text-[#ACACB2] hover:text-[#EF264C] p-1"
+                    className="text-[#ACACB2] hover:text-[#EF264C] p-1 cursor-pointer transition-colors"
                   >
                     <Trash2 size={13} />
                   </button>
                 </div>
                 <div className="flex items-center gap-2 text-[12px] text-[#ACACB2]">
-                  <ArrowRight size={13} className="text-[#EF264C]" />
+                  <ArrowRight size={13} className="text-[#EF264C] shrink-0" />
                   <span>เปลี่ยนผ่านไปสู่:</span>
                   <input
                     type="text"
@@ -193,7 +194,7 @@ export default function WorldWeatherCard({
                         },
                       });
                     }}
-                    className="flex-1 px-2 py-1 bg-black/40 border border-white/10 rounded-lg text-[#F2F2F5] text-[12px] outline-none"
+                    className="flex-1 px-2.5 py-1 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-lg text-[#F2F2F5] text-[12.5px] outline-none"
                   />
                 </div>
               </div>
@@ -202,7 +203,7 @@ export default function WorldWeatherCard({
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          {/* Time Periods View */}
+          {/* Time Periods View: กล่องซ้อนด้านใน #0B0B0C */}
           <div className="flex flex-col gap-2.5">
             <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-[#ACACB2] font-medium">
               <Clock size={12} className="text-[#EF264C]" />
@@ -212,10 +213,10 @@ export default function WorldWeatherCard({
               {periodKeys.map((pName) => (
                 <div
                   key={pName}
-                  className="p-3.5 rounded-xl bg-[#1D1D1F] border border-white/5 flex flex-col gap-1.5"
+                  className="p-4 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex flex-col gap-1"
                 >
-                  <span className="text-[13px] text-[#EF264C] font-medium">{pName}</span>
-                  <p className="text-[13.5px] text-[#F2F2F5] leading-relaxed">
+                  <span className="text-[13px] text-[#EF264C] font-semibold">{pName}</span>
+                  <p className="text-[13.5px] sm:text-[14px] text-[#F2F2F5] leading-relaxed font-normal">
                     {currentPeriods[pName]?.atmosphere}
                   </p>
                 </div>
@@ -223,26 +224,26 @@ export default function WorldWeatherCard({
             </div>
           </div>
 
-          {/* Weather Logical Chain Flow */}
+          {/* Weather Logical Chain Flow: กล่องซ้อนด้านใน #0B0B0C */}
           <div className="flex flex-col gap-2.5">
             <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-[#ACACB2] font-medium">
               <GitCommit size={12} className="text-[#EF264C]" />
               <span>ห่วงโซ่การไหลของสภาพอากาศ (Weather Logical Chain)</span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-[#1D1D1F]/80 border border-white/5 flex flex-col gap-2.5">
+            <div className="p-4 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex flex-col gap-2.5">
               {chainKeys.map((wName, idx) => {
                 const nextItems = currentSystem.logical_chain[wName]?.next || [];
                 return (
                   <div key={idx} className="flex items-center gap-2 text-[13px] flex-wrap">
-                    <span className="px-3 py-1 rounded-full bg-white/10 text-[#F2F2F5] font-medium border border-white/10">
+                    <span className="px-3 py-1.5 rounded-full bg-transparent text-[#F2F2F5] font-medium border border-[#2F3336]">
                       {wName}
                     </span>
                     <ArrowRight size={14} className="text-[#EF264C] shrink-0" />
                     {nextItems.map((nItem, nIdx) => (
                       <span
                         key={nIdx}
-                        className="px-3 py-1 rounded-full bg-[#EF264C]/15 text-[#EF264C] font-medium border border-[#EF264C]/30"
+                        className="px-3 py-1.5 rounded-full bg-transparent text-[#EF264C] font-medium border border-[#EF264C]/50"
                       >
                         {nItem}
                       </span>

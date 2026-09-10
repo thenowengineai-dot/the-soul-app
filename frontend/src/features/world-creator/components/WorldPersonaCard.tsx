@@ -85,13 +85,13 @@ export default function WorldPersonaCard({
   return (
     <div
       ref={cardRef}
-      className="p-5 sm:p-6 rounded-2xl bg-[#121214]/95 backdrop-blur-2xl border border-white/10 flex flex-col gap-5 text-left relative overflow-hidden transition-all duration-200 hover:border-white/20"
+      className="scroll-mt-4 rounded-2xl bg-[#111112] border border-[#2F3336] p-4 sm:p-5 flex flex-col gap-4 text-left transition-all duration-200"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-[#2F3336]">
+      {/* Header - Director's Briefing Style (border-b contained inside padding) */}
+      <div className="flex items-center justify-between border-b border-[#2F3336]/60 pb-2.5">
         <div className="flex items-center gap-2">
-          <UserCheck size={16} className="text-[#EF264C]" />
-          <h3 className="text-[15px] font-medium text-[#F2F2F5] tracking-wide">
+          <UserCheck size={16} className="text-[#EF264C] shrink-0" />
+          <h3 className="text-[13px] sm:text-[14px] font-bold text-[#F2F2F5] tracking-wider uppercase">
             ตัวตนผู้เล่น & พลวัตอำนาจ (Player Persona & Power Dynamics)
           </h3>
         </div>
@@ -100,14 +100,14 @@ export default function WorldPersonaCard({
           <div className="flex items-center gap-2">
             <button
               onClick={handleSave}
-              className="px-3 py-1.5 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white text-[13px] font-medium transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
+              className="px-3 py-1.5 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white text-[12.5px] font-medium transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
             >
               <Check size={14} />
               <span>บันทึก</span>
             </button>
             <button
               onClick={onCancelEdit}
-              className="px-3 py-1.5 rounded-full border border-[#2F3336] hover:bg-white/[0.08] hover:border-white/35 text-[#ACACB2] text-[13px] transition-all flex items-center gap-1.5 active:scale-95"
+              className="px-3 py-1.5 rounded-full border border-[#2F3336] hover:bg-white/[0.08] hover:border-white/35 text-[#ACACB2] text-[12.5px] transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
             >
               <X size={14} />
               <span>ยกเลิก</span>
@@ -124,6 +124,7 @@ export default function WorldPersonaCard({
         )}
       </div>
 
+      {/* Card Content Body */}
       {isEditing ? (
         <div className="flex flex-col gap-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -133,7 +134,7 @@ export default function WorldPersonaCard({
                 type="text"
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                className="w-full px-3 py-2 bg-[#1D1D1F] border border-white/10 rounded-xl text-[#F2F2F5] text-[14px] outline-none focus:border-[#EF264C]/60"
+                className="w-full px-3 py-2 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[13.5px] outline-none transition-colors"
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -142,29 +143,19 @@ export default function WorldPersonaCard({
                 type="text"
                 value={editPronouns}
                 onChange={(e) => setEditPronouns(e.target.value)}
-                className="w-full px-3 py-2 bg-[#1D1D1F] border border-white/10 rounded-xl text-[#F2F2F5] text-[14px] outline-none focus:border-[#EF264C]/60"
+                className="w-full px-3 py-2 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[13.5px] outline-none transition-colors"
               />
             </div>
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-[12px] text-[#ACACB2]">สรุปตัวตนผู้เล่น (Player Brief)</label>
-            <textarea
-              value={editBrief}
-              onChange={(e) => setEditBrief(e.target.value)}
-              rows={2}
-              className="w-full px-3 py-2 bg-[#1D1D1F] border border-white/10 rounded-xl text-[#F2F2F5] text-[14px] outline-none focus:border-[#EF264C]/60 resize-none"
-            />
-          </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
-              <label className="text-[12px] text-[#ACACB2]">ฉายาที่ถูกเรียก (Nicknames)</label>
+              <label className="text-[12px] text-[#ACACB2]">ฉายา/ชื่อเรียก (Nicknames)</label>
               <input
                 type="text"
                 value={editNicknames}
                 onChange={(e) => setEditNicknames(e.target.value)}
-                className="w-full px-3 py-2 bg-[#1D1D1F] border border-white/10 rounded-xl text-[#F2F2F5] text-[14px] outline-none focus:border-[#EF264C]/60"
+                className="w-full px-3 py-2 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[13.5px] outline-none transition-colors"
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -173,34 +164,42 @@ export default function WorldPersonaCard({
                 type="text"
                 value={editPersonality}
                 onChange={(e) => setEditPersonality(e.target.value)}
-                className="w-full px-3 py-2 bg-[#1D1D1F] border border-white/10 rounded-xl text-[#F2F2F5] text-[14px] outline-none focus:border-[#EF264C]/60"
+                className="w-full px-3 py-2 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[13.5px] outline-none transition-colors"
               />
             </div>
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-[12px] text-[#ACACB2]">เควสเอาชีวิตรอดหลัก (Main Quest)</label>
-            <input
-              type="text"
-              value={editMainQuest}
-              onChange={(e) => setEditMainQuest(e.target.value)}
-              className="w-full px-3 py-2 bg-[#1D1D1F] border border-white/10 rounded-xl text-[#F2F2F5] text-[14px] outline-none focus:border-[#EF264C]/60"
+            <label className="text-[12px] text-[#ACACB2]">คำอธิบายสรุปบทบาท (Identity Brief)</label>
+            <textarea
+              value={editBrief}
+              onChange={(e) => setEditBrief(e.target.value)}
+              rows={2}
+              className="w-full px-3 py-2 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[13.5px] outline-none resize-none leading-relaxed transition-colors"
             />
           </div>
 
-          {/* Dynamic & Power */}
-          <div className="p-3.5 rounded-xl bg-black/40 border border-[#EF264C]/25 flex flex-col gap-3">
-            <div className="text-[12px] font-medium text-[#EF264C] flex items-center gap-1.5">
-              <ShieldAlert size={13} />
-              <span>พลวัตอำนาจ & ความลับ (Dynamic & Hidden Secret)</span>
-            </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[12px] text-[#ACACB2]">เควสเอาชีวิตรอดหลัก (Main Survival Quest)</label>
+            <textarea
+              value={editMainQuest}
+              onChange={(e) => setEditMainQuest(e.target.value)}
+              rows={2}
+              className="w-full px-3 py-2 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[13.5px] outline-none resize-none leading-relaxed transition-colors"
+            />
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex flex-col gap-3">
+            <span className="text-[12px] font-semibold text-[#EF264C]">
+              พลวัตความสัมพันธ์และอำนาจ (Dynamic & Power)
+            </span>
             <div className="flex flex-col gap-1">
-              <label className="text-[11px] text-[#ACACB2]">นิยามความสัมพันธ์ (Dynamic Label)</label>
+              <label className="text-[11px] text-[#ACACB2]">หัวข้อความสัมพันธ์ (Label)</label>
               <input
                 type="text"
                 value={editDynamicLabel}
                 onChange={(e) => setEditDynamicLabel(e.target.value)}
-                className="w-full px-3 py-1.5 bg-[#1D1D1F] border border-white/10 rounded-lg text-[#F2F2F5] text-[13px] outline-none"
+                className="w-full px-3 py-1.5 bg-black/40 border border-[#2F3336] focus:border-[#EF264C]/60 rounded-lg text-[#F2F2F5] text-[13px] outline-none transition-colors"
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -209,7 +208,7 @@ export default function WorldPersonaCard({
                 value={editActorSecret}
                 onChange={(e) => setEditActorSecret(e.target.value)}
                 rows={2}
-                className="w-full px-3 py-1.5 bg-[#1D1D1F] border border-white/10 rounded-lg text-[#F2F2F5] text-[13px] outline-none resize-none"
+                className="w-full px-3 py-1.5 bg-black/40 border border-[#2F3336] focus:border-[#EF264C]/60 rounded-lg text-[#F2F2F5] text-[13px] outline-none resize-none leading-relaxed transition-colors"
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -218,20 +217,20 @@ export default function WorldPersonaCard({
                 value={editPowerBalance}
                 onChange={(e) => setEditPowerBalance(e.target.value)}
                 rows={2}
-                className="w-full px-3 py-1.5 bg-[#1D1D1F] border border-white/10 rounded-lg text-[#F2F2F5] text-[13px] outline-none resize-none"
+                className="w-full px-3 py-1.5 bg-black/40 border border-[#2F3336] focus:border-[#EF264C]/60 rounded-lg text-[#F2F2F5] text-[13px] outline-none resize-none leading-relaxed transition-colors"
               />
             </div>
           </div>
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          {/* Identity & Main Quest */}
+          {/* Identity & Main Quest: กล่องซ้อนด้านใน #0B0B0C */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="p-3.5 rounded-xl bg-[#1D1D1F] border border-white/5 flex flex-col gap-1">
-              <span className="text-[11px] uppercase tracking-wider text-[#ACACB2] font-medium">
-                บทบาทผู้เล่น (Player Role)
+            <div className="p-4 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex flex-col gap-1">
+              <span className="text-[11px] uppercase tracking-wider text-[#EF264C] font-bold">
+                บทบาทผู้เล่น (PLAYER ROLE)
               </span>
-              <p className="text-[14px] text-[#F2F2F5] font-medium">
+              <p className="text-[14px] text-[#F2F2F5] font-medium mt-0.5">
                 {currentPersona.identity?.title}
               </p>
               <p className="text-[12.5px] text-[#ACACB2] leading-relaxed mt-0.5">
@@ -239,18 +238,18 @@ export default function WorldPersonaCard({
               </p>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-[#1D1D1F] border border-white/5 flex flex-col gap-1.5 justify-between">
+            <div className="p-4 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex flex-col gap-1.5 justify-between">
               <div>
-                <span className="text-[11px] uppercase tracking-wider text-[#ACACB2] font-medium flex items-center gap-1">
+                <span className="text-[11px] uppercase tracking-wider text-[#EF264C] font-bold flex items-center gap-1">
                   <Target size={12} className="text-[#EF264C]" />
-                  เควสเอาชีวิตรอด (Main Survival Quest)
+                  เควสเอาชีวิตรอด (MAIN QUEST)
                 </span>
                 <p className="text-[13px] text-[#F2F2F5] leading-relaxed mt-1">
                   {currentPersona.main_quest}
                 </p>
               </div>
 
-              <div className="flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-white/5 text-[11.5px]">
+              <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-[#2F3336]/60 text-[11.5px]">
                 <span className="text-[#ACACB2]">ฉายา:</span>
                 <span className="text-[#F2F2F5] font-medium">{currentPersona.nicknames}</span>
                 <span className="text-[#ACACB2] ml-2">สรรพนาม:</span>
@@ -260,19 +259,19 @@ export default function WorldPersonaCard({
           </div>
 
           {/* Personality Vibe */}
-          <div className="px-3.5 py-2.5 rounded-xl bg-[#1D1D1F]/70 border border-white/5 flex items-center gap-2">
+          <div className="px-4 py-2.5 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex items-center gap-2">
             <span className="text-[12px] text-[#ACACB2] shrink-0 font-medium">ลักษณะนิสัย:</span>
             <span className="text-[13px] text-[#F2F2F5]">{currentPersona.personality_vibe}</span>
           </div>
 
           {/* Dynamic & Power: Actor Secret & Balance */}
-          <div className="p-4 rounded-xl bg-gradient-to-br from-[#EF264C]/10 via-[#1D1D1F] to-[#121214] border border-[#EF264C]/30 flex flex-col gap-3">
+          <div className="p-4 rounded-xl bg-[#0B0B0C] border border-[#EF264C]/30 flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-[12px] font-medium text-[#EF264C]">
+              <div className="flex items-center gap-1.5 text-[12.5px] font-medium text-[#EF264C]">
                 <ShieldAlert size={14} />
                 <span>พลวัตความสัมพันธ์: {currentPersona.dynamic_and_power?.label}</span>
               </div>
-              <div className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-[#EF264C]/20 text-[#EF264C]">
+              <div className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-[#EF264C]/15 border border-[#EF264C]/30 text-[#EF264C]">
                 <Lock size={10} />
                 <span>HIDDEN INTEL</span>
               </div>
@@ -282,7 +281,7 @@ export default function WorldPersonaCard({
               <span className="text-[11px] uppercase tracking-wider text-[#ACACB2]">
                 ความลับของตัวละคร (Actor Secret):
               </span>
-              <p className="text-[13px] text-[#F2F2F5] leading-relaxed bg-black/40 p-2.5 rounded-lg border border-white/5">
+              <p className="text-[13px] text-[#F2F2F5] leading-relaxed bg-black/40 p-3 rounded-xl border border-[#2F3336]/60">
                 {currentPersona.dynamic_and_power?.actor_secret}
               </p>
             </div>
@@ -292,7 +291,7 @@ export default function WorldPersonaCard({
                 <Scale size={11} className="text-[#EF264C]" />
                 สมดุลอำนาจ (Power Balance):
               </span>
-              <p className="text-[12.5px] text-[#ACACB2] leading-relaxed">
+              <p className="text-[12.5px] text-[#ACACB2] leading-relaxed bg-black/40 p-3 rounded-xl border border-[#2F3336]/60">
                 {currentPersona.dynamic_and_power?.power_balance}
               </p>
             </div>

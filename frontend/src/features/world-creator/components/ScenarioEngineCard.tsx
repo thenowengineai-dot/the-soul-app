@@ -323,12 +323,12 @@ export default function ScenarioEngineCard({
   return (
     <div
       ref={cardRef}
-      className="scroll-mt-4 rounded-2xl bg-[#121214]/60 backdrop-blur-md border border-[#2F3336] flex flex-col gap-0 overflow-hidden shadow-2xl transition-all"
+      className="scroll-mt-4 rounded-2xl bg-transparent border border-[#2F3336] flex flex-col gap-0 overflow-hidden transition-all"
     >
       {/* ========================================================================= */}
       {/* 1. COLLAPSIBLE STICKY TIMELINE RAIL (แผงรางรถไฟแนวนอน)                     */}
       {/* ========================================================================= */}
-      <div className="sticky top-0 z-20 bg-[#090909]/90 backdrop-blur-xl border-b border-[#2F3336]/80 px-4 sm:px-5 py-3.5 transition-all">
+      <div className="sticky top-0 z-20 bg-[#090909]/95 backdrop-blur-xl border-b border-[#2F3336] px-4 sm:px-5 py-3.5 transition-all">
         <div className="flex items-center justify-between gap-3 mb-2.5">
           <div className="flex items-center gap-2">
             <Film size={15} className="text-[#EF264C] shrink-0" />

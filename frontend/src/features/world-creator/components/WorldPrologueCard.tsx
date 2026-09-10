@@ -64,13 +64,13 @@ export default function WorldPrologueCard({
   return (
     <div
       ref={cardRef}
-      className="p-5 sm:p-6 rounded-2xl bg-[#121214]/95 backdrop-blur-2xl border border-white/10 flex flex-col gap-5 text-left relative overflow-hidden transition-all duration-200 hover:border-white/20"
+      className="scroll-mt-4 rounded-2xl bg-[#111112] border border-[#2F3336] p-4 sm:p-5 flex flex-col gap-4 text-left transition-all duration-200"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-[#2F3336]">
+      {/* Header - Director's Briefing Style (border-b contained inside padding) */}
+      <div className="flex items-center justify-between border-b border-[#2F3336]/60 pb-2.5">
         <div className="flex items-center gap-2">
-          <BookOpen size={16} className="text-[#EF264C]" />
-          <h3 className="text-[15px] font-medium text-[#F2F2F5] tracking-wide">
+          <BookOpen size={16} className="text-[#EF264C] shrink-0" />
+          <h3 className="text-[13px] sm:text-[14px] font-bold text-[#F2F2F5] tracking-wider uppercase">
             บทนำ & ทางเลือกเจตจำนง (Prologue & Role Intent)
           </h3>
         </div>
@@ -79,14 +79,14 @@ export default function WorldPrologueCard({
           <div className="flex items-center gap-2">
             <button
               onClick={handleSave}
-              className="px-3 py-1.5 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white text-[13px] font-medium transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
+              className="px-3 py-1.5 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white text-[12.5px] font-medium transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
             >
               <Check size={14} />
               <span>บันทึก</span>
             </button>
             <button
               onClick={onCancelEdit}
-              className="px-3 py-1.5 rounded-full border border-[#2F3336] hover:bg-white/[0.08] hover:border-white/35 text-[#ACACB2] text-[13px] transition-all flex items-center gap-1.5 active:scale-95"
+              className="px-3 py-1.5 rounded-full border border-[#2F3336] hover:bg-white/[0.08] hover:border-white/35 text-[#ACACB2] text-[12.5px] transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
             >
               <X size={14} />
               <span>ยกเลิก</span>
@@ -103,6 +103,7 @@ export default function WorldPrologueCard({
         )}
       </div>
 
+      {/* Card Content Body */}
       {isEditing ? (
         <div className="flex flex-col gap-4">
           {/* Edit Premise */}
@@ -115,7 +116,7 @@ export default function WorldPrologueCard({
               value={editPremise}
               onChange={(e) => setEditPremise(e.target.value)}
               rows={4}
-              className="w-full px-3 py-2 bg-[#1D1D1F] border border-white/10 rounded-xl text-[#F2F2F5] text-[14px] outline-none focus:border-[#EF264C]/60 resize-none"
+              className="w-full px-3 py-2.5 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[13.5px] outline-none resize-none leading-relaxed transition-colors"
             />
           </div>
 
@@ -129,7 +130,7 @@ export default function WorldPrologueCard({
               type="text"
               value={editQuestion}
               onChange={(e) => setEditQuestion(e.target.value)}
-              className="w-full px-3 py-2 bg-[#1D1D1F] border border-white/10 rounded-xl text-[#F2F2F5] text-[14px] outline-none focus:border-[#EF264C]/60"
+              className="w-full px-3 py-2 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[13.5px] outline-none transition-colors"
             />
           </div>
 
@@ -141,7 +142,7 @@ export default function WorldPrologueCard({
             {editChoices.map((choice, idx) => (
               <div
                 key={idx}
-                className="p-3 rounded-xl bg-[#1D1D1F] border border-white/10 flex flex-col gap-2"
+                className="p-3.5 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex flex-col gap-2"
               >
                 <div className="flex items-center justify-between text-[11px] text-[#ACACB2]">
                   <span>ตัวเลือกที่ {idx + 1}</span>
@@ -155,7 +156,7 @@ export default function WorldPrologueCard({
                         updated[idx] = { ...updated[idx], hidden_trait: e.target.value };
                         setEditChoices(updated);
                       }}
-                      className="px-2 py-0.5 bg-black/40 border border-white/15 rounded text-[#EF264C] text-[11px] outline-none w-36"
+                      className="px-2 py-0.5 bg-black/50 border border-[#2F3336] rounded text-[#EF264C] text-[11px] outline-none w-36"
                     />
                   </div>
                 </div>
@@ -167,7 +168,7 @@ export default function WorldPrologueCard({
                     setEditChoices(updated);
                   }}
                   rows={2}
-                  className="w-full px-2.5 py-1.5 bg-black/30 border border-white/10 rounded-lg text-[#F2F2F5] text-[13px] outline-none focus:border-[#EF264C]/60 resize-none"
+                  className="w-full px-2.5 py-1.5 bg-black/40 border border-[#2F3336] focus:border-[#EF264C]/60 rounded-lg text-[#F2F2F5] text-[13px] outline-none resize-none leading-normal transition-colors"
                 />
               </div>
             ))}
@@ -175,13 +176,13 @@ export default function WorldPrologueCard({
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          {/* Premise */}
-          <div className="p-3.5 rounded-xl bg-[#1D1D1F] border border-white/5 flex flex-col gap-1.5">
-            <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-[#ACACB2] font-medium">
+          {/* Premise: กล่องซ้อนด้านใน #0B0B0C สไตล์ Director's Briefing Slate */}
+          <div className="p-4 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex flex-col gap-1.5">
+            <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-[#EF264C] font-bold">
               <Sparkles size={12} className="text-[#EF264C]" />
-              <span>Opening Premise</span>
+              <span>THE OPENING PREMISE (บริบทสถานการณ์เปิดฉาก)</span>
             </div>
-            <p className="text-[14px] text-[#F2F2F5] leading-relaxed font-normal">
+            <p className="text-[13.5px] sm:text-[14px] text-[#F2F2F5] leading-relaxed font-normal">
               {prologue?.premise || DEFAULT_PROLOGUE.premise}
             </p>
           </div>
@@ -199,7 +200,7 @@ export default function WorldPrologueCard({
               {(prologue?.choices || DEFAULT_PROLOGUE.choices).map((choice, idx) => (
                 <div
                   key={idx}
-                  className="p-3 rounded-xl bg-[#1D1D1F]/80 border border-white/5 hover:border-white/15 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2.5"
+                  className="p-3.5 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 hover:border-white/20 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2.5"
                 >
                   <div className="flex items-start gap-2.5">
                     <span className="text-[12px] font-mono text-[#ACACB2] shrink-0 mt-0.5">
@@ -209,7 +210,7 @@ export default function WorldPrologueCard({
                       {choice.text}
                     </p>
                   </div>
-                  <span className="shrink-0 self-start sm:self-center px-2.5 py-1 rounded-full text-[11.5px] font-medium bg-[#EF264C]/10 border border-[#EF264C]/30 text-[#EF264C]">
+                  <span className="shrink-0 self-start sm:self-center px-2.5 py-1 rounded-full text-[11.5px] font-medium bg-transparent border border-[#EF264C]/50 text-[#EF264C]">
                     {choice.hidden_trait}
                   </span>
                 </div>

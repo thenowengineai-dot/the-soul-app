@@ -97,14 +97,14 @@ export default function WorldLocationsCard({
   return (
     <div
       ref={cardRef}
-      className="p-5 sm:p-6 rounded-2xl bg-[#121214]/95 backdrop-blur-2xl border border-white/10 flex flex-col gap-5 text-left relative overflow-hidden transition-all duration-200 hover:border-white/20"
+      className="scroll-mt-4 rounded-2xl bg-[#111112] border border-[#2F3336] p-4 sm:p-5 flex flex-col gap-4 text-left transition-all duration-200"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-[#2F3336]">
+      {/* Header Bar - Contained Director's Briefing Style */}
+      <div className="flex items-center justify-between border-b border-[#2F3336]/60 pb-2.5">
         <div className="flex items-center gap-2">
-          <MapPin size={16} className="text-[#EF264C]" />
+          <MapPin size={16} className="text-[#EF264C] shrink-0" />
           <div>
-            <h3 className="text-[15px] font-medium text-[#F2F2F5] tracking-wide">
+            <h3 className="text-[13px] sm:text-[14px] font-bold text-[#F2F2F5] tracking-wider uppercase">
               สถาปัตยกรรมฉาก & จุดคอขวด (Locations & Choke Points)
             </h3>
             <span className="text-[11px] text-[#ACACB2]">
@@ -117,14 +117,14 @@ export default function WorldLocationsCard({
           <div className="flex items-center gap-2">
             <button
               onClick={handleSave}
-              className="px-3 py-1.5 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white text-[13px] font-medium transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
+              className="px-3 py-1.5 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white text-[12.5px] font-medium transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
             >
               <Check size={14} />
               <span>บันทึก</span>
             </button>
             <button
               onClick={onCancelEdit}
-              className="px-3 py-1.5 rounded-full border border-[#2F3336] hover:bg-white/[0.08] hover:border-white/35 text-[#ACACB2] text-[13px] transition-all flex items-center gap-1.5 active:scale-95"
+              className="px-3 py-1.5 rounded-full border border-[#2F3336] hover:bg-white/[0.08] hover:border-white/35 text-[#ACACB2] text-[12.5px] transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
             >
               <X size={14} />
               <span>ยกเลิก</span>
@@ -142,25 +142,31 @@ export default function WorldLocationsCard({
       </div>
 
       {/* Location Selector Tabs */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
         {locationNames.map((locName) => {
           const isCurrent = locName === activeName;
           return (
             <button
               key={locName}
               onClick={() => setSelectedLocName(locName)}
-              className={`px-3 py-1.5 rounded-full text-[12.5px] font-medium transition-all shrink-0 cursor-pointer ${
+              className={`px-3 py-1.5 rounded-full text-[12px] sm:text-[12.5px] font-medium transition-all shrink-0 cursor-pointer active:scale-95 flex items-center gap-1.5 ${
                 isCurrent
-                  ? 'bg-white/15 text-[#F2F2F5] border border-white/25 shadow-sm'
-                  : 'bg-[#1D1D1F] text-[#ACACB2] border border-white/5 hover:border-white/20 hover:text-[#F2F2F5]'
+                  ? 'bg-[#0B0B0C] border border-[#EF264C]/70 text-[#F2F2F5] shadow-sm'
+                  : 'bg-transparent text-[#ACACB2] border border-[#2F3336] hover:border-white/20 hover:text-[#F2F2F5]'
               }`}
             >
-              {locName}
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  isCurrent ? 'bg-[#EF264C]' : 'bg-[#ACACB2]/40'
+                }`}
+              />
+              <span>{locName}</span>
             </button>
           );
         })}
       </div>
 
+      {/* Card Content Body */}
       {isEditing ? (
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
@@ -174,7 +180,7 @@ export default function WorldLocationsCard({
                   [activeName]: { ...editLocation, base_mood: e.target.value },
                 });
               }}
-              className="w-full px-3 py-2 bg-[#1D1D1F] border border-white/10 rounded-xl text-[#F2F2F5] text-[13px] outline-none focus:border-[#EF264C]/60"
+              className="w-full px-3 py-2 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[13.5px] outline-none"
             />
           </div>
 
@@ -192,7 +198,7 @@ export default function WorldLocationsCard({
                 });
               }}
               rows={2}
-              className="w-full px-3 py-2 bg-[#1D1D1F] border border-white/10 rounded-xl text-[#F2F2F5] text-[13px] outline-none focus:border-[#EF264C]/60 resize-none"
+              className="w-full px-3 py-2 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[13.5px] outline-none resize-none leading-relaxed"
             />
           </div>
 
@@ -210,7 +216,7 @@ export default function WorldLocationsCard({
                 });
               }}
               rows={2}
-              className="w-full px-3 py-2 bg-[#1D1D1F] border border-white/10 rounded-xl text-[#F2F2F5] text-[13px] outline-none focus:border-[#EF264C]/60 resize-none"
+              className="w-full px-3 py-2 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[13.5px] outline-none resize-none leading-relaxed"
             />
           </div>
 
@@ -228,7 +234,7 @@ export default function WorldLocationsCard({
                   [activeName]: { ...editLocation, key_furniture: e.target.value },
                 });
               }}
-              className="w-full px-3 py-2 bg-[#1D1D1F] border border-white/10 rounded-xl text-[#F2F2F5] text-[13px] outline-none focus:border-[#EF264C]/60"
+              className="w-full px-3 py-2 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[13.5px] outline-none"
             />
           </div>
 
@@ -251,25 +257,25 @@ export default function WorldLocationsCard({
                 });
               }}
               rows={3}
-              className="w-full px-3 py-2 bg-[#1D1D1F] border border-white/10 rounded-xl text-[#F2F2F5] text-[13px] outline-none focus:border-[#EF264C]/60 resize-none"
+              className="w-full px-3 py-2 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[13.5px] outline-none resize-none leading-relaxed"
             />
           </div>
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          {/* Base Mood */}
-          <div className="p-3.5 rounded-xl bg-[#1D1D1F] border border-white/5 flex flex-col gap-1">
+          {/* Base Mood: กล่องซ้อนด้านใน #0B0B0C */}
+          <div className="p-4 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex flex-col gap-1">
             <span className="text-[11px] uppercase tracking-wider text-[#ACACB2] font-medium">
               อารมณ์พื้นฐานของฉาก (Base Mood)
             </span>
-            <p className="text-[13.5px] text-[#F2F2F5] leading-normal font-medium">
+            <p className="text-[13.5px] sm:text-[14px] text-[#F2F2F5] leading-relaxed font-normal">
               {activeLocation.base_mood}
             </p>
           </div>
 
-          {/* Choke Point (Critical) */}
-          <div className="p-3.5 rounded-xl bg-gradient-to-r from-[#EF264C]/15 to-transparent border border-[#EF264C]/30 flex flex-col gap-1">
-            <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-[#EF264C] font-semibold">
+          {/* Choke Point (Critical): กล่องซ้อนด้านใน #0B0B0C พร้อมเน้นสี Choke Point */}
+          <div className="p-4 rounded-xl bg-[#0B0B0C] border border-[#EF264C]/40 flex flex-col gap-1">
+            <div className="flex items-center gap-1.5 text-[11.5px] uppercase tracking-wider text-[#EF264C] font-semibold">
               <AlertTriangle size={13} />
               <span>จุดคอขวด & บีบระยะประชิด (Choke Points)</span>
             </div>
@@ -278,8 +284,8 @@ export default function WorldLocationsCard({
             </p>
           </div>
 
-          {/* Spatial Layout */}
-          <div className="p-3.5 rounded-xl bg-[#1D1D1F] border border-white/5 flex flex-col gap-1">
+          {/* Spatial Layout: กล่องซ้อนด้านใน #0B0B0C */}
+          <div className="p-4 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex flex-col gap-1">
             <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-[#ACACB2] font-medium">
               <Maximize2 size={12} className="text-[#EF264C]" />
               <span>ผังพื้นที่กายภาพ (Spatial Layout)</span>
@@ -289,8 +295,8 @@ export default function WorldLocationsCard({
             </p>
           </div>
 
-          {/* Key Furniture & Props */}
-          <div className="p-3.5 rounded-xl bg-[#1D1D1F] border border-white/5 flex items-center gap-2.5">
+          {/* Key Furniture & Props: กล่องซ้อนด้านใน #0B0B0C */}
+          <div className="p-3.5 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex items-center gap-2.5">
             <Package size={15} className="text-[#EF264C] shrink-0" />
             <div className="flex flex-col">
               <span className="text-[11px] uppercase tracking-wider text-[#ACACB2]">
@@ -302,8 +308,8 @@ export default function WorldLocationsCard({
             </div>
           </div>
 
-          {/* Sensory Cues List */}
-          <div className="p-3.5 rounded-xl bg-[#1D1D1F]/70 border border-white/5 flex flex-col gap-2">
+          {/* Sensory Cues List: กล่องซ้อนด้านใน #0B0B0C */}
+          <div className="p-3.5 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex flex-col gap-2">
             <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-[#ACACB2] font-medium">
               <Volume2 size={12} className="text-[#EF264C]" />
               <span>ประสาทสัมผัสแวดล้อม (Ambient Sensory Cues)</span>
@@ -311,7 +317,7 @@ export default function WorldLocationsCard({
             <div className="flex flex-col gap-1.5">
               {(activeLocation.sensory_cues?.ambient_cues || []).map((cue, idx) => (
                 <div key={idx} className="flex items-center gap-2 text-[13px] text-[#F2F2F5]">
-                  <span className="w-1 h-1 rounded-full bg-[#EF264C] shrink-0" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#EF264C] shrink-0" />
                   <span>{cue}</span>
                 </div>
               ))}

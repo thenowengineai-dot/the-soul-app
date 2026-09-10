@@ -106,17 +106,17 @@ export default function WorldSpawnCoreCard({
   return (
     <div
       ref={cardRef}
-      className="p-5 sm:p-6 rounded-2xl bg-[#121214]/95 backdrop-blur-2xl border border-white/10 flex flex-col gap-5 text-left relative overflow-hidden transition-all duration-200 hover:border-white/20"
+      className="scroll-mt-4 rounded-2xl bg-[#111112] border border-[#2F3336] p-4 sm:p-5 flex flex-col gap-4 text-left transition-all duration-200"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-[#2F3336]">
+      {/* Header - Director's Briefing Style (border-b contained inside padding) */}
+      <div className="flex items-center justify-between border-b border-[#2F3336]/60 pb-2.5">
         <div className="flex items-center gap-2">
-          <Compass size={16} className="text-[#EF264C]" />
+          <Compass size={16} className="text-[#EF264C] shrink-0" />
           <div>
-            <h3 className="text-[15px] font-medium text-[#F2F2F5] tracking-wide">
+            <h3 className="text-[13px] sm:text-[14px] font-bold text-[#F2F2F5] tracking-wider uppercase">
               จุดเกิด & สถานะเริ่มต้น (World Spawn & Initial Gauges)
             </h3>
-            <span className="text-[11px] text-[#ACACB2] font-mono">
+            <span className="text-[11px] text-[#ACACB2]">
               {thaiName || worldTitle} ({worldId})
             </span>
           </div>
@@ -126,14 +126,14 @@ export default function WorldSpawnCoreCard({
           <div className="flex items-center gap-2">
             <button
               onClick={handleSave}
-              className="px-3 py-1.5 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white text-[13px] font-medium transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
+              className="px-3 py-1.5 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white text-[12.5px] font-medium transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
             >
               <Check size={14} />
               <span>บันทึก</span>
             </button>
             <button
               onClick={onCancelEdit}
-              className="px-3 py-1.5 rounded-full border border-[#2F3336] hover:bg-white/[0.08] hover:border-white/35 text-[#ACACB2] text-[13px] transition-all flex items-center gap-1.5 active:scale-95"
+              className="px-3 py-1.5 rounded-full border border-[#2F3336] hover:bg-white/[0.08] hover:border-white/35 text-[#ACACB2] text-[12.5px] transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
             >
               <X size={14} />
               <span>ยกเลิก</span>
@@ -150,6 +150,7 @@ export default function WorldSpawnCoreCard({
         )}
       </div>
 
+      {/* Card Content Body */}
       {isEditing ? (
         <div className="flex flex-col gap-4">
           {/* Spatial & Chrono Anchors */}
@@ -160,7 +161,7 @@ export default function WorldSpawnCoreCard({
                 type="text"
                 value={editLocation}
                 onChange={(e) => setEditLocation(e.target.value)}
-                className="w-full px-3 py-2 bg-[#1D1D1F] border border-white/10 rounded-xl text-[#F2F2F5] text-[13px] outline-none focus:border-[#EF264C]/60"
+                className="w-full px-3 py-2 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[13.5px] outline-none transition-colors"
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -169,7 +170,7 @@ export default function WorldSpawnCoreCard({
                 type="text"
                 value={editTime}
                 onChange={(e) => setEditTime(e.target.value)}
-                className="w-full px-3 py-2 bg-[#1D1D1F] border border-white/10 rounded-xl text-[#F2F2F5] text-[13px] outline-none focus:border-[#EF264C]/60"
+                className="w-full px-3 py-2 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[13.5px] outline-none transition-colors"
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -178,7 +179,7 @@ export default function WorldSpawnCoreCard({
                 type="text"
                 value={editWeather}
                 onChange={(e) => setEditWeather(e.target.value)}
-                className="w-full px-3 py-2 bg-[#1D1D1F] border border-white/10 rounded-xl text-[#F2F2F5] text-[13px] outline-none focus:border-[#EF264C]/60"
+                className="w-full px-3 py-2 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[13.5px] outline-none transition-colors"
               />
             </div>
           </div>
@@ -189,7 +190,7 @@ export default function WorldSpawnCoreCard({
               type="text"
               value={editOutfit}
               onChange={(e) => setEditOutfit(e.target.value)}
-              className="w-full px-3 py-2 bg-[#1D1D1F] border border-white/10 rounded-xl text-[#F2F2F5] text-[13px] outline-none focus:border-[#EF264C]/60"
+              className="w-full px-3 py-2 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[13.5px] outline-none transition-colors"
             />
           </div>
 
@@ -199,7 +200,7 @@ export default function WorldSpawnCoreCard({
               value={editAPos}
               onChange={(e) => setEditAPos(e.target.value)}
               rows={2}
-              className="w-full px-3 py-2 bg-[#1D1D1F] border border-white/10 rounded-xl text-[#F2F2F5] text-[13px] outline-none focus:border-[#EF264C]/60 resize-none"
+              className="w-full px-3 py-2 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[13.5px] outline-none resize-none leading-relaxed transition-colors"
             />
           </div>
 
@@ -209,12 +210,12 @@ export default function WorldSpawnCoreCard({
               value={editPPos}
               onChange={(e) => setEditPPos(e.target.value)}
               rows={2}
-              className="w-full px-3 py-2 bg-[#1D1D1F] border border-white/10 rounded-xl text-[#F2F2F5] text-[13px] outline-none focus:border-[#EF264C]/60 resize-none"
+              className="w-full px-3 py-2 bg-[#0B0B0C] border border-[#2F3336] focus:border-[#EF264C]/60 rounded-xl text-[#F2F2F5] text-[13.5px] outline-none resize-none leading-relaxed transition-colors"
             />
           </div>
 
           {/* Initial States Gauges */}
-          <div className="p-3.5 rounded-xl bg-black/40 border border-white/10 flex flex-col gap-2.5">
+          <div className="p-3.5 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex flex-col gap-2.5">
             <span className="text-[12px] font-medium text-[#F2F2F5]">
               เกจสถานะหลอดพลังเริ่มต้น (Initial Gauges)
             </span>
@@ -228,7 +229,7 @@ export default function WorldSpawnCoreCard({
                   type="number"
                   value={editDesire}
                   onChange={(e) => setEditDesire(Number(e.target.value))}
-                  className="px-2.5 py-1.5 bg-[#1D1D1F] border border-white/10 rounded-lg text-[#F2F2F5] text-[13px] font-mono outline-none"
+                  className="px-2.5 py-1.5 bg-black/40 border border-[#2F3336] focus:border-[#EF264C]/60 rounded-lg text-[#F2F2F5] text-[13px] font-mono outline-none"
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -240,7 +241,7 @@ export default function WorldSpawnCoreCard({
                   type="number"
                   value={editAffection}
                   onChange={(e) => setEditAffection(Number(e.target.value))}
-                  className="px-2.5 py-1.5 bg-[#1D1D1F] border border-white/10 rounded-lg text-[#F2F2F5] text-[13px] font-mono outline-none"
+                  className="px-2.5 py-1.5 bg-black/40 border border-[#2F3336] focus:border-[#EF264C]/60 rounded-lg text-[#F2F2F5] text-[13px] font-mono outline-none"
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -252,7 +253,7 @@ export default function WorldSpawnCoreCard({
                   type="number"
                   value={editShatter}
                   onChange={(e) => setEditShatter(Number(e.target.value))}
-                  className="px-2.5 py-1.5 bg-[#1D1D1F] border border-white/10 rounded-lg text-[#F2F2F5] text-[13px] font-mono outline-none"
+                  className="px-2.5 py-1.5 bg-black/40 border border-[#2F3336] focus:border-[#EF264C]/60 rounded-lg text-[#F2F2F5] text-[13px] font-mono outline-none"
                 />
               </div>
             </div>
@@ -260,9 +261,9 @@ export default function WorldSpawnCoreCard({
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          {/* Spatial Anchor Pill Grid */}
+          {/* Spatial Anchor Pill Grid: กล่องซ้อนด้านใน #0B0B0C */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-            <div className="p-3 rounded-xl bg-[#1D1D1F] border border-white/5 flex items-center gap-2.5">
+            <div className="p-3 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex items-center gap-2.5">
               <MapPin size={16} className="text-[#EF264C] shrink-0" />
               <div className="flex flex-col min-w-0">
                 <span className="text-[11px] text-[#ACACB2] uppercase tracking-wider">จุดเกิดเริ่มต้น</span>
@@ -270,7 +271,7 @@ export default function WorldSpawnCoreCard({
               </div>
             </div>
 
-            <div className="p-3 rounded-xl bg-[#1D1D1F] border border-white/5 flex items-center gap-2.5">
+            <div className="p-3 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex items-center gap-2.5">
               <Clock size={16} className="text-[#EF264C] shrink-0" />
               <div className="flex flex-col min-w-0">
                 <span className="text-[11px] text-[#ACACB2] uppercase tracking-wider">ช่วงเวลา</span>
@@ -278,7 +279,7 @@ export default function WorldSpawnCoreCard({
               </div>
             </div>
 
-            <div className="p-3 rounded-xl bg-[#1D1D1F] border border-white/5 flex items-center gap-2.5">
+            <div className="p-3 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex items-center gap-2.5">
               <CloudSun size={16} className="text-[#EF264C] shrink-0" />
               <div className="flex flex-col min-w-0">
                 <span className="text-[11px] text-[#ACACB2] uppercase tracking-wider">สภาพอากาศ</span>
@@ -288,7 +289,7 @@ export default function WorldSpawnCoreCard({
           </div>
 
           {/* Initial Outfit */}
-          <div className="p-3 rounded-xl bg-[#1D1D1F] border border-white/5 flex items-center gap-2.5">
+          <div className="p-3.5 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex items-center gap-2.5">
             <Shirt size={16} className="text-[#EF264C] shrink-0" />
             <div className="flex flex-col">
               <span className="text-[11px] text-[#ACACB2] uppercase tracking-wider">เครื่องแต่งกายเริ่มต้น</span>
@@ -296,36 +297,36 @@ export default function WorldSpawnCoreCard({
             </div>
           </div>
 
-          {/* Actor & Player Starting Postures */}
+          {/* Actor & Player Starting Postures: กล่องซ้อนด้านใน #0B0B0C */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="p-3.5 rounded-xl bg-[#1D1D1F] border border-white/5 flex flex-col gap-1">
-              <span className="text-[11px] uppercase tracking-wider text-[#ACACB2] font-medium flex items-center gap-1.5">
+            <div className="p-4 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex flex-col gap-1">
+              <span className="text-[11px] uppercase tracking-wider text-[#EF264C] font-bold flex items-center gap-1.5">
                 <User size={13} className="text-[#EF264C]" />
                 ท่าทางเริ่มต้นของ [ACTOR]
               </span>
-              <p className="text-[13px] text-[#F2F2F5] leading-relaxed">
+              <p className="text-[13px] text-[#F2F2F5] leading-relaxed mt-0.5">
                 {curState.initial_a_pos}
               </p>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-[#1D1D1F] border border-white/5 flex flex-col gap-1">
-              <span className="text-[11px] uppercase tracking-wider text-[#ACACB2] font-medium flex items-center gap-1.5">
+            <div className="p-4 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex flex-col gap-1">
+              <span className="text-[11px] uppercase tracking-wider text-[#ACACB2] font-bold flex items-center gap-1.5">
                 <User size={13} className="text-[#ACACB2]" />
                 ท่าทางเริ่มต้นของ [PLAYER]
               </span>
-              <p className="text-[13px] text-[#F2F2F5] leading-relaxed">
+              <p className="text-[13px] text-[#F2F2F5] leading-relaxed mt-0.5">
                 {curState.initial_p_pos}
               </p>
             </div>
           </div>
 
           {/* Gauge Status Bar */}
-          <div className="p-3.5 rounded-xl bg-[#1D1D1F]/70 border border-white/5 flex flex-col gap-2">
+          <div className="p-4 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex flex-col gap-2.5">
             <span className="text-[11px] uppercase tracking-wider text-[#ACACB2] font-medium">
               เกจหลอดพลังเริ่มต้น (System Initial Gauges)
             </span>
             <div className="grid grid-cols-3 gap-2.5">
-              <div className="p-2.5 rounded-lg bg-black/40 border border-white/5 flex items-center justify-between">
+              <div className="p-3 rounded-xl bg-black/40 border border-[#2F3336]/60 flex items-center justify-between">
                 <span className="text-[12px] text-[#ACACB2] flex items-center gap-1">
                   <Flame size={12} className="text-[#EF264C]" />
                   Desire
@@ -334,7 +335,7 @@ export default function WorldSpawnCoreCard({
                   {curInitial.desire}
                 </span>
               </div>
-              <div className="p-2.5 rounded-lg bg-black/40 border border-white/5 flex items-center justify-between">
+              <div className="p-3 rounded-xl bg-black/40 border border-[#2F3336]/60 flex items-center justify-between">
                 <span className="text-[12px] text-[#ACACB2] flex items-center gap-1">
                   <Heart size={12} className="text-pink-400" />
                   Affection
@@ -343,7 +344,7 @@ export default function WorldSpawnCoreCard({
                   {curInitial.affection}
                 </span>
               </div>
-              <div className="p-2.5 rounded-lg bg-black/40 border border-white/5 flex items-center justify-between">
+              <div className="p-3 rounded-xl bg-black/40 border border-[#2F3336]/60 flex items-center justify-between">
                 <span className="text-[12px] text-[#ACACB2] flex items-center gap-1">
                   <Zap size={12} className="text-amber-400" />
                   Shatter

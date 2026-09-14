@@ -1008,19 +1008,52 @@ async def background_initial_chat_task(user_id: str, character_id: str, session_
     """รัน AI เบื้องหลังโดยไม่ต้องส่ง Stream กลับไปหน้าบ้าน"""
     try:
         logger.info(f"🚀 [BACKGROUND VO] เริ่มต้นปั่น VO ล่วงหน้าสำหรับ Session: {session_id}")
-        db = DatabaseCore()
-        campaign = await db.get_published_campaign(world_id) if world_id else None
-        
-        character_data = {}
-        if campaign and campaign.get("character_data"):
-            character_data = campaign.get("character_data")
-        else:
+        character_data = None
+        try:
+            from genesis.redis_hot import GenesisRedisHotCache
+            redis_gen = GenesisRedisHotCache()
+            if world_id:
+                camp = redis_gen.get_campaign_v3(world_id)
+                if camp and camp.get("character_data"):
+                    character_data = camp.get("character_data")
+            if not character_data:
+                character_data = redis_gen.get_character_data(character_id)
+        except Exception as e:
+            logger.warning(f"Redis char fetch in background_initial_chat_task: {e}")
+
+        if not character_data and world_id:
+            try:
+                from genesis.postgres_world import PostgresWorld
+                pw = PostgresWorld()
+                pool = await pw.get_pool()
+                async with pool.acquire() as conn:
+                    row = await conn.fetchrow("""
+                        SELECT ch.character_data
+                        FROM world_characters ch
+                        WHERE ch.id = $1;
+                    """, character_id)
+                    if not row:
+                        row = await conn.fetchrow("""
+                            SELECT ch.character_data
+                            FROM world_campaigns c
+                            LEFT JOIN world_characters ch ON c.character_id = ch.id
+                            WHERE c.id = $1;
+                        """, world_id)
+                    if row and row["character_data"]:
+                        cdata = row["character_data"]
+                        character_data = cdata if isinstance(cdata, dict) else json.loads(cdata)
+            except Exception as e:
+                logger.warning(f"Neon char fetch in background_initial_chat_task: {e}")
+
+        if not character_data:
             file_path = f"data/characters/{character_id}.json"
             if not os.path.exists(file_path) and character_id == "may_base":
                 file_path = "data/characters/may.json"
             if os.path.exists(file_path):
                 with open(file_path, "r", encoding="utf-8") as f:
                     character_data = json.load(f)
+            else:
+                character_data = {}
                     
         pipeline = get_pipeline()
         stream_generator = await pipeline.process_chat_turn(
@@ -1132,6 +1165,8 @@ async def start_session_endpoint(request: StartSessionRequest, background_tasks:
 
         world_data = world_data or {}
         char_data = char_data or {}
+        starting_state = world_data.get("starting_state", {}) or {}
+        initial_scene = world_data.get("initial_scene", {}) or {}
         appearance_data = char_data.get("appearance", {})
         raw_wardrobe = appearance_data.get("wardrobe") or char_data.get("wardrobe", {})
         

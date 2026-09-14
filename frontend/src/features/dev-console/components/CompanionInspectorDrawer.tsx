@@ -54,7 +54,7 @@ export function CompanionInspectorDrawer({
               <span className="text-[11.5px] font-mono font-bold text-[#F2F2F5] tracking-wider uppercase truncate">
                 {isEffectiveAdmin ? '👑 DEV CONSOLE' : '🧭 QUEST & BEAT INSPECTOR'}
               </span>
-              <span className="text-[10px] text-[#ACACB2] truncate max-w-[170px]">
+              <span className="text-[10px] text-[#BEBEC4] truncate max-w-[170px]">
                 {characterName}
               </span>
             </div>
@@ -70,7 +70,7 @@ export function CompanionInspectorDrawer({
                   className={`px-2 py-0.5 rounded-full transition-all cursor-pointer ${
                     viewMode === 'admin'
                       ? 'bg-[#EF264C] text-white font-bold'
-                      : 'text-[#ACACB2] hover:text-[#F2F2F5]'
+                      : 'text-[#BEBEC4] hover:text-[#F2F2F5]'
                   }`}
                   title="แสดงมุมมอง Admin (ดู System Prompt & Thinking)"
                 >
@@ -82,7 +82,7 @@ export function CompanionInspectorDrawer({
                   className={`px-2 py-0.5 rounded-full transition-all cursor-pointer ${
                     viewMode === 'creator'
                       ? 'bg-[#EF264C] text-white font-bold'
-                      : 'text-[#ACACB2] hover:text-[#F2F2F5]'
+                      : 'text-[#BEBEC4] hover:text-[#F2F2F5]'
                   }`}
                   title="จำลองมุมมอง Creator (เห็นเฉพาะบีตเควสต์ ป้องกัน Prompt รั่วไหล)"
                 >
@@ -95,7 +95,7 @@ export function CompanionInspectorDrawer({
               <button
                 type="button"
                 onClick={onSwitchToHud}
-                className="px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/10 text-[10.5px] font-mono text-[#ACACB2] hover:text-[#F2F2F5] border border-white/10 flex items-center gap-1 transition-all cursor-pointer shrink-0"
+                className="px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/10 text-[10.5px] font-mono text-[#BEBEC4] hover:text-[#F2F2F5] border border-white/10 flex items-center gap-1 transition-all cursor-pointer shrink-0"
                 title="สลับไปหน้าต่างสถานะตัวละคร (Character HUD)"
               >
                 <span>👤 HUD</span>
@@ -105,7 +105,7 @@ export function CompanionInspectorDrawer({
             <button
               type="button"
               onClick={onClose}
-              className="w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 text-[#ACACB2] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer shrink-0"
+              className="w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 text-[#BEBEC4] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer shrink-0"
               title="ปิดหน้าต่างตรวจสอบ"
             >
               <X size={15} />
@@ -124,16 +124,16 @@ export function CompanionInspectorDrawer({
           {/* Section 3: Interactive Turn Logs */}
           <div className="space-y-2">
             <div className="flex items-center justify-between px-1">
-              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#ACACB2]">
+              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#BEBEC4]">
                 ประวัติเทิร์น ({turnLogs.length} รอบ)
               </span>
-              <span className="text-[10.5px] text-[#ACACB2]/60">
+              <span className="text-[10.5px] text-[#BEBEC4]/60">
                 {isEffectiveAdmin ? 'โหมด Developer (แสดง Prompt)' : 'โหมด Creator (แสดงบีท)'}
               </span>
             </div>
 
             {turnLogs.length === 0 ? (
-              <div className="py-10 text-center text-[12px] font-mono text-[#ACACB2]/50 bg-white/[0.01] border border-white/5 rounded-2xl">
+              <div className="py-10 text-center text-[12px] font-mono text-[#BEBEC4]/50 bg-white/[0.01] border border-white/5 rounded-2xl">
                 รอเริ่มการสนทนา... ส่งข้อความแรกเพื่อเริ่มตรวจสอบ
               </div>
             ) : (
@@ -148,7 +148,7 @@ export function CompanionInspectorDrawer({
                             ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-300'
                             : log.alertType === 'warning'
                             ? 'bg-amber-500/10 border-amber-500/25 text-amber-300'
-                            : 'bg-white/[0.03] border-white/10 text-[#ACACB2]'
+                            : 'bg-white/[0.03] border-white/10 text-[#BEBEC4]'
                         }`}
                       >
                         {log.alertType === 'success' ? (
@@ -185,7 +185,7 @@ export function CompanionInspectorDrawer({
                             {log.userMsg || '...'}
                           </span>
                         </div>
-                        <div className="text-[#ACACB2] shrink-0">
+                        <div className="text-[#BEBEC4] shrink-0">
                           {isExpanded ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
                         </div>
                       </button>
@@ -216,12 +216,12 @@ export function CompanionInspectorDrawer({
                                   <span className="text-amber-400 font-bold block text-[11px]">
                                     🎬 DIRECTOR (VOICE OVER)
                                   </span>
-                                  <p className="text-[#ACACB2] italic text-[12px]">
+                                  <p className="text-[#BEBEC4] italic text-[12px]">
                                     "{log.director.response.voice_over}"
                                   </p>
                                 </div>
                               )}
-                              <div className="text-[10.5px] text-[#ACACB2]/60 pt-1 text-center">
+                              <div className="text-[10.5px] text-[#BEBEC4]/60 pt-1 text-center">
                                 🔒 ระบบปลอดภัย: โค้ด Prompt ตัวเต็มถูกสงวนสิทธิ์เฉพาะระดับ Engine Developer
                               </div>
                             </div>

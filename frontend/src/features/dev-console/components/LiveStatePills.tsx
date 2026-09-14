@@ -21,58 +21,58 @@ export function LiveStatePills({ gauges }: LiveStatePillsProps) {
         {/* Affection Pill */}
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1D1D1F] border border-white/5 text-[11.5px] font-mono">
           <Heart size={12} className="text-rose-400" />
-          <span className="text-[#ACACB2]">AFF</span>
+          <span className="text-[#BEBEC4]">AFF</span>
           <span className="font-bold text-[#F2F2F5]">{g.affection}/100</span>
         </div>
 
         {/* Desire Pill */}
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1D1D1F] border border-white/5 text-[11.5px] font-mono">
           <Flame size={12} className="text-purple-400" />
-          <span className="text-[#ACACB2]">DES</span>
+          <span className="text-[#BEBEC4]">DES</span>
           <span className="font-bold text-[#F2F2F5]">{g.desire}/100</span>
         </div>
 
         {/* Tension Pill */}
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1D1D1F] border border-white/5 text-[11.5px] font-mono">
           <Activity size={12} className="text-amber-400" />
-          <span className="text-[#ACACB2]">TENSION</span>
+          <span className="text-[#BEBEC4]">TENSION</span>
           <span className="font-bold text-[#F2F2F5]">{g.tension}/3</span>
         </div>
 
         {/* Chaos Pill */}
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1D1D1F] border border-white/5 text-[11.5px] font-mono">
           <Sparkles size={12} className="text-cyan-400" />
-          <span className="text-[#ACACB2]">CHAOS</span>
+          <span className="text-[#BEBEC4]">CHAOS</span>
           <span className="font-bold text-[#F2F2F5] uppercase">{g.chaosLevel || 'LOW'}</span>
         </div>
 
         {/* Stance Pill */}
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1D1D1F] border border-white/5 text-[11.5px] font-mono">
           <Shield size={12} className="text-blue-400" />
-          <span className="text-[#ACACB2]">STANCE</span>
+          <span className="text-[#BEBEC4]">STANCE</span>
           <span className="font-bold text-[#F2F2F5] uppercase">{g.stance || 'NEUTRAL'}</span>
         </div>
       </div>
 
       {/* 2. Kinematics & Postures: A_POS, P_POS, Dominance */}
       <div className="pt-2 border-t border-white/5 flex flex-col gap-1 text-[11px] font-mono">
-        <div className="flex items-start gap-1.5 text-[#ACACB2] truncate">
+        <div className="flex items-start gap-1.5 text-[#BEBEC4] truncate">
           <span className="text-cyan-400 font-bold shrink-0">P_POS:</span>
           <span className="text-[#F2F2F5] truncate">{g.playerPosture || 'คงท่าเดิม'}</span>
         </div>
-        <div className="flex items-start gap-1.5 text-[#ACACB2] truncate">
+        <div className="flex items-start gap-1.5 text-[#BEBEC4] truncate">
           <span className="text-fuchsia-400 font-bold shrink-0">A_POS:</span>
           <span className="text-[#F2F2F5] truncate">{g.actorPosture || 'ยืน/นั่งอิสระตามบริบท'}</span>
         </div>
         {(g.dominanceState || g.actionLock) && (
           <div className="flex items-center gap-3 pt-0.5 text-[10.5px]">
             {g.dominanceState && (
-              <span className="text-[#ACACB2]">
+              <span className="text-[#BEBEC4]">
                 DOM: <strong className={g.dominanceState === 'ACTOR_DOMINANT' ? 'text-[#EF264C]' : 'text-zinc-300'}>{g.dominanceState}</strong>
               </span>
             )}
             {g.actionLock !== undefined && (
-              <span className="text-[#ACACB2]">
+              <span className="text-[#BEBEC4]">
                 LOCK: <strong className={g.actionLock ? 'text-[#EF264C]' : 'text-zinc-500'}>{g.actionLock ? 'TRUE' : 'FALSE'}</strong>
               </span>
             )}

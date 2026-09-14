@@ -82,14 +82,14 @@ function CharacterSliderRow({
           ref={sliderRef}
           onScroll={checkScroll}
           style={{ scrollPaddingLeft: '40px' }}
-          className="flex gap-4.5 overflow-x-auto no-scrollbar scroll-smooth pl-8 sm:pl-10 xl:pl-12 pr-14 sm:pr-16 snap-x snap-proximity"
+          className="flex items-start gap-4.5 overflow-x-auto no-scrollbar scroll-smooth pl-8 sm:pl-10 xl:pl-12 pr-14 sm:pr-16 snap-x snap-proximity"
         >
           {characters.map(item => (
             <CharacterCard 
               key={item.id}
               character={item}
               onClick={() => onCardClick?.(item)}
-              style={{ width: 'calc((100% - 76px) / 5.08)', minWidth: '280px' }}
+              style={{ width: 'calc((100% - 112px) / 4.10)', minWidth: '290px' }}
             />
           ))}
         </div>

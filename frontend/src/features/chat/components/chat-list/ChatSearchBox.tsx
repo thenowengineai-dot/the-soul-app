@@ -5,14 +5,14 @@ export type { ChatSearchBoxProps }
 
 export function ChatSearchBox({ searchQuery, onSearchChange }: ChatSearchBoxProps) {
   return (
-    <div className="group flex items-center w-full h-[36px] sm:h-[38px] bg-white/5 rounded-full px-3.5 border border-white/10 focus-within:border-[#EF264C] focus-within:shadow-[0_0_14px_rgba(239,38,76,0.22)] focus-within:bg-black transition-all duration-200">
-      <Search className="text-[rgb(113,118,123)] group-focus-within:text-[#EF264C] transition-colors flex-shrink-0" size={16} strokeWidth={2} />
+    <div className="group flex items-center w-full h-[38px] sm:h-[40px] bg-transparent rounded-full px-3.5 border border-app-border hover:border-white/20 focus-within:border-[#EF264C] focus-within:hover:border-[#EF264C] transition-all duration-200">
+      <Search className="text-app-muted transition-colors flex-shrink-0" size={16} strokeWidth={2} />
       <input 
         type="text" 
         value={searchQuery}
         onChange={(e) => onSearchChange(e.target.value)}
-        placeholder="ค้นหา" 
-        className="w-full bg-transparent text-app-primary placeholder-[rgb(113,118,123)] pl-2.5 outline-none text-xs sm:text-[13px]" 
+        placeholder="ค้นหา..." 
+        className="w-full bg-transparent text-app-primary placeholder-app-muted pl-2.5 outline-none text-xs sm:text-[13px]" 
       />
     </div>
   )

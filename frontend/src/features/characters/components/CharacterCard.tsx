@@ -1,5 +1,6 @@
 import { Eye, MessageCircle } from 'lucide-react';
 import type { CharacterCardProps } from '../types';
+import { formatCompactNumber } from '../utils';
 
 export type { CharacterCardProps };
 
@@ -22,8 +23,11 @@ export default function CharacterCard({
   return (
     <div 
       onClick={onClick}
-      style={style}
-      className={`flex-shrink-0 snap-start group/card relative aspect-[9/16] rounded-2xl overflow-hidden bg-[#1c1c1e] border border-white/5 hover:border-white/20 transition-all duration-300 shadow-xl cursor-pointer ${className}`}
+      style={{
+        aspectRatio: '9 / 16',
+        ...style,
+      }}
+      className={`flex-shrink-0 snap-start self-start h-auto group/card relative aspect-[9/16] rounded-2xl overflow-hidden bg-[#1c1c1e] border border-white/5 hover:border-white/20 transition-all duration-300 shadow-xl cursor-pointer ${className}`}
     >
       {/* Thumbnail Artwork with smooth zoom on hover */}
       <img 
@@ -31,12 +35,12 @@ export default function CharacterCard({
         alt={name} 
         referrerPolicy="no-referrer"
         loading="lazy"
-        className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-300 ease-out" 
+        className="w-full h-full object-cover object-center group-hover/card:scale-105 transition-transform duration-300 ease-out" 
       />
       
-      {/* Top Left Tag (ป้ายแท็ก 'ใหม่' สไตล์ Dark Glassmorphism + สีชมพูหลักของแบรนด์ #EF264C ตามรูปเรฟ) */}
+      {/* Top Left Tag (ป้ายแท็ก 'ใหม่' สไตล์ Dark Glassmorphism สี่เหลี่ยมขอบมนน้อยลง + สีแบรนด์ #EF264C) */}
       {displayBadge && (
-        <div className="absolute top-2.5 left-2.5 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-[#EF264C]/60 shadow-[0_0_12px_rgba(239,38,76,0.3)] select-none">
+        <div className="absolute top-2.5 left-2.5 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/65 backdrop-blur-md border border-[#EF264C]/60 shadow-[0_0_12px_rgba(239,38,76,0.25)] select-none">
           <span className="w-1.5 h-1.5 rounded-full bg-[#EF264C] shadow-[0_0_8px_#EF264C] animate-pulse" />
           <span className="text-[#EF264C] text-[11px] font-bold tracking-wider leading-none">
             {displayBadge}
@@ -68,15 +72,15 @@ export default function CharacterCard({
             {quote}
           </p>
 
-          {/* Stats: Views & Message Count with Icons */}
+          {/* Stats: Views & Message Count with Icons (Compact k/M formatting) */}
           <div className="flex items-center gap-3.5 mt-2 text-[11px] sm:text-[12px] text-app-secondary font-normal">
             <span className="flex items-center gap-1.5">
               <Eye size={13.5} className="text-app-secondary flex-shrink-0" strokeWidth={2} />
-              <span>{views}</span>
+              <span>{formatCompactNumber(views)}</span>
             </span>
             <span className="flex items-center gap-1.5">
               <MessageCircle size={13.5} className="text-app-secondary flex-shrink-0" strokeWidth={2} />
-              <span>{messages}</span>
+              <span>{formatCompactNumber(messages)}</span>
             </span>
           </div>
         </div>

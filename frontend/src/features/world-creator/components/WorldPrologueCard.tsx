@@ -87,7 +87,7 @@ export default function WorldPrologueCard({
             </button>
             <button
               onClick={onCancelEdit}
-              className="px-3 py-1.5 rounded-full border border-[#2F3336] hover:bg-white/[0.08] hover:border-white/35 text-[#ACACB2] text-[12.5px] transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
+              className="px-3 py-1.5 rounded-full border border-[#2F3336] hover:bg-white/[0.08] hover:border-white/35 text-[#BEBEC4] text-[12.5px] transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
             >
               <X size={14} />
               <span>ยกเลิก</span>
@@ -109,7 +109,7 @@ export default function WorldPrologueCard({
         <div className="flex flex-col gap-4">
           {/* Edit Premise */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-[12px] text-[#ACACB2] font-medium flex items-center gap-1.5">
+            <label className="text-[12px] text-[#BEBEC4] font-medium flex items-center gap-1.5">
               <Sparkles size={12} className="text-[#EF264C]" />
               บริบทสถานการณ์เปิดฉาก (Opening Premise)
             </label>
@@ -123,7 +123,7 @@ export default function WorldPrologueCard({
 
           {/* Edit Question */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-[12px] text-[#ACACB2] font-medium flex items-center gap-1.5">
+            <label className="text-[12px] text-[#BEBEC4] font-medium flex items-center gap-1.5">
               <HelpCircle size={12} className="text-[#EF264C]" />
               คำถามตัดสินใจเริ่มต้น (Role Decision Question)
             </label>
@@ -137,7 +137,7 @@ export default function WorldPrologueCard({
 
           {/* Edit Choices */}
           <div className="flex flex-col gap-2.5">
-            <label className="text-[12px] text-[#ACACB2] font-medium">
+            <label className="text-[12px] text-[#BEBEC4] font-medium">
               ตัวเลือกเริ่มต้น & คุณลักษณะแฝง (Choices & Hidden Traits)
             </label>
             {editChoices.map((choice, idx) => (
@@ -145,7 +145,7 @@ export default function WorldPrologueCard({
                 key={idx}
                 className="p-3.5 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex flex-col gap-2"
               >
-                <div className="flex items-center justify-between text-[11px] text-[#ACACB2]">
+                <div className="flex items-center justify-between text-[11px] text-[#BEBEC4]">
                   <span>ตัวเลือกที่ {idx + 1}</span>
                   <div className="flex items-center gap-1.5">
                     <span>คุณลักษณะแฝง:</span>
@@ -190,7 +190,7 @@ export default function WorldPrologueCard({
 
           {/* Question & Choices */}
           <div className="flex flex-col gap-2.5">
-            <div className="flex items-center gap-1.5 text-[12px] text-[#ACACB2] font-medium">
+            <div className="flex items-center gap-1.5 text-[12px] text-[#BEBEC4] font-medium">
               <HelpCircle size={13} className="text-[#EF264C]" />
               <span className="text-[#F2F2F5] font-medium">
                 {prologue?.question || DEFAULT_PROLOGUE.question}
@@ -204,7 +204,7 @@ export default function WorldPrologueCard({
                   className="p-3.5 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 hover:border-white/20 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2.5"
                 >
                   <div className="flex items-start gap-2.5">
-                    <span className="text-[12px] font-mono text-[#ACACB2] shrink-0 mt-0.5">
+                    <span className="text-[12px] font-mono text-[#BEBEC4] shrink-0 mt-0.5">
                       0{idx + 1}.
                     </span>
                     <p className="text-[13.5px] text-[#F2F2F5] leading-normal">

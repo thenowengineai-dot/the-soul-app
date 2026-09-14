@@ -12,6 +12,7 @@ export function ChatList({
   selectedChatId, 
   onSelectChat, 
   isOpen = true,
+  dividerVariant = 'symmetric',
 }: ChatListProps) {
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -35,7 +36,7 @@ export function ChatList({
         >
           
           {/* Sticky Header & Search Box (X / Twitter Frosted Glass Style) */}
-          <div className="sticky top-0 z-20 px-3.5 sm:px-4 pt-3.5 sm:pt-4 pb-2 sm:pb-2.5 bg-[rgb(13,13,13)]/80 backdrop-blur-md">
+          <div className="sticky top-0 z-20 px-3.5 sm:px-4 pt-3.5 sm:pt-4 pb-3 sm:pb-3.5 bg-[rgb(13,13,13)]/80 backdrop-blur-md flex flex-col gap-2.5">
             <ChatListHeader onBackToHome={onBackToHome} />
             <ChatSearchBox searchQuery={searchQuery} onSearchChange={setSearchQuery} />
           </div>
@@ -43,17 +44,19 @@ export function ChatList({
           {/* List of Chats */}
           <div className="pt-1 pb-2">
             {filteredChats.length > 0 ? (
-              filteredChats.map(chat => (
+              filteredChats.map((chat, index) => (
                 <ChatItem 
                   key={chat.id} 
                   {...chat} 
                   isActive={selectedChatId === chat.id}
+                  showDivider={index < filteredChats.length - 1}
+                  dividerVariant={dividerVariant}
                   onClick={() => onSelectChat?.(chat)} 
                 />
               ))
             ) : (
               <div className="py-12 px-4 text-center select-none">
-                <p className="text-[13px] text-app-secondary/60 font-light">
+                <p className="text-[13px] text-app-muted font-light">
                   ไม่มีบทสนทนาอื่น
                 </p>
               </div>

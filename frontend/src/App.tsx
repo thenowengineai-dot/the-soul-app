@@ -317,6 +317,8 @@ function App() {
           {/* Full-Width Top Bar */}
           <HomeTopBar 
             onLogoClick={handleBackToHome}
+            onToggleSidebar={() => setIsSidebarExpanded(prev => !prev)}
+            isSidebarExpanded={isSidebarExpanded}
             coinBalance={coinBalance}
             notificationCount={notificationCount}
             onCoinClick={handleCoinClick}
@@ -373,6 +375,8 @@ function App() {
           {/* Full-Width Top Bar */}
           <HomeTopBar 
             onLogoClick={handleBackToHome}
+            onToggleSidebar={() => setIsSidebarExpanded(prev => !prev)}
+            isSidebarExpanded={isSidebarExpanded}
             coinBalance={coinBalance}
             notificationCount={notificationCount}
             onCoinClick={handleCoinClick}

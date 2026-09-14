@@ -108,7 +108,7 @@ export default function WorldPersonaCard({
             </button>
             <button
               onClick={onCancelEdit}
-              className="px-3 py-1.5 rounded-full border border-[#2F3336] hover:bg-white/[0.08] hover:border-white/35 text-[#ACACB2] text-[12.5px] transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
+              className="px-3 py-1.5 rounded-full border border-[#2F3336] hover:bg-white/[0.08] hover:border-white/35 text-[#BEBEC4] text-[12.5px] transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
             >
               <X size={14} />
               <span>ยกเลิก</span>
@@ -130,7 +130,7 @@ export default function WorldPersonaCard({
         <div className="flex flex-col gap-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
-              <label className="text-[12px] text-[#ACACB2]">ตำแหน่ง/บทบาทผู้เล่น (Player Title)</label>
+              <label className="text-[12px] text-[#BEBEC4]">ตำแหน่ง/บทบาทผู้เล่น (Player Title)</label>
               <input
                 type="text"
                 value={editTitle}
@@ -139,7 +139,7 @@ export default function WorldPersonaCard({
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-[12px] text-[#ACACB2]">สรรพนาม (Pronouns)</label>
+              <label className="text-[12px] text-[#BEBEC4]">สรรพนาม (Pronouns)</label>
               <input
                 type="text"
                 value={editPronouns}
@@ -151,7 +151,7 @@ export default function WorldPersonaCard({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
-              <label className="text-[12px] text-[#ACACB2]">ฉายา/ชื่อเรียก (Nicknames)</label>
+              <label className="text-[12px] text-[#BEBEC4]">ฉายา/ชื่อเรียก (Nicknames)</label>
               <input
                 type="text"
                 value={editNicknames}
@@ -160,7 +160,7 @@ export default function WorldPersonaCard({
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-[12px] text-[#ACACB2]">ลักษณะนิสัย (Personality Vibe)</label>
+              <label className="text-[12px] text-[#BEBEC4]">ลักษณะนิสัย (Personality Vibe)</label>
               <input
                 type="text"
                 value={editPersonality}
@@ -171,7 +171,7 @@ export default function WorldPersonaCard({
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-[12px] text-[#ACACB2]">คำอธิบายสรุปบทบาท (Identity Brief)</label>
+            <label className="text-[12px] text-[#BEBEC4]">คำอธิบายสรุปบทบาท (Identity Brief)</label>
             <textarea
               value={editBrief}
               onChange={(e) => setEditBrief(e.target.value)}
@@ -181,7 +181,7 @@ export default function WorldPersonaCard({
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-[12px] text-[#ACACB2]">เควสเอาชีวิตรอดหลัก (Main Survival Quest)</label>
+            <label className="text-[12px] text-[#BEBEC4]">เควสเอาชีวิตรอดหลัก (Main Survival Quest)</label>
             <textarea
               value={editMainQuest}
               onChange={(e) => setEditMainQuest(e.target.value)}
@@ -195,7 +195,7 @@ export default function WorldPersonaCard({
               พลวัตความสัมพันธ์และอำนาจ (Dynamic & Power)
             </span>
             <div className="flex flex-col gap-1">
-              <label className="text-[11px] text-[#ACACB2]">หัวข้อความสัมพันธ์ (Label)</label>
+              <label className="text-[11px] text-[#BEBEC4]">หัวข้อความสัมพันธ์ (Label)</label>
               <input
                 type="text"
                 value={editDynamicLabel}
@@ -204,7 +204,7 @@ export default function WorldPersonaCard({
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-[11px] text-[#ACACB2]">ความลับของ [ACTOR] ที่ผู้เล่นไม่รู้ (Actor Secret)</label>
+              <label className="text-[11px] text-[#BEBEC4]">ความลับของ [ACTOR] ที่ผู้เล่นไม่รู้ (Actor Secret)</label>
               <textarea
                 value={editActorSecret}
                 onChange={(e) => setEditActorSecret(e.target.value)}
@@ -213,7 +213,7 @@ export default function WorldPersonaCard({
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-[11px] text-[#ACACB2]">สมดุลอำนาจ (Power Balance)</label>
+              <label className="text-[11px] text-[#BEBEC4]">สมดุลอำนาจ (Power Balance)</label>
               <textarea
                 value={editPowerBalance}
                 onChange={(e) => setEditPowerBalance(e.target.value)}
@@ -234,7 +234,7 @@ export default function WorldPersonaCard({
               <p className="text-[14px] text-[#F2F2F5] font-medium mt-0.5">
                 {currentPersona.identity?.title}
               </p>
-              <p className="text-[12.5px] text-[#ACACB2] leading-relaxed mt-0.5">
+              <p className="text-[12.5px] text-[#BEBEC4] leading-relaxed mt-0.5">
                 {currentPersona.identity?.brief}
               </p>
             </div>
@@ -251,9 +251,9 @@ export default function WorldPersonaCard({
               </div>
 
               <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-[#2F3336]/60 text-[11.5px]">
-                <span className="text-[#ACACB2]">ฉายา:</span>
+                <span className="text-[#BEBEC4]">ฉายา:</span>
                 <span className="text-[#F2F2F5] font-medium">{currentPersona.nicknames}</span>
-                <span className="text-[#ACACB2] ml-2">สรรพนาม:</span>
+                <span className="text-[#BEBEC4] ml-2">สรรพนาม:</span>
                 <span className="text-[#F2F2F5]">{currentPersona.pronouns}</span>
               </div>
             </div>
@@ -261,7 +261,7 @@ export default function WorldPersonaCard({
 
           {/* Personality Vibe */}
           <div className="px-4 py-2.5 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex items-center gap-2">
-            <span className="text-[12px] text-[#ACACB2] shrink-0 font-medium">ลักษณะนิสัย:</span>
+            <span className="text-[12px] text-[#BEBEC4] shrink-0 font-medium">ลักษณะนิสัย:</span>
             <span className="text-[13px] text-[#F2F2F5]">{currentPersona.personality_vibe}</span>
           </div>
 
@@ -279,7 +279,7 @@ export default function WorldPersonaCard({
             </div>
 
             <div className="flex flex-col gap-1">
-              <span className="text-[11px] uppercase tracking-wider text-[#ACACB2]">
+              <span className="text-[11px] uppercase tracking-wider text-[#BEBEC4]">
                 ความลับของตัวละคร (Actor Secret):
               </span>
               <p className="text-[13px] text-[#F2F2F5] leading-relaxed bg-black/40 p-3 rounded-xl border border-[#2F3336]/60">
@@ -288,11 +288,11 @@ export default function WorldPersonaCard({
             </div>
 
             <div className="flex flex-col gap-1">
-              <span className="text-[11px] uppercase tracking-wider text-[#ACACB2] flex items-center gap-1">
+              <span className="text-[11px] uppercase tracking-wider text-[#BEBEC4] flex items-center gap-1">
                 <Scale size={11} className="text-[#EF264C]" />
                 สมดุลอำนาจ (Power Balance):
               </span>
-              <p className="text-[12.5px] text-[#ACACB2] leading-relaxed bg-black/40 p-3 rounded-xl border border-[#2F3336]/60">
+              <p className="text-[12.5px] text-[#BEBEC4] leading-relaxed bg-black/40 p-3 rounded-xl border border-[#2F3336]/60">
                 {currentPersona.dynamic_and_power?.power_balance}
               </p>
             </div>

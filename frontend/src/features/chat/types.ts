@@ -8,6 +8,7 @@ export interface ChatMessage {
   type: ChatMessageType
   text: string
   sender?: ChatSender
+  read?: boolean
 }
 
 export interface ChatConversation {
@@ -35,6 +36,8 @@ export interface ChatConversation {
   sessionTriggerKey?: number
   isCreator?: boolean
   isTyping?: boolean
+  badge?: string
+  isSample?: boolean
 }
 
 // ----------------------------------------------------------------------
@@ -48,12 +51,15 @@ export interface ChatItemProps {
   name: string
   verified?: boolean
   locked?: boolean
+  badge?: string
   message: string
   time: string
   unread?: boolean
   unreadCount?: number
   isActive?: boolean
   isTyping?: boolean
+  showDivider?: boolean
+  dividerVariant?: 'symmetric' | 'indented'
   onClick?: () => void
 }
 
@@ -72,6 +78,7 @@ export interface ChatListProps {
   selectedChatId?: number | string
   onSelectChat?: (chat: ChatConversation) => void
   isOpen?: boolean
+  dividerVariant?: 'symmetric' | 'indented'
   onToggleCollapse?: () => void
 }
 
@@ -109,6 +116,7 @@ export interface MessageBubbleProps {
   message: ChatMessage
   isMe?: boolean
   isLast?: boolean
+  isRead?: boolean
   marginTop?: string
   chatAvatar?: string
   chatName?: string
@@ -118,6 +126,7 @@ export interface MessageListProps {
   messages: ChatMessage[]
   chatAvatar?: string
   chatName?: string
+  showTypingIndicator?: boolean
   endRef?: React.Ref<HTMLDivElement>
 }
 
@@ -127,6 +136,8 @@ export interface ChatInputBarProps {
   onSendMessage?: () => void
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void
   isStreaming?: boolean
+  isTyping?: boolean
+  chatAvatar?: string
   chatName?: string
 }
 
@@ -205,6 +216,7 @@ export interface CharacterHudData {
   image?: string
   pose: string
   outfit: string
+  playerPose?: string
   relationship: CharacterGauge
   desire: CharacterGauge
   environment: CharacterEnvironment
@@ -222,6 +234,7 @@ export interface HudVisualCardProps {
   name: string
   outfit: string
   pose: string
+  playerPose?: string
 }
 
 export interface HudIdentityMetaProps {

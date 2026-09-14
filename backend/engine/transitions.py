@@ -101,32 +101,57 @@ class SceneTransitionManager:
         return normalized
 
     @staticmethod
-    def get_first_phase_and_beat(event_data: dict) -> tuple[str | None, str | None]:
+    def get_first_scene_and_beat(event_data: dict) -> tuple[str | None, str | None]:
+        """
+        Official Modern Scene API:
+        Returns (first_scene_id, first_beat_id) from the scenario/event data.
+        """
         scenes = SceneTransitionManager.normalize_scenes(event_data)
         if not scenes:
             return None, None
         first_scene = scenes[0]
-        first_scene_id = first_scene.get("scene_id")
+        first_scene_id = first_scene.get("scene_id") or "scene_1"
         beats = first_scene.get("beats", [])
         first_beat_id = beats[0].get("beat_id") if beats and isinstance(beats[0], dict) else None
         return first_scene_id, first_beat_id
 
     @staticmethod
-    def get_scene_data(event_data: dict, scene_id: str) -> dict:
+    def get_first_phase_and_beat(event_data: dict) -> tuple[str | None, str | None]:
+        """Backwards-compatible alias for get_first_scene_and_beat."""
+        return SceneTransitionManager.get_first_scene_and_beat(event_data)
+
+    @staticmethod
+    def get_scene_data(event_data: dict, scene_id: Optional[str] = None) -> dict:
+        """
+        Returns the dictionary of the specified scene.
+        Defensive: If scene_id is None or not found, safely returns the first scene.
+        """
         scenes = SceneTransitionManager.normalize_scenes(event_data)
+        if not scenes:
+            return {}
+        if not scene_id:
+            return scenes[0]
         for s in scenes:
             if s.get("scene_id") == scene_id:
                 return s
-        return {}
+        return scenes[0]
 
     @staticmethod
-    def get_beat_data(event_data: dict, scene_id: str, beat_id: str) -> dict:
+    def get_beat_data(event_data: dict, scene_id: Optional[str] = None, beat_id: Optional[str] = None) -> dict:
+        """
+        Returns the dictionary of the specified beat within the scene.
+        Defensive: If beat_id is None or not found, safely returns the first beat.
+        """
         scene = SceneTransitionManager.get_scene_data(event_data, scene_id)
         beats = scene.get("beats", [])
+        if not beats:
+            return {}
+        if not beat_id:
+            return beats[0] if isinstance(beats[0], dict) else {}
         for b in beats:
             if isinstance(b, dict) and b.get("beat_id") == beat_id:
                 return b
-        if beats and isinstance(beats[0], dict):
+        if isinstance(beats[0], dict):
             return beats[0]
         return {}
 

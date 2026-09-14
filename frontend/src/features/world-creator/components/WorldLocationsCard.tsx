@@ -119,7 +119,7 @@ export default function WorldLocationsCard({
             </button>
             <button
               onClick={onCancelEdit}
-              className="px-3 py-1.5 rounded-full border border-[#2F3336] hover:bg-white/[0.08] hover:border-white/35 text-[#ACACB2] text-[12.5px] transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
+              className="px-3 py-1.5 rounded-full border border-[#2F3336] hover:bg-white/[0.08] hover:border-white/35 text-[#BEBEC4] text-[12.5px] transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
             >
               <X size={14} />
               <span>ยกเลิก</span>
@@ -147,12 +147,12 @@ export default function WorldLocationsCard({
               className={`px-3 py-1.5 rounded-full text-[12px] sm:text-[12.5px] font-medium transition-all shrink-0 cursor-pointer active:scale-95 flex items-center gap-1.5 ${
                 isCurrent
                   ? 'bg-[#0B0B0C] border border-[#EF264C]/70 text-[#F2F2F5] shadow-sm'
-                  : 'bg-transparent text-[#ACACB2] border border-[#2F3336] hover:border-white/20 hover:text-[#F2F2F5]'
+                  : 'bg-transparent text-[#BEBEC4] border border-[#2F3336] hover:border-white/20 hover:text-[#F2F2F5]'
               }`}
             >
               <span
                 className={`w-1.5 h-1.5 rounded-full ${
-                  isCurrent ? 'bg-[#EF264C]' : 'bg-[#ACACB2]/40'
+                  isCurrent ? 'bg-[#EF264C]' : 'bg-[#BEBEC4]/40'
                 }`}
               />
               <span>{locName}</span>
@@ -165,7 +165,7 @@ export default function WorldLocationsCard({
       {isEditing ? (
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
-            <label className="text-[12px] text-[#ACACB2]">อารมณ์พื้นฐานของฉาก (Base Mood)</label>
+            <label className="text-[12px] text-[#BEBEC4]">อารมณ์พื้นฐานของฉาก (Base Mood)</label>
             <input
               type="text"
               value={editLocation.base_mood}
@@ -198,7 +198,7 @@ export default function WorldLocationsCard({
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-[12px] text-[#ACACB2] flex items-center gap-1.5">
+            <label className="text-[12px] text-[#BEBEC4] flex items-center gap-1.5">
               <Maximize2 size={13} />
               ผังพื้นที่และมิติกายภาพ (Spatial Layout)
             </label>
@@ -216,7 +216,7 @@ export default function WorldLocationsCard({
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-[12px] text-[#ACACB2] flex items-center gap-1.5">
+            <label className="text-[12px] text-[#BEBEC4] flex items-center gap-1.5">
               <Package size={13} />
               สิ่งของประกอบฉากสำคัญ (Key Furniture / Props)
             </label>
@@ -234,7 +234,7 @@ export default function WorldLocationsCard({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[12px] text-[#ACACB2] flex items-center gap-1.5">
+            <label className="text-[12px] text-[#BEBEC4] flex items-center gap-1.5">
               <Volume2 size={13} />
               ประสาทสัมผัสแวดล้อม (Ambient Sensory Cues - บรรทัดละ 1 ข้อ)
             </label>
@@ -260,7 +260,7 @@ export default function WorldLocationsCard({
         <div className="flex flex-col gap-4">
           {/* Base Mood: กล่องซ้อนด้านใน #0B0B0C */}
           <div className="p-4 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex flex-col gap-1">
-            <span className="text-[11px] uppercase tracking-wider text-[#ACACB2] font-medium">
+            <span className="text-[11px] uppercase tracking-wider text-[#BEBEC4] font-medium">
               อารมณ์พื้นฐานของฉาก (Base Mood)
             </span>
             <p className="text-[13.5px] sm:text-[14px] text-[#F2F2F5] leading-relaxed font-normal">
@@ -281,7 +281,7 @@ export default function WorldLocationsCard({
 
           {/* Spatial Layout: กล่องซ้อนด้านใน #0B0B0C */}
           <div className="p-4 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex flex-col gap-1">
-            <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-[#ACACB2] font-medium">
+            <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-[#BEBEC4] font-medium">
               <Maximize2 size={12} className="text-[#EF264C]" />
               <span>ผังพื้นที่กายภาพ (Spatial Layout)</span>
             </div>
@@ -294,7 +294,7 @@ export default function WorldLocationsCard({
           <div className="p-3.5 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex items-center gap-2.5">
             <Package size={15} className="text-[#EF264C] shrink-0" />
             <div className="flex flex-col">
-              <span className="text-[11px] uppercase tracking-wider text-[#ACACB2]">
+              <span className="text-[11px] uppercase tracking-wider text-[#BEBEC4]">
                 วัตถุประกอบฉากสำคัญ (Key Furniture / Props)
               </span>
               <span className="text-[14px] text-[#F2F2F5] font-normal">
@@ -305,7 +305,7 @@ export default function WorldLocationsCard({
 
           {/* Sensory Cues List: กล่องซ้อนด้านใน #0B0B0C */}
           <div className="p-3.5 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80 flex flex-col gap-2">
-            <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-[#ACACB2] font-medium">
+            <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-[#BEBEC4] font-medium">
               <Volume2 size={12} className="text-[#EF264C]" />
               <span>ประสาทสัมผัสแวดล้อม (Ambient Sensory Cues)</span>
             </div>

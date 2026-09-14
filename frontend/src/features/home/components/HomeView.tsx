@@ -99,7 +99,7 @@ function HomeView({
       className="flex-1 flex flex-col h-full overflow-y-auto overflow-x-hidden no-scrollbar relative z-10 bg-[rgb(13,13,13)] backdrop-blur-xl overscroll-none"
     >
       {/* Sticky Pill Bar: ฝั่งซ้าย Filter & Sort Controls | เส้นแบ่ง | ฝั่งขวา Category Pills */}
-      <div className="sticky top-0 z-20 bg-[rgb(13,13,13)]/95 backdrop-blur-xl border-b border-white/[0.06] flex items-center gap-3 px-4 sm:px-6 py-2.5 w-full transition-all duration-300 select-none">
+      <div className="sticky top-0 z-20 bg-[rgb(13,13,13)]/95 backdrop-blur-xl border-b border-white/[0.06] flex items-center gap-3 px-4 sm:px-6 py-2 sm:py-2.5 w-full transition-all duration-300 select-none">
         
         {/* ฝั่งซ้าย: Controls & Sorting (เพศ, กำลังมาแรง, ยอดนิยม, ล่าสุด สไตล์ขอบสีแบรนด์หลัก #EF264C) */}
         <div className="flex-shrink-0 flex items-center gap-2">
@@ -109,7 +109,7 @@ function HomeView({
               <button
                 type="button"
                 onClick={() => setIsGenderOpen(!isGenderOpen)}
-                className={`px-3 py-1 rounded-full border transition-all flex items-center gap-1.5 text-[13px] font-medium cursor-pointer whitespace-nowrap flex-shrink-0 ${
+                className={`h-[31px] sm:h-[32px] px-3.5 rounded-full border transition-all flex items-center gap-1.5 text-[13px] font-medium cursor-pointer whitespace-nowrap flex-shrink-0 ${
                   selectedGender !== 'all' || isGenderOpen
                     ? 'border-[#EF264C] bg-[#EF264C]/20 text-app-primary shadow-[0_0_12px_rgba(239,38,76,0.25)] font-semibold'
                     : 'border-[#EF264C]/40 hover:border-[#EF264C]/80 bg-[#EF264C]/5 hover:bg-[#EF264C]/10 text-app-primary'
@@ -161,7 +161,7 @@ function HomeView({
                   key={sort.id}
                   type="button"
                   onClick={() => setActiveSort(isActive ? null : sort.id)}
-                  className={`px-3 py-1 rounded-full border transition-all flex items-center gap-1.5 text-[13px] font-medium cursor-pointer whitespace-nowrap flex-shrink-0 ${
+                  className={`h-[31px] sm:h-[32px] px-3.5 rounded-full border transition-all flex items-center gap-1.5 text-[13px] font-medium cursor-pointer whitespace-nowrap flex-shrink-0 ${
                     isActive
                       ? 'border-[#EF264C] bg-[#EF264C]/20 text-app-primary font-semibold shadow-[0_0_12px_rgba(239,38,76,0.25)]'
                       : 'border-[#EF264C]/40 hover:border-[#EF264C]/80 bg-[#EF264C]/5 hover:bg-[#EF264C]/10 text-app-primary'
@@ -188,7 +188,7 @@ function HomeView({
                   type="button"
                   onClick={() => setSelectedCategory(category)}
                   className={`
-                    px-3.5 py-1 rounded-full text-[13px] font-medium transition-all whitespace-nowrap cursor-pointer flex-shrink-0
+                    h-[31px] sm:h-[32px] px-3.5 rounded-full text-[13px] font-medium transition-all whitespace-nowrap cursor-pointer flex-shrink-0 flex items-center justify-center
                     ${isActive 
                       ? 'bg-white text-black font-semibold shadow-md' 
                       : 'bg-white/[0.06] hover:bg-white/[0.12] text-app-primary backdrop-blur-md border border-white/[0.08] hover:border-white/20'}

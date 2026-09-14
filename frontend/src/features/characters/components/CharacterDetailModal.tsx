@@ -1,8 +1,19 @@
 import { useState, useRef, useEffect, type MouseEvent } from 'react'
-import { X, Heart, Share, Eye, MessageCircle, Clock, Lock, MapPin, Sparkles } from 'lucide-react'
+import { 
+  X, 
+  Heart, 
+  Share, 
+  Eye, 
+  MessageCircle, 
+  Clock, 
+  Lock, 
+  MapPin, 
+  Sparkles
+} from 'lucide-react'
 import SliderNavButton from './SliderNavButton'
 import type { CharacterDetailModalProps } from '../types'
 import { DEFAULT_CHARACTER_STATS, DEFAULT_CHARACTER_EVENTS } from '../mockData'
+import { formatCompactNumber } from '../utils'
 
 export type { CharacterDetailModalProps }
 
@@ -195,9 +206,9 @@ export default function CharacterDetailModal({
                 referrerPolicy="no-referrer"
               />
 
-              {/* ป้ายแท็ก 'ใหม่' มุมบนซ้ายของการ์ด */}
+              {/* ป้ายแท็ก 'ใหม่' มุมบนซ้ายของการ์ด สไตล์ Dark Glassmorphism สี่เหลี่ยมขอบมนน้อยลง */}
               {character.badge && (
-                <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-[#EF264C]/60 shadow-[0_0_12px_rgba(239,38,76,0.3)] select-none">
+                <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/65 backdrop-blur-md border border-[#EF264C]/60 shadow-[0_0_12px_rgba(239,38,76,0.25)] select-none">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#EF264C] shadow-[0_0_8px_#EF264C] animate-pulse" />
                   <span className="text-[#EF264C] text-[11px] font-bold tracking-wider leading-none">
                     {character.badge}
@@ -254,7 +265,7 @@ export default function CharacterDetailModal({
                   <span className="font-bold text-[13.5px] text-[#F2F2F5] truncate leading-tight hover:underline cursor-pointer">
                     {creatorName}
                   </span>
-                  <div className="flex items-center gap-1.5 text-[11.5px] text-[#ACACB2] mt-0.5 truncate">
+                  <div className="flex items-center gap-1.5 text-[11.5px] text-[#BEBEC4] mt-0.5 truncate">
                     <span>{creatorSubscribers}</span>
                     <span className="text-white/20 font-normal">·</span>
                     <span>{creatorInteractions}</span>
@@ -324,24 +335,24 @@ export default function CharacterDetailModal({
               </div>
 
               {/* ข้อความสเตตัสตัวละคร (ข้อความรอง สไตล์ Editorial / Fashion E-commerce ขนาดเด่นชัดเจนขึ้น) */}
-              <p className="mt-2.5 sm:mt-3 text-[18px] sm:text-[19.5px] lg:text-[21px] text-[#ACACB2] leading-relaxed font-normal">
+              <p className="mt-2.5 sm:mt-3 text-[18px] sm:text-[19.5px] lg:text-[21px] text-app-secondary leading-relaxed font-normal">
                 {character.quote}
               </p>
 
-              {/* แถบสถิติ: 4,010,000 ครั้ง · 130,000 · 10 นาทีที่แล้ว (น้ำหนัก 400 font-normal) */}
-              <div className="flex items-center flex-wrap gap-2.5 sm:gap-3 mt-3 text-[13px] sm:text-[14px] text-[#ACACB2] font-normal">
+              {/* แถบสถิติ: 4.0M ครั้ง · 130k · 10 นาทีที่แล้ว (น้ำหนัก 400 font-normal) */}
+              <div className="flex items-center flex-wrap gap-2.5 sm:gap-3 mt-3 text-[13px] sm:text-[14px] text-app-secondary font-normal">
                 <span className="flex items-center gap-1.5">
-                  <Eye size={16} strokeWidth={1.8} className="flex-shrink-0 text-[#ACACB2]" />
-                  <span>{character.views} ครั้ง</span>
+                  <Eye size={16} strokeWidth={1.8} className="flex-shrink-0 text-app-secondary" />
+                  <span>{formatCompactNumber(character.views)} ครั้ง</span>
                 </span>
                 <span className="text-white/20">·</span>
                 <span className="flex items-center gap-1.5">
-                  <MessageCircle size={16} strokeWidth={1.8} className="flex-shrink-0 text-[#ACACB2]" />
-                  <span>{character.messages}</span>
+                  <MessageCircle size={16} strokeWidth={1.8} className="flex-shrink-0 text-app-secondary" />
+                  <span>{formatCompactNumber(character.messages)}</span>
                 </span>
                 <span className="text-white/20">·</span>
                 <span className="flex items-center gap-1.5">
-                  <Clock size={16} strokeWidth={1.8} className="flex-shrink-0 text-[#ACACB2]" />
+                  <Clock size={16} strokeWidth={1.8} className="flex-shrink-0 text-app-secondary" />
                   <span>{updatedTime}</span>
                 </span>
               </div>
@@ -351,7 +362,7 @@ export default function CharacterDetailModal({
                 {hashtags.map((tag, idx) => (
                   <span
                     key={idx}
-                    className="px-2.5 py-1 rounded-full bg-[#18181b] text-[11.5px] sm:text-[12px] text-[#ACACB2] hover:text-[#EF264C] hover:underline transition-colors cursor-pointer select-none"
+                    className="px-2.5 py-1 rounded-full bg-[#18181b] text-[11.5px] sm:text-[12px] text-[#BEBEC4] hover:text-[#EF264C] hover:underline transition-colors cursor-pointer select-none"
                   >
                     {tag.startsWith('#') ? tag : `#${tag}`}
                   </span>
@@ -387,7 +398,7 @@ export default function CharacterDetailModal({
                         <span className="text-[#F2F2F5] font-medium truncate">
                           {stat.label}
                         </span>
-                        <span className="text-[#ACACB2] font-semibold text-[11.5px] ml-2 shrink-0">
+                        <span className="text-[#BEBEC4] font-semibold text-[11.5px] ml-2 shrink-0">
                           {stat.value}/10
                         </span>
                       </div>
@@ -409,7 +420,7 @@ export default function CharacterDetailModal({
                   <h3 className="text-[17px] sm:text-[18px] font-bold text-[#F2F2F5] tracking-tight">
                     บทเหตุการณ์
                   </h3>
-                  <span className="text-[12px] sm:text-[12.5px] font-medium text-[#ACACB2]">
+                  <span className="text-[12px] sm:text-[12.5px] font-medium text-[#BEBEC4]">
                     ปลดล็อกแล้ว {unlockedCount}/{totalEvents}
                   </span>
                 </div>
@@ -469,7 +480,7 @@ export default function CharacterDetailModal({
                             <MapPin size={11} className="text-[#EF264C] shrink-0" />
                             <span className="truncate">{event.location}</span>
                           </div>
-                          <p className="text-[10px] text-[#ACACB2] truncate mt-1 leading-tight">
+                          <p className="text-[10px] text-[#BEBEC4] truncate mt-1 leading-tight">
                             {event.title}
                           </p>
                         </div>

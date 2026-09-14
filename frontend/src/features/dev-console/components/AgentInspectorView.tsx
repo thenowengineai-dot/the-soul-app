@@ -38,7 +38,7 @@ export function AgentInspectorView({ turnLog }: AgentInspectorViewProps) {
             className={`flex-1 py-1.5 px-2 rounded-lg text-[11px] font-mono font-bold transition-all cursor-pointer text-center ${
               activeAgent === agent
                 ? 'bg-[#2F3336] text-[#F2F2F5] shadow-sm'
-                : 'text-[#ACACB2] hover:text-[#F2F2F5] hover:bg-white/5'
+                : 'text-[#BEBEC4] hover:text-[#F2F2F5] hover:bg-white/5'
             }`}
           >
             {agent === 'actor' ? '🎭 ACTOR' : agent === 'director' ? '🎬 DIRECTOR' : '⚖️ EVALUATOR'}
@@ -48,7 +48,7 @@ export function AgentInspectorView({ turnLog }: AgentInspectorViewProps) {
 
       {/* 2. Agent Content */}
       {!agentData || (!agentData.prompt && !agentData.response && !agentData.thinking && !thinkingText) ? (
-        <div className="py-6 text-center text-[12px] font-mono text-[#ACACB2]/60">
+        <div className="py-6 text-center text-[12px] font-mono text-[#BEBEC4]/60">
           ยังไม่มีข้อมูล Debug ของ {activeAgent.toUpperCase()} ในเทิร์นนี้
         </div>
       ) : (
@@ -79,7 +79,7 @@ export function AgentInspectorView({ turnLog }: AgentInspectorViewProps) {
           {/* B. AI Raw Output JSON */}
           {agentData.response && (
             <div className="flex flex-col rounded-xl overflow-hidden border border-[#2F3336] bg-[#090909]">
-              <div className="flex items-center justify-between px-3 py-1.5 bg-[#1D1D1F] border-b border-[#2F3336] text-[10.5px] font-mono font-bold text-[#ACACB2]">
+              <div className="flex items-center justify-between px-3 py-1.5 bg-[#1D1D1F] border-b border-[#2F3336] text-[10.5px] font-mono font-bold text-[#BEBEC4]">
                 <span className="flex items-center gap-1.5">
                   <Code size={12} className="text-emerald-400" />
                   <span className="text-[#F2F2F5]">RAW OUTPUT (JSON)</span>
@@ -106,7 +106,7 @@ export function AgentInspectorView({ turnLog }: AgentInspectorViewProps) {
           {/* C. Input Prompt Sent to AI */}
           {agentData.prompt && (
             <div className="flex flex-col rounded-xl overflow-hidden border border-[#2F3336] bg-[#090909]">
-              <div className="flex items-center justify-between px-3 py-1.5 bg-[#1D1D1F] border-b border-[#2F3336] text-[10.5px] font-mono font-bold text-[#ACACB2]">
+              <div className="flex items-center justify-between px-3 py-1.5 bg-[#1D1D1F] border-b border-[#2F3336] text-[10.5px] font-mono font-bold text-[#BEBEC4]">
                 <span className="flex items-center gap-1.5">
                   <MessageSquareCode size={12} className="text-[#EF264C]" />
                   <span className="text-[#F2F2F5]">INPUT PROMPT SENT TO AI</span>
@@ -120,7 +120,7 @@ export function AgentInspectorView({ turnLog }: AgentInspectorViewProps) {
                   {copiedField === 'prompt' ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
                 </button>
               </div>
-              <div className="p-3 max-h-[260px] overflow-y-auto font-mono text-[11px] text-[#ACACB2] leading-relaxed">
+              <div className="p-3 max-h-[260px] overflow-y-auto font-mono text-[11px] text-[#BEBEC4] leading-relaxed">
                 <pre className="whitespace-pre-wrap break-words">
                   {agentData.prompt}
                 </pre>

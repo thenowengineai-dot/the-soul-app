@@ -341,7 +341,7 @@ export default function ScenarioEngineCard({
               TIMELINE RAIL (แผงรางรถไฟ)
             </h3>
           </div>
-          <span className="text-[11px] font-medium text-[#ACACB2] tracking-wider uppercase bg-white/5 px-2 py-0.5 rounded-md border border-white/5">
+          <span className="text-[11px] font-medium text-[#BEBEC4] tracking-wider uppercase bg-white/5 px-2 py-0.5 rounded-md border border-white/5">
             Scene {selectedSceneIndex + 1} / {scenes.length}
           </span>
         </div>
@@ -358,19 +358,19 @@ export default function ScenarioEngineCard({
                   className={`px-3 py-1.5 rounded-full text-[12.5px] sm:text-[13px] font-medium transition-all flex items-center gap-2 select-none cursor-pointer active:scale-95 ${
                     isActive
                       ? 'bg-[#1D1D1F] border border-[#EF264C]/70 text-[#F2F2F5] shadow-sm'
-                      : 'bg-transparent border border-[#2F3336] text-[#ACACB2] hover:text-[#F2F2F5] hover:border-white/20'
+                      : 'bg-transparent border border-[#2F3336] text-[#BEBEC4] hover:text-[#F2F2F5] hover:border-white/20'
                   }`}
                 >
                   <span
                     className={`w-2 h-2 rounded-full transition-all ${
                       isActive
                         ? 'bg-[#EF264C] shadow-[0_0_6px_rgba(239,38,76,0.6)]'
-                        : 'bg-[#ACACB2]/40 group-hover:bg-[#ACACB2]'
+                        : 'bg-[#BEBEC4]/40 group-hover:bg-[#BEBEC4]'
                     }`}
                   />
                   <span className="font-bold tracking-tight">SCENE {idx + 1}</span>
                   {scene.scene_id && (
-                    <span className="text-[11.5px] text-[#ACACB2] max-w-[120px] truncate hidden sm:inline">
+                    <span className="text-[11.5px] text-[#BEBEC4] max-w-[120px] truncate hidden sm:inline">
                       {scene.scene_id.replace(/^scene_\d+_?/, '').replace(/_/g, ' ')}
                     </span>
                   )}
@@ -397,7 +397,7 @@ export default function ScenarioEngineCard({
           <button
             type="button"
             onClick={handleAddScene}
-            className="px-2.5 py-1.5 rounded-full border border-dashed border-[#2F3336] hover:border-[#EF264C]/60 text-[#ACACB2] hover:text-[#EF264C] text-[12px] font-semibold flex items-center gap-1 shrink-0 transition-all active:scale-95 cursor-pointer ml-1"
+            className="px-2.5 py-1.5 rounded-full border border-dashed border-[#2F3336] hover:border-[#EF264C]/60 text-[#BEBEC4] hover:text-[#EF264C] text-[12px] font-semibold flex items-center gap-1 shrink-0 transition-all active:scale-95 cursor-pointer ml-1"
           >
             <Plus size={13} strokeWidth={2.2} />
             <span>ADD SCENE</span>
@@ -440,7 +440,7 @@ export default function ScenarioEngineCard({
                   type="button"
                   onClick={handleCancelEditBriefing}
                   title="ยกเลิกการแก้ไข"
-                  className="w-8 h-8 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-[#ACACB2] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-95 shrink-0 select-none"
+                  className="w-8 h-8 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-[#BEBEC4] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-95 shrink-0 select-none"
                 >
                   <X size={14} strokeWidth={2} />
                 </button>
@@ -458,7 +458,7 @@ export default function ScenarioEngineCard({
                 type="button"
                 onClick={handleStartEditBriefing}
                 title="แก้ไขบรีฟผู้กำกับประจำซีนนี้"
-                className="w-8 h-8 rounded-full bg-transparent border border-[#2F3336] hover:border-[#EF264C]/60 text-[#ACACB2] hover:text-[#EF264C] flex items-center justify-center transition-all cursor-pointer active:scale-95 shrink-0 select-none"
+                className="w-8 h-8 rounded-full bg-transparent border border-[#2F3336] hover:border-[#EF264C]/60 text-[#BEBEC4] hover:text-[#EF264C] flex items-center justify-center transition-all cursor-pointer active:scale-95 shrink-0 select-none"
               >
                 <Pencil size={14} strokeWidth={1.8} />
               </button>
@@ -517,7 +517,7 @@ export default function ScenarioEngineCard({
 
           {/* DIRECTOR'S BRIEF */}
           <div className="space-y-1">
-            <div className="flex items-center gap-1.5 text-[11.5px] font-bold text-[#ACACB2] uppercase tracking-wider">
+            <div className="flex items-center gap-1.5 text-[11.5px] font-bold text-[#BEBEC4] uppercase tracking-wider">
               <Video size={13} className="text-[#EF264C] shrink-0" />
               <span>DIRECTOR'S BRIEF (คำสั่งคุมโทนผู้กำกับ)</span>
             </div>
@@ -542,7 +542,7 @@ export default function ScenarioEngineCard({
 
           {/* CHAOS LEVEL (Apple Segmented Pill Switch) - สวิตช์ทันใจ */}
           <div className="pt-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-            <div className="flex items-center gap-1.5 text-[11.5px] font-bold text-[#ACACB2] uppercase tracking-wider">
+            <div className="flex items-center gap-1.5 text-[11.5px] font-bold text-[#BEBEC4] uppercase tracking-wider">
               <Zap size={13} className="text-amber-400" />
               <span>CHAOS LEVEL (ระดับความปั่นป่วน)</span>
             </div>
@@ -562,7 +562,7 @@ export default function ScenarioEngineCard({
                     className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all select-none cursor-pointer ${
                       isSelected
                         ? 'bg-[#EF264C] text-white shadow-sm'
-                        : 'text-[#ACACB2] hover:text-[#F2F2F5]'
+                        : 'text-[#BEBEC4] hover:text-[#F2F2F5]'
                     }`}
                   >
                     {lvl}
@@ -576,7 +576,7 @@ export default function ScenarioEngineCard({
           {isEditingBriefing ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
               <div className="bg-black/30 border border-[#2F3336]/80 rounded-xl p-3">
-                <span className="text-[10.5px] font-bold text-[#ACACB2] uppercase tracking-wider flex items-center gap-1 mb-1">
+                <span className="text-[10.5px] font-bold text-[#BEBEC4] uppercase tracking-wider flex items-center gap-1 mb-1">
                   <Sparkles size={11} className="text-[#EF264C] shrink-0" />
                   <span>EVENT MOOD (ฟิสิกส์/บรรยากาศ)</span>
                 </span>
@@ -589,7 +589,7 @@ export default function ScenarioEngineCard({
                 />
               </div>
               <div className="bg-black/30 border border-[#2F3336]/80 rounded-xl p-3">
-                <span className="text-[10.5px] font-bold text-[#ACACB2] uppercase tracking-wider flex items-center gap-1 mb-1">
+                <span className="text-[10.5px] font-bold text-[#BEBEC4] uppercase tracking-wider flex items-center gap-1 mb-1">
                   <Film size={11} className="text-[#EF264C] shrink-0" />
                   <span>DIRECTOR'S VISION (จังหวะหนัง)</span>
                 </span>
@@ -605,7 +605,7 @@ export default function ScenarioEngineCard({
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
               <div className="bg-black/30 border border-[#2F3336]/80 rounded-xl p-3">
-                <span className="text-[10.5px] font-bold text-[#ACACB2] uppercase tracking-wider flex items-center gap-1 mb-1">
+                <span className="text-[10.5px] font-bold text-[#BEBEC4] uppercase tracking-wider flex items-center gap-1 mb-1">
                   <Sparkles size={11} className="text-[#EF264C] shrink-0" />
                   <span>EVENT MOOD (ฟิสิกส์/บรรยากาศ)</span>
                 </span>
@@ -618,7 +618,7 @@ export default function ScenarioEngineCard({
                 </p>
               </div>
               <div className="bg-black/30 border border-[#2F3336]/80 rounded-xl p-3">
-                <span className="text-[10.5px] font-bold text-[#ACACB2] uppercase tracking-wider flex items-center gap-1 mb-1">
+                <span className="text-[10.5px] font-bold text-[#BEBEC4] uppercase tracking-wider flex items-center gap-1 mb-1">
                   <Film size={11} className="text-[#EF264C] shrink-0" />
                   <span>DIRECTOR'S VISION (จังหวะหนัง)</span>
                 </span>
@@ -645,7 +645,7 @@ export default function ScenarioEngineCard({
                 BEATS & CHOICES (จังหวะเหตุการณ์ย่อย)
               </h4>
             </div>
-            <span className="text-[11px] text-[#ACACB2]">
+            <span className="text-[11px] text-[#BEBEC4]">
               {currentScene.beats.length} Beats ในซีนนี้
             </span>
           </div>
@@ -707,7 +707,7 @@ export default function ScenarioEngineCard({
                               type="button"
                               onClick={handleCancelEditBeat}
                               title="ยกเลิกการแก้ไขบีตนี้"
-                              className="w-7 h-7 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-[#ACACB2] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-95 shrink-0"
+                              className="w-7 h-7 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-[#BEBEC4] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-95 shrink-0"
                             >
                               <X size={13} strokeWidth={2} />
                             </button>
@@ -726,7 +726,7 @@ export default function ScenarioEngineCard({
                               type="button"
                               onClick={() => handleStartEditBeat(bIdx)}
                               title="แก้ไขบีตนี้"
-                              className="w-7 h-7 rounded-full bg-transparent border border-[#2F3336] hover:border-[#EF264C]/60 text-[#ACACB2] hover:text-[#EF264C] flex items-center justify-center transition-colors cursor-pointer active:scale-95"
+                              className="w-7 h-7 rounded-full bg-transparent border border-[#2F3336] hover:border-[#EF264C]/60 text-[#BEBEC4] hover:text-[#EF264C] flex items-center justify-center transition-colors cursor-pointer active:scale-95"
                             >
                               <Pencil size={13} strokeWidth={1.8} />
                             </button>
@@ -735,7 +735,7 @@ export default function ScenarioEngineCard({
                                 type="button"
                                 onClick={() => handleDeleteBeat(bIdx)}
                                 title="ลบ Beat นี้"
-                                className="w-7 h-7 rounded-full bg-transparent hover:bg-red-500/15 text-[#ACACB2] hover:text-red-400 flex items-center justify-center transition-colors cursor-pointer"
+                                className="w-7 h-7 rounded-full bg-transparent hover:bg-red-500/15 text-[#BEBEC4] hover:text-red-400 flex items-center justify-center transition-colors cursor-pointer"
                               >
                                 <Trash2 size={13} />
                               </button>
@@ -782,7 +782,7 @@ export default function ScenarioEngineCard({
 
                     {/* 🎭 บรีฟนักแสดง (ACTOR'S SCRIPT) - คงรูปเป็นก้อนเดียวต่อเนื่องตามคำกำชับ */}
                     <div className="space-y-1.5">
-                      <span className="text-[11.5px] font-bold text-[#ACACB2] uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="text-[11.5px] font-bold text-[#BEBEC4] uppercase tracking-wider flex items-center gap-1.5">
                         <Sparkles size={13} className="text-[#EF264C]" />
                         <span>บรีฟนักแสดง (ACTOR'S SCRIPT) - สคริปต์ก้อนเดียว</span>
                       </span>
@@ -808,7 +808,7 @@ export default function ScenarioEngineCard({
                     {/* 👤 ตาข่ายดักจับผู้เล่น (PLAYER TRIGGERS) พร้อม SEMANTIC COLOR TAGS */}
                     <div className="space-y-2 pt-1">
                       <div className="flex items-center justify-between">
-                        <span className="text-[11.5px] font-bold text-[#ACACB2] uppercase tracking-wider flex items-center gap-1.5">
+                        <span className="text-[11.5px] font-bold text-[#BEBEC4] uppercase tracking-wider flex items-center gap-1.5">
                           <Users size={13} className="text-[#EF264C] shrink-0" />
                           <span>ตาข่ายดักจับผู้เล่น (PLAYER TRIGGERS)</span>
                         </span>
@@ -816,7 +816,7 @@ export default function ScenarioEngineCard({
                           <button
                             type="button"
                             onClick={() => handleAddChoice(bIdx)}
-                            className="text-[11px] font-bold text-[#ACACB2] hover:text-[#EF264C] flex items-center gap-1 transition-colors cursor-pointer"
+                            className="text-[11px] font-bold text-[#BEBEC4] hover:text-[#EF264C] flex items-center gap-1 transition-colors cursor-pointer"
                           >
                             <Plus size={12} />
                             <span>ADD CHOICE</span>
@@ -869,7 +869,7 @@ export default function ScenarioEngineCard({
                                         }));
                                       }}
                                       placeholder="💡 คำอธิบายฟีดแบ็ก..."
-                                      className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#ACACB2] text-[13px] rounded-lg px-2.5 py-1 outline-none"
+                                      className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#BEBEC4] text-[13px] rounded-lg px-2.5 py-1 outline-none"
                                     />
                                   </div>
                                 ) : (
@@ -882,7 +882,7 @@ export default function ScenarioEngineCard({
                                       />
                                     </p>
                                     {choiceVal.feedback && (
-                                      <p className="text-[12.5px] text-[#ACACB2] mt-0.5 italic">
+                                      <p className="text-[12.5px] text-[#BEBEC4] mt-0.5 italic">
                                         💡{' '}
                                         <TokenBadgeText
                                           text={choiceVal.feedback}
@@ -949,7 +949,7 @@ export default function ScenarioEngineCard({
                                     }
                                   }}
                                   title="ลบตัวเลือกนี้"
-                                  className="w-6 h-6 rounded-full text-[#ACACB2] hover:text-red-400 opacity-60 group-hover/choice:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                                  className="w-6 h-6 rounded-full text-[#BEBEC4] hover:text-red-400 opacity-60 group-hover/choice:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
                                 >
                                   <X size={12} />
                                 </button>
@@ -970,7 +970,7 @@ export default function ScenarioEngineCard({
                         <div className="flex items-center gap-3 text-[11.5px] font-mono">
                           {isEditingThisBeat ? (
                             <div className="flex items-center gap-1.5">
-                              <span className="text-[#ACACB2]">MAX TURNS:</span>
+                              <span className="text-[#BEBEC4]">MAX TURNS:</span>
                               <input
                                 type="number"
                                 min={1}
@@ -983,7 +983,7 @@ export default function ScenarioEngineCard({
                               />
                             </div>
                           ) : (
-                            <span className="text-[#ACACB2]">
+                            <span className="text-[#BEBEC4]">
                               MAX TURNS:{' '}
                               <strong className="text-white font-bold">
                                 {beat.pacing_control?.max_turns || 3}
@@ -1029,7 +1029,7 @@ export default function ScenarioEngineCard({
               <button
                 type="button"
                 onClick={() => handleAddBeat()}
-                className="px-4 py-2 rounded-full border border-dashed border-[#2F3336] hover:border-[#EF264C]/70 text-[#ACACB2] hover:text-[#F2F2F5] text-[12px] font-bold uppercase tracking-wider transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer bg-[#141416]"
+                className="px-4 py-2 rounded-full border border-dashed border-[#2F3336] hover:border-[#EF264C]/70 text-[#BEBEC4] hover:text-[#F2F2F5] text-[12px] font-bold uppercase tracking-wider transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer bg-[#141416]"
               >
                 <Plus size={13} strokeWidth={2.2} />
                 <span>+ ADD BEAT TO SCENE {selectedSceneIndex + 1}</span>
@@ -1047,7 +1047,7 @@ export default function ScenarioEngineCard({
             <div className="px-5 py-2.5 rounded-full bg-black/40 border border-[#2F3336] flex items-center gap-2.5 shadow-lg">
               <span className="text-lg">🕊️</span>
               <div className="text-left">
-                <span className="text-[10px] font-bold text-[#ACACB2] uppercase tracking-widest block">
+                <span className="text-[10px] font-bold text-[#BEBEC4] uppercase tracking-widest block">
                   END OF CINEMATIC
                 </span>
                 <span className="text-[12.5px] font-black text-[#F2F2F5] uppercase tracking-wider">
@@ -1056,7 +1056,7 @@ export default function ScenarioEngineCard({
               </div>
               <span className="text-lg">🕊️</span>
             </div>
-            <p className="text-[11.5px] text-[#ACACB2]/70 max-w-[280px] mt-2 leading-relaxed">
+            <p className="text-[11.5px] text-[#BEBEC4]/70 max-w-[280px] mt-2 leading-relaxed">
               เมื่อจบเนื้อเรื่องบีตสุดท้าย โลกจะเปิดอิสระ ผู้เล่นสามารถพูดคุยหรือทำอะไรก็ได้ตามใจชอบ
             </p>
           </div>

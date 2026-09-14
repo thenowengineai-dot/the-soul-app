@@ -4,8 +4,9 @@
   --color-app-bg: #090909;
   --color-app-border: #2F3336;
   --color-app-primary: rgb(242, 242, 245);
-  --color-app-secondary: rgb(172, 172, 178);
-  --color-app-surface: #1D1D1F;
+  --color-app-secondary: rgb(190, 190, 196);
+  --color-app-muted: #71767B;
+  --color-app-surface: #242426;
   --color-app-brand: #EF264C;
 }
 
@@ -35,30 +36,30 @@ body {
   scrollbar-width: none;  /* Firefox */
 }
 
-/* 💬 iMessage & Twitter X Style 3-Dot Typing Animation */
+/* 💬 Apple Native Fluid Float 3-Dot Typing Animation (นุ่มนวล ลอยตัวสั้นๆ -2px สไตล์ Apple) */
 @keyframes typing-bounce {
   0%, 60%, 100% {
     transform: translateY(0);
     opacity: 0.35;
   }
   30% {
-    transform: translateY(-4px);
-    opacity: 1;
+    transform: translateY(-2px);
+    opacity: 0.95;
   }
 }
 
 .animate-typing-dot-1 {
-  animation: typing-bounce 1.35s infinite ease-in-out;
+  animation: typing-bounce 1.4s infinite cubic-bezier(0.45, 0.05, 0.55, 0.95);
   animation-delay: 0s;
 }
 
 .animate-typing-dot-2 {
-  animation: typing-bounce 1.35s infinite ease-in-out;
+  animation: typing-bounce 1.4s infinite cubic-bezier(0.45, 0.05, 0.55, 0.95);
   animation-delay: 0.18s;
 }
 
 .animate-typing-dot-3 {
-  animation: typing-bounce 1.35s infinite ease-in-out;
+  animation: typing-bounce 1.4s infinite cubic-bezier(0.45, 0.05, 0.55, 0.95);
   animation-delay: 0.36s;
 }
 

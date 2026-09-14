@@ -134,7 +134,7 @@ function getIdeaBadgeConfig(type: string) {
       return {
         icon: '💡',
         label: 'Idea',
-        badgeClass: 'bg-[#18181b] border-white/10 text-[#ACACB2]',
+        badgeClass: 'bg-[#18181b] border-white/10 text-[#BEBEC4]',
       };
   }
 }
@@ -288,7 +288,7 @@ export default function TheMuseChat({
                           toggleExpand(msg.id);
                         }}
                         title={isExpanded ? 'ย่อข้อความ' : 'ขยายข้อความ'}
-                        className="absolute bottom-3 right-3 sm:bottom-3.5 sm:right-4 w-7 h-7 rounded-full bg-transparent hover:bg-white/[0.08] border border-transparent hover:border-white/30 text-[#ACACB2] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-90 select-none"
+                        className="absolute bottom-3 right-3 sm:bottom-3.5 sm:right-4 w-7 h-7 rounded-full bg-transparent hover:bg-white/[0.08] border border-transparent hover:border-white/30 text-[#BEBEC4] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-90 select-none"
                       >
                         {isExpanded ? (
                           <ChevronUp size={15} strokeWidth={2} />
@@ -320,27 +320,27 @@ export default function TheMuseChat({
                     <button
                       type="button"
                       onClick={() => toggleThinking(msg.id)}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/20 text-[#ACACB2] hover:text-[#F2F2F5] transition-all cursor-pointer text-[13px] select-none group"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/20 text-[#BEBEC4] hover:text-[#F2F2F5] transition-all cursor-pointer text-[13px] select-none group"
                     >
                       <Sparkles size={13} className="text-[#EF264C] group-hover:scale-110 transition-transform" />
                       <span className="font-medium text-[#F2F2F5]">กระบวนการคิดของ The Muse</span>
-                      <span className="text-[11.5px] text-[#ACACB2] hidden sm:inline">
+                      <span className="text-[11.5px] text-[#BEBEC4] hidden sm:inline">
                         (Thinking Process)
                       </span>
                       {isThinkingOpen ? (
-                        <ChevronUp size={13} className="text-[#ACACB2] ml-0.5 group-hover:text-[#F2F2F5]" />
+                        <ChevronUp size={13} className="text-[#BEBEC4] ml-0.5 group-hover:text-[#F2F2F5]" />
                       ) : (
-                        <ChevronDown size={13} className="text-[#ACACB2] ml-0.5 group-hover:text-[#F2F2F5]" />
+                        <ChevronDown size={13} className="text-[#BEBEC4] ml-0.5 group-hover:text-[#F2F2F5]" />
                       )}
                     </button>
 
                     {isThinkingOpen && (
                       <div className="mt-2.5 p-4 rounded-2xl bg-[#121214]/90 border border-white/[0.08] backdrop-blur-md shadow-inner animate-in fade-in slide-in-from-top-1 duration-150">
-                        <div className="flex items-center gap-2 pb-2 mb-2 border-b border-white/[0.06] text-[12px] font-medium text-[#ACACB2]">
+                        <div className="flex items-center gap-2 pb-2 mb-2 border-b border-white/[0.06] text-[12px] font-medium text-[#BEBEC4]">
                           <Brain size={13} className="text-[#EF264C]" />
                           <span>Internal Monologue & Sensory Physics</span>
                         </div>
-                        <div className="text-[13.5px] leading-[1.7] text-[#ACACB2] whitespace-pre-wrap break-words font-mono select-text">
+                        <div className="text-[13.5px] leading-[1.7] text-[#BEBEC4] whitespace-pre-wrap break-words font-mono select-text">
                           {parsed.thinking}
                         </div>
                       </div>
@@ -356,7 +356,7 @@ export default function TheMuseChat({
                 {/* 3. The Scratchpad / Extracted Ideas Shelf */}
                 {hasIdeas && parsed.extractedIdeas && (
                   <div className="pt-1 flex flex-col gap-2">
-                    <div className="flex items-center gap-1.5 text-[12px] font-medium text-[#ACACB2]">
+                    <div className="flex items-center gap-1.5 text-[12px] font-medium text-[#BEBEC4]">
                       <Sparkles size={12} className="text-[#EF264C]" />
                       <span>ไอเดียที่สกัดเข้า The Scratchpad:</span>
                     </div>
@@ -393,7 +393,7 @@ export default function TheMuseChat({
                         key={idx}
                         type="button"
                         onClick={() => onSelectSuggestion(sugg)}
-                        className="px-3.5 py-1.5 rounded-full text-[12.5px] font-normal bg-[#18181b] hover:bg-white/[0.08] border border-[#2F3336] hover:border-[#EF264C]/60 text-[#ACACB2] hover:text-[#EF264C] transition-all cursor-pointer select-none active:scale-95"
+                        className="px-3.5 py-1.5 rounded-full text-[12.5px] font-normal bg-[#18181b] hover:bg-white/[0.08] border border-[#2F3336] hover:border-[#EF264C]/60 text-[#BEBEC4] hover:text-[#EF264C] transition-all cursor-pointer select-none active:scale-95"
                       >
                         {sugg}
                       </button>
@@ -434,7 +434,7 @@ export default function TheMuseChat({
                 activeMode === 'world' ? 'โลก...' : 'ตัวละคร...'
               }`}
               rows={1}
-              className="w-full bg-transparent text-[#F2F2F5] placeholder-[#ACACB2]/60 text-[15px] font-normal outline-none resize-none leading-relaxed min-h-[26px] max-h-[220px] overflow-y-auto no-scrollbar py-0.5"
+              className="w-full bg-transparent text-[#F2F2F5] placeholder-[#BEBEC4]/60 text-[15px] font-normal outline-none resize-none leading-relaxed min-h-[26px] max-h-[220px] overflow-y-auto no-scrollbar py-0.5"
             />
 
             {/* แถวล่างสุด: ไร้เส้นคั่นแนวนอน */}
@@ -460,13 +460,13 @@ export default function TheMuseChat({
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   title="เพิ่มรูปภาพหรือเอกสารอ้างอิง (เลือกได้หลายรูป)"
-                  className="w-7 h-7 rounded-full bg-transparent hover:bg-white/[0.08] border border-transparent hover:border-white/30 text-[#ACACB2] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-90 select-none shrink-0"
+                  className="w-7 h-7 rounded-full bg-transparent hover:bg-white/[0.08] border border-transparent hover:border-white/30 text-[#BEBEC4] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-90 select-none shrink-0"
                 >
                   <Plus size={16} strokeWidth={2} />
                 </button>
                 <span 
                   onClick={() => fileInputRef.current?.click()}
-                  className="text-[12px] text-[#ACACB2] hover:text-[#F2F2F5] cursor-pointer select-none hidden sm:inline transition-colors"
+                  className="text-[12px] text-[#BEBEC4] hover:text-[#F2F2F5] cursor-pointer select-none hidden sm:inline transition-colors"
                 >
                   เพิ่มรูปภาพ / เอกสารอ้างอิง
                 </span>
@@ -478,7 +478,7 @@ export default function TheMuseChat({
                 <button
                   type="button"
                   title="พิมพ์ด้วยเสียง (Voice Input)"
-                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-transparent hover:bg-white/[0.08] text-[#ACACB2] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-90 select-none"
+                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-transparent hover:bg-white/[0.08] text-[#BEBEC4] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-90 select-none"
                 >
                   <Mic size={18} strokeWidth={1.8} />
                 </button>

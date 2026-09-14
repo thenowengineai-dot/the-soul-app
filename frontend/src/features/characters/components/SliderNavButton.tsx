@@ -45,17 +45,16 @@ export default function SliderNavButton({
       title={defaultTitle}
       aria-label={defaultTitle}
       className={`
-        rounded-full bg-[#222226]/80 hover:bg-[#2C2C32]/95 text-app-primary 
-        backdrop-blur-2xl border border-white/10 flex items-center justify-center 
+        rounded-full bg-[#D2D2D7]/65 hover:bg-[#E5E5EA]/85 active:bg-white/95 
+        text-[#393B40] backdrop-blur-xl flex items-center justify-center 
         transition-all duration-200 cursor-pointer select-none 
-        hover:scale-105 active:scale-95 disabled:opacity-40 disabled:pointer-events-none
-        shadow-[0_4px_16px_rgba(0,0,0,0.5)]
+        hover:scale-105 active:scale-95 disabled:opacity-30 disabled:pointer-events-none
         ${sizeStyles.button}
         ${className}
       `}
     >
       <svg
-        className={`text-app-primary ${sizeStyles.icon} ${isRight ? 'ml-0.5' : '-ml-0.5'}`}
+        className={`text-[#393B40] transition-colors ${sizeStyles.icon} ${isRight ? 'ml-0.5' : '-ml-0.5'}`}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -64,9 +63,9 @@ export default function SliderNavButton({
         strokeLinejoin="round"
       >
         {isRight ? (
-          <polyline points="9 3.5 16.5 12 9 20.5" />
+          <polyline points="9 4 16 12 9 20" />
         ) : (
-          <polyline points="15 3.5 7.5 12 15 20.5" />
+          <polyline points="15 4 8 12 15 20" />
         )}
       </svg>
     </button>

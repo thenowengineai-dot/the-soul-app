@@ -187,7 +187,7 @@ export function AuthModal({
         </div>
 
         {/* 4. เส้นคั่นหรือคำว่า "หรือ" ตามเรฟ */}
-        <div className="text-center my-4 text-[13px] text-[#ACACB2]">
+        <div className="text-center my-4 text-[13px] text-[#BEBEC4]">
           หรือ
         </div>
 
@@ -200,7 +200,7 @@ export function AuthModal({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="ระบุอีเมลของคุณ (เช่น user@gmail.com)"
-              className="w-full bg-transparent text-[#F2F2F5] text-[15px] outline-none p-0 border-none placeholder:text-[#ACACB2]/50 font-normal"
+              className="w-full bg-transparent text-[#F2F2F5] text-[15px] outline-none p-0 border-none placeholder:text-[#BEBEC4]/50 font-normal"
             />
           </div>
 
@@ -218,7 +218,7 @@ export function AuthModal({
         </form>
 
         {/* 6. ข้อตกลงการใช้งานตามเรฟ */}
-        <p className="text-[12px] text-[#ACACB2]/80 mt-5 leading-normal">
+        <p className="text-[12px] text-[#BEBEC4]/80 mt-5 leading-normal">
           การดำเนินการต่อ ถือว่าคุณยอมรับ{' '}
           <span className="underline cursor-pointer hover:text-[#F2F2F5]">ข้อกำหนด</span>{' '}
           และ{' '}
@@ -230,7 +230,7 @@ export function AuthModal({
           <button
             type="button"
             onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
-            className="text-[13px] text-[#ACACB2] hover:text-[#F2F2F5] transition-colors cursor-pointer"
+            className="text-[13px] text-[#BEBEC4] hover:text-[#F2F2F5] transition-colors cursor-pointer"
           >
             {mode === 'login' ? (
               <>ยังไม่มีบัญชีผู้ใช้? <span className="text-[#EF264C] font-semibold underline underline-offset-4 ml-1">สมัครสมาชิก</span></>

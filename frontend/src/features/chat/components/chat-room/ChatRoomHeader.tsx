@@ -1,5 +1,5 @@
 import { ChevronRight, PanelLeftOpen, PanelLeftClose, PanelRightOpen, Terminal } from 'lucide-react'
-import { HeaderActionGroup } from '../../../navigation'
+import SingleCoinIcon from '../../../home/components/SingleCoinIcon'
 import type { ChatRoomHeaderProps } from '../../types'
 
 export type { ChatRoomHeaderProps }
@@ -13,21 +13,7 @@ export function ChatRoomHeader({
   isInspectorOpen = false,
   onToggleInspector,
   coinBalance = 1250,
-  notificationCount = 3,
   onCoinClick,
-  onNotificationClick,
-  onProfileClick,
-  userInitial = 'A',
-  userName = 'Alice',
-  userEmail = '',
-  planName = 'Free Plan',
-  isLoggedIn = false,
-  onLoginClick,
-  onSignupClick,
-  isProfileDropdownOpen = false,
-  onCloseProfileDropdown,
-  onEditProfileClick,
-  onSignOut,
 }: ChatRoomHeaderProps) {
   if (!chat) return null
 
@@ -39,7 +25,7 @@ export function ChatRoomHeader({
           type="button"
           onClick={onToggleChatList}
           title={isChatListOpen ? 'ซ่อนแถบแชท' : 'เปิดแถบแชท'}
-          className="w-8 h-8 rounded-full bg-[#121212]/65 backdrop-blur-xl border border-white/[0.07] hover:border-white/20 hover:bg-white/10 text-app-secondary hover:text-app-primary flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 select-none"
+          className="w-8 h-8 rounded-full bg-[#121212]/65 backdrop-blur-xl border border-white/[0.07] hover:border-white/20 text-app-primary flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 select-none"
         >
           {isChatListOpen ? (
             <PanelLeftClose size={16} strokeWidth={1.8} />
@@ -49,15 +35,15 @@ export function ChatRoomHeader({
         </button>
       </div>
 
-      {/* Center: Character Identity & Status Pill (Dual-Line Stacked Glassmorphism Pill: รูป + ชื่อ + สถานะ + Chevron) */}
-      <div className="absolute left-1/2 -translate-x-1/2 top-2 sm:top-2.5 pointer-events-auto">
+      {/* Center: Character Identity & Status Pill (Sleek & Balanced สไตล์ Apple Capsule) */}
+      <div className="absolute left-1/2 -translate-x-1/2 top-1.5 sm:top-2 pointer-events-auto">
         <div 
           onClick={onToggleHud}
           title="เปิด/ปิด แถบสถานะตัวละคร (HUD)"
-          className="flex items-center gap-2.5 pl-1.5 pr-3 py-1 bg-[#121212]/75 backdrop-blur-xl border border-white/15 hover:border-white/30 hover:bg-white/10 rounded-full shadow-2xl transition-all cursor-pointer group select-none active:scale-95"
+          className="flex items-center gap-2 sm:gap-2.5 pl-1.5 pr-3 sm:pr-3.5 py-1 bg-[#121212]/80 backdrop-blur-xl border border-white/15 hover:border-white/20 rounded-full shadow-2xl transition-all cursor-pointer group select-none active:scale-95"
         >
-          {/* รูปโปรไฟล์ตัวละคร */}
-          <div className="relative w-[32px] h-[32px] sm:w-[34px] sm:h-[34px] rounded-full overflow-hidden flex-shrink-0 ring-1 ring-white/20 shadow-md">
+          {/* รูปโปรไฟล์ตัวละคร (ย่อเป็น 30px / 32px สมดุลสายตา) */}
+          <div className="relative w-[30px] h-[30px] sm:w-[32px] sm:h-[32px] rounded-full overflow-hidden flex-shrink-0 ring-1 ring-white/20 shadow-md">
             <img 
               src={chat.avatar} 
               alt={chat.name} 
@@ -65,7 +51,7 @@ export function ChatRoomHeader({
               className="w-full h-full object-cover" 
             />
             {/* จุดสถานะออนไลน์สีเขียว */}
-            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-1.5 ring-[#121212]" />
+            <span className="absolute bottom-0 right-0 w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-500 ring-1.5 ring-[#121212]" />
           </div>
 
           {/* ข้อความหลังรูป (2 บรรทัด: ชื่อตัวละคร + สถานะ/อารมณ์สไตล์ LINE/Discord) */}
@@ -75,53 +61,64 @@ export function ChatRoomHeader({
                 {chat.name} 💕
               </span>
             </div>
-            <span className="text-[10.5px] sm:text-[11px] text-app-secondary leading-tight truncate max-w-[130px] sm:max-w-[210px] group-hover:text-app-primary/80 transition-colors">
+            <span className="text-[10.5px] sm:text-[11px] text-app-secondary leading-tight truncate max-w-[140px] sm:max-w-[220px] group-hover:text-app-primary/80 transition-colors mt-0.5">
               {chat.statusMessage || "ออนไลน์ • พร้อมคุยเสมอ"}
             </span>
           </div>
 
           {/* Chevron ลูกศร */}
-          <ChevronRight size={14} className="text-app-secondary group-hover:text-app-primary transition-colors flex-shrink-0 opacity-70 group-hover:opacity-100" />
+          <ChevronRight size={13} className="text-app-secondary group-hover:text-app-primary transition-colors flex-shrink-0 opacity-70 group-hover:opacity-100 ml-0.5" />
         </div>
       </div>
 
-      {/* Right: User Actions [Coin Balance Pill] [Notification Bell] [Profile] or [Login/Signup] + [Toggle HUD Button] */}
-      <div className="flex items-center gap-2 pointer-events-auto ml-auto">
-        <HeaderActionGroup
-          coinBalance={coinBalance}
-          notificationCount={notificationCount}
-          onCoinClick={onCoinClick}
-          onNotificationClick={onNotificationClick}
-          onProfileClick={onProfileClick}
-          userInitial={userInitial}
-          userName={userName}
-          userEmail={userEmail}
-          planName={planName}
-          isLoggedIn={isLoggedIn}
-          onLoginClick={onLoginClick}
-          onSignupClick={onSignupClick}
-          isProfileDropdownOpen={isProfileDropdownOpen}
-          onCloseProfileDropdown={onCloseProfileDropdown}
-          onEditProfileClick={onEditProfileClick}
-          onSignOut={onSignOut}
-        />
+      {/* Right: [Trial Status Pill] + [Coin Balance Pill] + [Toggle HUD Button] */}
+      <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto ml-auto">
+        {/* แถบสถานะเหรียญสำหรับผู้เล่นใหม่ (แสดงอัตราเทิร์นและการทดลองเล่น คลิกไม่ได้) */}
+        <div
+          title="สถานะทดลองเล่น: 1 turns 10 เหรียญ · 5 turns"
+          className="flex items-center gap-1.5 px-2.5 sm:px-3 h-8 rounded-full bg-[#121212]/65 backdrop-blur-xl border border-white/[0.07] select-none cursor-default shadow-lg shrink-0"
+        >
+          {/* Brand pink status dot (สีชมพูหลัก #EF264C คมชัด สไตล์มินิมัล) */}
+          <span className="w-1.5 h-1.5 rounded-full bg-[#EF264C] shrink-0" />
+          <span className="text-[11px] sm:text-[11.5px] text-app-muted whitespace-nowrap hidden sm:inline">
+            1 turns
+          </span>
+          <span className="text-[11px] sm:text-[12px] font-bold text-app-primary whitespace-nowrap">
+            10 เหรียญ
+          </span>
+          <span className="text-[11px] sm:text-[11.5px] text-app-muted whitespace-nowrap">
+            · 5 turns
+          </span>
+        </div>
 
-        {/* Toggle Inspector Button (Dev Console) - เด่นชัด สีเขียวมรกต อยู่ฝั่งขวาติดกับ HUD */}
+        {/* Coin Balance Pill (ปุ่มแสดงเหรียญ สไตล์ Dark Luxury) */}
+        <button
+          type="button"
+          onClick={onCoinClick}
+          title={`ยอดเหรียญคงเหลือ ${coinBalance.toLocaleString()} เหรียญ`}
+          className="group flex items-center gap-1.5 px-2.5 sm:px-3 h-8 rounded-full bg-[#121212]/65 backdrop-blur-xl border border-white/[0.07] hover:border-white/20 transition-all duration-200 cursor-pointer shadow-lg active:scale-95 select-none shrink-0"
+        >
+          <div className="flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-200">
+            <SingleCoinIcon size={15} />
+          </div>
+          <span className="font-medium text-[12px] sm:text-[12.5px] text-app-primary tracking-tight">
+            {coinBalance.toLocaleString()}
+          </span>
+        </button>
+
+        {/* Dev Console / Inspector Button (ต่อท้ายปุ่มเหรียญในห้องแชทหลัก สไตล์ Minimal & Sleek) */}
         {onToggleInspector && (
           <button
             type="button"
             onClick={onToggleInspector}
-            title={isInspectorOpen ? 'ปิดหน้าต่าง Dev Console & Inspector' : 'เปิดหน้าต่าง Dev Console & Inspector'}
-            className={`h-8 px-2.5 rounded-full backdrop-blur-xl border transition-all cursor-pointer shadow-lg active:scale-95 flex items-center gap-1.5 select-none ${
+            title={isInspectorOpen ? 'ปิดหน้าต่าง Dev Console' : 'เปิดหน้าต่าง Dev Console & Inspector'}
+            className={`w-8 h-8 rounded-full backdrop-blur-xl border transition-all cursor-pointer shadow-lg active:scale-95 flex items-center justify-center select-none shrink-0 ${
               isInspectorOpen
-                ? 'bg-emerald-500/25 text-emerald-300 border-emerald-500/50 shadow-emerald-500/15'
-                : 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/40'
+                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-emerald-500/10'
+                : 'bg-[#121212]/65 border-white/[0.07] hover:border-emerald-500/35 text-emerald-400/90 hover:text-emerald-300 hover:bg-emerald-500/10'
             }`}
           >
-            <Terminal size={14} strokeWidth={2.2} />
-            <span className="text-[11px] font-mono font-bold tracking-wide hidden sm:inline">
-              DEV
-            </span>
+            <Terminal size={15} strokeWidth={1.8} />
           </button>
         )}
 
@@ -131,7 +128,7 @@ export function ChatRoomHeader({
             type="button"
             onClick={onToggleHud}
             title="เปิดแถบสถานะตัวละคร"
-            className="w-8 h-8 rounded-full bg-[#121212]/65 backdrop-blur-xl border border-white/[0.07] hover:border-white/20 hover:bg-white/10 text-app-secondary hover:text-app-primary flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 select-none"
+            className="w-8 h-8 rounded-full bg-[#121212]/65 backdrop-blur-xl border border-white/[0.07] hover:border-white/20 text-app-primary flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 select-none"
           >
             <PanelRightOpen size={16} strokeWidth={1.8} />
           </button>

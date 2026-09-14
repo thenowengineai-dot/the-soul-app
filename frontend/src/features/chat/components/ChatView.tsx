@@ -101,6 +101,7 @@ function ChatView({
     affection?: number
     desire?: number
     current_outfit?: string
+    playerPose?: string
     environment?: {
       time: string
       location: string
@@ -111,6 +112,9 @@ function ChatView({
       const updated = { ...prev }
       if (data.actor_posture && data.actor_posture !== 'คงท่าเดิม' && data.actor_posture !== 'null') {
         updated.pose = data.actor_posture
+      }
+      if (data.player_posture || data.playerPose) {
+        updated.playerPose = data.player_posture || data.playerPose
       }
       if (data.current_outfit && data.current_outfit !== 'คงชุดเดิม' && data.current_outfit !== 'null') {
         updated.outfit = data.current_outfit
@@ -142,7 +146,7 @@ function ChatView({
 
   const chatsForList = allChats.map(c => ({
     ...c,
-    isTyping: String(c.id) === String(selectedChat.id) ? isCurrentStreaming : (c.isTyping ?? false),
+    isTyping: String(c.id) === String(selectedChat.id) ? (c.isTyping || isCurrentStreaming) : (c.isTyping ?? false),
   }));
 
   return (

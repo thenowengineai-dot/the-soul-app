@@ -23,9 +23,9 @@ export function CreatorSubscriptions({
           type="button"
           title={`การติดตาม${hasAnyNewBot ? ' (มีบอทใหม่ ✨)' : ''}`}
           onClick={() => onCreatorClick?.(creators[0]?.id ?? '')}
-          className="relative w-[44px] h-[44px] flex items-center justify-center rounded-xl cursor-pointer transition-all duration-150 text-app-primary hover:bg-white/10"
+          className="relative w-[52px] h-[52px] flex items-center justify-center rounded-xl cursor-pointer transition-all duration-150 text-app-primary hover:bg-white/10"
         >
-          <TvMinimalPlay strokeWidth={2.2} size={20} />
+          <TvMinimalPlay strokeWidth={2} size={24} />
           {hasAnyNewBot && (
             <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-[#EF264C] ring-2 ring-[rgb(13,13,13)] shadow-[0_0_4px_#EF264C]" />
           )}
@@ -36,10 +36,10 @@ export function CreatorSubscriptions({
 
   // Expanded Mode: Exact YouTube Subscriptions UI matching reference image
   return (
-    <div className="flex flex-col gap-0.5 w-full py-1">
+    <div className="flex flex-col gap-2 w-full py-1.5">
       {/* Section Header: Large Primary White with ChevronRight (No count badge) */}
       <div 
-        className="flex items-center gap-1.5 px-2.5 py-1.5 text-app-primary cursor-pointer select-none group transition-colors"
+        className="flex items-center gap-1.5 px-2.5 py-2 text-app-primary cursor-pointer select-none group transition-colors mb-0.5"
       >
         <span className="text-[15px] font-semibold tracking-tight text-app-primary group-hover:text-white transition-colors">
           การติดตาม
@@ -51,7 +51,7 @@ export function CreatorSubscriptions({
         />
       </div>
 
-      {/* Creator Items: 24px Avatar, gap-3.5, 14px font, right-side pink dot */}
+      {/* Creator Items: 24px Avatar, gap-2.5, 14px font, right-side pink dot */}
       {visibleCreators.map(creator => {
         const isSelected = selectedCreatorId === creator.id;
         return (
@@ -59,11 +59,11 @@ export function CreatorSubscriptions({
             key={creator.id}
             type="button"
             onClick={() => onCreatorClick?.(creator.id)}
-            className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl transition-all duration-150 cursor-pointer text-left group text-app-primary hover:bg-white/[0.08] ${
+            className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl transition-all duration-150 cursor-pointer text-left group text-app-primary hover:bg-white/[0.08] ${
               isSelected ? 'font-medium' : ''
             }`}
           >
-            <div className="flex items-center gap-3.5 min-w-0 flex-1">
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
               {creator.avatar ? (
                 <img
                   src={creator.avatar}
@@ -98,7 +98,7 @@ export function CreatorSubscriptions({
         <button
           type="button"
           onClick={() => setShowAll(!showAll)}
-          className="w-full flex items-center gap-3.5 px-2.5 py-1.5 rounded-xl text-app-primary hover:bg-white/[0.08] transition-all text-left cursor-pointer mt-0.5 group"
+          className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-app-primary hover:bg-white/[0.08] transition-all text-left cursor-pointer mt-1 group"
         >
           <div className="w-[24px] h-[24px] flex items-center justify-center shrink-0">
             {showAll ? (

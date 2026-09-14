@@ -104,7 +104,7 @@ export function ProfileView({
         
         {/* Top Minimal Return Row */}
         <div className="flex items-center justify-between mb-8 pb-4 border-b border-[#2F3336]/60">
-          <div className="text-[13px] font-medium text-[#ACACB2]">
+          <div className="text-[13px] font-medium text-[#BEBEC4]">
             การตั้งค่าบัญชี &bull; <span className="text-[#F2F2F5] font-semibold">{userName}</span>
           </div>
           
@@ -136,7 +136,7 @@ export function ProfileView({
               <span className={`text-[16px] transition-colors block ${
                 activeTab === 'profile'
                   ? 'font-bold text-[#F2F2F5]'
-                  : 'font-semibold text-[#ACACB2] hover:text-[#F2F2F5]'
+                  : 'font-semibold text-[#BEBEC4] hover:text-[#F2F2F5]'
               }`}>
                 แก้ไขโปรไฟล์
               </span>
@@ -154,7 +154,7 @@ export function ProfileView({
               <span className={`text-[16px] transition-colors block ${
                 activeTab === 'coupon'
                   ? 'font-bold text-[#F2F2F5]'
-                  : 'font-semibold text-[#ACACB2] hover:text-[#F2F2F5]'
+                  : 'font-semibold text-[#BEBEC4] hover:text-[#F2F2F5]'
               }`}>
                 เหรียญ & คูปอง
               </span>
@@ -172,7 +172,7 @@ export function ProfileView({
               <span className={`text-[16px] transition-colors block ${
                 activeTab === 'account'
                   ? 'font-bold text-[#F2F2F5]'
-                  : 'font-semibold text-[#ACACB2] hover:text-[#F2F2F5]'
+                  : 'font-semibold text-[#BEBEC4] hover:text-[#F2F2F5]'
               }`}>
                 บัญชีและความปลอดภัย
               </span>
@@ -199,14 +199,14 @@ export function ProfileView({
                   <h1 className="text-[28px] sm:text-[32px] font-bold text-[#F2F2F5] tracking-tight leading-tight">
                     แก้ไขโปรไฟล์
                   </h1>
-                  <p className="text-[14px] text-[#ACACB2] mt-2 leading-relaxed">
+                  <p className="text-[14px] text-[#BEBEC4] mt-2 leading-relaxed">
                     จัดการข้อมูลส่วนตัว คำสรรพนาม และบุคลิกเพื่อให้ AI สนทนากับคุณได้อย่างสมบูรณ์แบบ
                   </p>
                 </div>
 
                 {/* Photo Row */}
                 <div className="pt-2 space-y-2">
-                  <label className="block text-[12.5px] font-medium text-[#ACACB2]">
+                  <label className="block text-[12.5px] font-medium text-[#BEBEC4]">
                     รูปโปรไฟล์ (Photo)
                   </label>
                   <div className="flex items-center gap-4">
@@ -241,7 +241,7 @@ export function ProfileView({
                 {/* Box 1: ชื่อที่แสดง (Display Name) */}
                 <div className="space-y-1.5">
                   <div className="rounded-2xl border border-[#2F3336] bg-[#1D1D1F]/50 px-4 py-2.5 focus-within:border-white/40 transition-colors">
-                    <label className="block text-[11.5px] font-semibold text-[#ACACB2] leading-none mb-1">
+                    <label className="block text-[11.5px] font-semibold text-[#BEBEC4] leading-none mb-1">
                       ชื่อที่แสดง (Display Name)
                     </label>
                     <input
@@ -249,7 +249,7 @@ export function ProfileView({
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="เช่น alizz lol"
-                      className="w-full bg-transparent text-[#F2F2F5] text-[15px] font-normal outline-none p-0 border-none placeholder:text-[#ACACB2]/40"
+                      className="w-full bg-transparent text-[#F2F2F5] text-[15px] font-normal outline-none p-0 border-none placeholder:text-[#BEBEC4]/40"
                     />
                   </div>
                 </div>
@@ -257,7 +257,7 @@ export function ProfileView({
                 {/* Box 2: บุคลิกประจำตัว (Player Persona & Vibe) */}
                 <div className="space-y-1.5">
                   <div className="rounded-2xl border border-[#2F3336] bg-[#1D1D1F]/50 px-4 py-2.5 focus-within:border-white/40 transition-colors">
-                    <label className="block text-[11.5px] font-semibold text-[#ACACB2] leading-none mb-1">
+                    <label className="block text-[11.5px] font-semibold text-[#BEBEC4] leading-none mb-1">
                       บุคลิกประจำตัว (PLAYER PERSONA &amp; VIBE)
                     </label>
                     <textarea
@@ -265,10 +265,10 @@ export function ProfileView({
                       value={about}
                       onChange={(e) => setAbout(e.target.value)}
                       placeholder="เช่น ชอบบทสนทนาหยอกล้อ ไม่ทางการ มีระยะห่างที่พอดี"
-                      className="w-full bg-transparent text-[#F2F2F5] text-[15px] font-normal outline-none p-0 border-none resize-none leading-relaxed placeholder:text-[#ACACB2]/40"
+                      className="w-full bg-transparent text-[#F2F2F5] text-[15px] font-normal outline-none p-0 border-none resize-none leading-relaxed placeholder:text-[#BEBEC4]/40"
                     />
                   </div>
-                  <p className="text-[12px] text-[#ACACB2] px-1 leading-normal">
+                  <p className="text-[12px] text-[#BEBEC4] px-1 leading-normal">
                     ระบุสไตล์ บุคลิก หรือโทนบทสนทนาที่คุณชื่นชอบ เพื่อให้ AI ปรับจูนเข้าหาคุณ
                   </p>
                 </div>
@@ -276,7 +276,7 @@ export function ProfileView({
                 {/* Box 3: คำสรรพนาม (Pronouns) */}
                 <div className="space-y-1.5">
                   <div className="rounded-2xl border border-[#2F3336] bg-[#1D1D1F]/50 px-4 py-2.5 focus-within:border-white/40 transition-colors relative">
-                    <label className="block text-[11.5px] font-semibold text-[#ACACB2] leading-none mb-1">
+                    <label className="block text-[11.5px] font-semibold text-[#BEBEC4] leading-none mb-1">
                       คำสรรพนาม (PRONOUNS) — สิ่งที่ตัวละคร AI จะใช้เรียกคุณ
                     </label>
                     <div className="flex items-center justify-between">
@@ -291,10 +291,10 @@ export function ProfileView({
                         <option value="นายท่าน">นายท่าน (บทบาทนาย-บ่าว)</option>
                         <option value="หนู">หนู (น่ารัก / ออดอ้อน)</option>
                       </select>
-                      <ChevronDown size={18} className="text-[#ACACB2] pointer-events-none -ml-5 shrink-0" />
+                      <ChevronDown size={18} className="text-[#BEBEC4] pointer-events-none -ml-5 shrink-0" />
                     </div>
                   </div>
-                  <p className="text-[12px] text-[#ACACB2] px-1 leading-normal">
+                  <p className="text-[12px] text-[#BEBEC4] px-1 leading-normal">
                     คำสรรพนามนี้จะถูกส่งต่อไปยังโมเดล AI เพื่อให้การ Roleplay เรียกชื่อและสถานะของคุณได้อย่างแม่นยำ
                   </p>
                 </div>
@@ -302,7 +302,7 @@ export function ProfileView({
                 {/* Box 4: ชื่อผู้ใช้ (Username) */}
                 <div className="space-y-1.5">
                   <div className="rounded-2xl border border-[#2F3336] bg-[#1D1D1F]/50 px-4 py-2.5 focus-within:border-white/40 transition-colors">
-                    <label className="block text-[11.5px] font-semibold text-[#ACACB2] leading-none mb-1">
+                    <label className="block text-[11.5px] font-semibold text-[#BEBEC4] leading-none mb-1">
                       ชื่อผู้ใช้ (Username)
                     </label>
                     <input
@@ -310,10 +310,10 @@ export function ProfileView({
                       value={userHandle}
                       onChange={(e) => setUserHandle(e.target.value)}
                       placeholder="alizzlol"
-                      className="w-full bg-transparent text-[#F2F2F5] text-[15px] font-normal outline-none p-0 border-none placeholder:text-[#ACACB2]/40 font-mono"
+                      className="w-full bg-transparent text-[#F2F2F5] text-[15px] font-normal outline-none p-0 border-none placeholder:text-[#BEBEC4]/40 font-mono"
                     />
                   </div>
-                  <p className="text-[12px] text-[#ACACB2] px-1 font-mono">
+                  <p className="text-[12px] text-[#BEBEC4] px-1 font-mono">
                     www.maomoi.ai/{userHandle || 'username'}
                   </p>
                 </div>
@@ -357,7 +357,7 @@ export function ProfileView({
                   <h1 className="text-[28px] sm:text-[32px] font-bold text-[#F2F2F5] tracking-tight leading-tight">
                     เหรียญ &amp; คูปอง
                   </h1>
-                  <p className="text-[14px] text-[#ACACB2] mt-2 leading-relaxed">
+                  <p className="text-[14px] text-[#BEBEC4] mt-2 leading-relaxed">
                     ตรวจสอบยอดเหรียญคงเหลือและแลกรับเหรียญฟรีด้วยรหัสโปรโมชั่น
                   </p>
                 </div>
@@ -366,7 +366,7 @@ export function ProfileView({
                 <div className="space-y-1.5">
                   <div className="rounded-2xl border border-[#2F3336] bg-[#1D1D1F]/50 px-4 py-3.5 flex items-center justify-between">
                     <div>
-                      <span className="block text-[11.5px] font-semibold text-[#ACACB2] leading-none mb-1.5">
+                      <span className="block text-[11.5px] font-semibold text-[#BEBEC4] leading-none mb-1.5">
                         กระเป๋าเหรียญ (Coin Balance)
                       </span>
                       <div className="flex items-center gap-2">
@@ -374,7 +374,7 @@ export function ProfileView({
                         <span className="text-[22px] font-bold text-[#F2F2F5] leading-tight">
                           {coinBalance.toLocaleString()}
                         </span>
-                        <span className="text-[13px] text-[#ACACB2]">เหรียญ</span>
+                        <span className="text-[13px] text-[#BEBEC4]">เหรียญ</span>
                       </div>
                     </div>
                   </div>
@@ -383,7 +383,7 @@ export function ProfileView({
                   {/* Box 2: แลกรับโค้ดคูปอง */}
                 <form onSubmit={handleRedeem} className="space-y-2">
                   <div className="rounded-2xl border border-[#2F3336] bg-[#1D1D1F]/50 px-4 py-2.5 focus-within:border-white/40 transition-colors">
-                    <label className="block text-[11.5px] font-semibold text-[#ACACB2] leading-none mb-1">
+                    <label className="block text-[11.5px] font-semibold text-[#BEBEC4] leading-none mb-1">
                       รหัสคูปอง (Promo Code)
                     </label>
                     <div className="flex items-center gap-3">
@@ -392,7 +392,7 @@ export function ProfileView({
                         value={couponCode}
                         onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                         placeholder="เช่น MAOMOI2026 หรือ MAOMOIFREE"
-                        className="w-full bg-transparent text-[#F2F2F5] text-[15px] font-mono outline-none p-0 border-none uppercase placeholder:text-[#ACACB2]/40"
+                        className="w-full bg-transparent text-[#F2F2F5] text-[15px] font-mono outline-none p-0 border-none uppercase placeholder:text-[#BEBEC4]/40"
                       />
                       <button
                         type="submit"
@@ -417,7 +417,7 @@ export function ProfileView({
 
                   {/* Test Promo Badges */}
                   <div className="pt-2 px-1 flex items-center gap-2 flex-wrap">
-                    <span className="text-[12px] text-[#ACACB2]">💡 โค้ดทดสอบ:</span>
+                    <span className="text-[12px] text-[#BEBEC4]">💡 โค้ดทดสอบ:</span>
                     <button 
                       type="button"
                       onClick={() => setCouponCode('MAOMOI2026')}
@@ -463,7 +463,7 @@ export function ProfileView({
                   <h1 className="text-[28px] sm:text-[32px] font-bold text-[#F2F2F5] tracking-tight leading-tight">
                     บัญชีและความปลอดภัย
                   </h1>
-                  <p className="text-[14px] text-[#ACACB2] mt-2 leading-relaxed">
+                  <p className="text-[14px] text-[#BEBEC4] mt-2 leading-relaxed">
                     จัดการข้อมูลการเข้าสู่ระบบ อีเมล และความปลอดภัยของบัญชี Maomoi AI
                   </p>
                 </div>
@@ -471,14 +471,14 @@ export function ProfileView({
                 {/* Box 1: อีเมลที่ผูกไว้ */}
                 <div className="space-y-1.5">
                   <div className="rounded-2xl border border-[#2F3336] bg-[#1D1D1F]/50 px-4 py-2.5">
-                    <span className="block text-[11.5px] font-semibold text-[#ACACB2] leading-none mb-1">
+                    <span className="block text-[11.5px] font-semibold text-[#BEBEC4] leading-none mb-1">
                       อีเมลที่ผูกไว้ (Email)
                     </span>
                     <p className="text-[15px] font-mono text-[#F2F2F5]">
                       {userEmail || 'ยังไม่ได้ผูกอีเมล (สถานะ Guest)'}
                     </p>
                   </div>
-                  <p className="text-[12px] text-[#ACACB2] px-1">
+                  <p className="text-[12px] text-[#BEBEC4] px-1">
                     อีเมลหลักสำหรับยืนยันตัวตนและการแจ้งเตือนในระบบ Maomoi AI
                   </p>
                 </div>
@@ -487,7 +487,7 @@ export function ProfileView({
                 <div className="space-y-1.5">
                   <div className="rounded-2xl border border-[#2F3336] bg-[#1D1D1F]/50 px-4 py-2.5 flex items-center justify-between">
                     <div>
-                      <span className="block text-[11.5px] font-semibold text-[#ACACB2] leading-none mb-1">
+                      <span className="block text-[11.5px] font-semibold text-[#BEBEC4] leading-none mb-1">
                         รหัสผ่าน (Password)
                       </span>
                       <p className="text-[14px] font-mono text-[#F2F2F5]">
@@ -514,7 +514,7 @@ export function ProfileView({
                     <LogOut size={16} />
                     <span>ออกจากระบบ</span>
                   </button>
-                  <p className="text-[12px] text-[#ACACB2] mt-2 px-1">
+                  <p className="text-[12px] text-[#BEBEC4] mt-2 px-1">
                     เมื่อออกจากระบบ ข้อมูลจะสลับกลับสู่โหมดนักเดินทางนิรนาม (Guest)
                   </p>
                 </div>

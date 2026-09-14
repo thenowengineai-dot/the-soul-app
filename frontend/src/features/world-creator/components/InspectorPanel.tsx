@@ -757,13 +757,13 @@ export default function InspectorPanel({
             className={`relative z-10 px-2.5 py-1 rounded-full text-[12px] flex items-center gap-1.5 transition-colors duration-200 cursor-pointer select-none ${
               activeMode === 'character'
                 ? `text-[#F2F2F5] font-bold ${!modeIndicator.ready ? 'bg-[#222226] text-[#F2F2F5] font-bold shadow-sm border border-white/10' : ''}`
-                : 'text-[#ACACB2] hover:text-[#F2F2F5] font-medium'
+                : 'text-[#BEBEC4] hover:text-[#F2F2F5] font-medium'
             }`}
           >
             <UserRound
               size={13}
               className={`transition-colors duration-200 ${
-                activeMode === 'character' ? 'text-[#EF264C]' : 'text-[#ACACB2]'
+                activeMode === 'character' ? 'text-[#EF264C]' : 'text-[#BEBEC4]'
               }`}
             />
             <span className="hidden sm:inline">ตัวละคร</span>
@@ -780,13 +780,13 @@ export default function InspectorPanel({
             className={`relative z-10 px-2.5 py-1 rounded-full text-[12px] flex items-center gap-1.5 transition-colors duration-200 cursor-pointer select-none ${
               activeMode === 'world'
                 ? `text-[#F2F2F5] font-bold ${!modeIndicator.ready ? 'bg-[#222226] text-[#F2F2F5] font-bold shadow-sm border border-white/10' : ''}`
-                : 'text-[#ACACB2] hover:text-[#F2F2F5] font-medium'
+                : 'text-[#BEBEC4] hover:text-[#F2F2F5] font-medium'
             }`}
           >
             <Globe
               size={13}
               className={`transition-colors duration-200 ${
-                activeMode === 'world' ? 'text-[#EF264C]' : 'text-[#ACACB2]'
+                activeMode === 'world' ? 'text-[#EF264C]' : 'text-[#BEBEC4]'
               }`}
             />
             <span className="hidden sm:inline">โลก</span>
@@ -804,7 +804,7 @@ export default function InspectorPanel({
               type="button"
               onClick={() => handleScrollSubtopics('left')}
               title="เลื่อนซ้าย"
-              className="shrink-0 w-5 h-5 rounded-full bg-[#141416] border border-[#2F3336] text-[#ACACB2] hover:text-[#F2F2F5] hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer select-none"
+              className="shrink-0 w-5 h-5 rounded-full bg-[#141416] border border-[#2F3336] text-[#BEBEC4] hover:text-[#F2F2F5] hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer select-none"
             >
               <ChevronLeft size={12} strokeWidth={2.2} />
             </button>
@@ -843,7 +843,7 @@ export default function InspectorPanel({
                   className={`relative z-10 px-2.5 py-1 rounded-full text-[12px] whitespace-nowrap transition-colors duration-200 cursor-pointer select-none shrink-0 ${
                     isActive
                       ? `text-[#090909] font-bold ${!pillIndicator.ready ? 'bg-[#F2F2F5]' : ''}`
-                      : 'text-[#ACACB2] hover:text-[#F2F2F5] hover:bg-white/5 font-medium'
+                      : 'text-[#BEBEC4] hover:text-[#F2F2F5] hover:bg-white/5 font-medium'
                   }`}
                 >
                   {item.label}
@@ -858,7 +858,7 @@ export default function InspectorPanel({
               type="button"
               onClick={() => handleScrollSubtopics('right')}
               title="เลื่อนขวา"
-              className="shrink-0 w-5 h-5 rounded-full bg-[#141416] border border-[#2F3336] text-[#ACACB2] hover:text-[#F2F2F5] hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer select-none"
+              className="shrink-0 w-5 h-5 rounded-full bg-[#141416] border border-[#2F3336] text-[#BEBEC4] hover:text-[#F2F2F5] hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer select-none"
             >
               <ChevronRight size={12} strokeWidth={2.2} />
             </button>
@@ -875,7 +875,7 @@ export default function InspectorPanel({
               className={`w-7 h-7 rounded-full backdrop-blur-xl border transition-all cursor-pointer shadow-lg active:scale-95 flex items-center justify-center select-none ${
                 isSizeMenuOpen
                   ? 'bg-white/15 border-white/30 text-[#F2F2F5]'
-                  : 'bg-transparent border border-[#2F3336] hover:border-white/30 text-[#ACACB2] hover:text-[#F2F2F5]'
+                  : 'bg-transparent border border-[#2F3336] hover:border-white/30 text-[#BEBEC4] hover:text-[#F2F2F5]'
               }`}
             >
               <MoreVertical size={14} strokeWidth={1.8} />
@@ -887,7 +887,7 @@ export default function InspectorPanel({
             type="button"
             onClick={onCollapse}
             title="พับเก็บหน้าต่าง Inspector"
-            className="w-7 h-7 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-[#ACACB2] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0"
+            className="w-7 h-7 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-[#BEBEC4] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0"
           >
             <PanelRightClose size={14} strokeWidth={1.8} />
           </button>
@@ -895,7 +895,7 @@ export default function InspectorPanel({
           {/* Dropdown Menu (Glassmorphism Luxury) */}
           {isSizeMenuOpen && (
             <div className="absolute top-full right-0 mt-1.5 w-[220px] p-1.5 rounded-2xl bg-[#121214]/95 backdrop-blur-2xl border border-white/10 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 select-none">
-              <div className="px-2.5 py-1.5 text-[10px] uppercase tracking-wider text-[#ACACB2] font-semibold border-b border-white/[0.06] mb-1">
+              <div className="px-2.5 py-1.5 text-[10px] uppercase tracking-wider text-[#BEBEC4] font-semibold border-b border-white/[0.06] mb-1">
                 ขนาดหน้าต่าง (INSPECTOR)
               </div>
 
@@ -909,12 +909,12 @@ export default function InspectorPanel({
                 className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-[12.5px] transition-all cursor-pointer ${
                   Math.abs(width - 460) < 30
                     ? 'bg-white/[0.08] text-[#F2F2F5] font-medium'
-                    : 'text-[#ACACB2] hover:text-[#F2F2F5] hover:bg-white/[0.04]'
+                    : 'text-[#BEBEC4] hover:text-[#F2F2F5] hover:bg-white/[0.04]'
                 }`}
               >
                 <div className="flex flex-col text-left">
                   <span className="leading-tight">มาตรฐาน (460px)</span>
-                  <span className="text-[10px] text-[#ACACB2]/80">สมดุลพอดีสายตา (ค่าเริ่มต้น)</span>
+                  <span className="text-[10px] text-[#BEBEC4]/80">สมดุลพอดีสายตา (ค่าเริ่มต้น)</span>
                 </div>
                 {Math.abs(width - 460) < 30 && (
                   <Check size={14} className="text-[#EF264C] shrink-0" strokeWidth={2.5} />
@@ -931,12 +931,12 @@ export default function InspectorPanel({
                 className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-[12.5px] transition-all cursor-pointer ${
                   Math.abs(width - 600) < 30
                     ? 'bg-white/[0.08] text-[#F2F2F5] font-medium'
-                    : 'text-[#ACACB2] hover:text-[#F2F2F5] hover:bg-white/[0.04]'
+                    : 'text-[#BEBEC4] hover:text-[#F2F2F5] hover:bg-white/[0.04]'
                 }`}
               >
                 <div className="flex flex-col text-left">
                   <span className="leading-tight">สตูดิโอกว้างเต็มตา (600px)</span>
-                  <span className="text-[10px] text-[#ACACB2]/80">กว้างเต็มตา สำหรับจัดการเควส</span>
+                  <span className="text-[10px] text-[#BEBEC4]/80">กว้างเต็มตา สำหรับจัดการเควส</span>
                 </div>
                 {Math.abs(width - 600) < 30 && (
                   <Check size={14} className="text-[#EF264C] shrink-0" strokeWidth={2.5} />
@@ -969,7 +969,7 @@ export default function InspectorPanel({
               </h2>
               {/* แฮชแท็กหลักอันแรก เพื่อเป็นจุดยึดเหนี่ยวสายตา */}
               {draft?.hashtags?.[0] ? (
-                <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-[#18181b] text-[12px] sm:text-[12.5px] text-[#ACACB2] truncate max-w-[150px] group-hover:border-[#EF264C]/40 border border-transparent transition-all">
+                <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-[#18181b] text-[12px] sm:text-[12.5px] text-[#BEBEC4] truncate max-w-[150px] group-hover:border-[#EF264C]/40 border border-transparent transition-all">
                   {draft.hashtags[0]}
                 </span>
               ) : (
@@ -1030,7 +1030,7 @@ export default function InspectorPanel({
                         type="button"
                         onClick={() => setEditingCard(null)}
                         title="ยกเลิกการแก้ไข"
-                        className="w-8 h-8 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-[#ACACB2] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0"
+                        className="w-8 h-8 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-[#BEBEC4] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0"
                       >
                         <X size={14} strokeWidth={2} />
                       </button>
@@ -1047,7 +1047,7 @@ export default function InspectorPanel({
 
                   {/* ชื่อตัวละคร Input */}
                   <div>
-                    <label className="text-[12px] font-semibold text-[#ACACB2] uppercase tracking-wider block mb-1">
+                    <label className="text-[12px] font-semibold text-[#BEBEC4] uppercase tracking-wider block mb-1">
                       ชื่อตัวละคร
                     </label>
                     <input
@@ -1061,7 +1061,7 @@ export default function InspectorPanel({
 
                   {/* สเตตัสคำพูด Textarea */}
                   <div>
-                    <label className="text-[12px] font-semibold text-[#ACACB2] uppercase tracking-wider block mb-1">
+                    <label className="text-[12px] font-semibold text-[#BEBEC4] uppercase tracking-wider block mb-1">
                       ข้อความสเตตัส / คำพูดตัวละคร (Character Quote)
                     </label>
                     <textarea
@@ -1075,7 +1075,7 @@ export default function InspectorPanel({
 
                   {/* แฮชแท็ก Input */}
                   <div>
-                    <label className="text-[12px] font-semibold text-[#ACACB2] uppercase tracking-wider block mb-1">
+                    <label className="text-[12px] font-semibold text-[#BEBEC4] uppercase tracking-wider block mb-1">
                       แฮชแท็ก (Hashtags - คั่นด้วยจุลภาค)
                     </label>
                     <input
@@ -1107,7 +1107,7 @@ export default function InspectorPanel({
                   </div>
 
                   {/* ข้อความสเตตัสตัวละคร (ข้อความรอง สไตล์ Editorial / Fashion E-commerce ขนาดเด่นชัดเจนขึ้น) */}
-                  <p className="mt-2.5 sm:mt-3 text-[17px] sm:text-[18.5px] lg:text-[20px] text-[#ACACB2] leading-relaxed font-normal">
+                  <p className="mt-2.5 sm:mt-3 text-[17px] sm:text-[18.5px] lg:text-[20px] text-[#BEBEC4] leading-relaxed font-normal">
                     {draft?.quote ||
                       '"อย่าขยับสิคะ... ถ้าขยับพิษจากละอองเกสรจะยิ่งแล่นเข้าสู่กระแสเลือดนะ ให้รุ่นพี่ช่วยรีดมันออกจะดีกว่า..."'}
                   </p>
@@ -1125,7 +1125,7 @@ export default function InspectorPanel({
                     ).map((tag, idx) => (
                       <span
                         key={idx}
-                        className="px-3 py-1.5 rounded-full bg-[#18181b] text-[12.5px] sm:text-[13px] text-[#ACACB2] hover:text-[#EF264C] hover:underline transition-colors cursor-pointer select-none"
+                        className="px-3 py-1.5 rounded-full bg-[#18181b] text-[12.5px] sm:text-[13px] text-[#BEBEC4] hover:text-[#EF264C] hover:underline transition-colors cursor-pointer select-none"
                       >
                         {tag.startsWith('#') ? tag : `#${tag}`}
                       </span>
@@ -1169,7 +1169,7 @@ export default function InspectorPanel({
                       type="button"
                       onClick={() => setEditingCard(null)}
                       title="ยกเลิกการแก้ไข"
-                      className="w-8 h-8 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-[#ACACB2] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0"
+                      className="w-8 h-8 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-[#BEBEC4] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0"
                     >
                       <X size={14} strokeWidth={2} />
                     </button>
@@ -1199,7 +1199,7 @@ export default function InspectorPanel({
                 <div className="space-y-3 pt-1">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div>
-                      <label className="text-[12px] font-semibold text-[#ACACB2] uppercase tracking-wider block mb-1">
+                      <label className="text-[12px] font-semibold text-[#BEBEC4] uppercase tracking-wider block mb-1">
                         Archetype (แม่แบบบุคลิก)
                       </label>
                       <input
@@ -1211,7 +1211,7 @@ export default function InspectorPanel({
                       />
                     </div>
                     <div>
-                      <label className="text-[12px] font-semibold text-[#ACACB2] uppercase tracking-wider block mb-1">
+                      <label className="text-[12px] font-semibold text-[#BEBEC4] uppercase tracking-wider block mb-1">
                         คำนิยามสั้น (Description)
                       </label>
                       <input
@@ -1225,7 +1225,7 @@ export default function InspectorPanel({
                   </div>
 
                   <div>
-                    <label className="text-[12px] font-semibold text-[#ACACB2] uppercase tracking-wider block mb-1">
+                    <label className="text-[12px] font-semibold text-[#BEBEC4] uppercase tracking-wider block mb-1">
                       🎭 หน้ากากภายนอก (The Mask)
                     </label>
                     <textarea
@@ -1238,7 +1238,7 @@ export default function InspectorPanel({
                   </div>
 
                   <div>
-                    <label className="text-[12px] font-semibold text-[#ACACB2] uppercase tracking-wider block mb-1">
+                    <label className="text-[12px] font-semibold text-[#BEBEC4] uppercase tracking-wider block mb-1">
                       🩸 แก่นแท้เบื้องลึก (The Core)
                     </label>
                     <textarea
@@ -1251,7 +1251,7 @@ export default function InspectorPanel({
                   </div>
 
                   <div>
-                    <label className="text-[12px] font-semibold text-[#ACACB2] uppercase tracking-wider block mb-1">
+                    <label className="text-[12px] font-semibold text-[#BEBEC4] uppercase tracking-wider block mb-1">
                       ⚡ ปมขัดแย้งจุดระเบิด (The Conflict)
                     </label>
                     <textarea
@@ -1268,7 +1268,7 @@ export default function InspectorPanel({
                 <div className="space-y-3 pt-0.5">
                   {draft?.description && (
                     <div className="p-3.5 sm:p-4 rounded-xl bg-[#0B0B0C] border border-[#2F3336]/80">
-                      <p className="text-[13.5px] sm:text-[14px] text-[#ACACB2] leading-relaxed">
+                      <p className="text-[13.5px] sm:text-[14px] text-[#BEBEC4] leading-relaxed">
                         {draft.description}
                       </p>
                     </div>
@@ -1280,7 +1280,7 @@ export default function InspectorPanel({
                       <span className="text-[#F2F2F5] font-semibold flex items-center gap-1.5 text-[13px] sm:text-[13.5px]">
                         <span>🎭 หน้ากากภายนอก (The Mask):</span>
                       </span>
-                      <p className="text-[#ACACB2] leading-relaxed pl-1">
+                      <p className="text-[#BEBEC4] leading-relaxed pl-1">
                         {draft?.psychology?.the_mask ||
                           'รุ่นพี่สาวแว่นผู้มีการศึกษา พูดจาสุภาพเรียบร้อยเหนียมอาย สวมเสื้อผ้าหนาเตอะเพื่อปิดบังเรือนร่างและหลีกเลี่ยงสังคม'}
                       </p>
@@ -1290,7 +1290,7 @@ export default function InspectorPanel({
                       <span className="text-[#EF264C] font-semibold flex items-center gap-1.5 text-[13px] sm:text-[13.5px]">
                         <span>🩸 แก่นแท้เบื้องลึก (The Core):</span>
                       </span>
-                      <p className="text-[#ACACB2] leading-relaxed pl-1">
+                      <p className="text-[#BEBEC4] leading-relaxed pl-1">
                         {draft?.psychology?.the_core ||
                           'นักล่ากามารมณ์จอมวางแผนผู้มีความต้องการสูงลิ่ว ใช้ทฤษฎีวิชาการมาบิดเบือนเป็นข้ออ้างเพื่อจับเหยื่อตรึงไว้กับที่อย่างไร้ยางอาย'}
                       </p>
@@ -1300,7 +1300,7 @@ export default function InspectorPanel({
                       <span className="text-[#F2F2F5] font-semibold flex items-center gap-1.5 text-[13px] sm:text-[13.5px]">
                         <span>⚡ ปมจุดระเบิด (The Conflict):</span>
                       </span>
-                      <p className="text-[#ACACB2] leading-relaxed pl-1">
+                      <p className="text-[#BEBEC4] leading-relaxed pl-1">
                         {draft?.psychology?.the_conflict ||
                           'การต่อสู้ระหว่างสามัญสำนึกของรุ่นพี่ผู้มีการศึกษา กับสัญชาตญาณความต้องการทางเพศที่พร้อมจะปะทุระเบิดทุกครั้งเมื่อร่างกายต้องอุณหภูมิที่ร้อนขึ้น'}
                       </p>
@@ -1336,7 +1336,7 @@ export default function InspectorPanel({
                       type="button"
                       onClick={() => setEditingCard(null)}
                       title="ยกเลิกการแก้ไข"
-                      className="w-8 h-8 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-[#ACACB2] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0"
+                      className="w-8 h-8 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-[#BEBEC4] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0"
                     >
                       <X size={14} strokeWidth={2} />
                     </button>
@@ -1365,7 +1365,7 @@ export default function InspectorPanel({
                 /* โหมดแก้ไข Card 2 */
                 <div className="space-y-3 pt-1">
                   <div>
-                    <label className="text-[12px] font-semibold text-[#ACACB2] uppercase tracking-wider block mb-1">
+                    <label className="text-[12px] font-semibold text-[#BEBEC4] uppercase tracking-wider block mb-1">
                       👘 ชุดที่ 1 (ยูกาตะอำพรางรูป)
                     </label>
                     <textarea
@@ -1377,7 +1377,7 @@ export default function InspectorPanel({
                   </div>
 
                   <div>
-                    <label className="text-[12px] font-semibold text-[#ACACB2] uppercase tracking-wider block mb-1">
+                    <label className="text-[12px] font-semibold text-[#BEBEC4] uppercase tracking-wider block mb-1">
                       👗 ชุดที่ 2 (เสื้อเชิ้ตแนบเนื้อยามเปียกฝน)
                     </label>
                     <textarea
@@ -1389,7 +1389,7 @@ export default function InspectorPanel({
                   </div>
 
                   <div>
-                    <label className="text-[12px] font-semibold text-[#ACACB2] uppercase tracking-wider block mb-1">
+                    <label className="text-[12px] font-semibold text-[#BEBEC4] uppercase tracking-wider block mb-1">
                       🌸 จุดเด่นทางสรีระ (แยกบรรทัดละ 1 ข้อ)
                     </label>
                     <textarea
@@ -1401,7 +1401,7 @@ export default function InspectorPanel({
                   </div>
 
                   <div>
-                    <label className="text-[12px] font-semibold text-[#ACACB2] uppercase tracking-wider block mb-1">
+                    <label className="text-[12px] font-semibold text-[#BEBEC4] uppercase tracking-wider block mb-1">
                       🖐️ ภาษากายประจำตัว (แยกบรรทัดละ 1 ท่า)
                     </label>
                     <textarea
@@ -1421,12 +1421,12 @@ export default function InspectorPanel({
                       <span>👘 ชุดเครื่องแต่งกาย (Wardrobe):</span>
                     </span>
                     <div className="space-y-1.5 pl-1">
-                      <p className="text-[#ACACB2] leading-relaxed">
+                      <p className="text-[#BEBEC4] leading-relaxed">
                         <strong className="text-[#F2F2F5]">Outfit 1:</strong>{' '}
                         {draft?.appearance?.wardrobe?.outfit_1?.[0] ||
                           'ชุดยูกาตะผ้าฝ้ายเนื้อหนาสีเข้มตัวโคร่งที่ดูแบนราบไร้ส่วนเว้าโค้ง พร้อมแว่นตากรอบหนาเตอะปิดบังใบหน้า'}
                       </p>
-                      <p className="text-[#ACACB2] leading-relaxed">
+                      <p className="text-[#BEBEC4] leading-relaxed">
                         <strong className="text-[#F2F2F5]">Outfit 2:</strong>{' '}
                         {draft?.appearance?.wardrobe?.outfit_2?.[0] ||
                           'เสื้อเชิ้ตสีขาวและกระโปรงยาวสีทึบเรียบร้อย ทว่ายามเปียกฝนจะแนบเนื้อจนโปร่งแสง เผยให้เห็นบราเซียลูกไม้สีดำสนิทขัดกับผิวขาวจัด'}
@@ -1448,7 +1448,7 @@ export default function InspectorPanel({
                           'ซอกคอและกระดูกไหปลาร้าที่มักมีเหงื่อและไอน้ำระเหยฟุ้งออกมา',
                         ]
                       ).map((feature, idx) => (
-                        <li key={idx} className="text-[#ACACB2] leading-relaxed flex items-start gap-2">
+                        <li key={idx} className="text-[#BEBEC4] leading-relaxed flex items-start gap-2">
                           <span className="w-1.5 h-1.5 rounded-full bg-[#EF264C] mt-2 shrink-0" />
                           <span>{feature}</span>
                         </li>
@@ -1469,7 +1469,7 @@ export default function InspectorPanel({
                           'ท่านั่งพับเพียบเรียบร้อย แต่แอบจงใจขยับสะโพกบดเบียดพื้นหรือเกร็งหน้าขาหนีบเข้าหากัน',
                         ]
                       ).map((posture, idx) => (
-                        <li key={idx} className="text-[#ACACB2] leading-relaxed flex items-start gap-2">
+                        <li key={idx} className="text-[#BEBEC4] leading-relaxed flex items-start gap-2">
                           <span className="w-1.5 h-1.5 rounded-full bg-[#EF264C]/80 mt-2 shrink-0" />
                           <span>{posture}</span>
                         </li>
@@ -1508,7 +1508,7 @@ export default function InspectorPanel({
                       type="button"
                       onClick={() => setEditingCard(null)}
                       title="ยกเลิกการแก้ไข"
-                      className="w-8 h-8 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-[#ACACB2] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0"
+                      className="w-8 h-8 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-[#BEBEC4] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0"
                     >
                       <X size={14} strokeWidth={2} />
                     </button>
@@ -1554,11 +1554,11 @@ export default function InspectorPanel({
                         <div className="flex items-center justify-between text-[13px]">
                           <span className="text-[#F2F2F5] font-medium truncate">
                             {stat.label}{' '}
-                            <span className="text-[11.5px] text-[#ACACB2]/70 font-mono">
+                            <span className="text-[11.5px] text-[#BEBEC4]/70 font-mono">
                               ({stat.en})
                             </span>
                           </span>
-                          <span className="text-[#ACACB2] font-bold font-mono text-[13px] ml-2 shrink-0">
+                          <span className="text-[#BEBEC4] font-bold font-mono text-[13px] ml-2 shrink-0">
                             {val}/10
                           </span>
                         </div>
@@ -1612,13 +1612,13 @@ export default function InspectorPanel({
                         <div className="flex items-center justify-between text-[13px]">
                           <span className="text-[#F2F2F5] font-medium truncate">
                             {stat.label}{' '}
-                            <span className="text-[11.5px] text-[#ACACB2]/70 font-mono">
+                            <span className="text-[11.5px] text-[#BEBEC4]/70 font-mono">
                               ({stat.en})
                             </span>
                           </span>
                           <span
                             className={`font-bold font-mono text-[13px] ml-2 shrink-0 ${
-                              val === 10 ? 'text-[#EF264C]' : 'text-[#ACACB2]'
+                              val === 10 ? 'text-[#EF264C]' : 'text-[#BEBEC4]'
                             }`}
                           >
                             {val}/10 {val === 10 && '🔥'}
@@ -1721,7 +1721,7 @@ export default function InspectorPanel({
                       type="button"
                       onClick={() => setEditingCard(null)}
                       title="ยกเลิกการแก้ไข"
-                      className="w-8 h-8 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-[#ACACB2] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0"
+                      className="w-8 h-8 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-[#BEBEC4] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0"
                     >
                       <X size={14} strokeWidth={2} />
                     </button>
@@ -1780,7 +1780,7 @@ export default function InspectorPanel({
                           );
                         }}
                         placeholder="เงื่อนไขกระตุ้น (Trigger)..."
-                        className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#ACACB2] text-[13px] rounded-lg px-2.5 py-1.5 outline-none"
+                        className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#BEBEC4] text-[13px] rounded-lg px-2.5 py-1.5 outline-none"
                       />
                       <textarea
                         rows={2}
@@ -1794,14 +1794,14 @@ export default function InspectorPanel({
                           );
                         }}
                         placeholder="ผลลัพธ์ (Effect)..."
-                        className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#ACACB2] text-[13px] rounded-lg px-2.5 py-1.5 outline-none leading-relaxed resize-none"
+                        className="w-full bg-[#141416] border border-[#2F3336] focus:border-[#EF264C] text-[#BEBEC4] text-[13px] rounded-lg px-2.5 py-1.5 outline-none leading-relaxed resize-none"
                       />
                     </div>
                   ))}
 
                   <div className="p-3.5 rounded-xl border border-[#2F3336]/80 bg-[#0B0B0C] space-y-3">
                     <div>
-                      <label className="text-[12px] font-semibold text-[#ACACB2] uppercase tracking-wider block mb-1">
+                      <label className="text-[12px] font-semibold text-[#BEBEC4] uppercase tracking-wider block mb-1">
                         👍 สิ่งที่ชอบ (Likes - คั่นด้วยจุลภาค)
                       </label>
                       <input
@@ -1813,7 +1813,7 @@ export default function InspectorPanel({
                     </div>
 
                     <div>
-                      <label className="text-[12px] font-semibold text-[#ACACB2] uppercase tracking-wider block mb-1">
+                      <label className="text-[12px] font-semibold text-[#BEBEC4] uppercase tracking-wider block mb-1">
                         👎 สิ่งที่ไม่ชอบ (Dislikes - คั่นด้วยจุลภาค)
                       </label>
                       <input
@@ -1861,7 +1861,7 @@ export default function InspectorPanel({
                           <Zap size={14} className="text-[#EF264C]" />
                           <span>{perk.perk_name}</span>
                         </h4>
-                        <p className="text-[#ACACB2] text-[13px] sm:text-[13.5px] leading-relaxed">
+                        <p className="text-[#BEBEC4] text-[13px] sm:text-[13.5px] leading-relaxed">
                           <strong className="text-[#F2F2F5]">🎯 เงื่อนไข:</strong> {perk.trigger}
                         </p>
                         <p className="text-[#EF264C]/90 text-[13px] sm:text-[13.5px] leading-relaxed">
@@ -1951,7 +1951,7 @@ export default function InspectorPanel({
                       type="button"
                       onClick={() => setEditingCard(null)}
                       title="ยกเลิกการแก้ไข"
-                      className="w-8 h-8 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-[#ACACB2] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0"
+                      className="w-8 h-8 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-[#BEBEC4] hover:text-[#F2F2F5] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0"
                     >
                       <X size={14} strokeWidth={2} />
                     </button>
@@ -1980,7 +1980,7 @@ export default function InspectorPanel({
                 /* โหมดแก้ไข Card 5 */
                 <div className="space-y-3 pt-1">
                   <div>
-                    <label className="text-[12px] font-semibold text-[#ACACB2] uppercase tracking-wider block mb-1">
+                    <label className="text-[12px] font-semibold text-[#BEBEC4] uppercase tracking-wider block mb-1">
                       📜 ประวัติปูมหลัง (เว้นวรรค 2 บรรทัดเพื่อแยกย่อหน้า)
                     </label>
                     <textarea
@@ -1993,7 +1993,7 @@ export default function InspectorPanel({
 
                   <div className="grid grid-cols-2 gap-2.5">
                     <div>
-                      <label className="text-[12px] font-semibold text-[#ACACB2] uppercase tracking-wider block mb-1">
+                      <label className="text-[12px] font-semibold text-[#BEBEC4] uppercase tracking-wider block mb-1">
                         เงื่อนไข Desire ขั้นต่ำ
                       </label>
                       <input
@@ -2004,7 +2004,7 @@ export default function InspectorPanel({
                       />
                     </div>
                     <div>
-                      <label className="text-[12px] font-semibold text-[#ACACB2] uppercase tracking-wider block mb-1">
+                      <label className="text-[12px] font-semibold text-[#BEBEC4] uppercase tracking-wider block mb-1">
                         เงื่อนไข Affection ขั้นต่ำ
                       </label>
                       <input
@@ -2017,7 +2017,7 @@ export default function InspectorPanel({
                   </div>
 
                   <div>
-                    <label className="text-[12px] font-semibold text-[#ACACB2] uppercase tracking-wider block mb-1">
+                    <label className="text-[12px] font-semibold text-[#BEBEC4] uppercase tracking-wider block mb-1">
                       🌱 รายละเอียดวิวัฒนาการ Phase 2
                     </label>
                     <textarea
@@ -2037,7 +2037,7 @@ export default function InspectorPanel({
                       <BookOpen size={14} className="text-[#EF264C]" />
                       <span>ประวัติปูมหลัง (Background Lore):</span>
                     </span>
-                    <div className="space-y-2 text-[#ACACB2] leading-relaxed pl-1">
+                    <div className="space-y-2 text-[#BEBEC4] leading-relaxed pl-1">
                       {(
                         draft?.background_story || [
                           'รุ่นพี่ปี 3 ผู้ครองตำแหน่งประธานชมรมพฤกษศาสตร์ มีประวัติเรียนดีเด่นและขึ้นชื่อเรื่องความสุภาพ เรียบร้อย และเก็บเนื้อเก็บตัวจนเกือบจะดูขี้ขลาดในสายตาคนนอก',
@@ -2066,7 +2066,7 @@ export default function InspectorPanel({
                         </span>
                       </div>
                     </div>
-                    <p className="text-[#ACACB2] leading-relaxed pl-1">
+                    <p className="text-[#BEBEC4] leading-relaxed pl-1">
                       {draft?.dynamic_evolution?.phase_2?.phase_description ||
                         'รุ่นพี่มาฮิโระจะเริ่มทิ้งระยะห่างอย่างเป็นทางการน้อยลง เธอจะจงใจแกล้ง "ซุ่มซ่าม" ทำตัวเปียกฝนหรือขอให้เป้าหมายช่วยทายานวดสมุนไพรร้อนตามร่างกายบ่อยครั้งขึ้น โดยเริ่มเปิดเผยแว่นตาที่ขึ้นฝ้าและถอดมันออกต่อหน้าเพื่อเผยสายตานักล่าอย่างโจ่งแจ้ง'}
                     </p>
@@ -2083,7 +2083,7 @@ export default function InspectorPanel({
                         <strong className="text-[#EF264C] text-[12.5px] sm:text-[13px] block">
                           🔥 ยามตัณหาสูง (When Desire High):
                         </strong>
-                        <p className="text-[#ACACB2] text-[13px] sm:text-[13.5px] leading-relaxed mt-0.5">
+                        <p className="text-[#BEBEC4] text-[13px] sm:text-[13.5px] leading-relaxed mt-0.5">
                           {draft?.micro_expressions?.when_desire_high?.[0] ||
                             'ดวงตาหรี่ปัดปลาบเยิ้ม ลมหายใจร้อนระอุเริ่มหอบถี่จนหน้าอกกระเพื่อมไหวรุนแรงอย่างไร้การควบคุม'}
                         </p>
@@ -2092,7 +2092,7 @@ export default function InspectorPanel({
                         <strong className="text-[#F2F2F5] text-[12.5px] sm:text-[13px] block">
                           😳 ยามเขินแต่เก๊กนิ่ง (Shy but Deadpan):
                         </strong>
-                        <p className="text-[#ACACB2] text-[13px] sm:text-[13.5px] leading-relaxed mt-0.5">
+                        <p className="text-[#BEBEC4] text-[13px] sm:text-[13.5px] leading-relaxed mt-0.5">
                           {draft?.micro_expressions?.when_shy_but_deadpan?.[0] ||
                             'ดึงคอเสื้อยูกาตะตัวหนาขึ้นมาปิดแก้มที่เริ่มซับสีระเรื่อ พร้อมส่งเสียงอุบอิบในลำคอแสร้งทำเป็นไม่สนใจ'}
                         </p>
@@ -2101,7 +2101,7 @@ export default function InspectorPanel({
                         <strong className="text-amber-300 text-[12.5px] sm:text-[13px] block">
                           ✨ ยามดีใจแต่แอบซ่อน (Happy but Hiding):
                         </strong>
-                        <p className="text-[#ACACB2] text-[13px] sm:text-[13.5px] leading-relaxed mt-0.5">
+                        <p className="text-[#BEBEC4] text-[13px] sm:text-[13.5px] leading-relaxed mt-0.5">
                           {draft?.micro_expressions?.when_happy_but_hiding?.[0] ||
                             'ริมฝีปากเม้มเข้าหากันเล็กน้อยเพื่อกลั้นยิ้ม ขณะที่สายตาแอบเหลือบมองเป้าหมายผ่านช่องว่างเหนือกรอบแว่น'}
                         </p>
@@ -2134,7 +2134,7 @@ export default function InspectorPanel({
                 )}
               </div>
 
-              <p className="text-[13px] sm:text-[13.5px] text-[#ACACB2] leading-relaxed">
+              <p className="text-[13px] sm:text-[13.5px] text-[#BEBEC4] leading-relaxed">
                 สังเคราะห์ข้อมูลจากบทสนทนากับ The Muse บันทึกลงพิมพ์เขียวตัวละครและโลกคู่กันอัตโนมัติ และเผยแพร่สู่ Upstash Redis Hot Cache เพื่อเริ่มเล่นในห้องแชทได้ทันทีภายใน 0.002 วินาที
               </p>
 
@@ -2323,7 +2323,7 @@ export default function InspectorPanel({
                 )}
               </div>
 
-              <p className="text-[13px] sm:text-[13.5px] text-[#ACACB2] leading-relaxed">
+              <p className="text-[13px] sm:text-[13.5px] text-[#BEBEC4] leading-relaxed">
                 สังเคราะห์ข้อมูลจากบทสนทนากับ The Muse บันทึกลงพิมพ์เขียวโลกและตัวละครอัตโนมัติ และเผยแพร่สู่ Upstash Redis Hot Cache เพื่อเริ่มเล่นในห้องแชทได้ทันทีภายใน 0.002 วินาที
               </p>
 

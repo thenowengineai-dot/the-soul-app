@@ -108,7 +108,7 @@ export default function ResizableSplitter({
         className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[52px] rounded-full flex items-center justify-center transition-all duration-150 cursor-col-resize shadow-[0_2px_14px_rgba(0,0,0,0.85)] ${
           isDragging
             ? 'scale-110 bg-[#242428] border border-white/70 text-white ring-2 ring-white/20 shadow-2xl'
-            : 'bg-[#18181B] border border-[#3E3E44] text-[#ACACB2] group-hover:border-white/50 group-hover:text-white group-hover:scale-105 group-hover:bg-[#222226]'
+            : 'bg-[#18181B] border border-[#3E3E44] text-[#BEBEC4] group-hover:border-white/50 group-hover:text-white group-hover:scale-105 group-hover:bg-[#222226]'
         }`}
       >
         <GripVertical size={13} strokeWidth={2.4} />

@@ -18,6 +18,8 @@ export type SortType = 'trending' | 'popular' | 'recent' | null
 
 export interface HomeTopBarProps {
   onLogoClick?: () => void
+  onToggleSidebar?: () => void
+  isSidebarExpanded?: boolean
   coinBalance?: number
   notificationCount?: number
   onCoinClick?: () => void

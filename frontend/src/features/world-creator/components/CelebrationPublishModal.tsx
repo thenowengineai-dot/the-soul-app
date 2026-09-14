@@ -47,7 +47,7 @@ export default function CelebrationPublishModal({
           type="button"
           onClick={onClose}
           title="ปิดหน้าต่าง"
-          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-[#ACACB2] hover:text-[#F2F2F5] flex items-center justify-center transition-colors cursor-pointer"
+          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-[#BEBEC4] hover:text-[#F2F2F5] flex items-center justify-center transition-colors cursor-pointer"
         >
           <X size={15} strokeWidth={2.2} />
         </button>
@@ -77,16 +77,16 @@ export default function CelebrationPublishModal({
         <h2 className="text-[22px] sm:text-[25px] font-black text-[#F2F2F5] tracking-tight mt-3">
           {characterName}
         </h2>
-        <p className="text-[14px] sm:text-[15px] font-medium text-[#ACACB2] mt-0.5">
+        <p className="text-[14px] sm:text-[15px] font-medium text-[#BEBEC4] mt-0.5">
           ในโลก: <span className="text-[#F2F2F5]">{worldName}</span>
         </p>
 
         {/* Narrative / Context Snippet */}
         <div className="w-full mt-4 p-3.5 rounded-2xl bg-[#1D1D1F]/90 border border-white/5 text-left">
-          <div className="text-[11px] font-bold text-[#ACACB2] uppercase tracking-wider mb-1">
+          <div className="text-[11px] font-bold text-[#BEBEC4] uppercase tracking-wider mb-1">
             พร้อมเล่นในห้องแชทแล้ว
           </div>
-          <p className="text-[13px] text-[#ACACB2] leading-relaxed line-clamp-2">
+          <p className="text-[13px] text-[#BEBEC4] leading-relaxed line-clamp-2">
             {draft.description ||
               'โครงสร้างโลก บทนำ ฉากเหตุการณ์ และอัตลักษณ์ตัวละครถูกอัดฉีดเข้าสู่ Upstash Redis เรียบร้อยแล้ว พร้อมเริ่มบทสนทนาทันที'}
           </p>

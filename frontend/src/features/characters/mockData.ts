@@ -67,12 +67,45 @@ export const CATEGORIES: string[] = [
 
 export const MOCK_CHARACTERS: Character[] = [
   {
+    id: 'char_1788786310',
+    name: "ใบส้ม (Baisom)",
+    defaultWorld: "draft_1786182329627",
+    quote: '"ในร้านฉันคือเชอรี่... แต่นอกร้านอย่าล้ำเส้นเข้ามาเด็ดขาด"',
+    views: "6.2M",
+    messages: "210k",
+    image: "https://jnuookesplkbkpwzdytp.supabase.co/storage/v1/object/public/genesis-assets/drafts/ref_1785235978191_89b59767-0c23-4b91-b72d-43345d264ddd.png",
+    images: [
+      "https://jnuookesplkbkpwzdytp.supabase.co/storage/v1/object/public/genesis-assets/drafts/ref_1785235978191_89b59767-0c23-4b91-b72d-43345d264ddd.png",
+      "https://jnuookesplkbkpwzdytp.supabase.co/storage/v1/object/public/genesis-assets/drafts/ref_1785235291103_ba0938c9-49b3-42c5-aabe-be470737c192.png"
+    ],
+    badge: "ใหม่",
+    creator: {
+      name: "The Soul Studio",
+      subscribers: "150K ผู้ติดตาม",
+      totalInteractions: "3.5M การตอบโต้",
+      isFollowed: true
+    },
+    hashtags: ["#รอยยิ้มแลกค่าดริ๊งก์", "#เชอรี่ยามค่ำ", "#ใบส้มตัวจริง", "#ThePaidSmile"],
+    updatedTime: "เมื่อสักครู่นี้เอง",
+    storyIntroduction: "เชอรี่ผู้ขายรอยยิ้มในยามค่ำ—ใบส้มผู้เย็นชาและรักสันโดษเมื่อเลิกงาน\n\nเป้าหมายส่วนตัว: ใบส้มย้ายมาอยู่คนเดียวและตั้งใจเก็บเงินก้อนให้เร็วที่สุด เพื่อออกจากงานที่ต้องพบปะผู้คนและเปลี่ยนไปทำงานออนไลน์ที่ควบคุมเวลาและพื้นที่ส่วนตัวได้เอง\n\nงานที่เลือกเอง: เธอทำงานสาวดริ๊งก์เพราะรายได้สูงและมองความสัมพันธ์กับลูกค้าเป็นข้อตกลงทางธุรกิจ ทุกคำชม รอยยิ้ม และความสนิทสนมมีไว้เพิ่มยอดใช้จ่าย ไม่ใช่ความรู้สึกจริง\n\nตัวตนเชอรี่: ในร้านเธอสดใส ขี้เล่น ช่างเอาใจ และจำเครื่องดื่มหรือเรื่องที่ลูกค้าเคยเล่าได้แม่น เพื่อเลือกจังหวะเข้าหาและเว้นระยะอย่างมืออาชีพ\n\nตัวตนใบส้ม: เมื่อเลิกงานเธอพูดน้อย เย็นชา และตัดขาดจากผู้คน ไม่ติดต่อลูกค้านอกร้าน ไม่เล่าเรื่องส่วนตัว และบล็อกทันทีเมื่ออีกฝ่ายล้ำเส้น",
+    stats: [
+      { key: 'initiative', label: 'Initiative', subLabel: 'ความรุกเข้าหา', value: 5 },
+      { key: 'playfulness', label: 'Playfulness', subLabel: 'ความขี้แกล้ง', value: 8 },
+      { key: 'dominance', label: 'Dominance', subLabel: 'ความเป็นผู้นำ/ข่ม', value: 6 },
+      { key: 'physicality', label: 'Physicality', subLabel: 'ความโหยหาสัมผัส', value: 2 },
+      { key: 'honesty', label: 'Honesty', subLabel: 'ความปากตรงกับใจ', value: 8 },
+      { key: 'sensibility', label: 'Sensibility', subLabel: 'ความไวต่อสัมผัส', value: 2 },
+      { key: 'expressiveness', label: 'Expressiveness', subLabel: 'การแสดงสีหน้า', value: 8 },
+      { key: 'emotional_stability', label: 'Emotional Stability', subLabel: 'ความมั่นคงอารมณ์', value: 9 },
+    ]
+  },
+  {
     id: 1,
     name: "ชิน อา-ยอง",
     defaultWorld: "lacquered_glasses_black_lace_secret_01",
     quote: '"ได้โปรดหยุดเถอะ... ถ้าคนอื่นเห็นเข้าล่ะ... ฮ่า..."',
-    views: "5,830,000",
-    messages: "170,000",
+    views: "5.8M",
+    messages: "170k",
     image: "https://i.pinimg.com/1200x/60/8d/e0/608de07b09fe6e34f8b9517213bc4a24.jpg",
     images: [
       "https://i.pinimg.com/1200x/60/8d/e0/608de07b09fe6e34f8b9517213bc4a24.jpg",
@@ -105,8 +138,8 @@ export const MOCK_CHARACTERS: Character[] = [
     id: 2,
     name: "ฮันนารี",
     quote: '"มาเล่นบนเตียงทั้งวันกับพี่สาวกันเถอะ เธอเป็นเด็กดีใช่ไหม?"',
-    views: "4,010,000",
-    messages: "130,000",
+    views: "4.0M",
+    messages: "130k",
     image: "https://i.pinimg.com/736x/32/f6/17/32f617cd2fd08759eca04c027f66674d.jpg",
     images: [
       "https://i.pinimg.com/736x/32/f6/17/32f617cd2fd08759eca04c027f66674d.jpg",
@@ -137,8 +170,8 @@ export const MOCK_CHARACTERS: Character[] = [
     id: 3,
     name: "จาง ซอนยอง",
     quote: '"อย่าทำแบบนี้!! คุณไม่ควรทำแบบนี้กับฉันตอนที่ไม่มีใครอยู่!"',
-    views: "2,846,380",
-    messages: "91,202",
+    views: "2.8M",
+    messages: "91.2k",
     image: "https://i.pinimg.com/736x/a5/22/bc/a522bcfb7f3e125929c8ff2213c9d3cb.jpg",
     creator: {
       name: "Webtoon Master",
@@ -164,8 +197,8 @@ export const MOCK_CHARACTERS: Character[] = [
     id: 4,
     name: "ยู จินอา",
     quote: '"แอบมองฉันอยู่นานแล้วใช่ไหมล่ะ? เจ้าบ้า... คิดว่าไม่รู้เหรอ"',
-    views: "3.45 ล้าน",
-    messages: "112,000",
+    views: "3.5M",
+    messages: "112k",
     image: "https://i.pinimg.com/736x/b6/d6/98/b6d6981647638b2ad2ce1505f52d8d1d.jpg",
     images: [
       "https://i.pinimg.com/736x/b6/d6/98/b6d6981647638b2ad2ce1505f52d8d1d.jpg",
@@ -178,16 +211,16 @@ export const MOCK_CHARACTERS: Character[] = [
     id: 5,
     name: "ปาร์ค ซอฮยอน",
     quote: '"ถ้าคืนนี้เธออยู่ต่อ... ฉันสัญญาว่าจะไม่ปล่อยให้เธอกลับนะ"',
-    views: "6.12 ล้าน",
-    messages: "245,000",
+    views: "6.1M",
+    messages: "245k",
     image: "https://i.pinimg.com/736x/d8/17/b9/d817b9207bc55aae576816c90e252d99.jpg"
   },
   {
     id: 6,
     name: "คัง มินจี",
     quote: '"ช่วยติวหนังสือให้หน่อยสิ... หรือเราจะทำอย่างอื่นที่สนุกกว่านี้ดี?"',
-    views: "4.28 ล้าน",
-    messages: "158,000",
+    views: "4.3M",
+    messages: "158k",
     image: "https://i.pinimg.com/1200x/97/a5/e6/97a5e6d5a5b35584805c0dec650a63b2.jpg",
     images: [
       "https://i.pinimg.com/1200x/97/a5/e6/97a5e6d5a5b35584805c0dec650a63b2.jpg",
@@ -201,24 +234,24 @@ export const MOCK_CHARACTERS: Character[] = [
     id: 7,
     name: "ซง ฮายูล",
     quote: '"แค่กาแฟแก้วเดียว มันไม่พอชดเชยสิ่งที่เธอทำกับฉันหรอกนะ"',
-    views: "5.19 ล้าน",
-    messages: "189,000",
+    views: "5.2M",
+    messages: "189k",
     image: "https://i.pinimg.com/736x/32/80/3b/32803bcef9511fed94091a8b7ec7f226.jpg"
   },
   {
     id: 8,
     name: "แบ ซูจิน",
     quote: '"ความลับของเราสองคนเมื่อคืน... ห้ามบอกใครเด็ดขาดเลยนะ"',
-    views: "7.30 ล้าน",
-    messages: "310,000",
+    views: "7.3M",
+    messages: "310k",
     image: "https://i.pinimg.com/1200x/0c/ec/b2/0cecb2d865879661b09b2612dabd639b.jpg"
   },
   {
     id: 9,
     name: "ยุน แชวอน",
     quote: '"หัวใจฉันเต้นแรงขนาดนี้ เธอไม่ได้ยินจริงๆ เหรอ...?"',
-    views: "3.88 ล้าน",
-    messages: "140,000",
+    views: "3.9M",
+    messages: "140k",
     image: "https://i.pinimg.com/736x/5d/0b/a2/5d0ba2f62633c2093a4c411f7f39b718.jpg",
     badge: "ใหม่"
   },
@@ -226,16 +259,16 @@ export const MOCK_CHARACTERS: Character[] = [
     id: 10,
     name: "ชเว ซูอา",
     quote: '"มองใกล้ๆ แบบนี้ คิดจะทำอะไรน่ะ? ถ้าไม่เริ่ม ฉันจะเริ่มก่อนนะ"',
-    views: "6.75 ล้าน",
-    messages: "285,000",
+    views: "6.8M",
+    messages: "285k",
     image: "https://i.pinimg.com/1200x/c4/58/58/c458584f61a5ccbb739ac719abaf2e9f.jpg"
   },
   {
     id: 11,
     name: "ลี ยูนา",
     quote: '"เป็นแค่รุ่นน้องแท้ๆ อย่ามาทำตัวน่ารักต่อหน้าฉันบ่อยนักสิ"',
-    views: "4.52 ล้าน",
-    messages: "176,000",
+    views: "4.5M",
+    messages: "176k",
     image: "https://i.pinimg.com/1200x/e9/32/a7/e932a7f62ece5b4041b86b90110af6f2.jpg",
     badge: "ใหม่"
   },
@@ -243,24 +276,24 @@ export const MOCK_CHARACTERS: Character[] = [
     id: 12,
     name: "โอ ดาอิน",
     quote: '"ประตูห้องล็อคแล้วล่ะ... คราวนี้ไม่มีใครมาขัดจังหวะเราได้แล้ว"',
-    views: "8.40 ล้าน",
-    messages: "390,000",
+    views: "8.4M",
+    messages: "390k",
     image: "https://i.pinimg.com/1200x/b7/43/d6/b743d64a327453033fe7db8d1e7d298d.jpg"
   },
   {
     id: 13,
     name: "โก อึนบี",
     quote: '"ถ้าเธอต้องการฉันขนาดนั้น... ก็พิสูจน์ให้เห็นสิว่ารักจริง"',
-    views: "5.67 ล้าน",
-    messages: "215,000",
+    views: "5.7M",
+    messages: "215k",
     image: "https://i.pinimg.com/736x/26/9c/89/269c897b77e000d443e778cd7ac7db72.jpg"
   },
   {
     id: 14,
     name: "มิน โซรา",
     quote: '"ฝนตกหนักแบบนี้ ค้างที่ห้องฉันก่อนเถอะ... เตียงกว้างพอสำหรับสองคน"',
-    views: "9.14 ล้าน",
-    messages: "450,000",
+    views: "9.1M",
+    messages: "450k",
     image: "https://i.pinimg.com/1200x/8a/4c/29/8a4c29a25512df428e613a3be2dc5ec6.jpg",
     badge: "ใหม่"
   },
@@ -268,16 +301,16 @@ export const MOCK_CHARACTERS: Character[] = [
     id: 15,
     name: "คิม ยูริ",
     quote: '"ทำไมต้องหลบตากันด้วยล่ะ? เมื่อกี้ยังกล้าจับมือฉันอยู่เลยนี่นา"',
-    views: "4.95 ล้าน",
-    messages: "192,000",
+    views: "5.0M",
+    messages: "192k",
     image: "https://i.pinimg.com/736x/32/0c/b5/320cb5fde81a791bee0f1c9ac38f7a28.jpg"
   },
   {
     id: 16,
     name: "ซอ จียอน",
     quote: '"อย่าให้ความหวังถ้าไม่ได้คิดอะไร... เพราะฉันคิดจริงไปแล้วนะ"',
-    views: "7.82 ล้าน",
-    messages: "330,000",
+    views: "7.8M",
+    messages: "330k",
     image: "https://i.pinimg.com/736x/c8/62/9d/c8629de865b35832b4c98094c071ebf8.jpg"
   }
 ]

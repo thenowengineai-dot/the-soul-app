@@ -1,6 +1,36 @@
 import type { ChatConversation, ChatMessage, CharacterHudData } from './types'
 
+export const SAMPLE_SHOWCASE_CHAT: ChatConversation = {
+  id: 'sample_showcase',
+  name: "ชิน อา-ยอง",
+  badge: "ตัวอย่าง",
+  message: "ฉันยังไม่อยากให้เธอกลับเลย... เจ้าเด็กบ้า ✨",
+  time: "เมื่อสักครู่",
+  unread: false,
+  verified: true,
+  avatar: "https://i.pinimg.com/1200x/60/8d/e0/608de07b09fe6e34f8b9517213bc4a24.jpg",
+  image: "https://i.pinimg.com/1200x/60/8d/e0/608de07b09fe6e34f8b9517213bc4a24.jpg",
+  statusMessage: "ในห้องชมรมคนเดียว... 🤫",
+  defaultWorld: "lacquered_glasses_black_lace_secret_01",
+  isTyping: true,
+  isSample: true,
+}
+
 export const MOCK_CHATS: ChatConversation[] = [
+  SAMPLE_SHOWCASE_CHAT,
+  { 
+    id: 'char_1788786310', 
+    name: "ใบส้ม (Baisom)", 
+    message: "ในร้านฉันคือเชอรี่... แต่นอกร้านอย่าล้ำเส้นเข้ามาเด็ดขาด", 
+    time: "3m", 
+    unread: true, 
+    unreadCount: 1,
+    verified: true, 
+    avatar: "https://jnuookesplkbkpwzdytp.supabase.co/storage/v1/object/public/genesis-assets/drafts/ref_1785235978191_89b59767-0c23-4b91-b72d-43345d264ddd.png",
+    image: "https://jnuookesplkbkpwzdytp.supabase.co/storage/v1/object/public/genesis-assets/drafts/ref_1785235978191_89b59767-0c23-4b91-b72d-43345d264ddd.png",
+    statusMessage: "เลิกงานแล้ว... กรุณาอย่ารบกวน 🌙",
+    defaultWorld: "draft_1786182329627"
+  },
   { 
     id: 1, 
     name: "ชิน อา-ยอง", 
@@ -104,6 +134,109 @@ export const MOCK_CHATS: ChatConversation[] = [
   },
 ]
 
+export const SAMPLE_SHOWCASE_MESSAGES: ChatMessage[] = [
+  // 1. กล่อง VO (Voice Over / คำบรรยายบรรยากาศและฉาก สไตล์มังงะ / X Card)
+  { 
+    id: 'sample_vo_1', 
+    type: 'vo', 
+    text: 'แสงไฟนีออนในห้องชมรมสะท้อนลงบนโต๊ะไม้เก่า เสียงหยดฝนกระทบกระจกหน้าต่างเบาๆ คล้ายจังหวะดนตรียามค่ำคืน บรรยากาศเงียบสงัดทำให้ระยะห่างของทั้งสองคนค่อยๆ ลดลง จนได้ยินแม้กระทั่งเสียงลมหายใจอุ่นๆ ที่แผ่วเบา ในแววตาของรุ่นพี่สาวมีทั้งความสับสนและความอ่อนไหวที่ไม่เคยเปิดเผยให้ใครได้เห็นมาก่อน...' 
+  },
+
+  // 2. Bot Action (เดี่ยว)
+  { 
+    id: 'sample_act_1', 
+    type: 'action', 
+    sender: 'them', 
+    text: 'เธอยกมือขึ้นทาบอกเบาๆ พวงแก้มใสขึ้นสีแดงระเรื่อ ดวงตาสีน้ำตาลหวานหลุบมองต่ำด้วยความประหม่า' 
+  },
+
+  // 3. Bot Dialogues (2 ก้อนติดกัน: ทดสอบ spacing mt-1 ระหว่างบับเบิ้ลบ็อต)
+  { 
+    id: 'sample_dia_1', 
+    type: 'msg', 
+    sender: 'them', 
+    text: 'รุ่นน้องคะ... วันนี้จะเข้ามาเคลียร์เอกสารที่ห้องชมรมไหม?' 
+  },
+  { 
+    id: 'sample_dia_2', 
+    type: 'msg', 
+    sender: 'them', 
+    text: 'ฉันชงชาอุ่นๆ เตรียมไว้ให้แล้วนะ บรรยากาศเงียบดีจังเลย 🍵' 
+  },
+
+  // 4. Bot Action คั่นกลาง
+  { 
+    id: 'sample_act_2', 
+    type: 'action', 
+    sender: 'them', 
+    text: 'ขยับตัวนั่งลงข้างๆ อย่างเงียบเชียบ ปลายนิ้วเรียวสัมผัสขอบถ้วยชาเบาๆ ก่อนจะเอ่ยต่อ' 
+  },
+
+  // 5. Bot Dialogue ต่อเนื่องอีก 1 ก้อน
+  { 
+    id: 'sample_dia_3', 
+    type: 'msg', 
+    sender: 'them', 
+    text: 'ข้างนอกฝนตกหนักขนาดนี้ เธอยังกลับไม่ได้ใช่ไหมล่ะ?' 
+  },
+
+  // 6. User Dialogue (เดี่ยว: ทดสอบ spacing mt-4 เมื่อสลับฝั่งผู้เล่น)
+  { 
+    id: 'sample_user_1', 
+    type: 'msg', 
+    sender: 'me', 
+    text: 'กำลังเดินไปพอดีเลยครับ' 
+  },
+
+  // 7. User Dialogues (3 ก้อนติดกัน: ทดสอบ spacing mt-1 ของฝั่งผู้เล่น + สถานะ "อ่านแล้ว" ชิดขวาใต้ก้อนสุดท้าย)
+  { 
+    id: 'sample_user_2', 
+    type: 'msg', 
+    sender: 'me', 
+    text: 'วันนี้รุ่นพี่อยู่คนเดียวเหรอครับ?' 
+  },
+  { 
+    id: 'sample_user_3', 
+    type: 'msg', 
+    sender: 'me', 
+    text: 'ร่มผมพัง ติดฝนยาวเลยครับ' 
+  },
+  { 
+    id: 'sample_user_4', 
+    type: 'msg', 
+    sender: 'me', 
+    read: true,
+    text: 'สงสัยคงต้องรบกวนรุ่นพี่ทั้งคืนแล้วล่ะครับ...' 
+  },
+
+  // 8. กล่อง VO คั่นระหว่างช่วง (ทดสอบ Space บนล่าง my-14 และ mt-0 ของข้อความถัดไป)
+  { 
+    id: 'sample_vo_2', 
+    type: 'vo', 
+    text: 'ความเงียบกลับเข้ามาปกคลุมห้องชมรมอีกครั้ง มีเพียงเสียงสายฝนที่ยังคงตกลงมาอย่างไม่ขาดสาย สายตาของทั้งคู่สบประสานกันอย่างมีความหมาย อุณหภูมิในห้องดูเหมือนจะค่อยๆ อุ่นขึ้นทีละน้อย...' 
+  },
+
+  // 9. Bot Action & Dialogues
+  { 
+    id: 'sample_act_3', 
+    type: 'action', 
+    sender: 'them', 
+    text: 'ใบหน้าหวานขึ้นสีแดงจัด มือทั้งสองข้างกำกระโปรงแน่นด้วยความเขินอาย ก่อนจะค่อยๆ เงยหน้าขึ้นมอง' 
+  },
+  { 
+    id: 'sample_dia_4', 
+    type: 'msg', 
+    sender: 'them', 
+    text: 'งั้น... อยู่ด้วยกันในนี้ต่ออีกหน่อยได้ไหม?' 
+  },
+  { 
+    id: 'sample_dia_5', 
+    type: 'msg', 
+    sender: 'them', 
+    text: 'ฉันยังไม่อยากให้เธอกลับเลย... เจ้าเด็กบ้า ✨' 
+  },
+]
+
 export const MOCK_MESSAGES: ChatMessage[] = [
   { id: 1, type: 'msg', sender: "them", text: "รุ่นน้องคะ วันนี้จะเข้ามาเคลียร์เอกสารที่ห้องชมรมไหม?" },
   { id: 2, type: 'msg', sender: "them", text: "ฉันชงชาอุ่นๆ เตรียมไว้ให้แล้วนะ บรรยากาศเงียบดีจังเลย 🍵" },
@@ -133,6 +266,63 @@ export const MOCK_MESSAGES: ChatMessage[] = [
 ]
 
 export const MOCK_HUD_MAP: Record<number | string, CharacterHudData> = {
+  char_1788786310: {
+    characterId: 'char_1788786310',
+    name: "ใบส้ม (Baisom)",
+    gender: "หญิง",
+    age: "25 ปี",
+    role: "The Paid Smile / Off-Duty Ice",
+    avatar: "https://jnuookesplkbkpwzdytp.supabase.co/storage/v1/object/public/genesis-assets/drafts/ref_1785235978191_89b59767-0c23-4b91-b72d-43345d264ddd.png",
+    image: "https://jnuookesplkbkpwzdytp.supabase.co/storage/v1/object/public/genesis-assets/drafts/ref_1785235978191_89b59767-0c23-4b91-b72d-43345d264ddd.png",
+    pose: "ยืนตรงหน้าโดยมีโต๊ะกั้นกลาง โค้งต้อนรับด้วยรอยยิ้มหวานหยดย้อยสไตล์เชอรี่",
+    outfit: "เดรสเข้ารูปสีแดงไวน์ คอสูง แขนกุด ผิวผ้ามันวาว (CHERRY / NIGHT SHIFT)",
+    playerPose: "นั่งทิ้งตัวบนโซฟาตรงกลางห้อง VIP",
+    relationship: {
+      label: "ความสัมพันธ์",
+      status: "ลูกค้า VIP คนพิเศษของค่ำคืนนี้",
+      current: 40,
+      max: 100,
+    },
+    desire: {
+      label: "ความปรารถนา",
+      status: "รอยยิ้มหวานที่ซ่อนระยะห่างมืออาชีพ",
+      current: 30,
+      max: 100,
+    },
+    environment: {
+      time: "ยามค่ำคืน (Night Shift)",
+      location: "VIP Bar",
+      weather: "แอร์เย็นสบาย แสงไฟสลัวสีส้ม",
+    },
+  },
+  sample_showcase: {
+    characterId: 'sample_showcase',
+    name: "ชิน อา-ยอง",
+    gender: "หญิง",
+    age: "19 ปี",
+    role: "ประธานชมรมวรรณกรรม",
+    avatar: "https://i.pinimg.com/1200x/60/8d/e0/608de07b09fe6e34f8b9517213bc4a24.jpg",
+    image: "https://i.pinimg.com/1200x/60/8d/e0/608de07b09fe6e34f8b9517213bc4a24.jpg",
+    pose: "เอามือทาบอก หลบสายตาด้วยความประหม่า",
+    outfit: "ชุดนักเรียน ม.ปลาย เสื้อเชิ้ตเปียกฝนเล็กน้อย",
+    relationship: {
+      label: "ความสัมพันธ์",
+      status: "หวั่นไหวและเริ่มเปิดใจ",
+      current: 78,
+      max: 100,
+    },
+    desire: {
+      label: "ความปรารถนา",
+      status: "ระงับอารมณ์ไม่อยู่",
+      current: 65,
+      max: 100,
+    },
+    environment: {
+      time: "18:45 น. (พลบค่ำ)",
+      location: "ห้องชมรมวรรณกรรม ชั้น 3",
+      weather: "ฝนตกหนัก ฟ้าร้องเบาๆ 🌧️",
+    },
+  },
   1: {
     characterId: 1,
     name: "ชิน อา-ยอง",
@@ -223,6 +413,14 @@ export function getCharacterHudData(chat?: ChatConversation): CharacterHudData {
     }
   }
 
+  if (chat.id && MOCK_HUD_MAP[chat.id]) {
+    return MOCK_HUD_MAP[chat.id]
+  }
+
+  if (chat.id === 'sample_showcase' || chat.isSample) {
+    return MOCK_HUD_MAP.sample_showcase
+  }
+
   const env = chat.initialEnvironment || {
     time: '14:00 น.',
     location: 'สถานที่นัดพบ',
@@ -239,6 +437,7 @@ export function getCharacterHudData(chat?: ChatConversation): CharacterHudData {
     image: chat.image || chat.avatar,
     pose: chat.initialPose || 'ยืน/นั่งอิสระตามบริบท',
     outfit: chat.initialOutfit || 'ชุดเริ่มต้น',
+    playerPose: 'ยืนสบตานิ่งๆ รอคำตอบ',
     relationship: {
       label: 'ความสัมพันธ์',
       status: 'เริ่มต้นทำความรู้จัก',

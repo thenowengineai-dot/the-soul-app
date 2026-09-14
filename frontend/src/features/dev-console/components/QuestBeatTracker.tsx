@@ -39,7 +39,7 @@ export function QuestBeatTracker({ questState }: QuestBeatTrackerProps) {
               <CheckCircle2 size={11} /> สำเร็จ (Completed)
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/5 text-[#ACACB2] text-[10.5px] font-medium border border-white/10">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/5 text-[#BEBEC4] text-[10.5px] font-medium border border-white/10">
               Sandbox
             </span>
           )}
@@ -51,7 +51,7 @@ export function QuestBeatTracker({ questState }: QuestBeatTrackerProps) {
         <div className="space-y-2 bg-[#1D1D1F]/60 rounded-xl p-3 border border-white/5 text-[12px] font-mono">
           {/* Scene Row */}
           <div className="flex items-center justify-between">
-            <span className="text-[#ACACB2] flex items-center gap-1.5">
+            <span className="text-[#BEBEC4] flex items-center gap-1.5">
               <MapPin size={12} className="text-[#EF264C]" />
               <span>SCENE (ฉาก):</span>
             </span>
@@ -62,7 +62,7 @@ export function QuestBeatTracker({ questState }: QuestBeatTrackerProps) {
 
           {/* Beat Row */}
           <div className="flex items-center justify-between">
-            <span className="text-[#ACACB2] flex items-center gap-1.5">
+            <span className="text-[#BEBEC4] flex items-center gap-1.5">
               <FastForward size={12} className="text-amber-400" />
               <span>ACTIVE BEAT:</span>
             </span>
@@ -73,24 +73,24 @@ export function QuestBeatTracker({ questState }: QuestBeatTrackerProps) {
 
           {/* Turn Counters */}
           <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[11px]">
-            <span className="text-[#ACACB2]">
+            <span className="text-[#BEBEC4]">
               รอบในบีทนี้: <strong className="text-[#F2F2F5]">{qState.beatTurnCount} รอบ</strong>
             </span>
-            <span className="text-[#ACACB2]">
+            <span className="text-[#BEBEC4]">
               รอบสะสม: <strong className="text-[#F2F2F5]">{qState.sandboxTurnCount} รอบ</strong>
             </span>
           </div>
         </div>
       ) : (
-        <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-[11.5px] text-[#ACACB2] flex items-center gap-2">
-          <AlertCircle size={14} className="text-[#ACACB2]/60 shrink-0" />
+        <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-[11.5px] text-[#BEBEC4] flex items-center gap-2">
+          <AlertCircle size={14} className="text-[#BEBEC4]/60 shrink-0" />
           <span>ยังไม่มีเควสต์หลักทำงาน กำลังเล่นในโหมด Sandbox ทั่วไป</span>
         </div>
       )}
 
       {/* 3. Next Condition Hint (คำแนะนำเงื่อนไขถัดไป) */}
       {qState.conditionHint && (
-        <div className="text-[11px] text-[#ACACB2] bg-white/[0.03] px-3 py-2 rounded-xl border border-white/5 flex items-center gap-2">
+        <div className="text-[11px] text-[#BEBEC4] bg-white/[0.03] px-3 py-2 rounded-xl border border-white/5 flex items-center gap-2">
           <span className="font-bold text-amber-400 shrink-0">เงื่อนไขก้าวหน้า:</span>
           <span className="truncate">{qState.conditionHint}</span>
         </div>

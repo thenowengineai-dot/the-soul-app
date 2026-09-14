@@ -99,7 +99,7 @@ export default function CharacterVisualAnchor({
           <div className="w-6 h-6 rounded-lg bg-[#EF264C]/10 border border-[#EF264C]/25 flex items-center justify-center shrink-0">
             <ImageIcon size={13} className="text-[#EF264C]" />
           </div>
-          <span className="text-[11px] font-bold tracking-wider uppercase text-[#ACACB2]">
+          <span className="text-[11px] font-bold tracking-wider uppercase text-[#BEBEC4]">
             Image Gallery
           </span>
         </div>
@@ -121,7 +121,7 @@ export default function CharacterVisualAnchor({
               <span className="text-[13px] font-semibold text-[#F2F2F5]">
                 กำลังบันทึกภาพขึ้น Cloud Storage
               </span>
-              <span className="text-[11px] text-[#ACACB2]">
+              <span className="text-[11px] text-[#BEBEC4]">
                 จัดเก็บบน Google Cloud และซิงค์กับ Neon DB
               </span>
             </div>
@@ -206,7 +206,7 @@ export default function CharacterVisualAnchor({
                 }`}>
                   {draft.status === 'published' ? 'เผยแพร่แล้ว' : 'ฉบับร่าง'}
                 </span>
-                <span className="text-[11px] text-[#ACACB2] truncate">
+                <span className="text-[11px] text-[#BEBEC4] truncate">
                   {draft.worldTitle}
                 </span>
               </div>
@@ -216,7 +216,7 @@ export default function CharacterVisualAnchor({
               </h2>
 
               {draft.description && (
-                <p className="text-[12px] text-[#ACACB2] line-clamp-2 leading-relaxed mt-0.5">
+                <p className="text-[12px] text-[#BEBEC4] line-clamp-2 leading-relaxed mt-0.5">
                   {draft.description}
                 </p>
               )}
@@ -228,13 +228,13 @@ export default function CharacterVisualAnchor({
             onClick={() => fileInputRef.current?.click()}
             className="flex-1 flex flex-col items-center justify-center p-6 text-center bg-[#121214] hover:bg-[#161619] transition-colors cursor-pointer group"
           >
-            <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 group-hover:border-[#EF264C]/50 group-hover:bg-[#EF264C]/10 flex items-center justify-center text-[#ACACB2] group-hover:text-[#EF264C] mb-3 shadow-inner transition-all">
+            <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 group-hover:border-[#EF264C]/50 group-hover:bg-[#EF264C]/10 flex items-center justify-center text-[#BEBEC4] group-hover:text-[#EF264C] mb-3 shadow-inner transition-all">
               <ImagePlus size={26} strokeWidth={1.5} />
             </div>
             <h3 className="text-sm font-semibold text-[#F2F2F5] mb-1 group-hover:text-[#EF264C] transition-colors">
               คลิกเพื่ออัปโหลดรูปภาพ
             </h3>
-            <p className="text-xs text-[#ACACB2] max-w-[220px] leading-relaxed">
+            <p className="text-xs text-[#BEBEC4] max-w-[220px] leading-relaxed">
               รองรับทั้งไฟล์ PNG, JPG, WebP เลือกได้หลายภาพพร้อมกัน
             </p>
           </div>
@@ -245,10 +245,10 @@ export default function CharacterVisualAnchor({
       <div className="shrink-0 flex flex-col gap-2 mt-3">
         {/* Header แกลเลอรี */}
         <div className="flex items-center justify-between px-0.5">
-          <span className="text-[11px] font-medium text-[#ACACB2] uppercase tracking-wider">
+          <span className="text-[11px] font-medium text-[#BEBEC4] uppercase tracking-wider">
             จัดลำดับภาพ & หน้าปก ({galleryImages.length})
           </span>
-          <span className="text-[10px] text-[#ACACB2]/70">
+          <span className="text-[10px] text-[#BEBEC4]/70">
             รูปที่ 1 คือรูปหน้าปก
           </span>
         </div>
@@ -257,7 +257,7 @@ export default function CharacterVisualAnchor({
         {galleryImages.length > 0 && (
           <div className="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-[#141416] border border-white/10 text-xs shadow-md">
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-[11px] font-mono text-[#ACACB2] shrink-0">
+              <span className="text-[11px] font-mono text-[#BEBEC4] shrink-0">
                 ภาพที่ <strong className="text-white font-bold">#{activeImageIndex + 1}</strong>
               </span>
 
@@ -388,11 +388,11 @@ export default function CharacterVisualAnchor({
             type="button"
             onClick={() => fileInputRef.current?.click()}
             title="เพิ่มภาพคอสตูมหรือคอนเซปต์ใหม่ (เลือกได้หลายรูป)"
-            className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl border border-dashed border-white/30 hover:border-[#EF264C]/70 hover:bg-white/5 text-[#ACACB2] hover:text-[#F2F2F5] flex items-center justify-center shrink-0 transition-all cursor-pointer group shadow-sm active:scale-95"
+            className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl border border-dashed border-white/30 hover:border-[#EF264C]/70 hover:bg-white/5 text-[#BEBEC4] hover:text-[#F2F2F5] flex items-center justify-center shrink-0 transition-all cursor-pointer group shadow-sm active:scale-95"
           >
             <Plus
               size={18}
-              className="text-[#ACACB2] group-hover:text-[#EF264C] group-hover:scale-110 transition-all"
+              className="text-[#BEBEC4] group-hover:text-[#EF264C] group-hover:scale-110 transition-all"
             />
           </button>
         </div>

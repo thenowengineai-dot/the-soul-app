@@ -771,7 +771,7 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
             type="button"
             onClick={() => setIsVisualAnchorCollapsed(false)}
             title="แสดงภาพตัวละคร (Image)"
-            className="absolute -right-4 top-[104px] z-30 w-8 h-8 rounded-full bg-[#141416]/95 backdrop-blur-xl border border-white/[0.12] hover:border-[#EF264C]/70 hover:bg-[#1D1D22] text-[#ACACB2] hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 group"
+            className="absolute -right-4 top-[104px] z-30 w-8 h-8 rounded-full bg-[#141416]/95 backdrop-blur-xl border border-white/[0.12] hover:border-[#EF264C]/70 hover:bg-[#1D1D22] text-[#BEBEC4] hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 group"
           >
             <ImageIcon
               size={15}
@@ -814,7 +814,7 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
             type="button"
             onClick={() => setIsVisualAnchorCollapsed(true)}
             title="ซ่อนภาพตัวละคร (Image)"
-            className="w-8 h-8 rounded-full bg-[#141416]/95 backdrop-blur-xl border border-white/[0.12] hover:border-[#EF264C]/70 hover:bg-[#1D1D22] text-[#ACACB2] hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 group"
+            className="w-8 h-8 rounded-full bg-[#141416]/95 backdrop-blur-xl border border-white/[0.12] hover:border-[#EF264C]/70 hover:bg-[#1D1D22] text-[#BEBEC4] hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 group"
           >
             <ImageIcon
               size={15}

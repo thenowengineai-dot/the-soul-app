@@ -3,7 +3,12 @@ import type { MessageListProps } from '../../types'
 
 export type { MessageListProps }
 
-export function MessageList({ messages, chatAvatar, chatName, endRef }: MessageListProps) {
+export function MessageList({ 
+  messages, 
+  chatAvatar, 
+  chatName, 
+  endRef 
+}: MessageListProps) {
   return (
     <div className="w-full max-w-[800px] mx-auto px-4 sm:px-6 pt-2 flex-1 flex flex-col">
       {messages.map((msg, index) => {
@@ -20,8 +25,12 @@ export function MessageList({ messages, chatAvatar, chatName, endRef }: MessageL
             isSameSenderAsPrev = true
           }
         }
-        const marginTop = isAfterVo ? 'mt-0' : (isSameSenderAsPrev ? 'mt-1' : 'mt-4')
+        const marginTop = isAfterVo ? 'mt-0' : (isSameSenderAsPrev ? 'mt-0.5' : 'mt-4')
         const isLast = index === messages.length - 1
+
+        // ตรวจสอบว่าเป็นข้อความสุดท้ายในกลุ่มของผู้เล่น หรือมีสถานะอ่านแล้ว
+        const isLastInMeGroup = isMe && (index === messages.length - 1 || messages[index + 1]?.sender !== 'me')
+        const shouldShowRead = isMe && isLastInMeGroup && (msg.read || isLast)
 
         return (
           <MessageBubble
@@ -29,15 +38,16 @@ export function MessageList({ messages, chatAvatar, chatName, endRef }: MessageL
             message={msg}
             isMe={isMe}
             isLast={isLast}
+            isRead={shouldShowRead}
             marginTop={marginTop}
             chatAvatar={chatAvatar}
             chatName={chatName}
           />
         )
       })}
-      
-      {/* ดันบรรทัดล่างสุดให้มีระยะหายใจพอดีเหนือแถบ Sticky Input Bar เพื่อให้เห็นข้อความล่าสุดชัดเจน 100% */}
-      <div ref={endRef} className="h-20 shrink-0" />
+
+      {/* ดันบรรทัดล่างสุดให้มีระยะหายใจพอดีเหนือแถบ Sticky Input Bar (h-28) เพื่อให้เห็นข้อความล่าสุดชัดเจน 100% */}
+      <div ref={endRef} className="h-28 shrink-0" />
     </div>
   )
 }

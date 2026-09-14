@@ -767,7 +767,8 @@ async def load_session_endpoint(request: LoadSessionRequest):
                 "messages": messages,
                 "chatHistory": chat_history,
                 "activeEventId": live_state.get("active_event_id") or last_round_state.get("active_event_id") or (neon_session.get("active_event_id") if neon_session else None),
-                "activeEventPhase": live_state.get("active_phase_id") or last_round_state.get("active_phase_id") or live_state.get("scene_id") or (neon_session.get("active_phase_id") if neon_session else None),
+                "activeSceneId": live_state.get("active_scene_id") or live_state.get("scene_id") or last_round_state.get("active_phase_id") or (neon_session.get("active_phase_id") if neon_session else None),
+                "activeEventPhase": live_state.get("active_scene_id") or live_state.get("active_phase_id") or last_round_state.get("active_phase_id") or live_state.get("scene_id") or (neon_session.get("active_phase_id") if neon_session else None),
                 "activeBeatId": live_state.get("active_beat_id") or last_round_state.get("active_beat_id") or live_state.get("beat_id") or (neon_session.get("active_beat_id") if neon_session else None),
                 "sandboxTurnCount": live_state.get("sandbox_turn_count") or last_round_state.get("sandbox_turn_count", len(cached_rounds)),
                 "beatTurnCount": live_state.get("beat_turn_count") or last_round_state.get("beat_turn_count", len(cached_rounds)),
@@ -997,16 +998,15 @@ async def start_session_endpoint(request: StartSessionRequest, background_tasks:
         initial_a_pos = starting_state.get("initial_a_pos") or "ยืน/นั่งอิสระตามบริบท"
         initial_p_pos = starting_state.get("initial_p_pos") or "ยืน/นั่งอิสระตามบริบท"
 
-        # 🌟 ดึง opening scenario แรกเพื่อหา scene_id และ beat_id จริง
+        # 🌟 ดึง opening scenario แรกเพื่อหา scene_id และ beat_id จริง (Modern Scene Architecture)
         first_event_id = None
-        first_phase_id = None
+        first_scene_id = None
         first_beat_id = None
         opening_scenarios = world_data.get("opening_scenarios") or []
         if opening_scenarios:
             first_event = opening_scenarios[0]
             first_event_id = first_event.get("id")
-            first_phase_id, _ = SceneTransitionManager.get_scene_data(first_event, None)
-            first_beat_id, _ = SceneTransitionManager.get_beat_data(first_event, first_phase_id, None)
+            first_scene_id, first_beat_id = SceneTransitionManager.get_first_scene_and_beat(first_event)
 
         init_state = {
             "affection": 0,
@@ -1014,17 +1014,18 @@ async def start_session_endpoint(request: StartSessionRequest, background_tasks:
             "a_pos": initial_a_pos,
             "p_pos": initial_p_pos,
             "current_outfit": initial_outfit,
-            "scene_id": first_phase_id or starting_state.get("scene_id") or "scene_opening",
+            "scene_id": first_scene_id or starting_state.get("scene_id") or "scene_opening",
             "beat_id": first_beat_id or starting_state.get("beat_id") or "beat_01",
             "active_event_id": first_event_id,
-            "active_phase_id": first_phase_id,
+            "active_scene_id": first_scene_id,
+            "active_phase_id": first_scene_id,
             "active_beat_id": first_beat_id,
             "stance": "neutral",
             "environment": initial_env
         }
         redis_cache.save_live_state(session_id, init_state)
 
-        logger.info(f"✅ [NEW GAME READY] Session {session_id} created successfully on Neon & Redis (Event: {first_event_id}, Phase: {first_phase_id}, Beat: {first_beat_id})")
+        logger.info(f"✅ [NEW GAME READY] Session {session_id} created successfully on Neon & Redis (Event: {first_event_id}, Scene: {first_scene_id}, Beat: {first_beat_id})")
 
         if request.trigger_initial_vo:
             background_tasks.add_task(

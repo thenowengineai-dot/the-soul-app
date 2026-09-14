@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import ChatRoomHeader from './ChatRoomHeader'
 import MessageList from './MessageList'
 import ChatInputBar from './ChatInputBar'
-import { MOCK_CHATS } from '../../mockData'
+import { MOCK_CHATS, SAMPLE_SHOWCASE_MESSAGES } from '../../mockData'
 import type { ChatRoomProps, ChatMessage } from '../../types'
 import {
   ensureGuestAccount,
@@ -280,6 +280,47 @@ export function ChatRoom({
     const triggerKey = currentChat.sessionTriggerKey 
       ? `${charKey}_${currentChat.sessionTriggerKey}` 
       : `${charKey}_active`
+
+    // 🌟 กรณีเป็นห้องแชทจำลองตัวอย่าง (Sample Showcase) สำหรับนำเสนอผู้บริหาร/เจ้าของระบบ
+    const loadSampleShowcase = async () => {
+      if (isCancelled) return
+      setIsSessionLoading(false)
+      setIsStreaming(false)
+      setChatMessages(SAMPLE_SHOWCASE_MESSAGES)
+      onHudUpdateRef.current?.({
+        affection: 78,
+        desire: 65,
+        actor_posture: 'เอามือทาบอก หลบสายตาด้วยความประหม่า',
+        player_posture: 'ยืนอยู่ตรงหน้า ใกล้จนได้ยินเสียงลมหายใจ',
+        tension: 40,
+        stance: 'SUBMISSIVE',
+        dominance_state: 'BOT_SUBMISSIVE',
+        current_outfit: 'ชุดนักเรียน ม.ปลาย เสื้อเชิ้ตเปียกฝนเล็กน้อย',
+        environment: {
+          time: '18:45 น. (พลบค่ำ)',
+          location: 'ห้องชมรมวรรณกรรม ชั้น 3',
+          weather: 'ฝนตกหนัก ฟ้าร้องเบาๆ 🌧️',
+        },
+      })
+      setLiveGauges({
+        affection: 78,
+        desire: 65,
+        tension: 40,
+        stance: 'SUBMISSIVE',
+        chaosLevel: 'LOW',
+        actorPosture: 'เอามือทาบอก หลบสายตาด้วยความประหม่า',
+        playerPosture: 'ยืนอยู่ตรงหน้า ใกล้จนได้ยินเสียงลมหายใจ',
+        currentOutfit: 'ชุดนักเรียน ม.ปลาย เสื้อเชิ้ตเปียกฝนเล็กน้อย',
+        dominanceState: 'BOT_SUBMISSIVE',
+      })
+    }
+
+    if (currentChat.isSample || currentChat.id === 'sample_showcase') {
+      void loadSampleShowcase()
+      return () => {
+        isCancelled = true
+      }
+    }
 
     const runOpeningPrologue = async () => {
       if (openingTriggeredRef.current === triggerKey) {
@@ -589,7 +630,7 @@ export function ChatRoom({
     return () => {
       isCancelled = true
     }
-  }, [currentChat.id, currentChat.sessionTriggerKey, currentChat.forceNewSession, currentChat.defaultWorld])
+  }, [currentChat.id, currentChat.sessionTriggerKey, currentChat.forceNewSession, currentChat.defaultWorld, currentChat.isSample])
 
   // 3. เลื่อน Scroll ลงด้านล่างสุดเสมอเมื่อมีข้อความใหม่หรือกำลังสตรีม (Twitter Style Auto-Scroll)
   const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
@@ -620,17 +661,45 @@ export function ChatRoom({
     const text = inputText.trim()
     if (!text || isStreaming) return
 
+    const isAction = text.startsWith('*') && text.endsWith('*') && text.length > 2
     const userMsg: ChatMessage = {
       id: `user_${Date.now()}`,
-      type: 'msg',
-      text: text,
+      type: isAction ? 'action' : 'msg',
+      text: isAction ? text.slice(1, -1).trim() : text,
       sender: 'me',
+      read: true,
     }
 
     setChatMessages(prev => [...prev, userMsg])
     setInputText('')
     setIsStreaming(true)
     setTimeout(() => scrollToBottom('smooth'), 40)
+
+    // 🌟 จำลองการตอบกลับของตัวละครตัวอย่าง เพื่อให้เจ้าของระบบทดสอบพิมพ์คุยได้ทันที
+    if (currentChat.isSample || currentChat.id === 'sample_showcase') {
+      setTimeout(() => {
+        setIsStreaming(false)
+        const botActId = `act_${Date.now()}`
+        const botMsgId = `bot_${Date.now()}`
+        setChatMessages(prev => [
+          ...prev,
+          {
+            id: botActId,
+            type: 'action',
+            sender: 'them',
+            text: 'เธอยิ้มเขินๆ พลางก้มหน้าหลบสายตา นิ้วมือบิดชายเสื้อด้วยความประหม่า',
+          },
+          {
+            id: botMsgId,
+            type: 'msg',
+            sender: 'them',
+            text: 'นี่... แกล้งกันแบบนี้ ฉันก็ทำตัวไม่ถูกน่ะสิคะ... แต่ก็ดีใจนะที่เธออยู่ด้วยกัน ///',
+          },
+        ])
+        setTimeout(() => scrollToBottom('smooth'), 40)
+      }, 1200)
+      return
+    }
 
     try {
       let activeSessionId = sessionId
@@ -905,6 +974,8 @@ export function ChatRoom({
           onInputChange={setInputText}
           onSendMessage={handleSendMessage}
           isStreaming={isStreaming}
+          isTyping={isStreaming || !!currentChat.isTyping || !!currentChat.isSample}
+          chatAvatar={currentChat.avatar}
           chatName={currentChat.name}
         />
       </div>
@@ -919,11 +990,11 @@ export function ChatRoom({
             <h3 className="text-xl font-bold text-[#F2F2F5] mb-2 tracking-tight">
               เหรียญไม่เพียงพอสำหรับการสนทนา
             </h3>
-            <p className="text-[14px] text-[#ACACB2] leading-relaxed mb-3">
+            <p className="text-[14px] text-[#BEBEC4] leading-relaxed mb-3">
               {insufficientCoinsModal.message}
             </p>
             <div className="bg-white/[0.04] border border-white/5 rounded-2xl p-3 mb-6 flex items-center justify-between text-[13.5px]">
-              <span className="text-[#ACACB2]">ยอดคงเหลือของคุณ</span>
+              <span className="text-[#BEBEC4]">ยอดคงเหลือของคุณ</span>
               <span className="font-semibold text-amber-400">
                 {insufficientCoinsModal.balance.toLocaleString()} / {insufficientCoinsModal.required} เหรียญ
               </span>
@@ -942,7 +1013,7 @@ export function ChatRoom({
               <button
                 type="button"
                 onClick={() => setInsufficientCoinsModal(null)}
-                className="w-full py-2.5 px-4 rounded-full text-[14px] text-[#ACACB2] hover:text-[#F2F2F5] hover:bg-white/5 transition-all cursor-pointer"
+                className="w-full py-2.5 px-4 rounded-full text-[14px] text-[#BEBEC4] hover:text-[#F2F2F5] hover:bg-white/5 transition-all cursor-pointer"
               >
                 ปิด
               </button>

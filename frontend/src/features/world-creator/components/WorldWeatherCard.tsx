@@ -105,7 +105,7 @@ export default function WorldWeatherCard({
             </button>
             <button
               onClick={onCancelEdit}
-              className="px-3 py-1.5 rounded-full border border-[#2F3336] hover:bg-white/[0.08] hover:border-white/35 text-[#ACACB2] text-[12.5px] transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
+              className="px-3 py-1.5 rounded-full border border-[#2F3336] hover:bg-white/[0.08] hover:border-white/35 text-[#BEBEC4] text-[12.5px] transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
             >
               <X size={14} />
               <span>ยกเลิก</span>
@@ -170,12 +170,12 @@ export default function WorldWeatherCard({
                       delete updated[weatherName];
                       setEditChain(updated);
                     }}
-                    className="text-[#ACACB2] hover:text-[#EF264C] p-1 cursor-pointer transition-colors"
+                    className="text-[#BEBEC4] hover:text-[#EF264C] p-1 cursor-pointer transition-colors"
                   >
                     <Trash2 size={13} />
                   </button>
                 </div>
-                <div className="flex items-center gap-2 text-[12px] text-[#ACACB2]">
+                <div className="flex items-center gap-2 text-[12px] text-[#BEBEC4]">
                   <ArrowRight size={13} className="text-[#EF264C] shrink-0" />
                   <span>เปลี่ยนผ่านไปสู่:</span>
                   <input
@@ -200,7 +200,7 @@ export default function WorldWeatherCard({
         <div className="flex flex-col gap-4">
           {/* Time Periods View: กล่องซ้อนด้านใน #0B0B0C */}
           <div className="flex flex-col gap-2.5">
-            <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-[#ACACB2] font-medium">
+            <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-[#BEBEC4] font-medium">
               <Clock size={12} className="text-[#EF264C]" />
               <span>ช่วงเวลาและบรรยากาศ (Time Periods)</span>
             </div>
@@ -221,7 +221,7 @@ export default function WorldWeatherCard({
 
           {/* Weather Logical Chain Flow: กล่องซ้อนด้านใน #0B0B0C */}
           <div className="flex flex-col gap-2.5">
-            <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-[#ACACB2] font-medium">
+            <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-[#BEBEC4] font-medium">
               <GitCommit size={12} className="text-[#EF264C]" />
               <span>ห่วงโซ่การไหลของสภาพอากาศ (Weather Logical Chain)</span>
             </div>

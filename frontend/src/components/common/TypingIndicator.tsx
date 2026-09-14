@@ -1,7 +1,7 @@
 import React from 'react';
 
 export interface TypingIndicatorProps {
-  /** สีของจุด (default: #ACACB2 หรือกำหนดเป็นสีเฉพาะของตัวละคร / แบรนด์ เช่น #EF264C) */
+  /** สีของจุด (default: #BEBEC4 หรือกำหนดเป็นสีเฉพาะของตัวละคร / แบรนด์ เช่น #EF264C) */
   dotColor?: string;
   /** รูป Avatar ขนาดจิ๋วสไตล์ Twitter DM (ถ้าต้องการแสดงเคียงข้างบับเบิ้ล) */
   avatarUrl?: string;
@@ -45,20 +45,20 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
         />
       )}
 
-      {/* 2. บับเบิ้ล 3 จุด สไตล์ Apple iMessage & X Lights Out (สเปกเดียวกับ AI MessageBubble 1:1) */}
-      <div className="inline-flex items-center justify-center px-[15px] py-1.5 min-h-[34.5px] h-[34.5px] bg-app-surface rounded-[18px] rounded-bl-none">
+      {/* 2. บับเบิ้ล 3 จุด สไตล์ Apple iMessage & X Lights Out (สเปกเดียวกับ AI MessageBubble 1:1 เป๊ะๆ) */}
+      <div className="inline-flex items-center justify-center px-[15px] py-1.5 min-h-[34.5px] h-[34.5px] bg-app-surface rounded-[18px] rounded-bl-none shadow-sm">
         <div className="inline-flex items-center gap-1.5">
           <span
             className="w-1.5 h-1.5 rounded-full animate-typing-dot-1 shrink-0"
-            style={{ backgroundColor: dotColor || '#ACACB2' }}
+            style={{ backgroundColor: dotColor || '#BEBEC4' }}
           />
           <span
             className="w-1.5 h-1.5 rounded-full animate-typing-dot-2 shrink-0"
-            style={{ backgroundColor: dotColor || '#ACACB2' }}
+            style={{ backgroundColor: dotColor || '#BEBEC4' }}
           />
           <span
             className="w-1.5 h-1.5 rounded-full animate-typing-dot-3 shrink-0"
-            style={{ backgroundColor: dotColor || '#ACACB2' }}
+            style={{ backgroundColor: dotColor || '#BEBEC4' }}
           />
         </div>
       </div>

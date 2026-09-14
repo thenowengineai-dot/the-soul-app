@@ -304,7 +304,7 @@ async def upload_image_endpoint(req: UploadImageRequest):
 
 @router.get("/published_campaigns")
 async def get_published_campaigns():
-    """ดึงรายชื่อแคมเปญที่ Publish แล้วทั้งหมด เพื่อไปแสดงในหน้า Hub"""
+    """ดึงรายชื่อแคมเปญที่ Publish แล้วทั้งหมด เพื่อไปแสดงในหน้า Hub (Neon PostgreSQL & Upstash Redis)"""
     global HUB_CATALOG_CACHE
     
     # 🌟 เช็ก Cache ก่อน ถ้ายังไม่หมดอายุ (5 นาที) ให้เสิร์ฟจาก RAM ทันที (0.001 วิ)
@@ -312,24 +312,53 @@ async def get_published_campaigns():
         logger.info("🚀 [CACHE HIT] Serving Hub Catalog from In-Memory Cache")
         return {"status": "success", "data": HUB_CATALOG_CACHE["data"], "cached": True}
 
-    logger.info("🔄 [CACHE MISS] Fetching Hub Catalog from Supabase...")
-    db = DatabaseCore()
+    logger.info("🔄 [CACHE MISS] Fetching Hub Catalog from Neon Serverless PostgreSQL & Upstash Redis...")
     published_chars = []
     try:
-        # 🌟 [CRITICAL FIX] Join กับ genesis_characters และดึง world_data ด้วย
-        response = await db._request("GET", "genesis_campaigns", params={"select": "id, name, character_data, world_data, genesis_characters(*)", "status": "eq.published"})
-        if response:
-            for row in response:
-                char_data = row.get("character_data", {})
-                world_data = row.get("world_data") or {}
-                
-                # พยายามดึงข้อมูลจาก genesis_characters
-                genesis_char = row.get("genesis_characters")
-                if genesis_char and isinstance(genesis_char, dict):
-                    char_data = genesis_char.get("character_data", char_data)
-                    avatar_url = genesis_char.get("avatar_url") or char_data.get("avatar_url")
-                else:
-                    avatar_url = char_data.get("avatar_url")
+        from genesis.postgres_world import PostgresWorld
+        pw = PostgresWorld()
+        pool = await pw.get_pool()
+        async with pool.acquire() as conn:
+            rows = await conn.fetch("""
+                SELECT 
+                    c.id AS id,
+                    c.name AS campaign_name,
+                    c.character_id AS character_id,
+                    c.status AS status,
+                    c.world_data AS world_data,
+                    c.workspace_meta AS workspace_meta,
+                    ch.name AS character_name,
+                    ch.avatar_url AS avatar_url,
+                    ch.character_data AS character_data,
+                    c.updated_at AS updated_at
+                FROM world_campaigns c
+                LEFT JOIN world_characters ch ON c.character_id = ch.id
+                WHERE c.status = 'published'
+                ORDER BY c.updated_at DESC;
+            """)
+            
+            seen_campaign_ids = set()
+            for row in rows:
+                row_id = row["id"]
+                if row_id in seen_campaign_ids:
+                    continue
+                seen_campaign_ids.add(row_id)
+
+                char_data = row["character_data"] or {}
+                if isinstance(char_data, str):
+                    try:
+                        char_data = json.loads(char_data)
+                    except Exception:
+                        char_data = {}
+
+                world_data = row["world_data"] or {}
+                if isinstance(world_data, str):
+                    try:
+                        world_data = json.loads(world_data)
+                    except Exception:
+                        world_data = {}
+
+                avatar_url = row["avatar_url"] or char_data.get("avatar_url")
                 
                 # รวมรูปภาพทั้งหมด (รูปในแกลเลอรี + รูปหลัก + รูปอ้างอิง)
                 photos = []
@@ -364,20 +393,20 @@ async def get_published_campaigns():
 
                 initial_env = {
                     "time": starting_state.get("initial_time") or initial_scene.get("time") or "14:00 น.",
-                    "location": starting_state.get("initial_location") or initial_scene.get("location") or world_data.get("world_name") or "สถานที่นัดพบ",
+                    "location": starting_state.get("initial_location") or initial_scene.get("location") or world_data.get("name") or "สถานที่นัดพบ",
                     "weather": starting_state.get("initial_weather") or initial_scene.get("weather") or "ปกติ แจ่มใส",
                 }
                 initial_pose = starting_state.get("initial_a_pos") or "ยืน/นั่งอิสระตามบริบท"
 
                 published_chars.append({
-                    "id": row["id"],
-                    "name": char_data.get("name", "Unknown"),
+                    "id": row_id,
+                    "name": char_data.get("name") or row["character_name"] or "Unknown",
                     "status": char_data.get("description", "No description available"),
                     "photos": photos,
                     "hashtags": char_data.get("hashtag_dna", char_data.get("hashtags", [])),
                     "age": "20",
                     "distance": "1 km",
-                    "default_world": row["id"],
+                    "default_world": row_id,
                     "background_story": char_data.get("background_story", []),
                     "core_stats": char_data.get("core_stats", {}),
                     "stats": char_data.get("core_stats", {}),
@@ -388,27 +417,68 @@ async def get_published_campaigns():
                     "comments": []
                 })
     except Exception as e:
-        logger.error(f"Error fetching published campaigns: {e}")
-        # ถ้าพังตอนดึงข้อมูลใหม่ ให้ใช้ข้อมูลเก่าจาก Cache (ถ้ามี)
+        logger.error(f"Error fetching published campaigns from Neon: {e}")
+        # ถ้าพัง ให้ดึงจาก Fallback ใน Cache หรือ Upstash Redis
         if HUB_CATALOG_CACHE["data"]:
             return {"status": "success", "data": HUB_CATALOG_CACHE["data"], "cached": True, "stale": True}
-        return {"status": "error", "data": []}
-        
+
     # อัปเดต Cache
-    HUB_CATALOG_CACHE["data"] = published_chars
-    HUB_CATALOG_CACHE["last_updated"] = time.time()
+    if published_chars:
+        HUB_CATALOG_CACHE["data"] = published_chars
+        HUB_CATALOG_CACHE["last_updated"] = time.time()
     
     return {"status": "success", "data": published_chars, "cached": False}
 
 @router.get("/characters/{character_id}")
 async def get_character_profile(character_id: str):
-    """ส่งข้อมูลโปรไฟล์ตัวละครให้ Frontend เอาไปจัด UI"""
-    db = DatabaseCore()
-    # ในระบบใหม่ character_id อาจจะถูกส่งมาเป็น world_id (เพราะมันผูกกันเป็นแคมเปญ)
-    campaign = await db.get_published_campaign(character_id)
-    
-    if not campaign:
-        # Fallback ไปหาไฟล์ Local เผื่อเป็นตัวละครเก่า
+    """ส่งข้อมูลโปรไฟล์ตัวละครให้ Frontend เอาไปจัด UI (Neon & Redis First)"""
+    data = None
+    # 1. ลองหาจาก Upstash Redis Hot Cache ก่อน
+    try:
+        from genesis.redis_hot import GenesisRedisHotCache
+        redis_gen = GenesisRedisHotCache()
+        data = redis_gen.get_character_data(character_id)
+        if not data:
+            camp = redis_gen.get_campaign_v3(character_id)
+            if camp and camp.get("character_data"):
+                data = camp.get("character_data")
+    except Exception as e:
+        logger.warning(f"Failed to fetch character {character_id} from Redis: {e}")
+
+    # 2. ลองหาจาก Neon PostgreSQL
+    if not data:
+        try:
+            from genesis.postgres_world import PostgresWorld
+            pw = PostgresWorld()
+            pool = await pw.get_pool()
+            async with pool.acquire() as conn:
+                row = await conn.fetchrow("""
+                    SELECT ch.character_data, ch.avatar_url, ch.name
+                    FROM world_characters ch
+                    WHERE ch.id = $1;
+                """, character_id)
+                if not row:
+                    row = await conn.fetchrow("""
+                        SELECT ch.character_data, ch.avatar_url, ch.name
+                        FROM world_campaigns c
+                        LEFT JOIN world_characters ch ON c.character_id = ch.id
+                        WHERE c.id = $1;
+                    """, character_id)
+                if row and row["character_data"]:
+                    cdata = row["character_data"]
+                    if isinstance(cdata, str):
+                        try:
+                            cdata = json.loads(cdata)
+                        except Exception:
+                            cdata = {}
+                    data = cdata
+                    if row["avatar_url"] and "avatar_url" not in data:
+                        data["avatar_url"] = row["avatar_url"]
+        except Exception as e:
+            logger.warning(f"Failed to fetch character {character_id} from Neon: {e}")
+
+    # 3. Fallback ไปหาไฟล์ Local เผื่อเป็นตัวละครแบบ Static
+    if not data:
         file_path = f"data/characters/{character_id}.json"
         if not os.path.exists(file_path) and character_id == "may_base":
             file_path = "data/characters/may.json"
@@ -417,15 +487,6 @@ async def get_character_profile(character_id: str):
                 data = json.load(f)
         else:
             raise HTTPException(status_code=404, detail="Character not found")
-    else:
-        # ดึงจาก genesis_characters ก่อน ถ้าไม่มีใช้ character_data จากโลก
-        genesis_char = campaign.get("genesis_characters")
-        if genesis_char and isinstance(genesis_char, dict):
-            data = genesis_char.get("character_data", {})
-            if "avatar_url" not in data and genesis_char.get("avatar_url"):
-                data["avatar_url"] = genesis_char["avatar_url"]
-        else:
-            data = campaign.get("character_data", {})
 
     return {
         "character_id": data.get("character_id", character_id),
@@ -434,27 +495,53 @@ async def get_character_profile(character_id: str):
         "description": data.get("description", ""),
         "hashtags": data.get("hashtag_dna", data.get("hashtags", [])),
         "current_phase": data.get("current_phase", 1),
-        "avatar_url": data.get("avatar_url"), # 🌟 ส่ง URL รูปภาพหลัก
-        "reference_urls": data.get("reference_urls", []), # 🌟 ส่ง URL รูปภาพอ้างอิงทั้งหมด
-        "background_story": data.get("background_story", []), # 🌟 ส่งปูมหลัง
-        "core_stats": data.get("core_stats", {}) # 🌟 ส่งสเตตัส
+        "avatar_url": data.get("avatar_url"),
+        "reference_urls": data.get("reference_urls", []),
+        "background_story": data.get("background_story", []),
+        "core_stats": data.get("core_stats", {})
     }
 
 @router.get("/worlds/{world_id}")
 async def get_world_data(world_id: str):
-    """ส่งข้อมูลฉากเริ่มต้น ระบบสภาพอากาศ และ Event ให้ Frontend"""
-    db = DatabaseCore()
-    campaign = await db.get_published_campaign(world_id)
-    
-    if not campaign:
-        # Fallback ไปหาไฟล์ Local
-        file_path = f"data/worlds/{world_id}.json"
-        if os.path.exists(file_path):
-            with open(file_path, "r", encoding="utf-8") as f:
-                return json.load(f)
-        raise HTTPException(status_code=404, detail="World not found")
-        
-    return campaign.get("world_data", {})
+    """ส่งข้อมูลฉากเริ่มต้น ระบบสภาพอากาศ และ Event ให้ Frontend (Neon & Redis First)"""
+    # 1. Upstash Redis Hot Cache
+    try:
+        from genesis.redis_hot import GenesisRedisHotCache
+        redis_gen = GenesisRedisHotCache()
+        wdata = redis_gen.get_world_data(world_id)
+        if wdata:
+            return wdata
+        camp = redis_gen.get_campaign_v3(world_id)
+        if camp and camp.get("world_data"):
+            return camp.get("world_data")
+    except Exception as e:
+        logger.warning(f"Failed to fetch world {world_id} from Redis: {e}")
+
+    # 2. Neon PostgreSQL
+    try:
+        from genesis.postgres_world import PostgresWorld
+        pw = PostgresWorld()
+        pool = await pw.get_pool()
+        async with pool.acquire() as conn:
+            row = await conn.fetchrow("SELECT world_data FROM world_campaigns WHERE id = $1;", world_id)
+            if row and row["world_data"]:
+                wdata = row["world_data"]
+                if isinstance(wdata, str):
+                    try:
+                        wdata = json.loads(wdata)
+                    except Exception:
+                        wdata = {}
+                return wdata
+    except Exception as e:
+        logger.warning(f"Failed to fetch world {world_id} from Neon: {e}")
+
+    # 3. Fallback ไปหาไฟล์ Local
+    file_path = f"data/worlds/{world_id}.json"
+    if os.path.exists(file_path):
+        with open(file_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    raise HTTPException(status_code=404, detail="World not found")
 
 
 # ==========================================
@@ -470,16 +557,46 @@ async def chat_endpoint(request: ChatRequest):
     logger.info(f"Received Request -> UserID: {request.user_id} | Char: {request.character_id} | Message: '{request.message}'")
     
     try:
-        # 1. โหลดข้อมูลตัวละคร (JSON) เต็มรูปแบบสำหรับใช้ใน Engine
-        db = DatabaseCore()
-        # ลองหาจาก Supabase ก่อน (ใช้ world_id หรือ character_id เป็นตัวอ้างอิงแคมเปญ)
+        # 1. โหลดข้อมูลตัวละคร (JSON) เต็มรูปแบบสำหรับใช้ใน Engine (Redis Hot Cache & Neon First)
+        character_data = None
         target_world = request.world_id or request.character_id
-        campaign = await db.get_published_campaign(target_world) if target_world else None
-        
-        if campaign and campaign.get("character_data"):
-            character_data = campaign.get("character_data")
-        else:
-            # Fallback ไปหาไฟล์ Local
+        try:
+            from genesis.redis_hot import GenesisRedisHotCache
+            redis_gen = GenesisRedisHotCache()
+            if target_world:
+                camp = redis_gen.get_campaign_v3(target_world)
+                if camp and camp.get("character_data"):
+                    character_data = camp.get("character_data")
+            if not character_data:
+                character_data = redis_gen.get_character_data(request.character_id)
+        except Exception as e:
+            logger.warning(f"Redis char fetch in chat_endpoint: {e}")
+
+        if not character_data and target_world:
+            try:
+                from genesis.postgres_world import PostgresWorld
+                pw = PostgresWorld()
+                pool = await pw.get_pool()
+                async with pool.acquire() as conn:
+                    row = await conn.fetchrow("""
+                        SELECT ch.character_data
+                        FROM world_characters ch
+                        WHERE ch.id = $1;
+                    """, request.character_id)
+                    if not row:
+                        row = await conn.fetchrow("""
+                            SELECT ch.character_data
+                            FROM world_campaigns c
+                            LEFT JOIN world_characters ch ON c.character_id = ch.id
+                            WHERE c.id = $1;
+                        """, target_world)
+                    if row and row["character_data"]:
+                        cdata = row["character_data"]
+                        character_data = cdata if isinstance(cdata, dict) else json.loads(cdata)
+            except Exception as e:
+                logger.warning(f"Neon char fetch in chat_endpoint: {e}")
+
+        if not character_data:
             char_id = request.character_id
             file_path = f"data/characters/{char_id}.json"
             if not os.path.exists(file_path) and char_id == "may_base":
@@ -960,11 +1077,43 @@ async def start_session_endpoint(request: StartSessionRequest, background_tasks:
         redis_cache.set_active_session(user_id, character_id, session_id)
         redis_cache.set_session_owner(session_id, user_id)
 
-        # 3. 🚀 ดึงข้อมูลเริ่มต้นจาก World Data ใน Supabase หรือ Fallback Local World File
-        db = DatabaseCore()
-        campaign = await db.get_published_campaign(resolved_world_id) if resolved_world_id else None
-        
-        world_data = (campaign.get("world_data") if campaign else {}) or {}
+        # 3. 🚀 ดึงข้อมูลเริ่มต้นจาก World Data ใน Redis Hot Cache, Neon หรือ Local World File
+        world_data = None
+        char_data = None
+        try:
+            from genesis.redis_hot import GenesisRedisHotCache
+            redis_gen = GenesisRedisHotCache()
+            camp = redis_gen.get_campaign_v3(resolved_world_id)
+            if camp:
+                world_data = camp.get("world_data")
+                char_data = camp.get("character_data")
+            if not world_data:
+                world_data = redis_gen.get_world_data(resolved_world_id)
+            if not char_data:
+                char_data = redis_gen.get_character_data(character_id)
+        except Exception as e:
+            logger.warning(f"Redis campaign fetch in start_session: {e}")
+
+        if not world_data:
+            try:
+                from genesis.postgres_world import PostgresWorld
+                pw = PostgresWorld()
+                pool = await pw.get_pool()
+                async with pool.acquire() as conn:
+                    row = await conn.fetchrow("""
+                        SELECT c.world_data, ch.character_data
+                        FROM world_campaigns c
+                        LEFT JOIN world_characters ch ON c.character_id = ch.id
+                        WHERE c.id = $1;
+                    """, resolved_world_id)
+                    if row:
+                        if row["world_data"]:
+                            world_data = row["world_data"] if isinstance(row["world_data"], dict) else json.loads(row["world_data"])
+                        if row["character_data"]:
+                            char_data = row["character_data"] if isinstance(row["character_data"], dict) else json.loads(row["character_data"])
+            except Exception as e:
+                logger.warning(f"Neon campaign fetch in start_session: {e}")
+
         if not world_data and os.path.exists(world_file_path):
             try:
                 with open(world_file_path, "r", encoding="utf-8") as f:
@@ -972,9 +1121,17 @@ async def start_session_endpoint(request: StartSessionRequest, background_tasks:
             except Exception as e:
                 logger.warning(f"Failed to load fallback world file {world_file_path}: {e}")
 
-        starting_state = world_data.get("starting_state", {})
-        initial_scene = world_data.get("initial_scene", {})
-        char_data = (campaign.get("character_data") if campaign else {}) or {}
+        if not char_data:
+            char_file_path = f"data/characters/{character_id}.json"
+            if os.path.exists(char_file_path):
+                try:
+                    with open(char_file_path, "r", encoding="utf-8") as f:
+                        char_data = json.load(f)
+                except Exception as e:
+                    logger.warning(f"Failed to load fallback char file {char_file_path}: {e}")
+
+        world_data = world_data or {}
+        char_data = char_data or {}
         appearance_data = char_data.get("appearance", {})
         raw_wardrobe = appearance_data.get("wardrobe") or char_data.get("wardrobe", {})
         

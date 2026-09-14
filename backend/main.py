@@ -36,12 +36,26 @@ from fastapi.middleware.cors import CORSMiddleware
 # ดึง Router จากไฟล์ api/routes.py มาใช้งาน
 from api.routes import router as api_router
 
-# 🛡️ SMART CORS CONFIGURATION (ยืดหยุ่น & ปลอดภัยสูง)
-allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "*")
-if allowed_origins_env == "*":
-    cors_origins = ["*"]
-else:
-    cors_origins = [orig.strip() for orig in allowed_origins_env.split(",") if orig.strip()]
+# 🛡️ SMART CORS CONFIGURATION (ยืดหยุ่น & ปลอดภัยสูง รองรับ Localhost และ Cloud Run ทุกพอร์ต)
+default_dev_origins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://localhost:8080",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:8080",
+]
+
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
+cors_origins = list(default_dev_origins)
+if allowed_origins_env and allowed_origins_env != "*":
+    for orig in allowed_origins_env.split(","):
+        orig_clean = orig.strip()
+        if orig_clean and orig_clean not in cors_origins:
+            cors_origins.append(orig_clean)
+
+# Regular expression to match any localhost / 127.0.0.1 port and Google Cloud Run domains
+allow_origin_regex = r"^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$|^https://.*\.run\.app$|^https://.*\.a\.run\.app$"
 
 # 🛡️ CONDITIONAL SWAGGER DOCS (ซ่อนโครงสร้าง API บน Production ป้องกันคู่แข่งส่อง)
 is_production = os.getenv("ENVIRONMENT", "development").lower() == "production"
@@ -59,7 +73,8 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
-    allow_credentials=True if cors_origins != ["*"] else False,
+    allow_origin_regex=allow_origin_regex,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )

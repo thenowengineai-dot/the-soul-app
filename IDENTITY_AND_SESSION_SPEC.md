@@ -1,6 +1,6 @@
 # 🔑 Identity, Session & Room Entry Architecture (The Soul Engine 5.5)
 > **เอกสารวิเคราะห์และสเปกระบบไอดี, เซสชัน, การเปลี่ยนผ่านผู้เล่น, และการเข้าห้องแชท**  
-> **สถานะ:** สำหรับรีเช็กความสมบูรณ์และส่งต่อให้ AI Session ถัดไปทำงานต่อได้ทันที
+> **เสาหลักสูงสุด:** ยึดถือ [`THE_SOUL_CORE_ARCHITECTURE_PILLARS.md`](./THE_SOUL_CORE_ARCHITECTURE_PILLARS.md) เป็นสรณะสูงสุดในการทำงาน
 
 ---
 
@@ -17,9 +17,9 @@
                 ▼
 ┌───────────────────────────────┐
 │       🔑 คีย์การ์ดห้อง         │
-│  (Client localStorage / State)│  <-- แขกถือกุญแจติดตัวไว้ตลอดเวลา
+│  (Client localStorage / State)│  <-- แขกถือกุญแจติดตัวไว้ตลอดเวลา ses_{user_id}_{char_id}
 └───────────────┬───────────────┘
-                │ รูดบัตรเปิดประตูเข้าห้องได้ทันที (Zero Reception Friction)
+                │ รูดบัตรเปิดประตูเข้าห้องได้ทันที (Zero Reception Friction 0ms)
                 ▼
 ┌───────────────────────────────┐
 │       🚪 ห้องพักส่วนตัว        │
@@ -28,14 +28,14 @@
 ```
 
 ### หลักการทำงานตามแนวคิดนี้:
-1. **ไม่ต้องไปเคาน์เตอร์ทุกครั้ง (No Redundant Receptions):**
-   - เมื่อผู้เล่นได้รับ "กุญแจห้อง" (`session_id` และ `user_id`) ไปแล้ว การเข้าห้องแชท หรือการส่งข้อความแต่ละเทิร์น **ไม่จำเป็นต้องเริ่มสร้าง session ใหม่ หรือต้องไปยืนยันตัวตนซ้ำซ้อน**
+1. **ไม่ต้องไปเคาน์เตอร์ทุกครั้ง (Zero-Handshake Architecture):**
+   - เมื่อผู้เล่นได้รับ "กุญแจห้อง" (`ses_{user_id}_{char_id}`) ไปแล้ว การเข้าห้องแชท หรือการส่งข้อความแต่ละเทิร์น **ไม่จำเป็นต้องเริ่มสร้าง session ใหม่ หรือต้องไปขอ UUID สุ่มจากเซิร์ฟเวอร์**
    - ไคลเอนต์เพียงแค่ยื่น `session_id` ไปพร้อมกับคำขอ ประตูห้องจะเปิดต้อนรับทันที
 2. **ห้องไม่หายแม้ปิดประตู (Intact Room State):**
    - แม้ผู้เล่นจะปิดแท็บ, Refresh หน้าเว็บ, หรือออกจากห้องไปเลือกตัวละครอื่น ข้าวของในห้อง (ประวัติแชท 20 รอบ, ค่า Affection, Desire, ท่าทาง Kinematics, เสื้อผ้าปัจจุบัน) จะถูกพิทักษ์ไว้ใน **Upstash Redis Hot Cache** และ **Neon PostgreSQL** อย่างถาวร
-3. **การอัปเกรดแขกจรเป็นสมาชิก (Walk-in Guest to VIP Member):**
-   - แขกที่เดินเข้าพักแบบไม่แจ้งชื่อ (Guest) สามารถเดินไปเคาน์เตอร์ทีหลังเพื่อ "แสดงบัตร Google" (Sign in with Google)
-   - พนักงานโรงแรม (ระบบ) จะไม่โยนของเก่าทิ้ง แต่จะ **โอนสิทธิ์ห้องเดิมทั้งหมด** ให้มาผูกกับชื่อบัญชีใหม่ทันที แขกยังคงเดินกลับไปไขห้องเดิมที่มีความทรงจำเดิมครบถ้วน!
+3. **การอัปเกรดแขกจรเป็นสมาชิก (Walk-in Guest to VIP Member - Silent Handover):**
+   - แขกที่เดินเข้าพักแบบไม่แจ้งชื่อ (Guest: `gst_{ts}_{rand}`) สามารถกด "Sign in with Google"
+   - ระบบจะทำ **Silent Handover** คัดลอกประวัติ 20 รอบและ State ใน RAM ข้ามไปยังกุญแจใหม่ (`ses_usr_...`) ใน ~5ms ทันที แขกยังคงเดินกลับไปคุยในห้องเดิมที่มีความทรงจำเดิมครบถ้วน 100%!
 
 ---
 
@@ -48,24 +48,24 @@
          │
          ▼
  🟢 โหมดผู้เล่นจร (Guest)
-    - สร้าง ID: gst_<uuid> ทันทีใน localStorage
+    - สร้าง ID: gst_{timestamp}_{random} ทันทีใน localStorage (เช่น gst_1789411381_50b6)
     - บันทึกลง Neon PostgreSQL: users (is_guest = TRUE)
     - เริ่มคุยได้ทันที ไม่ต้องกรอกฟอร์มใดๆ (Zero Friction)
          │
          │ (เมื่อผู้เล่นประทับใจ แล้วกด "ล็อกอิน Google")
          ▼
  🔵 โหมดสมาชิก (Registered Member)
-    - ได้รับ ID: usr_<google_sub_prefix>
+    - ได้รับ ID: usr_{google_sub_id} (เช่น usr_112345678901)
     - บันทึกลง Neon PostgreSQL: users (is_guest = FALSE, email, avatar_url)
-    - ⚡ เกิดการ Migrate: โอนย้าย session ทั้งหมดจาก gst_* -> usr_* ทันที
+    - ⚡ เกิด Silent Handover: ย้ายห้องใน RAM + DB จาก ses_gst_* -> ses_usr_* ทันที
 ```
 
 ### รายละเอียดโครงสร้างไอดี:
 
 | ประเภทไอดี | รูปแบบ Prefix | ตัวอย่าง | แหล่งจัดเก็บหลัก | สิทธิ์และการคงอยู่ |
 | :--- | :--- | :--- | :--- | :--- |
-| **Guest ID** | `gst_<uuid>` | `gst_e3b0c442-98fc...` | Client `localStorage` (`the_soul_guest_id`) & Neon `users` | ถาวรบนเครื่องนั้นจนกว่าจะเคลียร์แคช หรือโอนย้ายไปเป็นสมาชิก |
-| **Member ID** | `usr_<id>` | `usr_110293847561` | Client `localStorage` (`the_soul_user`) & Neon `users` | ผูกกับ Google Account ถาวร สามารถล็อกอินข้ามเครื่องได้ |
+| **Guest ID** | `gst_{timestamp}_{random}` | `gst_1789411381_50b6` | Client `localStorage` (`the_soul_guest_id`) & Neon `users` | ถาวรบนเครื่องนั้นจนกว่าจะเคลียร์แคช หรือโอนย้ายไปเป็นสมาชิก |
+| **Member ID** | `usr_{google_sub_id}` | `usr_112345678901` | Client `localStorage` (`the_soul_user`) & Neon `users` | ผูกกับ Google Account ถาวร สามารถล็อกอินข้ามเครื่องได้ |
 
 ---
 
@@ -111,7 +111,7 @@ if request.guest_id and request.guest_id.startswith("gst_"):
 ### โครงสร้างความสัมพันธ์ (Entity Relationship):
 - **1 User (`user_id`)** สามารถเปิดห้องเล่นกับหลายตัวละครได้พร้อมกัน
 - **1 Character (`character_id`)** สามารถมี Session ที่ `active` ได้ 1 ห้องต่อผู้เล่น 1 คน (เพื่อป้องกันความสับสนของบทบาท)
-- **1 Session (`session_id`)** มีค่าเฉพาะคือ `sess_<uuid>` ประกอบด้วยรอบการเล่นหลายรอบ (`game_rounds`)
+- **1 Session (`session_id`)** มีค่าตายตัวคือ `ses_{user_id}_{char_id}` (Deterministic Key) ประกอบด้วยรอบการเล่นหลายรอบ (`game_rounds`)
 
 ```text
     ┌────────────────┐
@@ -121,13 +121,13 @@ if request.guest_id and request.guest_id.startswith("gst_"):
             │ มีได้หลายห้อง (กับตัวละครคนละตัว)
             ▼ N
     ┌────────────────┐
-    │  Game_Sessions │ (sess_<uuid>, character_id, status='active')
+    │  Game_Sessions │ (ses_{user_id}_{char_id}, status='active')
     └───────┬────────┘
             │ 1
             │ บันทึกรอบการเล่นต่อเนื่อง
             ▼ N
     ┌────────────────┐
-    │  Game_Rounds   │ (round_number 0, 1, 2, ... เก็บ JSONB)
+    │  Game_Rounds   │ (rnd_{session_id}_{round_number:03d} เก็บ JSONB)
     └────────────────┘
 ```
 
@@ -172,9 +172,9 @@ if request.guest_id and request.guest_id.startswith("gst_"):
    - ส่ง: `{ user_id, character_id, session_id? }`
    - ค้นหา: Session ล่าสุดที่สถานะเป็น `active` ของผู้ใช้นั้นกับตัวละครนั้น
    - คืนค่า: รายการข้อความ (`messages`), สเตตัสความสัมพันธ์ล่าสุด (`characterStats`, `actorPosture`, `stance`, `tensionGauge`)
-2. **`POST /api/start_session` (การสร้างห้องใหม่):**
+2. **`POST /api/start_session` (การสร้างหรือรีเซ็ตห้องใหม่):**
    - ส่ง: `{ user_id, character_id, world_id }`
-   - คืนค่า: `session_id` ใหม่ (`sess_<uuid>`) พร้อม `initial_state` จาก World Data
+   - คืนค่า: `session_id` (`ses_{user_id}_{char_id}`) พร้อม `initial_state` จาก World Data
 
 ---
 

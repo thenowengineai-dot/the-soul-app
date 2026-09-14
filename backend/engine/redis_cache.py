@@ -5,6 +5,23 @@ import urllib.request
 import urllib.error
 from typing import Dict, Any, List, Optional
 
+try:
+    from engine.identity import (
+        get_redis_session_keys,
+        get_redis_character_blueprint_key,
+        get_redis_user_coins_key,
+        build_session_id,
+        parse_session_id,
+    )
+except ImportError:
+    from identity import (
+        get_redis_session_keys,
+        get_redis_character_blueprint_key,
+        get_redis_user_coins_key,
+        build_session_id,
+        parse_session_id,
+    )
+
 logger = logging.getLogger("REDIS_HOT_CACHE")
 if not logger.handlers:
     handler = logging.StreamHandler()
@@ -126,18 +143,21 @@ class RedisHotCache:
     # Unified Interaction Round Operations (Sliding Window List)
     # -------------------------------------------------------------
 
-    def push_round(self, session_id: str, round_data: Dict[str, Any], max_window: int = 20) -> bool:
+    def push_round(self, session_id: str, round_data: Dict[str, Any], max_window: int = 20, ttl_days: int = 7) -> bool:
         """
         Pushes a completed Unified Interaction Round to Redis.
         Automatically trims the list to retain only the most recent `max_window` rounds.
+        Refreshes TTL (default: 7 days) to reclaim RAM automatically.
         Executes via atomic pipeline in a single round-trip.
         """
         key = f"session:{session_id}:rounds"
         round_json = json.dumps(round_data, ensure_ascii=False)
+        ttl_seconds = ttl_days * 86400
 
         pipeline = [
             ["RPUSH", key, round_json],
             ["LTRIM", key, -max_window, -1],
+            ["EXPIRE", key, ttl_seconds],
         ]
         try:
             self.execute_pipeline(pipeline)
@@ -173,12 +193,13 @@ class RedisHotCache:
     # Live State Operations (Snapshot storage)
     # -------------------------------------------------------------
 
-    def save_live_state(self, session_id: str, state_data: Dict[str, Any]) -> bool:
-        """Saves the latest character and player state snapshot for fast resumption."""
+    def save_live_state(self, session_id: str, state_data: Dict[str, Any], ttl_days: int = 7) -> bool:
+        """Saves the latest character and player state snapshot with automatic TTL (default 7 days)."""
         key = f"session:{session_id}:state"
         state_json = json.dumps(state_data, ensure_ascii=False)
+        ttl_seconds = ttl_days * 86400
         try:
-            res = self.execute_command(["SET", key, state_json])
+            res = self.execute_command(["SET", key, state_json, "EX", ttl_seconds])
             return res == "OK"
         except Exception as e:
             logger.error(f"Failed to save live state for session {session_id}: {e}")
@@ -196,16 +217,133 @@ class RedisHotCache:
             logger.error(f"Failed to get live state for session {session_id}: {e}")
             return None
 
+    # -------------------------------------------------------------
+    # ⚡ Zero-Handshake Session Bundle (Single Round-Trip ~2ms)
+    # -------------------------------------------------------------
+
+    def get_session_bundle(self, session_id: str, limit: int = 20) -> Dict[str, Any]:
+        """
+        ⚡ ZERO-HANDSHAKE FAST PATH:
+        Fetches state, recent rounds, and ownership in 1 single pipeline round-trip (~2ms).
+        """
+        keys = get_redis_session_keys(session_id)
+        start_index = -limit if limit > 0 else 0
+        pipeline = [
+            ["GET", keys["state"]],
+            ["LRANGE", keys["rounds"], start_index, -1],
+            ["GET", keys["owner"]],
+        ]
+        try:
+            results = self.execute_pipeline(pipeline)
+            raw_state = results[0] if len(results) > 0 else None
+            raw_rounds = results[1] if len(results) > 1 else None
+            owner = results[2] if len(results) > 2 else None
+
+            state = json.loads(raw_state) if isinstance(raw_state, str) else (raw_state or {})
+            rounds = []
+            if raw_rounds and isinstance(raw_rounds, list):
+                for item in raw_rounds:
+                    if isinstance(item, str):
+                        try:
+                            rounds.append(json.loads(item))
+                        except Exception:
+                            pass
+                    elif isinstance(item, dict):
+                        rounds.append(item)
+
+            return {
+                "session_id": session_id,
+                "state": state,
+                "rounds": rounds,
+                "owner": owner,
+                "has_started": bool(rounds or state),
+            }
+        except Exception as e:
+            logger.error(f"Failed to fetch session bundle for {session_id}: {e}")
+            return {
+                "session_id": session_id,
+                "state": {},
+                "rounds": [],
+                "owner": None,
+                "has_started": False,
+            }
+
     def clear_session(self, session_id: str) -> bool:
         """Cleans up cache keys for a specific session."""
-        rounds_key = f"session:{session_id}:rounds"
-        state_key = f"session:{session_id}:state"
-        owner_key = f"session:{session_id}:owner"
+        keys = get_redis_session_keys(session_id)
         try:
-            self.execute_pipeline([["DEL", rounds_key], ["DEL", state_key], ["DEL", owner_key]])
+            self.execute_pipeline([["DEL", keys["rounds"]], ["DEL", keys["state"]], ["DEL", keys["owner"]]])
             return True
         except Exception as e:
             logger.error(f"Failed to clear session {session_id}: {e}")
+            return False
+
+    # -------------------------------------------------------------
+    # ⚡ Hot Character Blueprint Cache
+    # -------------------------------------------------------------
+
+    def save_character_blueprint(self, character_id: str, blueprint: Dict[str, Any]) -> bool:
+        """Saves published character blueprint (12 stats, persona, prompt) in Redis RAM."""
+        key = get_redis_character_blueprint_key(character_id)
+        data_str = json.dumps(blueprint, ensure_ascii=False)
+        try:
+            res = self.execute_command(["SET", key, data_str])
+            return res == "OK"
+        except Exception as e:
+            logger.error(f"Failed to save blueprint for {character_id}: {e}")
+            return False
+
+    def get_character_blueprint(self, character_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieves published character blueprint from Redis Hot Cache."""
+        key = get_redis_character_blueprint_key(character_id)
+        try:
+            res = self.execute_command(["GET", key])
+            if res and isinstance(res, str):
+                return json.loads(res)
+            return None
+        except Exception as e:
+            logger.error(f"Failed to get blueprint for {character_id}: {e}")
+            return None
+
+    # -------------------------------------------------------------
+    # 🚀 Silent Handover (Session Migration from Guest -> Registered)
+    # -------------------------------------------------------------
+
+    def migrate_session(self, old_session_id: str, new_session_id: str, new_user_id: str) -> bool:
+        """
+        🚀 SILENT HANDOVER:
+        Transfers session state and rounds from old_session_id (guest) to new_session_id (registered user)
+        in Redis RAM in ~5ms.
+        """
+        old_keys = get_redis_session_keys(old_session_id)
+        new_keys = get_redis_session_keys(new_session_id)
+
+        try:
+            bundle = self.get_session_bundle(old_session_id)
+            if not bundle["has_started"]:
+                logger.info(f"No existing data in {old_session_id} to migrate.")
+                return False
+
+            pipeline = []
+            if bundle["state"]:
+                pipeline.append(["SET", new_keys["state"], json.dumps(bundle["state"], ensure_ascii=False), "EX", 604800])
+            if bundle["rounds"]:
+                pipeline.append(["DEL", new_keys["rounds"]])
+                for r in bundle["rounds"]:
+                    pipeline.append(["RPUSH", new_keys["rounds"], json.dumps(r, ensure_ascii=False)])
+                pipeline.append(["EXPIRE", new_keys["rounds"], 604800])
+            pipeline.append(["SET", new_keys["owner"], new_user_id, "EX", 604800])
+
+            # Clean up old guest session
+            pipeline.append(["DEL", old_keys["state"]])
+            pipeline.append(["DEL", old_keys["rounds"]])
+            pipeline.append(["DEL", old_keys["owner"]])
+
+            self.execute_pipeline(pipeline)
+            logger.info(f"✅ Migrated session {old_session_id} -> {new_session_id} for user {new_user_id} in RAM.")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to migrate session {old_session_id} -> {new_session_id}: {e}")
             return False
 
     # -------------------------------------------------------------
@@ -226,20 +364,19 @@ class RedisHotCache:
             logger.error(f"Failed to set active session index ({key} -> {session_id}): {e}")
             return False
 
-    def get_active_session(self, user_id: str, character_id: str) -> Optional[str]:
+    def get_active_session(self, user_id: str, character_id: str) -> str:
         """
-        Retrieves the active session_id for a given user and character from Redis RAM.
-        Returns session_id string or None if cache miss.
+        Deterministic O(1) active session resolution.
+        Returns deterministic ses_{user_id}_{character_id}.
         """
         key = f"active_session:{user_id}:{character_id}"
         try:
             res = self.execute_command(["GET", key])
             if res and isinstance(res, str):
                 return res
-            return None
-        except Exception as e:
-            logger.error(f"Failed to get active session index for {key}: {e}")
-            return None
+        except Exception:
+            pass
+        return build_session_id(user_id, character_id)
 
     def clear_active_session(self, user_id: str, character_id: str) -> bool:
         """Removes the active session index pointer (e.g. on reset or archive)."""
@@ -253,10 +390,10 @@ class RedisHotCache:
 
     def set_session_owner(self, session_id: str, user_id: str, ttl_days: int = 30) -> bool:
         """Saves session ownership in Redis for zero-cost IDOR verification."""
-        key = f"session:{session_id}:owner"
+        keys = get_redis_session_keys(session_id)
         ttl_seconds = ttl_days * 86400
         try:
-            res = self.execute_command(["SET", key, user_id, "EX", ttl_seconds])
+            res = self.execute_command(["SET", keys["owner"], user_id, "EX", ttl_seconds])
             return res == "OK"
         except Exception as e:
             logger.error(f"Failed to set session owner for {session_id}: {e}")
@@ -264,9 +401,9 @@ class RedisHotCache:
 
     def get_session_owner(self, session_id: str) -> Optional[str]:
         """Retrieves session owner from Redis cache."""
-        key = f"session:{session_id}:owner"
+        keys = get_redis_session_keys(session_id)
         try:
-            res = self.execute_command(["GET", key])
+            res = self.execute_command(["GET", keys["owner"]])
             if res and isinstance(res, str):
                 return res
             return None

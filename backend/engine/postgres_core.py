@@ -237,6 +237,39 @@ class PostgresCore:
                 rounds.append(json.loads(val) if isinstance(val, str) else val)
             return rounds
 
+    async def clear_session_rounds(self, session_id: str) -> bool:
+        """Deletes all rounds for a session (e.g. on New Game reset)."""
+        pool = await self.get_pool()
+        async with pool.acquire() as conn:
+            await conn.execute("DELETE FROM session_rounds WHERE session_id = $1;", session_id)
+            return True
+
+    async def migrate_guest_session(self, old_session_id: str, new_session_id: str, new_user_id: str) -> bool:
+        """
+        Migrates a guest game_session and its rounds in Neon DB to the registered user.
+        """
+        pool = await self.get_pool()
+        async with pool.acquire() as conn:
+            async with conn.transaction():
+                target_exists = await conn.fetchval("SELECT 1 FROM game_sessions WHERE id = $1;", new_session_id)
+                if target_exists:
+                    await conn.execute("DELETE FROM session_rounds WHERE session_id = $1;", new_session_id)
+                    await conn.execute("DELETE FROM game_sessions WHERE id = $1;", new_session_id)
+
+                await conn.execute("""
+                    UPDATE game_sessions 
+                    SET id = $1, user_id = $2, updated_at = NOW() 
+                    WHERE id = $3;
+                """, new_session_id, new_user_id, old_session_id)
+                await conn.execute("""
+                    UPDATE session_rounds
+                    SET session_id = $1
+                    WHERE session_id = $2;
+                """, new_session_id, old_session_id)
+            logger.info(f"✅ Migrated DB session {old_session_id} -> {new_session_id} for user {new_user_id}")
+            return True
+
+
 
     # -------------------------------------------------------------
     # 🪙 Wallet & Coupon Operations

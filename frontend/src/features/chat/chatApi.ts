@@ -1,5 +1,7 @@
 import { API_BASE_URL } from '../../config'
 import type { UnifiedInteractionRound } from './types'
+import { buildSessionId, generateGuestId } from './identity'
+export { buildSessionId, generateGuestId }
 
 export interface UserIdentity {
   user_id: string
@@ -80,12 +82,12 @@ const GUEST_ID_KEY = 'the_soul_guest_id'
 const USER_KEY = 'the_soul_user'
 
 /**
- * ดึงหรือสร้าง Guest ID (gst_<uuid>)
+ * ดึงหรือสร้าง Guest ID (gst_{timestamp}_{random}) ตามมาตรฐาน Deterministic Identity
  */
 export function getGuestId(): string {
   let gid = localStorage.getItem(GUEST_ID_KEY)
   if (!gid || !gid.startsWith('gst_')) {
-    gid = `gst_${crypto.randomUUID()}`
+    gid = generateGuestId()
     localStorage.setItem(GUEST_ID_KEY, gid)
   }
   return gid
@@ -210,25 +212,27 @@ export async function startNewSession(
 
 /**
  * โหลดเซฟเกมเก่า (อ่านจาก Redis Hot Cache หรือ Neon PostgreSQL JSONB)
+ * Fast Path ~2ms ด้วย deterministic session ID
  */
 export async function loadSession(
   characterId: string,
   sessionId?: string
 ): Promise<LoadedSessionData> {
   const user = getCurrentUser()
+  const resolvedSessionId = sessionId || buildSessionId(user.user_id, characterId)
   const res = await fetch(`${API_BASE_URL}/api/load_session`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       user_id: user.user_id,
       character_id: characterId,
-      session_id: sessionId || null,
+      session_id: resolvedSessionId,
     }),
   })
 
   if (!res.ok) {
     console.warn(`[CHAT API] Failed to load session (${res.status})`)
-    return { has_started: false }
+    return { has_started: false, session_id: resolvedSessionId }
   }
 
   return await res.json()
@@ -346,7 +350,7 @@ export interface StreamChatCallbacks {
  */
 export async function streamChatMessage(
   params: {
-    sessionId: string
+    sessionId?: string
     characterId: string
     worldId?: string
     message: string
@@ -355,6 +359,7 @@ export async function streamChatMessage(
   callbacks: StreamChatCallbacks
 ): Promise<void> {
   const user = getCurrentUser()
+  const resolvedSessionId = params.sessionId || buildSessionId(user.user_id, params.characterId)
 
   try {
     const response = await fetch(`${API_BASE_URL}/api/chat`, {
@@ -364,7 +369,7 @@ export async function streamChatMessage(
         Accept: 'text/event-stream',
       },
       body: JSON.stringify({
-        session_id: params.sessionId,
+        session_id: resolvedSessionId,
         user_id: user.user_id,
         character_id: params.characterId,
         world_id: params.worldId || params.characterId,

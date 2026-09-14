@@ -14,6 +14,14 @@ from engine.pipeline import GamePipeline
 # 🌟 นำเข้า Neon PostgreSQL & Upstash Redis Hot Cache
 from engine.postgres_core import get_postgres_core
 from engine.redis_cache import RedisHotCache
+from engine.identity import (
+    build_session_id,
+    generate_guest_id,
+    parse_session_id,
+    get_redis_session_keys,
+    get_redis_character_blueprint_key,
+    get_redis_user_coins_key,
+)
 
 # 🌟 นำเข้า Database Core เดิมสำหรับดึงแคมเปญ (Read-only Catalog)
 from engine.db_core import DatabaseCore
@@ -114,35 +122,35 @@ async def auth_google_endpoint(request: GoogleAuthRequest):
             is_guest=False
         )
 
-        # 🌟 โอนย้าย Session จาก Guest (ถ้าผู้ใช้เคยเล่นในโหมด Guest มาก่อน)
+        # 🌟 โอนย้าย Session จาก Guest (Silent Handover ใน Redis RAM + Neon DB)
         migrated_count = 0
         if request.guest_id and request.guest_id.startswith("gst_"):
             pool = await pg.get_pool()
             async with pool.acquire() as conn:
-                # ดึงรายการ active sessions ของ guest เพื่ออัปเดต Redis Index
                 active_rows = await conn.fetch(
                     "SELECT id, character_id FROM game_sessions WHERE user_id = $1 AND status = 'active';",
                     request.guest_id
                 )
-                res = await conn.execute(
-                    "UPDATE game_sessions SET user_id = $1 WHERE user_id = $2;",
-                    user_id, request.guest_id
-                )
-                migrated_count = int(res.split(" ")[-1]) if "UPDATE" in res else 0
-                logger.info(f"🔄 Migrated {migrated_count} sessions from {request.guest_id} to {user_id}")
 
-                # ย้าย Pointer ใน Redis จาก guest_id -> user_id
-                redis_hot = RedisHotCache()
-                for row in active_rows:
-                    char_id = row["character_id"]
-                    sess_id = row["id"]
-                    redis_hot.clear_active_session(request.guest_id, char_id)
-                    redis_hot.set_active_session(user_id, char_id, sess_id)
-                    redis_hot.set_session_owner(sess_id, user_id)
+            redis_hot = RedisHotCache()
+            for row in active_rows:
+                old_sid = row["id"]
+                char_id = row["character_id"]
+                new_sid = build_session_id(user_id, char_id)
+
+                # 1. ⚡ Silent Handover ใน Redis RAM (~5ms)
+                redis_hot.migrate_session(old_sid, new_sid, user_id)
+                redis_hot.clear_active_session(request.guest_id, char_id)
+                redis_hot.set_active_session(user_id, char_id, new_sid)
+                redis_hot.set_session_owner(new_sid, user_id)
+
+                # 2. 💾 ย้าย Session ใน Neon DB
+                await pg.migrate_guest_session(old_sid, new_sid, user_id)
+                migrated_count += 1
+                logger.info(f"🔄 Silent Handover completed: {old_sid} -> {new_sid} for user: {user_id}")
 
             # 🪙 โอนย้ายกระเป๋าเหรียญและประวัติคูปองจาก Guest -> Member
             await pg.migrate_guest_wallet(request.guest_id, user_id)
-            redis_hot = RedisHotCache()
             member_wallet = await pg.get_wallet(user_id)
             if member_wallet:
                 redis_hot.set_user_coins(user_id, member_wallet["balance"])
@@ -610,6 +618,10 @@ async def chat_endpoint(request: ChatRequest):
         # 2. โหลด Pipeline ขึ้นมา
         pipeline = get_pipeline()
 
+        # ⚡ [DETERMINISTIC SESSION] ถ้าไม่ได้ส่ง session_id มา ให้คำนวณแบบ Deterministic ses_{user_id}_{char_id}
+        if not request.session_id and request.user_id and request.character_id:
+            request.session_id = build_session_id(request.user_id, request.character_id)
+
         # 🔒 [SECURITY CHECK] ตรวจสอบสิทธิ์ความเป็นเจ้าของ Session (IDOR Protection)
         if request.session_id and request.user_id:
             redis_hot = RedisHotCache()
@@ -619,6 +631,18 @@ async def chat_endpoint(request: ChatRequest):
                 session_rec = await pg_check.get_game_session(request.session_id)
                 if session_rec and session_rec.get("user_id"):
                     owner = session_rec["user_id"]
+                    redis_hot.set_session_owner(request.session_id, owner)
+                elif not session_rec:
+                    # ⚡ [ZERO-HANDSHAKE] Auto-init session in DB on first turn
+                    target_campaign = request.world_id or request.character_id
+                    await pg_check.create_game_session(
+                        session_id=request.session_id,
+                        user_id=request.user_id,
+                        campaign_id=target_campaign,
+                        character_id=request.character_id
+                    )
+                    owner = request.user_id
+                    redis_hot.set_active_session(request.user_id, request.character_id, request.session_id)
                     redis_hot.set_session_owner(request.session_id, owner)
 
             if owner and owner != request.user_id:
@@ -743,15 +767,26 @@ async def archive_user_session_endpoint(user_id: str, character_id: str):
     ปิดการใช้งาน (Archive/Soft Delete) เซฟล่าสุดของตัวละครนี้ เพื่อให้หน้าบ้านหายไป
     """
     try:
-        db = DatabaseCore()
-        success = await db.archive_active_session(user_id, character_id)
-        if success:
-            # 🧹 ล้าง active pointer ใน Redis
-            redis_hot = RedisHotCache()
-            redis_hot.clear_active_session(user_id, character_id)
-            return {"status": "success", "message": "Session archived"}
-        else:
-            raise HTTPException(status_code=500, detail="Failed to archive session")
+        session_id = build_session_id(user_id, character_id)
+        
+        # 1. Archive in Neon DB
+        pg = get_postgres_core()
+        await pg.archive_session(session_id)
+
+        # 2. Clear Redis cache
+        redis_hot = RedisHotCache()
+        redis_hot.clear_session(session_id)
+        redis_hot.clear_active_session(user_id, character_id)
+
+        # 3. Legacy Supabase archive fallback (for non-guests)
+        if not user_id.startswith("gst_"):
+            try:
+                db = DatabaseCore()
+                await db.archive_active_session(user_id, character_id)
+            except Exception:
+                pass
+
+        return {"status": "success", "message": "Session archived"}
     except Exception as e:
         logger.error(f"Error archiving session: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -770,61 +805,58 @@ async def load_session_endpoint(request: LoadSessionRequest):
         pg = get_postgres_core()
         redis = RedisHotCache()
 
+        user_id = (request.user_id or "").strip()
+        character_id = (request.character_id or "").strip()
         session_id = request.session_id
-        session_owner = None
 
-        # ⚡ FAST PATH 1: ตรวจหา session_id จาก Redis Index ทันที (0.001s)
-        if not session_id and request.user_id and request.character_id:
-            session_id = redis.get_active_session(request.user_id, request.character_id)
-            if session_id:
-                session_owner = request.user_id
-                logger.info(f"⚡ [FAST PATH] Found active session in Redis: {session_id} for user: {request.user_id}")
+        # ⚡ Deterministic Session ID
+        if not session_id and user_id and character_id:
+            session_id = build_session_id(user_id, character_id)
 
         cached_rounds = None
         live_state = None
+        neon_session = None
 
-        # ถ้ามี session_id แล้ว ลองดึงข้อมูลจาก Redis RAM ตรงๆ
+        # ⚡ FAST PATH 1: Single Pipeline Round-Trip to Upstash Redis (~2ms)
         if session_id:
-            # 🔒 ตรวจสอบสิทธิ์ IDOR
-            owner = session_owner or redis.get_session_owner(session_id)
-            if request.user_id and owner and owner != request.user_id:
-                logger.warning(f"🚨 [UNAUTHORIZED LOAD] User {request.user_id} attempted to load session {session_id} belonging to {owner}")
-                raise HTTPException(status_code=403, detail="Unauthorized session access")
+            bundle = redis.get_session_bundle(session_id, limit=20)
+            if bundle and bundle.get("has_started"):
+                session_owner = bundle.get("owner")
+                # 🔒 ตรวจสอบสิทธิ์ IDOR
+                if user_id and session_owner and session_owner != user_id:
+                    logger.warning(f"🚨 [UNAUTHORIZED LOAD] User {user_id} attempted to load session {session_id} belonging to {session_owner}")
+                    raise HTTPException(status_code=403, detail="Unauthorized session access")
 
-            cached_rounds = redis.get_recent_rounds(session_id, limit=20)
-            if cached_rounds:
-                live_state = redis.get_live_state(session_id) or {}
-                logger.info(f"⚡ [FAST PATH HIT] Loaded {len(cached_rounds)} rounds directly from Redis Hot Cache for session: {session_id}")
+                cached_rounds = bundle.get("rounds", [])
+                live_state = bundle.get("state", {})
+                logger.info(f"⚡ [FAST PATH HIT] Loaded session bundle ({len(cached_rounds)} rounds) in ~2ms from Redis: {session_id}")
 
-        # 🐢 COLD PATH FALLBACK: ถ้าไม่มี session_id หรือ Redis Cache Miss ให้ค้นหาจาก Neon PostgreSQL
-        if not session_id or not cached_rounds:
-            neon_session = None
-            if session_id:
-                neon_session = await pg.get_game_session(session_id)
-            elif request.user_id and request.character_id:
+        # 🐢 COLD PATH FALLBACK: ถ้าไม่มีใน Redis ให้ค้นหาจาก Neon PostgreSQL
+        if not cached_rounds and session_id:
+            neon_session = await pg.get_game_session(session_id)
+            if not neon_session and user_id and character_id:
                 pool = await pg.get_pool()
                 async with pool.acquire() as conn:
                     row = await conn.fetchrow("""
                         SELECT * FROM game_sessions 
                         WHERE user_id = $1 AND character_id = $2 AND status = 'active'
                         ORDER BY updated_at DESC LIMIT 1;
-                    """, request.user_id, request.character_id)
+                    """, user_id, character_id)
                     if row:
                         neon_session = dict(row)
 
             if neon_session:
                 # 🔒 ตรวจสอบสิทธิ์ IDOR จาก Neon
-                if request.user_id and neon_session.get("user_id") and neon_session["user_id"] != request.user_id:
-                    logger.warning(f"🚨 [UNAUTHORIZED LOAD] User {request.user_id} attempted to load session {neon_session['id']} belonging to {neon_session['user_id']}")
+                if user_id and neon_session.get("user_id") and neon_session["user_id"] != user_id:
+                    logger.warning(f"🚨 [UNAUTHORIZED LOAD] User {user_id} attempted to load session {neon_session['id']} belonging to {neon_session['user_id']}")
                     raise HTTPException(status_code=403, detail="Unauthorized session access")
 
                 session_id = neon_session["id"]
-                # 🌟 บันทึก Index และ Owner ลง Redis ทันที เพื่อให้รอบถัดไปเป็น Fast Path 0.001s!
+                # 🌟 บันทึก Index และ Owner ลง Redis ทันที เพื่อให้รอบถัดไปเป็น Fast Path 2ms!
                 redis.set_active_session(neon_session["user_id"], neon_session["character_id"], session_id)
                 redis.set_session_owner(session_id, neon_session["user_id"])
 
-                if not cached_rounds:
-                    cached_rounds = await pg.get_rounds(session_id, limit=20)
+                cached_rounds = await pg.get_rounds(session_id, limit=20)
                 if live_state is None:
                     live_state = redis.get_live_state(session_id) or {}
 
@@ -909,8 +941,8 @@ async def load_session_endpoint(request: LoadSessionRequest):
 
         # 2. 🌟 Fallback ไปยัง Supabase (Legacy Session)
         # ถ้า user_id เป็น guest (ขึ้นต้นด้วย gst_) ไม่ต้องไปค้นใน Supabase เพราะ Supabase เก็บเฉพาะ UUID
-        if request.user_id and request.user_id.startswith("gst_"):
-            return {"has_started": False, "messages": []}
+        if not user_id or user_id.startswith("gst_"):
+            return {"has_started": False, "session_id": session_id, "messages": []}
 
         db = DatabaseCore()
         if request.session_id:
@@ -919,7 +951,7 @@ async def load_session_endpoint(request: LoadSessionRequest):
             session = await db.get_active_session(request.user_id, request.character_id)
         
         if not session:
-            return {"has_started": False}
+            return {"has_started": False, "session_id": session_id, "messages": []}
             
         # ดึงประวัติแชท (Shallow Hydration: จำกัดแค่ 20 เทิร์นล่าสุด เพื่อให้โหลดไวปานสายฟ้า)
         raw_logs = await db.get_chat_history(session["id"], limit=20)
@@ -1079,11 +1111,11 @@ async def start_session_endpoint(request: StartSessionRequest, background_tasks:
     """
     สร้างเซฟเกมใหม่ (New Game) บน Neon PostgreSQL + Upstash Redis
     """
-    user_id = request.user_id or f"gst_{uuid.uuid4()}"
-    character_id = request.character_id
+    user_id = (request.user_id or "").strip() or generate_guest_id()
+    character_id = request.character_id.strip()
     raw_world_id = request.world_id or character_id
     resolved_world_id, world_file_path = resolve_world_file_path(raw_world_id)
-    session_id = f"sess_{uuid.uuid4()}"
+    session_id = build_session_id(user_id, character_id)
 
     logger.info(f"🔄 [NEW GAME] User: {user_id} starting session: {session_id} for char: {character_id} (World: {resolved_world_id})")
 
@@ -1103,6 +1135,8 @@ async def start_session_endpoint(request: StartSessionRequest, background_tasks:
             campaign_id=resolved_world_id,
             character_id=character_id
         )
+        # ล้างประวัติรอบเดิมใน Neon PostgreSQL เพื่อความสะอาดสำหรับ New Game
+        await pg.clear_session_rounds(session_id)
 
         # 2. ⚡ ล้างและเตรียมพื้นที่ใน Upstash Redis Hot Cache พร้อมบันทึก Active Index & Owner
         redis_cache = RedisHotCache()

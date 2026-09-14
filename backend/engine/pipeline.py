@@ -96,10 +96,23 @@ class GamePipeline:
         session = await pg.get_game_session(session_id)
         is_neon_session = session is not None
         if not session:
-            # Fallback ไปยัง Supabase (Legacy Session)
-            await self.db.get_or_create_profile(user_id, f"User_{user_id[-4:]}")
-            session = await self.db.get_session_by_id(session_id)
+            # Fallback ไปยัง Supabase (Legacy Session) เฉพาะ registered user เดิม
+            if not user_id.startswith("gst_"):
+                await self.db.get_or_create_profile(user_id, f"User_{user_id[-4:]}")
+                session = await self.db.get_session_by_id(session_id)
             
+            # 🌟 [ZERO-HANDSHAKE AUTO-INIT] ถ้ายังไม่มีเซฟใน Neon และเป็น deterministic session ให้สร้างทันที!
+            if not session and session_id and (session_id.startswith("ses_") or user_id):
+                target_campaign = world_id or character_id
+                session = await pg.create_game_session(
+                    session_id=session_id,
+                    user_id=user_id,
+                    campaign_id=target_campaign,
+                    character_id=character_id
+                )
+                is_neon_session = True
+                logger.info(f"⚡ [ZERO-HANDSHAKE] Auto-initialized session {session_id} on the fly in Neon Postgres!")
+
         if not session:
             logger.error(f"❌ [CRITICAL] ไม่พบ Save Slot (Session ID: {session_id})")
             async def error_gen():

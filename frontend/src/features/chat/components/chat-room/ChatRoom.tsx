@@ -9,6 +9,8 @@ import {
   startNewSession,
   loadSession,
   streamChatMessage,
+  buildSessionId,
+  getCurrentUser,
 } from '../../chatApi'
 import { CompanionInspectorDrawer } from '../../../dev-console'
 import type {
@@ -277,9 +279,19 @@ export function ChatRoom({
   useEffect(() => {
     let isCancelled = false
     const charKey = String(currentChat.id)
+    const currentUser = getCurrentUser()
+    const deterministicSid = buildSessionId(currentUser.user_id, charKey)
     const triggerKey = currentChat.sessionTriggerKey 
       ? `${charKey}_${currentChat.sessionTriggerKey}` 
       : `${charKey}_active`
+
+    // ถ้าบังคับเริ่มใหม่ ให้รีเซ็ต lock เดิม
+    if (currentChat.forceNewSession) {
+      openingTriggeredRef.current = null
+    }
+
+    // ⚡ Zero-Handshake: เซ็ต ID ทันทีใน 0ms
+    setSessionId(deterministicSid)
 
     // 🌟 กรณีเป็นห้องแชทจำลองตัวอย่าง (Sample Showcase) สำหรับนำเสนอผู้บริหาร/เจ้าของระบบ
     const loadSampleShowcase = async () => {
@@ -329,7 +341,7 @@ export function ChatRoom({
       }
       openingTriggeredRef.current = triggerKey
 
-      setSessionId(null)
+      setSessionId(deterministicSid)
       setChatMessages([])
       setIsSessionLoading(false)
       setIsStreaming(true)
@@ -339,7 +351,7 @@ export function ChatRoom({
         const newSess = await startNewSession(charKey, actualWorld)
         if (isCancelled) return
 
-        const activeSessionId = newSess.session_id
+        const activeSessionId = newSess.session_id || deterministicSid
         setSessionId(activeSessionId)
 
         if (newSess.initial_state) {
@@ -561,12 +573,13 @@ export function ChatRoom({
     }
 
     // 2. ถ้าเข้าแบบปกติ ให้พยายามโหลดเซสชันเก่าก่อน
-    loadSession(charKey)
+    loadSession(charKey, deterministicSid)
       .then(async res => {
         if (isCancelled) return
 
         if (res.has_started && res.messages && res.messages.length > 0) {
-          setSessionId(res.session_id || null)
+          setSessionId(res.session_id || deterministicSid)
+          openingTriggeredRef.current = triggerKey
 
           const mapped: ChatMessage[] = res.messages.map((m, idx) => {
             if (m.role === 'user') {
@@ -703,27 +716,10 @@ export function ChatRoom({
 
     try {
       let activeSessionId = sessionId
-
-      // ถ้ายังไม่มี Session ให้สร้างใหม่บน Neon PostgreSQL + Upstash Redis ทันที
       if (!activeSessionId) {
-        const newSess = await startNewSession(
-          String(currentChat.id),
-          currentChat.statusMessage ? String(currentChat.id) : undefined
-        )
-        activeSessionId = newSess.session_id
+        const currentUser = getCurrentUser()
+        activeSessionId = buildSessionId(currentUser.user_id, String(currentChat.id))
         setSessionId(activeSessionId)
-
-        if (newSess.initial_state) {
-          onHudUpdate?.({
-            affection: newSess.initial_state.affection,
-            desire: newSess.initial_state.desire,
-            actor_posture: newSess.initial_state.a_pos,
-            player_posture: newSess.initial_state.p_pos,
-            stance: newSess.initial_state.stance,
-            current_outfit: newSess.initial_state.current_outfit,
-            environment: newSess.initial_state.environment,
-          })
-        }
       }
 
       const turnTimestamp = Date.now()

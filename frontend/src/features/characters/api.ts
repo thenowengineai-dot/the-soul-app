@@ -7,6 +7,7 @@ import { DEFAULT_CHARACTER_STATS, DEFAULT_CHARACTER_EVENTS } from './mockData'
  */
 export interface SupabaseCampaignRaw {
   id: string
+  character_id?: string
   name: string
   status?: string
   photos?: string[]
@@ -115,7 +116,7 @@ export function transformSupabaseCharacter(
   );
 
   return {
-    id: item.id,
+    id: item.character_id || item.id,
     name: item.name,
     quote: item.status || 'พร้อมจะเริ่มต้นบทสนทนาที่มีความหมายกับคุณแล้ววันนี้',
     views: mockViews[index % mockViews.length],

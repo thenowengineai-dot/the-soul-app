@@ -29,7 +29,7 @@ export const MOCK_CHATS: ChatConversation[] = [
     avatar: "https://jnuookesplkbkpwzdytp.supabase.co/storage/v1/object/public/genesis-assets/drafts/ref_1785235978191_89b59767-0c23-4b91-b72d-43345d264ddd.png",
     image: "https://jnuookesplkbkpwzdytp.supabase.co/storage/v1/object/public/genesis-assets/drafts/ref_1785235978191_89b59767-0c23-4b91-b72d-43345d264ddd.png",
     statusMessage: "เลิกงานแล้ว... กรุณาอย่ารบกวน 🌙",
-    defaultWorld: "draft_1786182329627"
+    defaultWorld: "world_1788786310"
   },
   { 
     id: 1, 
@@ -275,7 +275,7 @@ export const MOCK_HUD_MAP: Record<number | string, CharacterHudData> = {
     avatar: "https://jnuookesplkbkpwzdytp.supabase.co/storage/v1/object/public/genesis-assets/drafts/ref_1785235978191_89b59767-0c23-4b91-b72d-43345d264ddd.png",
     image: "https://jnuookesplkbkpwzdytp.supabase.co/storage/v1/object/public/genesis-assets/drafts/ref_1785235978191_89b59767-0c23-4b91-b72d-43345d264ddd.png",
     pose: "ยืนตรงหน้าโดยมีโต๊ะกั้นกลาง โค้งต้อนรับด้วยรอยยิ้มหวานหยดย้อยสไตล์เชอรี่",
-    outfit: "เดรสเข้ารูปสีแดงไวน์ คอสูง แขนกุด ผิวผ้ามันวาว (CHERRY / NIGHT SHIFT)",
+    outfit: "เดรสเข้ารูปสีแดงไวน์ คอสูง แขนกุด ผิวผ้ามันวาว (cherry_night_shift)",
     playerPose: "นั่งทิ้งตัวบนโซฟาตรงกลางห้อง VIP",
     relationship: {
       label: "ความสัมพันธ์",

@@ -310,9 +310,26 @@ async def upload_image_endpoint(req: UploadImageRequest):
         logger.error(f"Error in /upload-image: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
+def _get_postgres_world():
+    try:
+        from genesis.postgres_world import PostgresWorld
+        return PostgresWorld()
+    except ImportError:
+        import sys
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        root_dir = os.path.dirname(os.path.dirname(current_dir))
+        if root_dir not in sys.path:
+            sys.path.insert(0, root_dir)
+        try:
+            from genesis.postgres_world import PostgresWorld
+            return PostgresWorld()
+        except Exception as e:
+            logger.warning(f"Could not import PostgresWorld: {e}")
+            return None
+
 @router.get("/published_campaigns")
 async def get_published_campaigns():
-    """ดึงรายชื่อแคมเปญที่ Publish แล้วทั้งหมด เพื่อไปแสดงในหน้า Hub (Neon PostgreSQL & Upstash Redis)"""
+    """ดึงรายชื่อแคมเปญที่ Publish แล้วทั้งหมด จาก Neon PostgreSQL และ Upstash Redis Hot Cache (Zero Supabase)"""
     global HUB_CATALOG_CACHE
     
     # 🌟 เช็ก Cache ก่อน ถ้ายังไม่หมดอายุ (5 นาที) ให้เสิร์ฟจาก RAM ทันที (0.001 วิ)
@@ -320,122 +337,120 @@ async def get_published_campaigns():
         logger.info("🚀 [CACHE HIT] Serving Hub Catalog from In-Memory Cache")
         return {"status": "success", "data": HUB_CATALOG_CACHE["data"], "cached": True}
 
-    logger.info("🔄 [CACHE MISS] Fetching Hub Catalog from Neon Serverless PostgreSQL & Upstash Redis...")
+    logger.info("🔄 [CACHE MISS] Fetching Hub Catalog from Neon PostgreSQL & Redis Hot Cache...")
     published_chars = []
+    
+    # 1. 🐘 ลองดึงจาก Neon PostgreSQL (Authoritative DB)
     try:
-        from genesis.postgres_world import PostgresWorld
-        pw = PostgresWorld()
-        pool = await pw.get_pool()
-        async with pool.acquire() as conn:
-            rows = await conn.fetch("""
-                SELECT 
-                    c.id AS id,
-                    c.name AS campaign_name,
-                    c.character_id AS character_id,
-                    c.status AS status,
-                    c.world_data AS world_data,
-                    c.workspace_meta AS workspace_meta,
-                    ch.name AS character_name,
-                    ch.avatar_url AS avatar_url,
-                    ch.character_data AS character_data,
-                    c.updated_at AS updated_at
-                FROM world_campaigns c
-                LEFT JOIN world_characters ch ON c.character_id = ch.id
-                WHERE c.status = 'published'
-                ORDER BY c.updated_at DESC;
-            """)
-            
-            seen_campaign_ids = set()
-            for row in rows:
-                row_id = row["id"]
-                if row_id in seen_campaign_ids:
-                    continue
-                seen_campaign_ids.add(row_id)
+        pg_world = _get_postgres_world()
+        if pg_world:
+            published_chars = await pg_world.list_published_campaigns()
+            if published_chars and len(published_chars) > 0:
+                logger.info(f"✅ [NEON DB] Fetched {len(published_chars)} published campaigns from Neon DB")
+    except Exception as e:
+        logger.warning(f"Error fetching from Neon DB: {e}")
 
-                char_data = row["character_data"] or {}
-                if isinstance(char_data, str):
-                    try:
-                        char_data = json.loads(char_data)
-                    except Exception:
-                        char_data = {}
+    # 2. ⚡ Fallback ไป Upstash Redis Hot Cache ถ้า Neon DB ยังว่างหรือ error
+    if not published_chars:
+        try:
+            from genesis.redis_hot import GenesisRedisHotCache
+            r_hot = GenesisRedisHotCache()
+            pub_worlds = r_hot.execute_command(["SMEMBERS", "published_world_ids"]) or []
+            db = DatabaseCore()
+            seen_chars = set()
+            for w_id in pub_worlds:
+                camp = await db.get_published_campaign(w_id)
+                if camp:
+                    cdata = camp.get("character_data", {})
+                    wdata = camp.get("world_data", {})
+                    c_id = cdata.get("character_id") or camp.get("character_id") or w_id
+                    if c_id in seen_chars:
+                        continue
+                    seen_chars.add(c_id)
 
-                world_data = row["world_data"] or {}
-                if isinstance(world_data, str):
-                    try:
-                        world_data = json.loads(world_data)
-                    except Exception:
-                        world_data = {}
+                    avatar_url = cdata.get("avatar_url") or wdata.get("image") or ""
+                    photos = [avatar_url] if avatar_url else []
+                    if cdata.get("images") and isinstance(cdata.get("images"), list):
+                        photos = [img for img in cdata["images"] if img]
 
-                avatar_url = row["avatar_url"] or char_data.get("avatar_url")
-                
-                # รวมรูปภาพทั้งหมด (รูปในแกลเลอรี + รูปหลัก + รูปอ้างอิง)
-                photos = []
-                if char_data.get("images") and isinstance(char_data.get("images"), list) and len(char_data.get("images")) > 0:
-                    photos = [img for img in char_data["images"] if img]
-                elif avatar_url:
-                    photos = [avatar_url]
-                else:
-                    photos = ["https://img2.pic.in.th/dontlove3.png"]
+                    starting_state = wdata.get("starting_state", {})
+                    initial_env = {
+                        "time": starting_state.get("time") or "ยามค่ำคืน",
+                        "location": starting_state.get("location") or "ห้อง VIP บาร์หรู",
+                        "weather": starting_state.get("weather") or "แอร์เย็นสบาย",
+                    }
+                    published_chars.append({
+                        "id": w_id,
+                        "character_id": c_id,
+                        "name": cdata.get("name", "Unknown"),
+                        "status": cdata.get("description", ""),
+                        "photos": photos,
+                        "hashtags": cdata.get("hashtags", []),
+                        "age": "25",
+                        "distance": "1 km",
+                        "default_world": w_id,
+                        "background_story": cdata.get("background_story", []),
+                        "core_stats": cdata.get("core_stats", {}),
+                        "stats": cdata.get("core_stats", {}),
+                        "initial_environment": initial_env,
+                        "initial_outfit": starting_state.get("initial_outfit_key", "ชุดเริ่มต้น"),
+                        "initial_pose": starting_state.get("initial_a_pos", "ยืนตรงหน้า"),
+                        "memories": [],
+                        "comments": []
+                    })
+            if published_chars:
+                logger.info(f"⚡ [REDIS HOT CACHE] Fetched {len(published_chars)} published campaigns from Redis")
+        except Exception as e:
+            logger.warning(f"Error fetching from Redis Hot Cache: {e}")
 
-                if char_data.get("reference_urls"):
-                    for ref in char_data.get("reference_urls"):
-                        if ref and ref not in photos:
-                            photos.append(ref)
-
-                starting_state = world_data.get("starting_state", {})
-                initial_scene = world_data.get("initial_scene", {})
-                appearance_data = char_data.get("appearance", {})
-                raw_wardrobe = appearance_data.get("wardrobe") or char_data.get("wardrobe", {})
-                
-                initial_outfit = "ชุดเริ่มต้น"
-                if isinstance(raw_wardrobe, dict) and raw_wardrobe:
-                    first_val = list(raw_wardrobe.values())[0]
-                    initial_outfit = ", ".join(first_val) if isinstance(first_val, list) else str(first_val)
-                elif isinstance(raw_wardrobe, list) and raw_wardrobe:
-                    first_item = raw_wardrobe[0]
-                    if isinstance(first_item, dict):
-                        items = first_item.get("items", ["ชุดเริ่มต้น"])
-                        initial_outfit = ", ".join(items) if isinstance(items, list) else str(items)
-                    elif isinstance(first_item, str):
-                        initial_outfit = first_item
-
-                initial_env = {
-                    "time": starting_state.get("initial_time") or initial_scene.get("time") or "14:00 น.",
-                    "location": starting_state.get("initial_location") or initial_scene.get("location") or world_data.get("name") or "สถานที่นัดพบ",
-                    "weather": starting_state.get("initial_weather") or initial_scene.get("weather") or "ปกติ แจ่มใส",
-                }
-                initial_pose = starting_state.get("initial_a_pos") or "ยืน/นั่งอิสระตามบริบท"
-
+    # 3. 📂 Local Fallback ถ้ายังไม่มี ให้โหลดจาก local files
+    if not published_chars:
+        base_dir = os.path.join(os.path.dirname(__file__), "..", "data")
+        baisom_char_file = os.path.join(base_dir, "characters", "char_1788786310.json")
+        baisom_world_file = os.path.join(base_dir, "worlds", "world_1788786310.json")
+        if os.path.exists(baisom_char_file) and os.path.exists(baisom_world_file):
+            try:
+                with open(baisom_char_file, "r", encoding="utf-8") as f:
+                    cdata = json.load(f)
+                with open(baisom_world_file, "r", encoding="utf-8") as f:
+                    wdata = json.load(f)
+                starting_state = wdata.get("starting_state", {})
                 published_chars.append({
-                    "id": row_id,
-                    "name": char_data.get("name") or row["character_name"] or "Unknown",
-                    "status": char_data.get("description", "No description available"),
-                    "photos": photos,
-                    "hashtags": char_data.get("hashtag_dna", char_data.get("hashtags", [])),
-                    "age": "20",
+                    "id": "world_1788786310",
+                    "character_id": "char_1788786310",
+                    "name": cdata.get("name", "ใบส้ม (Baisom)"),
+                    "status": cdata.get("description", ""),
+                    "photos": [cdata.get("avatar_url", "")],
+                    "hashtags": cdata.get("hashtags", []),
+                    "age": "25",
                     "distance": "1 km",
-                    "default_world": row_id,
-                    "background_story": char_data.get("background_story", []),
-                    "core_stats": char_data.get("core_stats", {}),
-                    "stats": char_data.get("core_stats", {}),
-                    "initial_environment": initial_env,
-                    "initial_outfit": initial_outfit,
-                    "initial_pose": initial_pose,
+                    "default_world": "world_1788786310",
+                    "background_story": cdata.get("background_story", []),
+                    "core_stats": cdata.get("core_stats", {}),
+                    "stats": cdata.get("core_stats", {}),
+                    "initial_environment": {
+                        "time": starting_state.get("time", "ยามค่ำคืน"),
+                        "location": starting_state.get("location", "VIP Bar"),
+                        "weather": starting_state.get("weather", "แอร์เย็นสบาย"),
+                    },
+                    "initial_outfit": "cherry_night_shift",
+                    "initial_pose": starting_state.get("initial_a_pos", "ยืนตรงหน้าของ [PLAYER] โดยมีโต๊ะคั่นกลาง"),
                     "memories": [],
                     "comments": []
                 })
-    except Exception as e:
-        logger.error(f"Error fetching published campaigns from Neon: {e}")
-        # ถ้าพัง ให้ดึงจาก Fallback ใน Cache หรือ Upstash Redis
-        if HUB_CATALOG_CACHE["data"]:
-            return {"status": "success", "data": HUB_CATALOG_CACHE["data"], "cached": True, "stale": True}
+                logger.info("📂 [LOCAL FALLBACK] Loaded published campaign from local data files")
+            except Exception as e:
+                logger.error(f"Error loading local fallback: {e}")
 
-    # อัปเดต Cache
+    # อัปเดต In-Memory RAM Cache
     if published_chars:
         HUB_CATALOG_CACHE["data"] = published_chars
         HUB_CATALOG_CACHE["last_updated"] = time.time()
-    
-    return {"status": "success", "data": published_chars, "cached": False}
+        return {"status": "success", "data": published_chars, "cached": False}
+    elif HUB_CATALOG_CACHE["data"]:
+        return {"status": "success", "data": HUB_CATALOG_CACHE["data"], "cached": True, "stale": True}
+
+    return {"status": "success", "data": [], "cached": False}
 
 @router.get("/characters/{character_id}")
 async def get_character_profile(character_id: str):
@@ -778,14 +793,6 @@ async def archive_user_session_endpoint(user_id: str, character_id: str):
         redis_hot.clear_session(session_id)
         redis_hot.clear_active_session(user_id, character_id)
 
-        # 3. Legacy Supabase archive fallback (for non-guests)
-        if not user_id.startswith("gst_"):
-            try:
-                db = DatabaseCore()
-                await db.archive_active_session(user_id, character_id)
-            except Exception:
-                pass
-
         return {"status": "success", "message": "Session archived"}
     except Exception as e:
         logger.error(f"Error archiving session: {e}")
@@ -939,84 +946,8 @@ async def load_session_endpoint(request: LoadSessionRequest):
                 }
             }
 
-        # 2. 🌟 Fallback ไปยัง Supabase (Legacy Session)
-        # ถ้า user_id เป็น guest (ขึ้นต้นด้วย gst_) ไม่ต้องไปค้นใน Supabase เพราะ Supabase เก็บเฉพาะ UUID
-        if not user_id or user_id.startswith("gst_"):
-            return {"has_started": False, "session_id": session_id, "messages": []}
-
-        db = DatabaseCore()
-        if request.session_id:
-            session = await db.get_session_by_id(request.session_id)
-        else:
-            session = await db.get_active_session(request.user_id, request.character_id)
-        
-        if not session:
-            return {"has_started": False, "session_id": session_id, "messages": []}
-            
-        # ดึงประวัติแชท (Shallow Hydration: จำกัดแค่ 20 เทิร์นล่าสุด เพื่อให้โหลดไวปานสายฟ้า)
-        raw_logs = await db.get_chat_history(session["id"], limit=20)
-        
-        # 🌟 [PHASE 6] Deep Hydration: ตรวจสอบว่า "เทิร์นแรกสุด" โดนตัดทิ้งไปหรือไม่
-        if raw_logs and raw_logs[0].get("turn_number", 0) > 1:
-            initial_logs = await db.get_initial_chat_logs(session["id"])
-            existing_ids = {str(log.get("id")) for log in raw_logs}
-            filtered_initial = [log for log in initial_logs if str(log.get("id")) not in existing_ids]
-            raw_logs = filtered_initial + raw_logs
-            
-        messages = []
-        chat_history = []
-        
-        for log in raw_logs:
-            role = log.get("role")
-            content = log.get("message")
-            action = log.get("action")
-            msg_id = str(log.get("id", ""))
-            
-            if role == "user":
-                if content and content.strip().startswith("[SYSTEM]"):
-                    continue
-                messages.append({"id": msg_id, "role": "user", "content": content, "status": "read"})
-                chat_history.append({"role": "user", "content": content})
-            elif role == "system":
-                if content and ("คุณคือ " in content or "ภารกิจหลัก:" in content):
-                    messages.append({"id": msg_id, "role": "intro_brief", "content": content})
-                else:
-                    messages.append({"id": msg_id, "role": "vo", "content": content})
-            elif role == "intro_brief":
-                messages.append({"id": msg_id, "role": "intro_brief", "content": content})
-            elif role in ["ai", "assistant"]:
-                messages.append({"id": msg_id, "role": "ai", "action": action, "dialogue": content})
-                chat_history.append({"role": "assistant", "content": content})
-            elif role == "director_vo":
-                messages.append({"id": msg_id, "role": "vo", "content": content})
-        
-        return {
-            "has_started": True,
-            "session_id": session["id"],
-            "messages": messages,
-            "chatHistory": chat_history,
-            "activeEventId": session.get("active_event_id"),
-            "activeEventPhase": session.get("active_event_phase"),
-            "activeBeatId": session.get("active_beat_id"),
-            "sandboxTurnCount": session.get("sandbox_turn_count", 0),
-            "beatTurnCount": session.get("beat_turn_count", 0),
-            "chaosLevel": session.get("chaos_level", "low"),
-            "currentStance": session.get("current_stance", "neutral"),
-            "tensionGauge": session.get("tension_gauge", 0),
-            "playerPosture": session.get("player_posture", "ยืน/นั่งอิสระตามบริบท"),
-            "actorPosture": session.get("actor_posture", "ยืน/นั่งอิสระตามบริบท"),
-            "dominanceState": session.get("dominance_state", "NEUTRAL"),
-            "actionLock": session.get("action_lock", False),
-            "contactPoints": session.get("contact_points", []),
-            "worldState": session.get("current_world_state", {"time": "บ่าย 2 โมง", "location": "ซอกมุมอับใต้โครงเหล็ก", "weather": "แดดจัด"}),
-            "characterStats": {
-                "affection": session.get("affection_score", 0),
-                "affUnlock": 20,
-                "desire": session.get("desire_score", 0),
-                "desUnlock": 50,
-                "phase": 1
-            }
-        }
+        # 2. หากไม่มีใน Redis RAM และไม่มีใน Neon DB ให้ถือว่ายังไม่เคยมี Session
+        return {"has_started": False, "session_id": session_id, "messages": []}
     except Exception as e:
         logger.error(f"Error loading session: {e}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -493,3 +493,157 @@ class PostgresWorld:
                     "updated_at": r["updated_at"].isoformat() if r["updated_at"] else None
                 })
             return result
+
+    async def list_published_campaigns(self) -> List[Dict[str, Any]]:
+        """
+        ดึงรายการแคมเปญที่ Publish แล้วทั้งหมดจาก Neon PostgreSQL
+        พร้อมจัดโครงสร้างข้อมูลสำหรับ Hub Catalog หน้าแรก
+        """
+        pool = await self.get_pool()
+        async with pool.acquire() as conn:
+            rows = await conn.fetch("""
+                SELECT wc.id as campaign_id, wc.name as campaign_name, wc.world_data, wc.workspace_meta, wc.updated_at,
+                       ch.id as character_id, ch.name as character_name, ch.avatar_url, ch.character_data
+                FROM world_campaigns wc
+                JOIN world_characters ch ON wc.character_id = ch.id
+                WHERE wc.status = 'published'
+                ORDER BY wc.updated_at DESC;
+            """)
+
+            # Deduplicate by character_id: prefer canonical 'world_' id over 'draft_' alias
+            char_campaign_map = {}
+            for r in rows:
+                c_id = r["character_id"]
+                camp_id = r["campaign_id"]
+                if c_id not in char_campaign_map:
+                    char_campaign_map[c_id] = r
+                else:
+                    if char_campaign_map[c_id]["campaign_id"].startswith("draft_") and not camp_id.startswith("draft_"):
+                        char_campaign_map[c_id] = r
+
+            published_list = []
+            for r in char_campaign_map.values():
+                cdata = r["character_data"]
+                if isinstance(cdata, str):
+                    try:
+                        cdata = json.loads(cdata)
+                    except Exception:
+                        cdata = {}
+
+                wdata = r["world_data"]
+                if isinstance(wdata, str):
+                    try:
+                        wdata = json.loads(wdata)
+                    except Exception:
+                        wdata = {}
+
+                meta = r["workspace_meta"]
+                if isinstance(meta, str):
+                    try:
+                        meta = json.loads(meta)
+                    except Exception:
+                        meta = {}
+
+                avatar_url = (
+                    r["avatar_url"]
+                    or cdata.get("avatar_url")
+                    or wdata.get("image")
+                    or meta.get("character_image_base64")
+                    or ""
+                )
+
+                photos = []
+                if cdata.get("images") and isinstance(cdata.get("images"), list):
+                    photos = [img for img in cdata["images"] if img]
+                elif avatar_url:
+                    photos = [avatar_url]
+
+                if cdata.get("reference_urls") and isinstance(cdata.get("reference_urls"), list):
+                    for ref in cdata["reference_urls"]:
+                        if ref and ref not in photos:
+                            photos.append(ref)
+
+                starting_state = wdata.get("starting_state", {})
+                initial_outfit_key = starting_state.get("initial_outfit_key")
+                wardrobe = cdata.get("appearance", {}).get("wardrobe", {})
+                
+                initial_outfit = "ชุดเริ่มต้น"
+                if initial_outfit_key and isinstance(wardrobe, dict) and initial_outfit_key in wardrobe:
+                    items = wardrobe[initial_outfit_key]
+                    initial_outfit = ", ".join(items) if isinstance(items, list) else str(items)
+                elif isinstance(wardrobe, dict) and wardrobe:
+                    first_val = list(wardrobe.values())[0]
+                    initial_outfit = ", ".join(first_val) if isinstance(first_val, list) else str(first_val)
+
+                initial_env = {
+                    "time": starting_state.get("time") or starting_state.get("initial_time") or "ยามค่ำคืน",
+                    "location": starting_state.get("location") or starting_state.get("initial_location") or wdata.get("name") or "สถานที่นัดพบ",
+                    "weather": starting_state.get("weather") or starting_state.get("initial_weather") or "ปกติ แจ่มใส",
+                }
+                initial_pose = starting_state.get("initial_a_pos") or "ยืน/นั่งอิสระตามบริบท"
+
+                published_list.append({
+                    "id": r["campaign_id"],
+                    "character_id": r["character_id"],
+                    "name": cdata.get("name") or r["character_name"] or "Unknown",
+                    "status": cdata.get("description", ""),
+                    "photos": photos,
+                    "hashtags": cdata.get("hashtags", []),
+                    "age": "25",
+                    "distance": "1 km",
+                    "default_world": r["campaign_id"],
+                    "background_story": cdata.get("background_story", []),
+                    "core_stats": cdata.get("core_stats", {}),
+                    "stats": cdata.get("core_stats", {}),
+                    "initial_environment": initial_env,
+                    "initial_outfit": initial_outfit,
+                    "initial_pose": initial_pose,
+                    "memories": [],
+                    "comments": []
+                })
+
+            return published_list
+
+    async def get_published_campaign(self, campaign_id: str) -> Optional[Dict[str, Any]]:
+        """
+        ดึงข้อมูลแคมเปญ (World + Character) ตาม ID จาก Neon PostgreSQL
+        """
+        pool = await self.get_pool()
+        async with pool.acquire() as conn:
+            row = await conn.fetchrow("""
+                SELECT wc.id as world_id, wc.name as world_name, wc.world_data, wc.character_id, wc.status,
+                       ch.character_data, ch.avatar_url
+                FROM world_campaigns wc
+                LEFT JOIN world_characters ch ON wc.character_id = ch.id
+                WHERE (wc.id = $1 OR wc.character_id = $1) AND wc.status = 'published';
+            """, campaign_id)
+
+            if not row:
+                return None
+
+            world_data = row["world_data"]
+            if isinstance(world_data, str):
+                try:
+                    world_data = json.loads(world_data)
+                except Exception:
+                    world_data = {}
+
+            character_data = row["character_data"] or {}
+            if isinstance(character_data, str):
+                try:
+                    character_data = json.loads(character_data)
+                except Exception:
+                    character_data = {}
+
+            if row["avatar_url"] and not character_data.get("avatar_url"):
+                character_data["avatar_url"] = row["avatar_url"]
+
+            return {
+                "id": row["world_id"],
+                "name": row["world_name"],
+                "character_id": row["character_id"],
+                "status": row["status"],
+                "world_data": world_data,
+                "character_data": character_data
+            }
+

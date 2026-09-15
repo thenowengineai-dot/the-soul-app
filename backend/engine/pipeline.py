@@ -96,13 +96,8 @@ class GamePipeline:
         session = await pg.get_game_session(session_id)
         is_neon_session = session is not None
         if not session:
-            # Fallback ไปยัง Supabase (Legacy Session) เฉพาะ registered user เดิม
-            if not user_id.startswith("gst_"):
-                await self.db.get_or_create_profile(user_id, f"User_{user_id[-4:]}")
-                session = await self.db.get_session_by_id(session_id)
-            
-            # 🌟 [ZERO-HANDSHAKE AUTO-INIT] ถ้ายังไม่มีเซฟใน Neon และเป็น deterministic session ให้สร้างทันที!
-            if not session and session_id and (session_id.startswith("ses_") or user_id):
+            # 🌟 [ZERO-HANDSHAKE AUTO-INIT] สร้าง Save Slot ใน Neon PostgreSQL ทันที
+            if session_id and (session_id.startswith("ses_") or user_id):
                 target_campaign = world_id or character_id
                 session = await pg.create_game_session(
                     session_id=session_id,
@@ -145,22 +140,8 @@ class GamePipeline:
         tension_gauge = session.get("tension_gauge", 0)
         current_inside_jokes = session.get("inside_jokes", [])
         
-        # 🌟 [IMMEDIATE PERSISTENCE] เซฟข้อความของผู้เล่นลง DB ทันที (สำหรับ legacy Supabase session)
+        # [ROUND TURN CALCULATION]
         current_turn = beat_turn_count if active_event_id else sandbox_turn_count
-        if not is_neon_session and not is_regenerate and not user_message.startswith("[SYSTEM]"):
-            logger.info(f"💾 [DATABASE] Saving User Message immediately for safety (Turn: {current_turn})")
-            asyncio.create_task(self.db.log_chat_bulk([{
-                "session_id": session_id,
-                "role": "user",
-                "message": user_message,
-                "action": None,
-                "turn_number": current_turn,
-                "chunk_sequence": 0
-            }]))
-        elif not is_neon_session and is_regenerate:
-            # 🌟 [PHASE 4] ปราบผีซ้ำซ้อน: ถ้าเป็นการขอตอบใหม่ ต้องไปลบคำตอบเก่าของ AI ทิ้งก่อน
-            logger.info(f"🧹 [DATABASE] Regenerate Triggered! Deleting old AI answers for Turn: {current_turn}")
-            await self.db.delete_turn_chat_logs(session_id, current_turn)
         
 
         # ==================================================
@@ -964,9 +945,6 @@ class GamePipeline:
             }
                 
 
-            if not is_neon_session:
-                await self.db.update_session_state(session_id, update_payload)
-            
             # ==================================================
             # 📦 [UNIFIED ROUND SPEC] ประกอบร่างเป็น 1 กล่องสมบูรณ์ (ตาม UNIFIED_ROUND_SPEC.md)
             # ==================================================

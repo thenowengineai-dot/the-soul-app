@@ -115,44 +115,96 @@ class DatabaseCore:
             logger.error(f"Error in get_or_create_profile: {e}")
             return user_id
 
+def _get_postgres_world():
+    try:
+        from genesis.postgres_world import PostgresWorld
+        return PostgresWorld()
+    except ImportError:
+        import sys
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        root_dir = os.path.dirname(os.path.dirname(current_dir))
+        if root_dir not in sys.path:
+            sys.path.insert(0, root_dir)
+        try:
+            from genesis.postgres_world import PostgresWorld
+            return PostgresWorld()
+        except Exception as e:
+            logger.warning(f"Could not import PostgresWorld: {e}")
+            return None
+
     # ==========================================
     # 🌍 CAMPAIGN MANAGEMENT (Genesis Engine Integration)
     # ==========================================
     async def get_published_campaign(self, campaign_id: str) -> Optional[Dict[str, Any]]:
-        """ดึงข้อมูลแคมเปญ (World + Character) ที่ Publish แล้วจาก Supabase (รองรับ Redis Cache)"""
-        # 🌟 [CACHE BYPASS] เปลี่ยนชื่อ Key เป็น v3 เพื่อหนี Cache เก่าที่พัง (Double Encode)
+        """
+        ดึงข้อมูลแคมเปญ (World + Character) ที่ Publish แล้วจาก Upstash Redis Hot Cache 
+        หรือ Neon PostgreSQL (ปราศจาก Supabase 100%)
+        """
         cache_key = f"campaign_v3:{campaign_id}"
         
-        # 1. 🚀 ลองดึงจาก Redis ก่อน (Cache Hit = เร็ว 0.001 วิ)
+        # 1. 🚀 ลองดึงจาก Redis Hot Cache ก่อน (เร็ว 0.001 วิ)
         cached_campaign = await self._redis_request("GET", cache_key)
-        if cached_campaign:
+        if cached_campaign and isinstance(cached_campaign, dict):
             logger.debug(f"⚡ [CACHE HIT] โหลดข้อมูลโลก {campaign_id} จาก Redis ทันที!")
             return cached_campaign
             
-        # 2. 🐢 ถ้าไม่มีใน Redis ค่อยดึงจาก Supabase
+        # 2. 🐘 ถ้าไม่มีใน Redis ให้ดึงจาก Neon PostgreSQL (Authoritative DB)
         try:
-            # 🌟 [CRITICAL FIX] Join กับ genesis_characters เพื่อดึงตัวละครจริงมาประกอบกับโลก
-            response = await self._request("GET", "genesis_campaigns", params={"select": "*, genesis_characters(*)", "id": f"eq.{campaign_id}", "status": "eq.published"})
-            if response and len(response) > 0:
-                campaign_data = response[0]
-                
-                # นำข้อมูลจาก genesis_characters มาทับ character_data เดิม
-                genesis_char = campaign_data.get("genesis_characters")
-                if genesis_char and isinstance(genesis_char, dict):
-                    campaign_data["character_data"] = genesis_char.get("character_data", campaign_data.get("character_data", {}))
-                    # อัปเดต avatar_url
-                    if "avatar_url" in genesis_char and genesis_char["avatar_url"]:
-                        campaign_data["character_data"]["avatar_url"] = genesis_char["avatar_url"]
-                
-                # 3. 💾 เซฟลง Redis เพื่อให้ครั้งหน้าโหลดเร็วขึ้น (อายุ 24 ชม.)
-                await self._redis_request("SET", cache_key, campaign_data)
-                logger.info(f"💾 [CACHE STORE] เซฟข้อมูลโลก {campaign_id} ลง Redis แล้ว!")
-                
-                return campaign_data
-            return None
+            pg_world = _get_postgres_world()
+            if pg_world:
+                campaign_data = await pg_world.get_published_campaign(campaign_id)
+                if campaign_data:
+                    # 💾 เซฟลง Redis เพื่อให้ครั้งหน้าโหลดเร็วขึ้น (อายุ 24 ชม.)
+                    await self._redis_request("SET", cache_key, campaign_data)
+                    logger.info(f"💾 [CACHE STORE] เซฟข้อมูลโลก {campaign_id} จาก Neon DB ลง Redis แล้ว!")
+                    return campaign_data
         except Exception as e:
-            logger.error(f"Error fetching published campaign '{campaign_id}': {e}")
-            return None
+            logger.error(f"Error fetching campaign '{campaign_id}' from Neon DB: {e}")
+
+        # 3. 📁 Local File Fallback (กรณีออฟไลน์หรือกำลังพัฒนา)
+        base_dir = os.path.join(os.path.dirname(__file__), "..", "data")
+        world_file = os.path.join(base_dir, "worlds", f"{campaign_id}.json")
+        char_file = os.path.join(base_dir, "characters", f"{campaign_id}.json")
+        
+        w_data = None
+        c_data = None
+        if os.path.exists(world_file):
+            try:
+                with open(world_file, "r", encoding="utf-8") as f:
+                    w_data = json.load(f)
+            except Exception:
+                pass
+        if os.path.exists(char_file):
+            try:
+                with open(char_file, "r", encoding="utf-8") as f:
+                    c_data = json.load(f)
+            except Exception:
+                pass
+
+        if w_data or c_data:
+            char_id = (c_data and c_data.get("character_id")) or (w_data and w_data.get("character_id")) or campaign_id
+            if not c_data and char_id:
+                specific_char_file = os.path.join(base_dir, "characters", f"{char_id}.json")
+                if os.path.exists(specific_char_file):
+                    try:
+                        with open(specific_char_file, "r", encoding="utf-8") as f:
+                            c_data = json.load(f)
+                    except Exception:
+                        pass
+
+            local_campaign = {
+                "id": campaign_id,
+                "name": (w_data and (w_data.get("name") or w_data.get("world_name"))) or (c_data and c_data.get("name")) or "Campaign",
+                "character_id": char_id,
+                "character_data": c_data or {},
+                "world_data": w_data or {},
+                "status": "published"
+            }
+            await self._redis_request("SET", cache_key, local_campaign)
+            logger.info(f"📂 [LOCAL FALLBACK] โหลดข้อมูล {campaign_id} จาก Local JSON Files สำเร็จ!")
+            return local_campaign
+
+        return None
 
     # ==========================================
     # 🎭 CHARACTER MANAGEMENT (The UUID Resolver)

@@ -582,14 +582,17 @@ async def chat_endpoint(request: ChatRequest):
     try:
         # 1. โหลดข้อมูลตัวละคร (JSON) เต็มรูปแบบสำหรับใช้ใน Engine (Redis Hot Cache & Neon First)
         character_data = None
+        campaign = None
         target_world = request.world_id or request.character_id
         try:
             from genesis.redis_hot import GenesisRedisHotCache
             redis_gen = GenesisRedisHotCache()
             if target_world:
                 camp = redis_gen.get_campaign_v3(target_world)
-                if camp and camp.get("character_data"):
-                    character_data = camp.get("character_data")
+                if camp:
+                    campaign = camp
+                    if camp.get("character_data"):
+                        character_data = camp.get("character_data")
             if not character_data:
                 character_data = redis_gen.get_character_data(request.character_id)
         except Exception as e:
@@ -599,23 +602,11 @@ async def chat_endpoint(request: ChatRequest):
             try:
                 from genesis.postgres_world import PostgresWorld
                 pw = PostgresWorld()
-                pool = await pw.get_pool()
-                async with pool.acquire() as conn:
-                    row = await conn.fetchrow("""
-                        SELECT ch.character_data
-                        FROM world_characters ch
-                        WHERE ch.id = $1;
-                    """, request.character_id)
-                    if not row:
-                        row = await conn.fetchrow("""
-                            SELECT ch.character_data
-                            FROM world_campaigns c
-                            LEFT JOIN world_characters ch ON c.character_id = ch.id
-                            WHERE c.id = $1;
-                        """, target_world)
-                    if row and row["character_data"]:
-                        cdata = row["character_data"]
-                        character_data = cdata if isinstance(cdata, dict) else json.loads(cdata)
+                camp = await pw.get_published_campaign(target_world)
+                if camp:
+                    campaign = camp
+                    if camp.get("character_data"):
+                        character_data = camp.get("character_data")
             except Exception as e:
                 logger.warning(f"Neon char fetch in chat_endpoint: {e}")
 

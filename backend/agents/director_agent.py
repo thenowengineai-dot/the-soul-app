@@ -86,7 +86,9 @@ class DirectorAgent:
                 }
                 if "gemini" in self.model_name.lower():
                     config_kwargs["response_mime_type"] = "application/json"
-                    config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_level="medium")
+                    # 🌟 [THINKING MODE: OFF] ปิด Thinking (budget=0) เพื่อความเร็วสูงสุด
+                    thinking_budget = int(os.getenv("DIRECTOR_THINKING_BUDGET", "0"))
+                    config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_budget=thinking_budget)
                     
                 response = await self.client.aio.models.generate_content(
                     model=self.model_name,

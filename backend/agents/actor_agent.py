@@ -135,7 +135,7 @@ class ActorAgent:
     def __init__(
         self, 
         credentials=None, 
-        model_name: str = "gemini-3.8-flash", # 🌟 เปลี่ยนมาใช้ตัวเบาแต่เปิดโหมดคิดระดับ Medium
+        model_name: str = "gemini-3.8-flash", # 🌟 โมเดลหลัก Vertex AI (เปิดโหมดคิดระดับ Low / 512 tokens)
         project_id: str = None
     ):
         """
@@ -314,7 +314,9 @@ class ActorAgent:
                 "safety_settings": self._get_safety_settings(),
             }
             if "gemini" in self.model_name.lower():
-                config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_level="medium")
+                # 🌟 [THINKING MODE: LOW] ปรับโหมดคิดเป็น Low (512 tokens) เพื่อคำตอบที่เร็วและมีมิติสมจริง
+                thinking_budget = int(os.getenv("ACTOR_THINKING_BUDGET", "512"))
+                config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_budget=thinking_budget)
                 
             # ใช้ Vertex AI โดยบังคับให้ออกเป็น JSON เท่านั้น
             response = await self.client.aio.models.generate_content(
@@ -404,7 +406,9 @@ class ActorAgent:
             "safety_settings": self._get_safety_settings(),
         }
         if "gemini" in self.model_name.lower():
-            config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_level="medium")
+            # 🌟 [THINKING MODE: LOW] ปรับโหมดคิดเป็น Low (512 tokens) เพื่อคำตอบที่เร็วและมีมิติสมจริง
+            thinking_budget = int(os.getenv("ACTOR_THINKING_BUDGET", "512"))
+            config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_budget=thinking_budget)
 
         accumulated_text = ""
         cursor = 0

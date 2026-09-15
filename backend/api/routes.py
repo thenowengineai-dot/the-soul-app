@@ -1203,11 +1203,20 @@ async def start_session_endpoint(request: StartSessionRequest, background_tasks:
         initial_scene = world_data.get("initial_scene", {}) or {}
         appearance_data = char_data.get("appearance", {})
         raw_wardrobe = appearance_data.get("wardrobe") or char_data.get("wardrobe", {})
+        target_outfit_key = starting_state.get("initial_outfit_key")
         
         initial_outfit = "ชุดเริ่มต้น"
         if isinstance(raw_wardrobe, dict) and raw_wardrobe:
-            first_val = list(raw_wardrobe.values())[0]
-            initial_outfit = ", ".join(first_val) if isinstance(first_val, list) else str(first_val)
+            matched_items = raw_wardrobe.get(target_outfit_key) if target_outfit_key else None
+            if not matched_items and target_outfit_key:
+                clean_target = re.sub(r'[\s/_]+', '', str(target_outfit_key).lower())
+                for k, v in raw_wardrobe.items():
+                    if re.sub(r'[\s/_]+', '', str(k).lower()) == clean_target:
+                        matched_items = v
+                        break
+            if not matched_items:
+                matched_items = list(raw_wardrobe.values())[0]
+            initial_outfit = ", ".join(matched_items) if isinstance(matched_items, list) else str(matched_items)
         elif isinstance(raw_wardrobe, list) and raw_wardrobe:
             first_item = raw_wardrobe[0]
             if isinstance(first_item, dict):

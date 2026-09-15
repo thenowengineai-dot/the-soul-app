@@ -200,6 +200,14 @@ class GamePipeline:
         else:
             logger.warning(f"⚠️ [WORLD WARNING] File not found: {world_file_path}, world_data_json is empty")
 
+        # 🛡️ [DEFENSIVE PARSING] ป้องกันกรณี world_data หลุดมาเป็น Escaped JSON String
+        if isinstance(world_data_json, str):
+            try:
+                world_data_json = json.loads(world_data_json)
+            except Exception as e:
+                logger.error(f"Failed to parse world_data_json string: {e}")
+                world_data_json = {}
+
         starting_state = world_data_json.get("starting_state", {})
 
         # ฟิสิกส์ & เสื้อผ้า & ความรู้สึก (ดึงจาก DB ก่อน ถ้าไม่มีให้ใช้จาก World File)
@@ -211,6 +219,13 @@ class GamePipeline:
         # 🌟 [FIX] ดึงชุดเริ่มต้นจากไฟล์ World และจับคู่กับตู้เสื้อผ้าตัวละคร
         outfit_key = starting_state.get("initial_outfit_key", "default")
         
+        # 🛡️ [DEFENSIVE PARSING] ป้องกันกรณี character_data หลุดมาเป็น Escaped JSON String
+        if isinstance(character_data, str):
+            try:
+                character_data = json.loads(character_data)
+            except Exception:
+                character_data = {}
+
         # 🌟 [UNIVERSAL ADAPTER] รองรับทั้งโครงสร้าง AI (appearance) และโครงสร้าง Frontend (Root level)
         appearance_data = character_data.get("appearance", {})
         
@@ -224,7 +239,15 @@ class GamePipeline:
         elif isinstance(raw_wardrobe, dict):
             wardrobe_dict = raw_wardrobe
             
+        # 👗 [SMART RESILIENT MATCHER] ค้นหาชุด: 1. ตรงตาม Key เป๊ะๆ -> 2. ละเว้นตัวพิมพ์เล็กใหญ่และขีดล่าง/ช่องว่าง
         default_outfit = wardrobe_dict.get(outfit_key)
+        if not default_outfit and wardrobe_dict:
+            clean_needle = re.sub(r'[\s/_]+', '', str(outfit_key).lower())
+            for k, val in wardrobe_dict.items():
+                clean_k = re.sub(r'[\s/_]+', '', str(k).lower())
+                if clean_k == clean_needle:
+                    default_outfit = val
+                    break
         if not default_outfit and wardrobe_dict:
             default_outfit = list(wardrobe_dict.values())[0] # ดึงชุดแรกถ้าหา key ไม่เจอ
         if not default_outfit:

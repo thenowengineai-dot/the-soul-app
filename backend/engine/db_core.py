@@ -8,6 +8,23 @@ from loguru import logger
 # โหลดตัวแปรจากไฟล์ .env
 load_dotenv()
 
+def _get_postgres_world():
+    try:
+        from genesis.postgres_world import PostgresWorld
+        return PostgresWorld()
+    except ImportError:
+        import sys
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        root_dir = os.path.dirname(os.path.dirname(current_dir))
+        if root_dir not in sys.path:
+            sys.path.insert(0, root_dir)
+        try:
+            from genesis.postgres_world import PostgresWorld
+            return PostgresWorld()
+        except Exception as e:
+            logger.warning(f"Could not import PostgresWorld: {e}")
+            return None
+
 class DatabaseCore:
     """
     ผู้จัดการฐานข้อมูล (Supabase REST API Connector)
@@ -114,23 +131,6 @@ class DatabaseCore:
         except Exception as e:
             logger.error(f"Error in get_or_create_profile: {e}")
             return user_id
-
-def _get_postgres_world():
-    try:
-        from genesis.postgres_world import PostgresWorld
-        return PostgresWorld()
-    except ImportError:
-        import sys
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        root_dir = os.path.dirname(os.path.dirname(current_dir))
-        if root_dir not in sys.path:
-            sys.path.insert(0, root_dir)
-        try:
-            from genesis.postgres_world import PostgresWorld
-            return PostgresWorld()
-        except Exception as e:
-            logger.warning(f"Could not import PostgresWorld: {e}")
-            return None
 
     # ==========================================
     # 🌍 CAMPAIGN MANAGEMENT (Genesis Engine Integration)

@@ -452,7 +452,9 @@ EVALUATOR_SYSTEM_PROMPT = """คุณคือ "Evaluator (มาตรวั�
 [🎭 ENGINE 5.5: THE SCENE VIBE TRACKER (ความจำบรรยากาศ)]
 จงอ่าน [SCENE VIBE ล่าสุด] และเปรียบเทียบกับข้อความของผู้เล่นในเทิร์นนี้:
 - ให้สรุป "บรรยากาศหรือหัวข้อแกล้งกัน" สั้นๆ (เช่น "ผู้เล่นกำลังหยอกล้อเรื่องกุญแจมืออย่างช้าๆ", "บรรยากาศตึงเครียดหลังจากการโต้เถียง")
-- หากหัวข้อยังคงเป็นเรื่องเดิมให้ "คีพ (Keep) Vibe เดิมไว้" หรืออัปเดตให้สมบูรณ์ขึ้น ห้ามเปลี่ยนไปมาทุกเทิร์น! ส่งมาในตัวแปร `scene_vibe`
+[⚡ กฎความเร็วสูงสุด (ULTRA-COMPACT OUTPUT DIRECTIVE)]
+- ฟิลด์ "reasoning": บังคับสรุปเหตุผลสั้นกระชับที่สุดเพียง 1 ประโยคสั้นๆ (ห้ามเกิน 15 คำเด็ดขาด) ห้ามเขียนอารัมภบทยืดยาว เพื่อความเร็วสูงสุด
+- ฟิลด์ "memory_extracted": สรุปความจำสั้นกระชับ (ไม่เกิน 15 คำ) หรือส่ง null หากไม่มีเรื่องสำคัญ
 
 จงตอบกลับด้วย JSON Format ให้ตรงกับโครงสร้าง EvaluatorOutput (affection_delta, desire_delta, reasoning, memory_extracted, scene_vibe, beat_action, matched_path, player_stance, player_posture, wardrobe_update, stage_unlocked, allow_nickname, pronouns_update, nicknames_update, nomenclature_rejection, new_inside_joke, triggered_inside_joke, inhibition_shield, bullshit_detected, is_cinematic_moment) เท่านั้น
 """

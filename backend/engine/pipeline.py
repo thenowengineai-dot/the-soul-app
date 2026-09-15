@@ -90,33 +90,39 @@ class GamePipeline:
             return f"{time.time() - turn_start_time:.2f}"
 
         # ==================================================
-        # 💾 [DATABASE] STEP 1: โหลด State ล่าสุดจาก Database ด้วย session_id โดยตรง
+        # 💾 [DATABASE & REDIS] STEP 1: โหลด State ล่าสุด (Redis-First Hot Cache 2-5ms)
         # ==================================================
         pg = get_postgres_core()
-        session = await pg.get_game_session(session_id)
-        is_neon_session = session is not None
-        if not session:
-            # 🌟 [ZERO-HANDSHAKE AUTO-INIT] สร้าง Save Slot ใน Neon PostgreSQL ทันที
-            if session_id and (session_id.startswith("ses_") or user_id):
-                target_campaign = world_id or character_id
-                session = await pg.create_game_session(
-                    session_id=session_id,
-                    user_id=user_id,
-                    campaign_id=target_campaign,
-                    character_id=character_id
-                )
-                is_neon_session = True
-                logger.info(f"⚡ [ZERO-HANDSHAKE] Auto-initialized session {session_id} on the fly in Neon Postgres!")
+        cached_live = self.redis.get_live_state(session_id)
+        session = None
+        is_neon_session = False
 
-        if not session:
-            logger.error(f"❌ [CRITICAL] ไม่พบ Save Slot (Session ID: {session_id})")
-            async def error_gen():
-                yield "data: [ERROR] ไม่พบเซฟเกม กรุณารีเฟรชหน้าต่าง\n\n"
-            return error_gen()
+        if cached_live and isinstance(cached_live, dict) and cached_live.get("id"):
+            session = cached_live
+            is_neon_session = True
+            logger.info(f"⚡ [REDIS HOT CACHE] Fast-path State Hit for {session_id} (Zero DB Query)")
+        else:
+            session = await pg.get_game_session(session_id)
+            is_neon_session = session is not None
+            if not session:
+                # 🌟 [ZERO-HANDSHAKE AUTO-INIT] สร้าง Save Slot ใน Neon PostgreSQL ทันที
+                if session_id and (session_id.startswith("ses_") or user_id):
+                    target_campaign = world_id or character_id
+                    session = await pg.create_game_session(
+                        session_id=session_id,
+                        user_id=user_id,
+                        campaign_id=target_campaign,
+                        character_id=character_id
+                    )
+                    is_neon_session = True
+                    logger.info(f"⚡ [ZERO-HANDSHAKE] Auto-initialized session {session_id} on the fly in Neon Postgres!")
 
-        # ⚡ [REDIS HOT CACHE] ซิงก์ State ล่าสุดจาก Redis สำหรับ Neon Session เพื่อความต่อเนื่อง 100%
-        if is_neon_session and session:
-            cached_live = self.redis.get_live_state(session_id)
+            if not session:
+                logger.error(f"❌ [CRITICAL] ไม่พบ Save Slot (Session ID: {session_id})")
+                async def error_gen():
+                    yield "data: [ERROR] ไม่พบเซฟเกม กรุณารีเฟรชหน้าต่าง\n\n"
+                return error_gen()
+
             if cached_live and isinstance(cached_live, dict):
                 session.update(cached_live)
         
@@ -145,17 +151,19 @@ class GamePipeline:
         
 
         # ==================================================
-        # 🧠 [MEMORY] STEP 1.5: Qdrant Memory Retrieval (RAG)
+        # 🧠 [MEMORY] STEP 1.5: Qdrant Memory Retrieval (RAG - Parallel Background Task)
         # ==================================================
-        retrieved_memory = ""
+        rag_task = None
         if not user_message.startswith("[SYSTEM]"):
-            retrieved_memory = await self.memory.retrieve_relevant_memories(
-                user_id=user_id,
-                character_id=character_id,
-                current_input=user_message,
-                session_id=session_id,
-                limit=3,
-                threshold=0.5
+            rag_task = asyncio.create_task(
+                self.memory.retrieve_relevant_memories(
+                    user_id=user_id,
+                    character_id=character_id,
+                    current_input=user_message,
+                    session_id=session_id,
+                    limit=3,
+                    threshold=0.5
+                )
             )
 
         # --------------------------------------------------
@@ -765,6 +773,15 @@ class GamePipeline:
                 if desire_percentage >= 70 or tension_gauge >= 3:
                     is_mask_dropped = True
 
+            # 🧠 [PARALLEL RAG RESOLVE] ดึงความจำที่รันคู่ขนานมาตั้งแต่ Step 1.5 (รันเสร็จนานแล้ว)
+            retrieved_memory = ""
+            if rag_task:
+                try:
+                    retrieved_memory = await rag_task
+                except Exception as e:
+                    logger.error(f"Error awaiting background RAG task: {e}")
+                    retrieved_memory = ""
+
             actor_prompt = self.context_builder.build_actor_prompt(
                 character_data=character_data, director_context=director_context, retrieved_memory=retrieved_memory,
                 world_data=world_data_json, current_location=current_loc, chaos_level=chaos_level,
@@ -985,6 +1002,11 @@ class GamePipeline:
             # ⚡ [REDIS HOT CACHE] ซิงก์ 20 เทิร์นล่าสุด และ Live Kinematics (a_pos / p_pos) ลง Redis
             try:
                 live_state_snapshot = {
+                    "id": session_id,
+                    "session_id": session_id,
+                    "user_id": user_id,
+                    "character_id": character_id,
+                    "world_id": actual_world_id or world_id,
                     "a_pos": actor_posture,
                     "p_pos": player_posture,
                     "affection": affection_val,

@@ -849,9 +849,17 @@ class GamePipeline:
                 # รอ Director ทำงานเสร็จก่อนเพื่อพ่น VO ออกไปเป็นอันดับแรก จากนั้นค่อยให้ Actor ตามมา
                 logger.info("🎬 [PIPELINE] needs_vo=True (Gear 1/2): Awaiting Director VO before streaming Actor...")
                 _, director_out = await director_task
-                if director_out and getattr(director_out, "voice_over", None):
-                    cleaned_vo = " ".join(re.sub(r'\[.*?\]|\(.*?\)', '', director_out.voice_over).split())
-                    director_out.voice_over = cleaned_vo
+                vo_text = getattr(director_out, "voice_over", None)
+                if not vo_text or str(vo_text).lower() in ["none", "null", ""]:
+                    if user_message.startswith("[SYSTEM]") or is_new_phase or not chat_history:
+                        loc_dict = world_data_json.get("locations", {}).get(current_loc, {})
+                        loc_desc = loc_dict.get("description") or loc_dict.get("spatial_layout") or ""
+                        vo_text = getattr(director_out, "sensory_cues", None) or (f"บรรยากาศ ณ {current_loc} {loc_desc}".strip())
+
+                if vo_text and str(vo_text).lower() not in ["none", "null", ""]:
+                    cleaned_vo = " ".join(re.sub(r'\[.*?\]|\(.*?\)', '', str(vo_text)).split())
+                    if director_out:
+                        director_out.voice_over = cleaned_vo
                     yield f"data: {json.dumps({'type': 'voice_over', 'content': cleaned_vo}, ensure_ascii=False)}\n\n"
                 if director_out and user_role in ["admin", "creator"]:
                     yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'director', 'response': director_out.model_dump(), 'thinking': getattr(director_out, 'director_analysis', None)}, ensure_ascii=False)}\n\n"

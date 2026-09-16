@@ -73,9 +73,9 @@ export function useChatCadence({
     }
 
     // 🌟 Dialogue: คำพูดแชท
-    // 1. typingDuration: ช่วงเวลาดุ๊กดิ๊กตอนพิมพ์ (~1.5s - 3.2s)
-    const typingDuration = Math.min(3200, Math.max(1500, 500 + len * 30))
-    // 2. readingDuration: ช่วงเวลาให้อ่านคำพูดหลังเด้งลงจอ เมื่อมีก้อนถัดไปตามมา (~2.5s - 4.5s)
+    // 1. typingDuration: ช่วงเวลาดุ๊กดิ๊กตอนพิมพ์ (~1.35s - 2.7s) - จุดสมดุลพอดีเป๊ะ ไม่เร็วเกินและไม่อืด
+    const typingDuration = Math.min(2700, Math.max(1350, 450 + len * 22))
+    // 2. readingDuration: ช่วงเวลาให้อ่านคำพูดหลังเด้งลงจอ เมื่อก้อนถัดไปเป็น Action (~2.5s - 4.5s)
     const readingDuration = Math.min(4500, Math.max(2500, len * 25))
     return { readingDuration, typingDuration }
   }, [])
@@ -173,11 +173,15 @@ export function useChatCadence({
         setIsBotTyping(false)
         // 4. ปล่อยบับเบิ้ลคำพูดลงจอ
         onEmitRef.current(currentItem)
-        // 5. 🌟 ถ้ายังมีก้อนถัดไปในคิว (ไม่ว่าจะเป็น Action หรือ Dialogue อีกก้อน):
-        // หน่วงเวลาให้อ่านคำพูดก้อนนี้ให้จบก่อน! + จังหวะนิ้วพัก (450 - 700ms)
+        // 5. 🌟 ถ้ายังมีก้อนถัดไปในคิว:
         if (queueRef.current.length > 0) {
-          await sleepWithSkip(readingDuration)
-          const breathMs = Math.floor(450 + Math.random() * 250)
+          const nextItem = queueRef.current[0]
+          // 🛑 ถ้าก้อนถัดไปเป็น Action หรือ VO: หน่วงเวลาให้อ่านคำพูดก้อนนี้ให้จบก่อน!
+          // แต่ถ้าก้อนถัดไปเป็น Dialogue (คำพูดต่อคำพูด): ไม่ต้องรออ่าน ให้พักนิ้วแล้วขึ้น Typing ต่อทันที!
+          if (nextItem && nextItem.type !== 'msg') {
+            await sleepWithSkip(readingDuration)
+          }
+          const breathMs = Math.floor(450 + Math.random() * 200)
           await sleepWithSkip(breathMs)
         }
       }

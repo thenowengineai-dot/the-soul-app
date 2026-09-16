@@ -5,7 +5,7 @@ export type { MessageBubbleProps }
 export function MessageBubble({ 
   message, 
   isMe = false, 
-  isLast = false, 
+  isLast: _isLast = false, 
   isRead = false,
   marginTop = 'mt-4' 
 }: MessageBubbleProps) {
@@ -62,8 +62,8 @@ export function MessageBubble({
         </div>
       )}
 
-      {isMe && (isRead || (isLast && message.read !== false)) && (
-        <span className="text-[11px] text-app-secondary mt-1 mr-1 select-none font-normal">
+      {isMe && isRead && (
+        <span className="text-[11px] text-app-secondary mt-1 mr-1 select-none font-normal animate-in fade-in duration-300">
           อ่านแล้ว
         </span>
       )}

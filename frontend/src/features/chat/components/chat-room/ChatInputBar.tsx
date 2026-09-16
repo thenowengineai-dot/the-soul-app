@@ -23,7 +23,9 @@ export function ChatInputBar({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      onSendMessage?.()
+      if (!isStreaming) {
+        onSendMessage?.()
+      }
     }
     onKeyDown?.(e)
   }
@@ -80,10 +82,10 @@ export function ChatInputBar({
   }
 
   return (
-    <div className="sticky bottom-0 z-20 w-full pt-4 pb-4 mt-auto bg-gradient-to-t from-app-bg from-60% via-app-bg/95 via-35% to-transparent pointer-events-none">
+    <div data-no-advance className="sticky bottom-0 z-20 w-full pt-4 pb-4 mt-auto bg-gradient-to-t from-app-bg from-60% via-app-bg/95 via-35% to-transparent pointer-events-none">
       <div className="w-full max-w-[800px] mx-auto px-4 sm:px-6 relative pointer-events-auto">
         {/* 💬 Typing Indicator Docked Right Above Input Box & Floating in Front of Bubbles (Twitter / X Style) */}
-        {(isStreaming || isTyping) && (
+        {isTyping && (
           <div className="absolute bottom-[calc(100%+8px)] left-4 sm:left-6 z-30 pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-200">
             <TypingIndicator avatarUrl={chatAvatar} name={chatName} />
           </div>
@@ -133,22 +135,26 @@ export function ChatInputBar({
           </button>
           
           {/* Input Wrapper (กล่องพิมพ์) - ระยะห่างเท่ากันทุกช่อง gap-2 sm:gap-3 + ขอบบางเฉียบ border-white/5 + ล็อกความสูง h-10 sm:h-11 */}
-          <div className="flex-1 h-10 sm:h-11 bg-app-surface rounded-full flex items-center pl-4 sm:pl-5 pr-1.5 border border-white/5 focus-within:border-white/15 transition-all">
+          <div className={`flex-1 h-10 sm:h-11 bg-app-surface rounded-full flex items-center pl-4 sm:pl-5 pr-1.5 border border-white/5 focus-within:border-white/15 transition-all ${isStreaming ? 'opacity-70' : ''}`}>
             <input 
               ref={inputRef}
               type="text" 
               value={inputMessage}
               onChange={(e) => onInputChange?.(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="พิมพ์ข้อความ หรือ *เพื่อแสดงท่าทาง*..." 
-              className="flex-1 bg-transparent outline-none text-app-primary placeholder-app-muted text-[15px]" 
+              disabled={isStreaming}
+              placeholder={isStreaming ? "กำลังตอบกลับ..." : "พิมพ์ข้อความ หรือ *เพื่อแสดงท่าทาง*..."} 
+              className={`flex-1 bg-transparent outline-none text-app-primary placeholder-app-muted text-[15px] ${isStreaming ? 'cursor-not-allowed' : ''}`} 
             />
             {/* Send Button (สีแดง Velvet Carmine เดียวกันกับบับเบิ้ลข้อความ) */}
             <button 
               type="button"
               onClick={onSendMessage}
+              disabled={isStreaming || !inputMessage.trim()}
               title="ส่งข้อความ"
-              className="w-8 h-8 rounded-full bg-gradient-to-br from-[#D22147] via-[#B8163A] to-[#8E0D29] border border-white/10 flex items-center justify-center hover:brightness-110 active:scale-95 transition-all shrink-0 ml-2 cursor-pointer shadow-sm"
+              className={`w-8 h-8 rounded-full bg-gradient-to-br from-[#D22147] via-[#B8163A] to-[#8E0D29] border border-white/10 flex items-center justify-center hover:brightness-110 active:scale-95 transition-all shrink-0 ml-2 cursor-pointer shadow-sm ${
+                isStreaming || !inputMessage.trim() ? 'opacity-40 cursor-not-allowed active:scale-100' : ''
+              }`}
             >
               <ArrowUp size={18} strokeWidth={2.5} className="text-app-primary" />
             </button>

@@ -18,7 +18,7 @@ export function ChatRoomHeader({
   if (!chat) return null
 
   return (
-    <div className="sticky top-0 z-30 w-full pl-2 sm:pl-3 pr-2 sm:pr-4 pt-3 pb-2 flex items-center justify-between pointer-events-none select-none relative">
+    <div data-no-advance className="sticky top-0 z-30 w-full pl-2 sm:pl-3 pr-2 sm:pr-4 pt-3 pb-2 flex items-center justify-between pointer-events-none select-none relative">
       {/* Left: [Toggle ChatList Button] */}
       <div className="flex items-center gap-1.5 pointer-events-auto">
         <button

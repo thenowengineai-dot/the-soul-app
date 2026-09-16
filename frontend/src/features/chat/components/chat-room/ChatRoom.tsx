@@ -12,6 +12,7 @@ import {
   buildSessionId,
   getCurrentUser,
 } from '../../chatApi'
+import { useChatCadence, type CadenceItem } from '../../hooks/useChatCadence'
 import { CompanionInspectorDrawer } from '../../../dev-console'
 import type {
   UserConsoleRole,
@@ -150,6 +151,47 @@ export function ChatRoom({
     balance: number
     required: number
   } | null>(null)
+
+  // 🎬 Cinematic Cadence & Pacing Controller (อ่านแล้ว, Typing Indicator ไดนามิก, The Stash Buffer, และ Tap-to-Advance)
+  const cadence = useChatCadence({
+    onEmitMessage: useCallback((item: CadenceItem) => {
+      setChatMessages(prev => {
+        const existingIndex = prev.findIndex(m => m.id === item.id)
+        const newMsg: ChatMessage = {
+          id: item.id,
+          type: item.type,
+          text: item.text,
+          sender: item.sender || 'them',
+        }
+        if (existingIndex >= 0) {
+          return prev.map((m, idx) => idx === existingIndex ? newMsg : m)
+        }
+        return [...prev, newMsg]
+      })
+    }, []),
+    onMarkUserMessageAsRead: useCallback(() => {
+      setChatMessages(prev =>
+        prev.map(m => (m.sender === 'me' && !m.read) ? { ...m, read: true } : m)
+      )
+    }, []),
+    onCadenceComplete: useCallback(() => {
+      setIsStreaming(false)
+    }, []),
+  })
+
+  // 👆 Tap-to-Advance: แตะหน้าจอเพื่อข้ามจังหวะหน่วงเวลาทันที (ละเว้นปุ่มและช่องพิมพ์)
+  const handleContainerClick = useCallback((e: React.MouseEvent) => {
+    const target = e.target as HTMLElement | null
+    if (!target) return
+    if (target.closest('button, input, textarea, a, select, [role="button"], [role="dialog"], [data-no-advance]')) {
+      return
+    }
+    const selection = window.getSelection()
+    if (selection && selection.toString().length > 0) {
+      return
+    }
+    cadence.tapToAdvance()
+  }, [cadence])
 
   // 🧭 Dev Console / Quest & Beat Inspector State
   const [internalIsInspectorOpen, setInternalIsInspectorOpen] = useState(false)
@@ -401,43 +443,30 @@ export function ChatRoom({
           {
             onVoiceOver: (voText) => {
               if (isCancelled) return
-              const voId = `vo_${openingTimestamp}`
-              setChatMessages(prev => {
-                const existingIndex = prev.findIndex(m => m.id === voId)
-                if (existingIndex >= 0) {
-                  return prev.map((m, idx) => idx === existingIndex ? { ...m, text: voText } : m)
-                }
-                return [...prev, { id: voId, type: 'vo', text: voText }]
+              cadence.enqueue({
+                id: `vo_${openingTimestamp}`,
+                type: 'vo',
+                text: voText,
               })
             },
             onActorSegment: (segment, index) => {
               if (isCancelled) return
-              const msgId = `opening_${openingTimestamp}_${index}`
-              setChatMessages(prev => {
-                const existingIndex = prev.findIndex(m => m.id === msgId)
-                const newMsg: ChatMessage = {
-                  id: msgId,
-                  type: segment.type === 'action' ? 'action' : 'msg',
-                  text: segment.content,
-                  sender: 'them',
-                }
-                if (existingIndex >= 0) {
-                  return prev.map((m, idx) => idx === existingIndex ? newMsg : m)
-                }
-                return [...prev, newMsg]
+              cadence.enqueue({
+                id: `opening_${openingTimestamp}_${index}`,
+                type: segment.type === 'action' ? 'action' : 'msg',
+                text: segment.content,
+                sender: 'them',
               })
             },
             onActorSegments: (segments) => {
               if (isCancelled) return
-              setChatMessages(prev => {
-                const next = prev.filter(m => !String(m.id).startsWith(`opening_${openingTimestamp}_`))
-                const segMessages: ChatMessage[] = segments.map((s, idx) => ({
+              segments.forEach((s, idx) => {
+                cadence.enqueue({
                   id: `opening_${openingTimestamp}_${idx}`,
                   type: s.type === 'action' ? 'action' : 'msg',
                   text: s.content,
                   sender: 'them',
-                }))
-                return [...next, ...segMessages]
+                })
               })
             },
             onPhysicsUpdate: (phys) => {
@@ -549,7 +578,7 @@ export function ChatRoom({
               if (!isCancelled) setIsStreaming(false)
             },
             onDone: () => {
-              if (!isCancelled) setIsStreaming(false)
+              if (!isCancelled && !cadence.isActive()) setIsStreaming(false)
             },
           }
         )
@@ -559,7 +588,9 @@ export function ChatRoom({
       } finally {
         if (!isCancelled) {
           setIsSessionLoading(false)
-          setIsStreaming(false)
+          if (!cadence.isActive()) {
+            setIsStreaming(false)
+          }
         }
       }
     }
@@ -583,7 +614,7 @@ export function ChatRoom({
 
           const mapped: ChatMessage[] = res.messages.map((m, idx) => {
             if (m.role === 'user') {
-              return { id: m.id || `u_${idx}`, type: 'msg', text: m.content || '', sender: 'me' }
+              return { id: m.id || `u_${idx}`, type: 'msg', text: m.content || '', sender: 'me', read: true }
             } else if (m.role === 'vo' || m.role === 'intro_brief') {
               return { id: m.id || `vo_${idx}`, type: 'vo', text: m.content || '' }
             } else if (m.role === 'ai') {
@@ -657,8 +688,8 @@ export function ChatRoom({
 
   // แจ้งสถานะกำลังพิมพ์และข้อความล่าสุดให้ ChatList ทราบ
   useEffect(() => {
-    onStreamingChange?.(isStreaming)
-  }, [isStreaming, onStreamingChange])
+    onStreamingChange?.(isStreaming || cadence.isCadenceActive)
+  }, [isStreaming, cadence.isCadenceActive, onStreamingChange])
 
   useEffect(() => {
     if (chatMessages.length > 0) {
@@ -680,9 +711,11 @@ export function ChatRoom({
       type: isAction ? 'action' : 'msg',
       text: isAction ? text.slice(1, -1).trim() : text,
       sender: 'me',
-      read: true,
+      read: false, // 🌟 เริ่มต้นเป็นยังไม่อ่าน! จะเปลี่ยนเป็น "อ่านแล้ว" ตามจังหวะของ Cadence
     }
 
+    // เริ่มต้นรอบใหม่ใน Cadence
+    cadence.startNewTurn()
     setChatMessages(prev => [...prev, userMsg])
     setInputText('')
     setIsStreaming(true)
@@ -691,26 +724,19 @@ export function ChatRoom({
     // 🌟 จำลองการตอบกลับของตัวละครตัวอย่าง เพื่อให้เจ้าของระบบทดสอบพิมพ์คุยได้ทันที
     if (currentChat.isSample || currentChat.id === 'sample_showcase') {
       setTimeout(() => {
-        setIsStreaming(false)
-        const botActId = `act_${Date.now()}`
-        const botMsgId = `bot_${Date.now()}`
-        setChatMessages(prev => [
-          ...prev,
-          {
-            id: botActId,
-            type: 'action',
-            sender: 'them',
-            text: 'เธอยิ้มเขินๆ พลางก้มหน้าหลบสายตา นิ้วมือบิดชายเสื้อด้วยความประหม่า',
-          },
-          {
-            id: botMsgId,
-            type: 'msg',
-            sender: 'them',
-            text: 'นี่... แกล้งกันแบบนี้ ฉันก็ทำตัวไม่ถูกน่ะสิคะ... แต่ก็ดีใจนะที่เธออยู่ด้วยกัน ///',
-          },
-        ])
-        setTimeout(() => scrollToBottom('smooth'), 40)
-      }, 1200)
+        cadence.enqueue({
+          id: `act_${Date.now()}`,
+          type: 'action',
+          sender: 'them',
+          text: 'เธอยิ้มเขินๆ พลางก้มหน้าหลบสายตา นิ้วมือบิดชายเสื้อด้วยความประหม่า',
+        })
+        cadence.enqueue({
+          id: `bot_${Date.now()}`,
+          type: 'msg',
+          sender: 'them',
+          text: 'นี่... แกล้งกันแบบนี้ ฉันก็ทำตัวไม่ถูกน่ะสิคะ... แต่ก็ดีใจนะที่เธออยู่ด้วยกัน ///',
+        })
+      }, 500)
       return
     }
 
@@ -748,41 +774,28 @@ export function ChatRoom({
         },
         {
           onVoiceOver: (voText) => {
-            const voId = `vo_${turnTimestamp}`
-            setChatMessages(prev => {
-              const existingIndex = prev.findIndex(m => m.id === voId)
-              if (existingIndex >= 0) {
-                return prev.map((m, idx) => idx === existingIndex ? { ...m, text: voText } : m)
-              }
-              return [...prev, { id: voId, type: 'vo', text: voText }]
+            cadence.enqueue({
+              id: `vo_${turnTimestamp}`,
+              type: 'vo',
+              text: voText,
             })
           },
           onActorSegment: (segment, index) => {
-            const msgId = `act_${turnTimestamp}_${index}`
-            setChatMessages(prev => {
-              const existingIndex = prev.findIndex(m => m.id === msgId)
-              const newMsg: ChatMessage = {
-                id: msgId,
-                type: segment.type === 'action' ? 'action' : 'msg',
-                text: segment.content,
-                sender: 'them',
-              }
-              if (existingIndex >= 0) {
-                return prev.map((m, idx) => idx === existingIndex ? newMsg : m)
-              }
-              return [...prev, newMsg]
+            cadence.enqueue({
+              id: `act_${turnTimestamp}_${index}`,
+              type: segment.type === 'action' ? 'action' : 'msg',
+              text: segment.content,
+              sender: 'them',
             })
           },
           onActorSegments: (segments) => {
-            setChatMessages(prev => {
-              const base = prev.filter(m => !String(m.id).startsWith(`act_${turnTimestamp}_`))
-              const newItems: ChatMessage[] = segments.map((seg, idx) => ({
+            segments.forEach((seg, idx) => {
+              cadence.enqueue({
                 id: `act_${turnTimestamp}_${idx}`,
                 type: seg.type === 'action' ? 'action' : 'msg',
                 text: seg.content,
                 sender: 'them',
-              }))
-              return [...base, ...newItems]
+              })
             })
           },
           onPhysicsUpdate: (phys) => {
@@ -902,7 +915,9 @@ export function ChatRoom({
             setIsStreaming(false)
           },
           onDone: () => {
-            setIsStreaming(false)
+            if (!cadence.isActive()) {
+              setIsStreaming(false)
+            }
           },
         }
       )
@@ -917,6 +932,7 @@ export function ChatRoom({
       {/* Messages Area */}
       <div 
         ref={scrollContainerRef}
+        onClick={handleContainerClick}
         style={{ overscrollBehavior: 'none', overscrollBehaviorY: 'none' }}
         className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col no-scrollbar relative overscroll-none touch-pan-y"
       >
@@ -969,8 +985,8 @@ export function ChatRoom({
           inputMessage={inputText}
           onInputChange={setInputText}
           onSendMessage={handleSendMessage}
-          isStreaming={isStreaming}
-          isTyping={isStreaming || !!currentChat.isTyping || !!currentChat.isSample}
+          isStreaming={isStreaming || cadence.isCadenceActive}
+          isTyping={cadence.isBotTyping || (!cadence.isCadenceActive && !isStreaming && (!!currentChat.isTyping || !!currentChat.isSample))}
           chatAvatar={currentChat.avatar}
           chatName={currentChat.name}
         />

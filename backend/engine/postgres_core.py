@@ -524,6 +524,131 @@ class PostgresCore:
                 logger.info(f"🔄 Migrated wallet from {guest_id} (+{guest_bal} coins) to {member_id}")
                 return True
 
+    # -------------------------------------------------------------
+    # 🧠 Long-Term Memory & Session Summaries
+    # -------------------------------------------------------------
+
+    async def save_extracted_memory(
+        self,
+        user_id: str,
+        character_id: str,
+        memory_text: str,
+        session_id: Optional[str] = None
+    ) -> bool:
+        """
+        Saves extracted memory into Neon PostgreSQL.
+        Automatically initializes the extracted_memories table if not present.
+        """
+        if not memory_text or not memory_text.strip():
+            return False
+
+        try:
+            pool = await self.get_pool()
+            async with pool.acquire() as conn:
+                await conn.execute("""
+                    CREATE TABLE IF NOT EXISTS extracted_memories (
+                        id SERIAL PRIMARY KEY,
+                        user_id TEXT NOT NULL,
+                        character_id TEXT NOT NULL,
+                        session_id TEXT,
+                        memory_text TEXT NOT NULL,
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                    );
+                    CREATE INDEX IF NOT EXISTS idx_extracted_memories_user_char 
+                    ON extracted_memories (user_id, character_id);
+                """)
+                await conn.execute("""
+                    INSERT INTO extracted_memories (user_id, character_id, session_id, memory_text, created_at)
+                    VALUES ($1, $2, $3, $4, NOW());
+                """, user_id, character_id, session_id, memory_text.strip())
+                logger.info(f"🧠 [NEON MEMORY] Saved extracted memory for {character_id}: '{memory_text[:60]}...'")
+                return True
+        except Exception as e:
+            logger.error(f"Failed to save extracted memory to Neon DB: {e}")
+            return False
+
+    async def get_user_active_sessions_summary(self, user_id: str) -> List[Dict[str, Any]]:
+        """
+        Retrieves active session summaries for a user across all characters.
+        Fetches the latest round from session_rounds to display the last message.
+        """
+        try:
+            pool = await self.get_pool()
+            async with pool.acquire() as conn:
+                rows = await conn.fetch("""
+                    SELECT DISTINCT ON (s.character_id)
+                        s.id, s.character_id, s.created_at, s.updated_at, s.status,
+                        (
+                            SELECT sr.round_data 
+                            FROM session_rounds sr 
+                            WHERE sr.session_id = s.id 
+                            ORDER BY sr.round_number DESC 
+                            LIMIT 1
+                        ) as latest_round
+                    FROM game_sessions s
+                    WHERE s.user_id = $1 AND s.status = 'active'
+                    ORDER BY s.character_id, s.updated_at DESC;
+                """, user_id)
+
+                summaries = []
+                for r in rows:
+                    last_msg = None
+                    if r["latest_round"]:
+                        rd = r["latest_round"]
+                        if isinstance(rd, str):
+                            try:
+                                rd = json.loads(rd)
+                            except Exception:
+                                rd = {}
+                        responses = rd.get("response", [])
+                        if responses:
+                            last_seg = responses[-1]
+                            last_msg = {
+                                "role": "ai",
+                                "message": last_seg.get("text", ""),
+                                "action": last_seg.get("action") if last_seg.get("type") == "action" else None,
+                                "created_at": r["updated_at"].isoformat() if r["updated_at"] else None
+                            }
+                    summaries.append({
+                        "id": r["id"],
+                        "character_id": r["character_id"],
+                        "character_codename": r["character_id"],
+                        "status": r["status"],
+                        "created_at": r["created_at"].isoformat() if r["created_at"] else None,
+                        "updated_at": r["updated_at"].isoformat() if r["updated_at"] else None,
+                        "last_message": last_msg
+                    })
+                return summaries
+        except Exception as e:
+            logger.error(f"Error fetching active sessions summary from Neon: {e}")
+            return []
+
+    async def get_user_sessions_by_character(self, user_id: str, character_id: str) -> List[Dict[str, Any]]:
+        """
+        Retrieves all save slots for a user and character from Neon PostgreSQL.
+        """
+        try:
+            pool = await self.get_pool()
+            async with pool.acquire() as conn:
+                rows = await conn.fetch("""
+                    SELECT id, user_id, campaign_id, character_id, status, created_at, updated_at
+                    FROM game_sessions
+                    WHERE user_id = $1 AND character_id = $2
+                    ORDER BY updated_at DESC;
+                """, user_id, character_id)
+                return [
+                    {
+                        "id": r["id"],
+                        "created_at": r["created_at"].isoformat() if r["created_at"] else None,
+                        "updated_at": r["updated_at"].isoformat() if r["updated_at"] else None,
+                        "status": r["status"]
+                    }
+                    for r in rows
+                ]
+        except Exception as e:
+            logger.error(f"Error fetching user sessions for character from Neon: {e}")
+            return []
+
 
 # Singleton Instance
 _postgres_core_instance: Optional[PostgresCore] = None

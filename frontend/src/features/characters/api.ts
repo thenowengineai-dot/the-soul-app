@@ -51,8 +51,10 @@ const STAT_METADATA: Record<string, { label: string; subLabel: string }> = {
   charm: { label: 'Charisma', subLabel: 'เสน่ห์และแรงดึงดูด' },
 };
 
+export type CampaignRaw = SupabaseCampaignRaw;
+
 /**
- * แปลงข้อมูลจาก Supabase Campaign ให้อยู่ในรูป Interface Character
+ * แปลงข้อมูลจาก Campaign ให้อยู่ในรูป Interface Character
  * โดยคงทุกองค์ประกอบตามมาตรฐาน UI Design 100% (ป้ายใหม่, สถิติ, Creator)
  */
 export function transformSupabaseCharacter(
@@ -177,3 +179,5 @@ export async function fetchPublishedCharacters(): Promise<Character[]> {
     return [];
   }
 }
+
+export const transformCampaignCharacter = transformSupabaseCharacter;

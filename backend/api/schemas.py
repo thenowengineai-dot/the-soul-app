@@ -313,7 +313,7 @@ class ChatRequest(BaseModel):
         description="Flag บอกว่าเป็นการขอให้ AI สร้างคำตอบใหม่จากข้อความเดิม (ไม่ต้องเซฟข้อความผู้เล่นซ้ำ)"
     )
     
-    # ❌ ลบตัวแปรฟิสิกส์ เสื้อผ้า Beats ทั้งหมดออก! เพราะเราจะใช้ db_core.py ไปดึงข้อมูลจากตาราง game_sessions แทน ❌
+    # ❌ ลบตัวแปรฟิสิกส์ เสื้อผ้า Beats ทั้งหมดออก! เพราะเราจะใช้ postgres_core.py ไปดึงข้อมูลจากตาราง game_sessions แทน ❌
 
 class ValidateWorldRequest(BaseModel):
     world_data: Dict[str, Any] = Field(..., description="ข้อมูล JSON ของโลกที่ต้องการตรวจสอบตาม Engine Manifesto")

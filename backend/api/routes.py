@@ -15,6 +15,7 @@ from engine.pipeline import GamePipeline
 # 🌟 นำเข้า Neon PostgreSQL & Upstash Redis Hot Cache
 from engine.postgres_core import get_postgres_core
 from engine.redis_cache import RedisHotCache
+from genesis.redis_hot import GenesisRedisHotCache
 from engine.identity import (
     build_session_id,
     generate_guest_id,
@@ -24,8 +25,6 @@ from engine.identity import (
     get_redis_user_coins_key,
 )
 
-# 🌟 นำเข้า Database Core เดิมสำหรับดึงแคมเปญ (Read-only Catalog)
-from engine.db_core import DatabaseCore
 from engine.transitions import SceneTransitionManager, resolve_world_file_path
 from engine.gcs_storage import upload_base64_image
 
@@ -274,8 +273,8 @@ async def clear_cache(request: Request):
     # 2. ยิงลบข้อมูลโลกใน Redis (ถ้ามีการระบุ world_id)
     if world_id:
         try:
-            db = DatabaseCore()
-            await db._redis_request("DEL", f"campaign_v3:{world_id}")
+            r_hot = GenesisRedisHotCache()
+            r_hot.execute_command(["DEL", f"campaign_v3:{world_id}"])
             logger.info(f"🧹 [CACHE CLEAR] ลบ Redis Cache (v3) ของโลก {world_id} เรียบร้อยแล้ว")
         except Exception as e:
             logger.error(f"❌ [CACHE CLEAR] เกิดข้อผิดพลาดในการลบ Redis Cache: {e}")
@@ -354,13 +353,15 @@ async def get_published_campaigns():
     # 2. ⚡ Fallback ไป Upstash Redis Hot Cache ถ้า Neon DB ยังว่างหรือ error
     if not published_chars:
         try:
-            from genesis.redis_hot import GenesisRedisHotCache
             r_hot = GenesisRedisHotCache()
             pub_worlds = r_hot.execute_command(["SMEMBERS", "published_world_ids"]) or []
-            db = DatabaseCore()
             seen_chars = set()
             for w_id in pub_worlds:
-                camp = await db.get_published_campaign(w_id)
+                camp = r_hot.get_campaign_v3(w_id)
+                if not camp:
+                    pg_world = _get_postgres_world()
+                    if pg_world:
+                        camp = await pg_world.get_published_campaign(w_id)
                 if camp:
                     cdata = camp.get("character_data", {})
                     wdata = camp.get("world_data", {})
@@ -746,9 +747,9 @@ async def get_all_user_sessions_summary_endpoint(user_id: str):
     ดึงสรุป Session ล่าสุดของทุกตัวละครสำหรับแสดงใน Sidebar
     """
     try:
-        logger.info(f"🔄 [API] Fetching all active sessions summary for user_id: {user_id}")
-        db = DatabaseCore()
-        summaries = await db.get_user_active_sessions_summary(user_id)
+        logger.info(f"🔄 [API] Fetching all active sessions summary from Neon DB for user_id: {user_id}")
+        pg = get_postgres_core()
+        summaries = await pg.get_user_active_sessions_summary(user_id)
         logger.info(f"✅ [API] Found {len(summaries)} active sessions for user_id: {user_id}")
         return {"status": "success", "sessions": summaries}
     except Exception as e:
@@ -761,8 +762,8 @@ async def get_user_sessions_endpoint(user_id: str, character_id: str):
     ดึงรายชื่อ Save Slots ทั้งหมดของผู้เล่นกับตัวละครนี้
     """
     try:
-        db = DatabaseCore()
-        sessions = await db.get_all_sessions(user_id, character_id)
+        pg = get_postgres_core()
+        sessions = await pg.get_user_sessions_by_character(user_id, character_id)
         return {"status": "success", "sessions": sessions}
     except Exception as e:
         logger.error(f"Error fetching sessions: {e}")

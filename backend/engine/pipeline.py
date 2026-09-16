@@ -16,8 +16,8 @@ from api.schemas import ActorOutput, ResponseSegment
 from engine.state_manager import StateManager
 import tempfile
 from engine.context_builder import ContextBuilder
-from engine.db_core import DatabaseCore 
 from engine.postgres_core import get_postgres_core
+from genesis.redis_hot import GenesisRedisHotCache
 from engine.transitions import SceneTransitionManager, resolve_world_file_path
 from engine.memory_core import MemoryCore
 
@@ -57,15 +57,92 @@ from engine.redis_cache import RedisHotCache
 
 class GamePipeline:
     def __init__(self):
-        logger.opt(colors=True).info("<white>🚀 Engine 5.5 Pipeline: ระบบ Supabase Cloud State พร้อมทำงาน...</white>")
+        logger.opt(colors=True).info("<white>🚀 Engine 5.5 Pipeline: ระบบ Neon DB + Redis Hot Cache พร้อมทำงาน...</white>")
         self.director = DirectorAgent()
         self.actor = ActorAgent()
         self.evaluator = EvaluatorAgent()
         self.state_manager = StateManager()
         self.context_builder = ContextBuilder()
-        self.db = DatabaseCore() 
+        self.pg = get_postgres_core()
+        self.redis_hot = GenesisRedisHotCache()
         self.memory = MemoryCore()
         self.redis = RedisHotCache()
+
+    async def get_published_campaign(self, campaign_id: str) -> Optional[Dict[str, Any]]:
+        """
+        ดึงข้อมูลแคมเปญ (World + Character) ผ่าน Tri-Tier Storage:
+        1. ⚡ Upstash Redis Hot Cache (1-2 ms)
+        2. 🐘 Neon PostgreSQL (Authoritative DB)
+        3. 📁 Local File Fallback
+        """
+        # 1. ⚡ Upstash Redis Hot Cache
+        try:
+            cached_campaign = self.redis_hot.get_campaign_v3(campaign_id)
+            if cached_campaign and isinstance(cached_campaign, dict):
+                logger.debug(f"⚡ [HOT CACHE HIT] โหลดข้อมูลแคมเปญ {campaign_id} จาก Redis ทันที!")
+                return cached_campaign
+        except Exception as e:
+            logger.warning(f"Error checking Redis Hot Cache for {campaign_id}: {e}")
+
+        # 2. 🐘 Neon PostgreSQL
+        try:
+            from genesis.postgres_world import PostgresWorld
+            pg_world = PostgresWorld()
+            campaign_data = await pg_world.get_published_campaign(campaign_id)
+            if campaign_data:
+                try:
+                    cdata = campaign_data.get("character_data", {})
+                    wdata = campaign_data.get("world_data", {})
+                    c_id = campaign_data.get("character_id") or campaign_id
+                    self.redis_hot.publish_character_and_world(
+                        character_id=c_id,
+                        character_data=cdata,
+                        world_id=campaign_id,
+                        world_data=wdata
+                    )
+                except Exception as ce:
+                    logger.warning(f"Failed to cache campaign {campaign_id} to Redis: {ce}")
+                logger.info(f"🐘 [NEON DB HIT] โหลดข้อมูลแคมเปญ {campaign_id} จาก Neon PostgreSQL สำเร็จ!")
+                return campaign_data
+        except Exception as e:
+            logger.warning(f"Error checking Neon DB for campaign {campaign_id}: {e}")
+
+        # 3. 📁 Local File Fallback
+        try:
+            base_dir = os.path.join(os.path.dirname(__file__), "..", "data")
+            world_file = os.path.join(base_dir, "worlds", f"{campaign_id}.json")
+            char_file = os.path.join(base_dir, "characters", f"{campaign_id}.json")
+
+            w_data = None
+            c_data = None
+            if os.path.exists(world_file):
+                with open(world_file, "r", encoding="utf-8") as f:
+                    w_data = json.load(f)
+            if os.path.exists(char_file):
+                with open(char_file, "r", encoding="utf-8") as f:
+                    c_data = json.load(f)
+
+            if w_data or c_data:
+                char_id = (c_data and c_data.get("character_id")) or (w_data and w_data.get("character_id")) or campaign_id
+                if not c_data and char_id:
+                    specific_char_file = os.path.join(base_dir, "characters", f"{char_id}.json")
+                    if os.path.exists(specific_char_file):
+                        with open(specific_char_file, "r", encoding="utf-8") as f:
+                            c_data = json.load(f)
+
+                local_campaign = {
+                    "id": campaign_id,
+                    "name": (w_data and (w_data.get("name") or w_data.get("world_name"))) or (c_data and c_data.get("name")) or "Campaign",
+                    "character_id": char_id,
+                    "character_data": c_data or {},
+                    "world_data": w_data or {},
+                    "status": "published"
+                }
+                return local_campaign
+        except Exception as fe:
+            logger.warning(f"Error loading local campaign files for {campaign_id}: {fe}")
+
+        return None
 
     # 🚨 Signature เดิมเป๊ะ ไม่แตะต้องตัวแปรใดๆ ของกัปตัน
     async def process_chat_turn(
@@ -178,9 +255,9 @@ class GamePipeline:
         actual_world_id, world_file_path = resolve_world_file_path(raw_world_id)
         logger.info(f"🌍 [WORLD RESOLVER] Raw: '{raw_world_id}' -> Resolved: '{actual_world_id}' | Path: {world_file_path}")
 
-        # 🌟 [SUPABASE EDITION] ดึงข้อมูลโลกจากแคมเปญที่ Publish แล้ว หรือ Fallback Local World File
+        # 🌟 [NEON + REDIS HOT CACHE] ดึงข้อมูลโลกจากแคมเปญที่ Publish แล้ว หรือ Fallback Local World File
         world_data_json = {}
-        campaign = await self.db.get_published_campaign(actual_world_id)
+        campaign = await self.get_published_campaign(actual_world_id)
         if campaign and campaign.get("world_data"):
             world_data_json = campaign.get("world_data")
         elif os.path.exists(world_file_path):
@@ -524,8 +601,9 @@ class GamePipeline:
                 eval_result = await self.evaluator.evaluate_interaction(evaluator_prompt=evaluator_prompt)
                 
                 if getattr(eval_result, "memory_extracted", None):
-                    await self.db.save_extracted_memory(user_id, character_id, eval_result.memory_extracted, session_id=session_id)
-                    # 🌟 [QDRANT] ซิงค์ความจำลง Vector Database
+                    # 1. 🐘 บันทึกลง Neon PostgreSQL
+                    await self.pg.save_extracted_memory(user_id, character_id, eval_result.memory_extracted, session_id=session_id)
+                    # 2. 🌟 [QDRANT] ซิงค์ความจำลง Vector Database
                     await self.memory.save_memory(user_id, character_id, eval_result.memory_extracted, session_id=session_id)
     
                 if user_role in ["admin", "creator"]:

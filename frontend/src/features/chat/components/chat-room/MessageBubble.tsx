@@ -6,6 +6,7 @@ export function MessageBubble({
   message, 
   isMe = false, 
   isLast: _isLast = false, 
+  isLastInGroup = false,
   isRead = false,
   marginTop = 'mt-4' 
 }: MessageBubbleProps) {
@@ -62,9 +63,13 @@ export function MessageBubble({
         </div>
       )}
 
-      {isMe && isRead && (
-        <span className="text-[11px] text-app-secondary mt-1 mr-1 select-none font-normal animate-in fade-in duration-300">
-          อ่านแล้ว
+      {isMe && (isLastInGroup || isRead) && (
+        <span 
+          className={`text-[11px] mt-1 mr-1 select-none font-normal transition-all duration-300 animate-in fade-in ${
+            isRead ? 'text-app-secondary' : 'text-app-secondary/60'
+          }`}
+        >
+          {isRead ? 'อ่านแล้ว' : 'ส่งแล้ว'}
         </span>
       )}
     </div>

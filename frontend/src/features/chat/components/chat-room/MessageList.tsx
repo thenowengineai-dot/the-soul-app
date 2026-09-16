@@ -28,9 +28,9 @@ export function MessageList({
         const marginTop = isAfterVo ? 'mt-0' : (isSameSenderAsPrev ? 'mt-0.5' : 'mt-4')
         const isLast = index === messages.length - 1
 
-        // ตรวจสอบว่าเป็นข้อความสุดท้ายในกลุ่มของผู้เล่น และมีสถานะอ่านแล้ว
+        // ตรวจสอบว่าเป็นข้อความสุดท้ายในกลุ่มของผู้เล่น
         const isLastInMeGroup = isMe && (index === messages.length - 1 || messages[index + 1]?.sender !== 'me')
-        const shouldShowRead = isMe && isLastInMeGroup && Boolean(msg.read)
+        const isRead = isMe && Boolean(msg.read)
 
         return (
           <MessageBubble
@@ -38,7 +38,8 @@ export function MessageList({
             message={msg}
             isMe={isMe}
             isLast={isLast}
-            isRead={shouldShowRead}
+            isLastInGroup={isLastInMeGroup}
+            isRead={isRead}
             marginTop={marginTop}
             chatAvatar={chatAvatar}
             chatName={chatName}

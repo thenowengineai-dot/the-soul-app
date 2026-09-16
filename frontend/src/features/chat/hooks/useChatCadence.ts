@@ -61,20 +61,23 @@ export function useChatCadence({
     const len = (item.text || '').length
 
     if (item.type === 'vo') {
-      // 🌟 VO: ปล่อยให้อ่านบรรยากาศอย่างสงบ (ความยาวจริง ~340 ตัวอักษร -> ~6.8s)
-      const readingDuration = Math.min(8000, Math.max(5500, len * 20))
+      // 🌟 VO: ปล่อยให้อ่านบรรยากาศอย่างสงบ (ความยาวจริง ~470 ตัวอักษร -> ~10.3s)
+      const readingDuration = Math.min(12000, Math.max(7500, len * 22))
       return { readingDuration, typingDuration: 0 }
     }
 
     if (item.type === 'action') {
-      // 🌟 Action: เว้นจังหวะให้เห็นภาษากายก่อนอ้าปากพูด (ความยาวจริง ~225 ตัวอักษร -> ~4.0s)
-      const readingDuration = Math.min(4500, Math.max(3000, len * 18))
+      // 🌟 Action: เว้นจังหวะให้เห็นภาษากายก่อนอ้าปากพูด (ความยาวจริง ~265 ตัวอักษร -> ~6.3s)
+      const readingDuration = Math.min(7500, Math.max(4500, len * 24))
       return { readingDuration, typingDuration: 0 }
     }
 
-    // 🌟 Dialogue: คำพูดสั้น มี Typing Indicator ดุ๊กดิ๊กตามจำนวนตัวอักษร (~1.2s - 2.5s)
-    const typingDuration = Math.min(2500, Math.max(1200, 400 + len * 35))
-    return { readingDuration: 0, typingDuration }
+    // 🌟 Dialogue: คำพูดแชท
+    // 1. typingDuration: ช่วงเวลาดุ๊กดิ๊กตอนพิมพ์ (~1.5s - 3.2s)
+    const typingDuration = Math.min(3200, Math.max(1500, 500 + len * 30))
+    // 2. readingDuration: ช่วงเวลาให้อ่านคำพูดหลังเด้งลงจอ เมื่อมีก้อนถัดไปตามมา (~2.5s - 4.5s)
+    const readingDuration = Math.min(4500, Math.max(2500, len * 25))
+    return { readingDuration, typingDuration }
   }, [])
 
   /**
@@ -134,6 +137,11 @@ export function useChatCadence({
           hasMarkedReadRef.current = true
           onMarkReadRef.current()
         }
+        // จังหวะพักสายตาสั้นๆ ก่อนก้อนถัดไป (ถ้ามี)
+        if (queueRef.current.length > 0) {
+          const breathMs = Math.floor(450 + Math.random() * 250)
+          await sleepWithSkip(breathMs)
+        }
       } else if (currentItem.type === 'action') {
         // 🎬 BEAT 2: ACTION (ภาษากาย)
         // ถ้ายังไม่ได้ Mark อ่านแล้ว (เช่น ไม่มี VO) ให้ Mark ทันที
@@ -146,6 +154,11 @@ export function useChatCadence({
         onEmitRef.current(currentItem)
         // เว้นจังหวะหายใจ ให้ผู้เล่นอ่านภาษากายก่อน
         await sleepWithSkip(readingDuration)
+        // จังหวะนิ้วพักสั้นๆ ก่อนเริ่มพิมพ์ก้อนถัดไป (ถ้ามี)
+        if (queueRef.current.length > 0) {
+          const breathMs = Math.floor(450 + Math.random() * 250)
+          await sleepWithSkip(breathMs)
+        }
       } else {
         // 🎬 BEAT 3: DIALOGUE (คำพูดแชท)
         if (!hasMarkedReadRef.current) {
@@ -160,9 +173,12 @@ export function useChatCadence({
         setIsBotTyping(false)
         // 4. ปล่อยบับเบิ้ลคำพูดลงจอ
         onEmitRef.current(currentItem)
-        // 5. พักจังหวะนิ้วสั้นๆ ก่อนบับเบิ้ลถัดไป (~350ms)
+        // 5. 🌟 ถ้ายังมีก้อนถัดไปในคิว (ไม่ว่าจะเป็น Action หรือ Dialogue อีกก้อน):
+        // หน่วงเวลาให้อ่านคำพูดก้อนนี้ให้จบก่อน! + จังหวะนิ้วพัก (450 - 700ms)
         if (queueRef.current.length > 0) {
-          await sleepWithSkip(350)
+          await sleepWithSkip(readingDuration)
+          const breathMs = Math.floor(450 + Math.random() * 250)
+          await sleepWithSkip(breathMs)
         }
       }
     }

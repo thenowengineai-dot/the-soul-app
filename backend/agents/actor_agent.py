@@ -155,7 +155,7 @@ class ActorAgent:
         เพื่อป้องกันไม่ให้ AI ติด Safety Refusal เมื่อมีเนื้อหาแนวโรแมนติก / ล่อแหลม
         """
         import os
-        sexual_threshold = os.getenv("SAFETY_SEXUAL_THRESHOLD", "BLOCK_NONE")
+        sexual_threshold = os.getenv("SAFETY_SEXUAL_THRESHOLD", "BLOCK_ONLY_HIGH")
         default_threshold = os.getenv("SAFETY_DEFAULT_THRESHOLD", "BLOCK_ONLY_HIGH")
         
         return [

@@ -823,7 +823,7 @@ class GamePipeline:
                     return ("director", None)
 
             if user_message.startswith("[SYSTEM]"):
-                actor_history = chat_history[-12:] + [{"role": "user", "content": "[SYSTEM]: เริ่มต้นฉากเปิดตัว (Prologue) ให้แสดงท่าทางเปิดตัวและทักทายผู้เล่นเป็นคนแรกตามบทบาท"}]
+                actor_history = chat_history[-12:] + [{"role": "user", "content": "เริ่มต้นฉากที่หนึ่ง: คุณอยู่ในบทบาทของตัวละครหลัก กำลังเริ่มเปิดฉากแรกของเรื่องราว จงแสดงกิริยาท่าทางเปิดตัวและกล่าวทักทายผู้มาเยือนอย่างเป็นธรรมชาติและสุภาพตามบทบาท"}]
             else:
                 actor_history = chat_history[-12:] + [{"role": "user", "content": user_message}]
 

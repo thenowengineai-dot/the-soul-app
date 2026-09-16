@@ -411,64 +411,86 @@ class ActorAgent:
             thinking_budget = int(os.getenv("ACTOR_THINKING_BUDGET", "512"))
             config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_budget=thinking_budget)
 
+        models_to_try = [self.model_name]
+        fallback_model = os.getenv("ACTOR_FALLBACK_MODEL", "gemini-3.5-flash-lite")
+        if fallback_model not in models_to_try:
+            models_to_try.append(fallback_model)
+
         accumulated_text = ""
         cursor = 0
         emitted_segments: List[Dict[str, Any]] = []
         usage_metadata = None
+        actor_output = None
+        stream_succeeded = False
 
-        try:
-            response_stream = await self.client.aio.models.generate_content_stream(
-                model=self.model_name,
-                contents=contents,
-                config=types.GenerateContentConfig(**config_kwargs)
-            )
+        for model_candidate in models_to_try:
+            accumulated_text = ""
+            cursor = 0
+            emitted_segments = []
+            usage_metadata = None
 
-            async for chunk in response_stream:
-                if hasattr(chunk, "usage_metadata") and chunk.usage_metadata:
-                    usage_metadata = chunk.usage_metadata
-                
-                chunk_text = getattr(chunk, "text", None)
-                if not chunk_text:
+            current_config = dict(config_kwargs)
+            if "flash-lite" in model_candidate.lower():
+                current_config["thinking_config"] = types.ThinkingConfig(thinking_budget=0)
+
+            try:
+                response_stream = await self.client.aio.models.generate_content_stream(
+                    model=model_candidate,
+                    contents=contents,
+                    config=types.GenerateContentConfig(**current_config)
+                )
+
+                async for chunk in response_stream:
+                    if hasattr(chunk, "usage_metadata") and chunk.usage_metadata:
+                        usage_metadata = chunk.usage_metadata
+                    
+                    chunk_text = getattr(chunk, "text", None)
+                    if not chunk_text:
+                        continue
+                    
+                    accumulated_text += chunk_text
+                    new_segs, cursor = extract_completed_segments(accumulated_text, cursor)
+                    for seg, _ in new_segs:
+                        emitted_segments.append(seg)
+                        yield ("segment", seg, len(emitted_segments) - 1)
+
+                # คลีนข้อมูลและ parse JSON ตัวเต็มเป็น ActorOutput
+                parsed_data = self._clean_json_text(accumulated_text)
+                actor_output = ActorOutput(**parsed_data)
+
+                # Flush segments ที่อาจตกหล่นจาก scanner (ถ้ามี) ให้ครบทุกชิ้น
+                if actor_output.response_sequence:
+                    for idx, seg in enumerate(actor_output.response_sequence):
+                        if idx >= len(emitted_segments):
+                            seg_dict = seg.model_dump()
+                            emitted_segments.append(seg_dict)
+                            yield ("segment", seg_dict, len(emitted_segments) - 1)
+
+                stream_succeeded = True
+                break
+
+            except Exception as stream_err:
+                err_str = str(stream_err)
+                logger.warning(f"Actor stream error with model '{model_candidate}': {stream_err}")
+                if ("429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "Resource exhausted" in err_str) and not emitted_segments and model_candidate != models_to_try[-1]:
+                    logger.warning(f"⚠️ [ACTOR] Model '{model_candidate}' hit 429 RESOURCE_EXHAUSTED. Retrying stream with fallback model '{models_to_try[-1]}'...")
                     continue
                 
-                accumulated_text += chunk_text
-                new_segs, cursor = extract_completed_segments(accumulated_text, cursor)
-                for seg, _ in new_segs:
-                    emitted_segments.append(seg)
-                    yield ("segment", seg, len(emitted_segments) - 1)
+                logger.error(f"Actor Agent Stream Error: {stream_err}", exc_info=True)
+                break
 
-            # คลีนข้อมูลและ parse JSON ตัวเต็มเป็น ActorOutput
-            parsed_data = self._clean_json_text(accumulated_text)
-            actor_output = ActorOutput(**parsed_data)
-
-            # Flush segments ที่อาจตกหล่นจาก scanner (ถ้ามี) ให้ครบทุกชิ้น
-            if actor_output.response_sequence:
-                for idx, seg in enumerate(actor_output.response_sequence):
-                    if idx >= len(emitted_segments):
-                        seg_dict = seg.model_dump()
-                        emitted_segments.append(seg_dict)
-                        yield ("segment", seg_dict, len(emitted_segments) - 1)
-
-            elapsed = time.time() - start_time
-            in_tokens = getattr(usage_metadata, 'prompt_token_count', 0) if usage_metadata else 0
-            out_tokens = getattr(usage_metadata, 'candidates_token_count', 0) if usage_metadata else 0
-            logger.info(f"🕒 🎭 [ACTOR STREAM] Finished ⏱️({elapsed:.2f}s) | Segments: {len(emitted_segments)} | 💰 {in_tokens} In / {out_tokens} Out")
-
-            yield ("final_output", actor_output, len(emitted_segments))
-
-        except Exception as e:
-            logger.error(f"Actor Agent Stream Error: {e}", exc_info=True)
+        if not stream_succeeded:
             fallback_output = ActorOutput(
-                thinking=f"System Error: {str(e)}",
-                a_pos="นั่งทรุดตัวลงด้วยความมึนงง",
+                thinking="In-character fallback response",
+                a_pos="นั่งรักษาระยะห่างอย่างสุภาพ",
                 response_sequence=[
                     {
                         "type": "action",
-                        "content": "ก้มหน้าเงียบๆ สัญญาณขาดหาย"
+                        "content": "ชะงักไปชั่วครู่ก่อนจะส่งยิ้มบางๆ ให้ เพื่อปรับจังหวะการสนทนา"
                     },
                     {
                         "type": "dialogue",
-                        "content": "..."
+                        "content": "ขอโทษทีนะคะ พอดีแวบหนึ่งใจลอยไปหน่อย... เมื่อกี้คุณว่าอะไรนะคะ?"
                     }
                 ]
             )
@@ -476,3 +498,9 @@ class ActorAgent:
                 for idx, seg in enumerate(fallback_output.response_sequence):
                     yield ("segment", seg.model_dump(), idx)
             yield ("final_output", fallback_output, max(len(emitted_segments), len(fallback_output.response_sequence)))
+        else:
+            elapsed = time.time() - start_time
+            in_tokens = getattr(usage_metadata, 'prompt_token_count', 0) if usage_metadata else 0
+            out_tokens = getattr(usage_metadata, 'candidates_token_count', 0) if usage_metadata else 0
+            logger.info(f"🕒 🎭 [ACTOR STREAM] Finished ⏱️({elapsed:.2f}s) | Segments: {len(emitted_segments)} | 💰 {in_tokens} In / {out_tokens} Out")
+            yield ("final_output", actor_output, len(emitted_segments))

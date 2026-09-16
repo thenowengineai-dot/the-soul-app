@@ -587,8 +587,19 @@ class DatabaseCore:
         char_uuid = await self.get_or_create_character(character_codename)
         
         try:
-            # 🌟 [UUID SANITIZATION] ถอด prefix 'sess_' หรือ 'ses_' ออก และตรวจสอบว่าเป็น UUID หรือไม่
+            # 🌟 [UUID SANITIZATION] ตรวจสอบ user_id และ session_id ให้เป็นรูปแบบ UUID ที่ถูกต้องสำหรับ Supabase
             import uuid
+            valid_user_uuid = None
+            if user_id:
+                clean_uid = user_id.replace("usr_", "").replace("gst_", "")
+                try:
+                    uuid.UUID(clean_uid)
+                    valid_user_uuid = clean_uid
+                except ValueError:
+                    valid_user_uuid = str(uuid.uuid5(uuid.NAMESPACE_DNS, str(user_id)))
+            else:
+                valid_user_uuid = str(uuid.uuid5(uuid.NAMESPACE_DNS, "default_user"))
+
             valid_uuid = None
             if session_id:
                 clean_session_id = session_id.replace("sess_", "").replace("ses_", "")
@@ -597,8 +608,9 @@ class DatabaseCore:
                     valid_uuid = clean_session_id
                 except ValueError:
                     valid_uuid = None
+
             payload = {
-                "user_id": user_id,
+                "user_id": valid_user_uuid,
                 "character_id": char_uuid,
                 "memory_text": memory_text,
             }

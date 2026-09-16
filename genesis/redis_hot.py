@@ -129,6 +129,16 @@ class GenesisRedisHotCache:
             logger.error(f"Failed to inject to Redis Hot Cache: {e}")
             return False
 
+    def get_campaign_v3(self, key: str) -> Optional[Dict[str, Any]]:
+        """Retrieves cached campaign_v3 from RAM."""
+        try:
+            val = self.execute_command(["GET", f"campaign_v3:{key}"])
+            if val:
+                return json.loads(val)
+        except Exception as e:
+            logger.error(f"Failed to get cached campaign_v3 for {key}: {e}")
+        return None
+
     def unpublish_character_and_world(self, character_id: str, world_id: str) -> bool:
         """Removes character and world from active published sets."""
         try:

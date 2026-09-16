@@ -506,18 +506,30 @@ class ContextBuilder:
                     f"บังคับให้คุณเขียน Voice Over (เข้า GEAR 1) ทันที ห้ามเลือก GEAR 3 เด็ดขาด!"
                 )
                 is_overridden = True
-            # 🌟 [ENGINE 5.5] GEAR 1: Phase-level Director Setup
-            elif director_setup and (is_first_turn or is_new_phase):
+            # 🌟 [ENGINE 5.5] GEAR 1: Phase-level Director Setup or Opening/Transition Turn
+            elif (is_first_turn or is_new_phase):
+                scene_title = (phase_data.get("scene_title") or active_event_phase) if ('phase_data' in locals() and phase_data) else active_event_phase
+                setup_desc = director_setup or f"เปิดฉากใหม่ ({scene_title}) ณ {current_location}: {location_vibe} บรรยากาศช่วง {current_time} ({time_atmosphere})"
                 pool_str = (
-                    f"🚨 [GEAR 1: PROTOCOL A] CRITICAL EVENT OVERRIDE (ภาพกว้างปูบรรยากาศรอยต่อเฟส) 🚨\n"
-                    f"- {director_setup}\n\n"
-                    f"[🔥 SYSTEM DIRECTIVE]: เทิร์นนี้มีการเปลี่ยน Phase หรือเริ่มเหตุการณ์ใหม่! "
-                    f"บังคับให้คุณเขียน Voice Over (เข้า GEAR 1) เพื่อบรรยายบรรยากาศรอยต่อทันที ห้ามเลือก GEAR 3 เด็ดขาด!"
+                    f"🚨 [GEAR 1: PROTOCOL A] CRITICAL EVENT OVERRIDE (ภาพกว้างปูบรรยากาศเปิดฉาก/รอยต่อเฟส) 🚨\n"
+                    f"- {setup_desc}\n\n"
+                    f"[🔥 SYSTEM DIRECTIVE]: เทิร์นนี้เป็นการเปิดฉากหรือเริ่มเฟสใหม่! "
+                    f"บังคับให้คุณเขียน Voice Over (เข้า GEAR 1) สั้นๆ 1-2 ประโยค เพื่อบรรยายบรรยากาศ ภาพรวม และความรู้สึกของสถานที่เปิดตัวให้ผู้เล่นเห็นภาพทันที ห้ามเลือก GEAR 3 เด็ดขาด!"
                 )
                 is_overridden = True
             elif sensory_pool_override:
                 sensory_pool = sensory_pool_override
                 is_overridden = True
+
+        if not is_overridden and is_first_turn:
+            setup_desc = f"เปิดฉากเริ่มต้น ณ {current_location}: {location_vibe} บรรยากาศช่วง {current_time} ({time_atmosphere})"
+            pool_str = (
+                f"🚨 [GEAR 1: PROTOCOL A] CRITICAL EVENT OVERRIDE (ภาพกว้างปูบรรยากาศเปิดฉาก) 🚨\n"
+                f"- {setup_desc}\n\n"
+                f"[🔥 SYSTEM DIRECTIVE]: นี่คือเทิร์นแรกสุดของการเปิดฉาก! "
+                f"บังคับให้คุณเขียน Voice Over (เข้า GEAR 1) สั้นๆ 1-2 ประโยค เพื่อบรรยายภาพรวม บรรยากาศ และผัสสะของสถานที่เปิดตัวให้ผู้เล่นเห็นภาพทันที ห้ามเลือก GEAR 3 เด็ดขาด!"
+            )
+            is_overridden = True
 
         if not is_overridden:
             sensory_cues_data = loc_info.get("sensory_cues", [])

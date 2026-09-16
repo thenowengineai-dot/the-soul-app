@@ -437,6 +437,10 @@ class ContextBuilder:
         location_vibe = loc_info.get("description", "ไม่ระบุ")
         current_mood = loc_info.get("base_mood", "Neutral")
         
+        time_periods = world_data.get("time_periods", {})
+        time_info = time_periods.get(current_time, {})
+        time_atmosphere = time_info.get("atmosphere", "ไม่ระบุ")
+        
         is_first_turn = not chat_history or len(chat_history) == 0
         previous_context_str = "ยังไม่มีการบรรยายภาพรวม (นี่คือเทิร์นแรก)"
         

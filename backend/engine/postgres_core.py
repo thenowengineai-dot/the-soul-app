@@ -5,12 +5,9 @@ import asyncio
 from typing import Dict, Any, List, Optional
 import asyncpg
 
-logger = logging.getLogger("POSTGRES_CORE")
-if not logger.handlers:
-    handler = logging.StreamHandler()
-    handler.setFormatter(logging.Formatter("%(asctime)s - \033[94m[POSTGRES]\033[0m - %(message)s"))
-    logger.addHandler(handler)
-    logger.setLevel(logging.INFO)
+from engine.telemetry import get_telemetry_logger
+
+logger = get_telemetry_logger("POSTGRES")
 
 
 class PostgresCore:

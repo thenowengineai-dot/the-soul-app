@@ -5,10 +5,10 @@ import urllib.request
 import urllib.error
 from typing import Dict, Any, List, Optional
 
-logger = logging.getLogger("GENESIS_REDIS_HOT")
+logger = logging.getLogger("GENESIS_REDIS")
 if not logger.handlers:
     handler = logging.StreamHandler()
-    handler.setFormatter(logging.Formatter("%(asctime)s - \033[92m[GENESIS_REDIS]\033[0m - %(message)s"))
+    handler.setFormatter(logging.Formatter("%(asctime)s - [GENESIS_REDIS] - %(message)s"))
     logger.addHandler(handler)
     logger.setLevel(logging.INFO)
 

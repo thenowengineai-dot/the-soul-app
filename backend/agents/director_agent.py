@@ -131,21 +131,18 @@ class DirectorAgent:
             director_output = DirectorOutput(**parsed_data)
             
             # 🌟 LOGGING
-            mood_color = "\033[92m" if director_output.mood_modifier == "positive" else "\033[91m" if director_output.mood_modifier == "negative" else "\033[90m"
-            logger.info(f"Shift -> Time: {director_output.time_shift} | Loc: {director_output.location_shift}")
-            logger.info(f"Mood -> {mood_color}[{director_output.mood_modifier.upper()}]\033[0m")
-            logger.info(f"Sensory Cues (ลมหายใจโลก) -> '\033[96m{director_output.sensory_cues}\033[0m'")
-            
+            logger.info(f"Director Shift -> Time: {director_output.time_shift} | Loc: {director_output.location_shift} | Mood: [{director_output.mood_modifier.upper()}]")
+            if director_output.sensory_cues:
+                logger.info(f"Sensory Cues -> '{director_output.sensory_cues}'")
             if director_output.voice_over:
                 logger.info(f"Voice Over -> '{director_output.voice_over}'")
 
             elapsed = time.time() - start_time
-            logger.info(f"🕒 🎬 [DIRECTOR] Finished ⏱️({elapsed:.2f}s) | 💰 {in_tokens} In / {out_tokens} Out")
-            
+            logger.info(f"🎬 [DIRECTOR] Finished in {elapsed:.2f}s | Tokens: {in_tokens} In / {out_tokens} Out")
             return director_output
 
         except Exception as e:
-            logger.error(f"Director Agent Error: {e}")
+            logger.error(f"🚨 [ALARM: GATE 3: DIRECTOR FAILED] Culprit: DirectorAgent ({self.model_name}) | Error: {e}")
             # 🌟 [SAFETY] อัปเดต Fallback ให้มีตัวแปรครบตาม schema.py ตัวใหม่
             return DirectorOutput(
                 time_shift=None, 

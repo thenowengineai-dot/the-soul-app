@@ -473,13 +473,14 @@ class ActorAgent:
                 err_str = str(stream_err)
                 logger.warning(f"Actor stream error with model '{model_candidate}': {stream_err}")
                 if ("429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "Resource exhausted" in err_str) and not emitted_segments and model_candidate != models_to_try[-1]:
-                    logger.warning(f"⚠️ [ACTOR] Model '{model_candidate}' hit 429 RESOURCE_EXHAUSTED. Retrying stream with fallback model '{models_to_try[-1]}'...")
+                    logger.warning(f"🚨 [ALARM: GATE 5: ACTOR DUAL-MODEL FALLBACK] Model '{model_candidate}' hit 429 RESOURCE_EXHAUSTED! Retrying stream with secondary model '{models_to_try[-1]}'...")
                     continue
                 
-                logger.error(f"Actor Agent Stream Error: {stream_err}", exc_info=True)
+                logger.error(f"🚨 [ALARM: GATE 5: ACTOR STREAM ERROR] Model '{model_candidate}' error: {stream_err}", exc_info=True)
                 break
 
         if not stream_succeeded:
+            logger.error(f"🚨 [ALARM: GATE 5: ACTOR STREAM FAILURE] All candidate models failed! Emitting in-character recovery.")
             fallback_output = ActorOutput(
                 thinking="In-character fallback response",
                 a_pos="นั่งรักษาระยะห่างอย่างสุภาพ",
@@ -502,5 +503,5 @@ class ActorAgent:
             elapsed = time.time() - start_time
             in_tokens = getattr(usage_metadata, 'prompt_token_count', 0) if usage_metadata else 0
             out_tokens = getattr(usage_metadata, 'candidates_token_count', 0) if usage_metadata else 0
-            logger.info(f"🕒 🎭 [ACTOR STREAM] Finished ⏱️({elapsed:.2f}s) | Segments: {len(emitted_segments)} | 💰 {in_tokens} In / {out_tokens} Out")
+            logger.info(f"🎭 [ACTOR STREAM] Finished in {elapsed:.2f}s | Segments: {len(emitted_segments)} | Tokens: {in_tokens} In / {out_tokens} Out")
             yield ("final_output", actor_output, len(emitted_segments))

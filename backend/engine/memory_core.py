@@ -6,8 +6,9 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct, Filter, FieldCondition, MatchValue
 from google import genai
 
-logger = logging.getLogger("MEMORY_CORE")
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - \033[90m[MEMORY]\033[0m - %(message)s")
+from engine.telemetry import get_telemetry_logger
+
+logger = get_telemetry_logger("MEMORY")
 
 class MemoryCore:
     def __init__(

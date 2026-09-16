@@ -114,29 +114,27 @@ class EvaluatorAgent:
             # 🌟 [ENGINE 5.0 LOGGING]: โชว์ผลการสับรางใน Terminal
             action = evaluator_output.beat_action.lower()
             if action == "illusion_trigger":
-                logger.info(f"🚨 \033[93m[BEAT PROGRESS]\033[0m สับรางสำเร็จ -> Path: '{evaluator_output.matched_path}'")
+                logger.info(f"🚨 [BEAT PROGRESS] สับรางสำเร็จ -> Path: '{evaluator_output.matched_path}'")
             elif action == "cancel":
-                logger.warning(f"🚫 \033[91m[BEAT CANCELLED]\033[0m ผู้เล่นทำลายฉากทิ้ง! ยกเลิก Event")
+                logger.warning(f"🚫 [BEAT CANCELLED] ผู้เล่นทำลายฉากทิ้ง! ยกเลิก Event")
             elif action == "interrupt":
-                logger.warning(f"⚡ \033[93m[BEAT INTERRUPTED]\033[0m ผู้เล่นแทรกแซงรุนแรง! เข้าสู่โหมดด้นสด")
+                logger.warning(f"⚡ [BEAT INTERRUPTED] ผู้เล่นแทรกแซงรุนแรง! เข้าสู่โหมดด้นสด")
             elif action == "chaos_escalation":
-                logger.info(f"🔄 \033[96m[BEAT LOOP]\033[0m ผู้เล่นยังไม่ผ่านเงื่อนไข ย่ำอยู่กับบีตเดิม (Chaos Escalation)")
-            
-            # การแสดงผลสีใน Terminal สำหรับการ Monitor
-            aff_color = "\033[92m+" if evaluator_output.affection_delta > 0 else "\033[91m" if evaluator_output.affection_delta < 0 else "\033[90m"
-            des_color = "\033[95m+" if evaluator_output.desire_delta > 0 else "\033[91m" if evaluator_output.desire_delta < 0 else "\033[90m"
+                logger.info(f"🔄 [BEAT LOOP] ผู้เล่นยังไม่ผ่านเงื่อนไข ย่ำอยู่กับบีตเดิม (Chaos Escalation)")
             
             elapsed = time.time() - start_time
             in_tokens = getattr(response.usage_metadata, 'prompt_token_count', 0) if getattr(response, 'usage_metadata', None) else 0
             out_tokens = getattr(response.usage_metadata, 'candidates_token_count', 0) if getattr(response, 'usage_metadata', None) else 0
             
-            logger.info(f"🕒 🕵️‍♂️ [EVALUATOR] Finished ⏱️({elapsed:.2f}s) | 💰 {in_tokens} In / {out_tokens} Out")
-            logger.info(f"                    ↳ Data Passed: [Aff {aff_color}{evaluator_output.affection_delta}\033[0m, Des {des_color}{evaluator_output.desire_delta}\033[0m] [Posture: {evaluator_output.player_posture}] [Action: {action}]")
+            aff_delta = f"+{evaluator_output.affection_delta}" if evaluator_output.affection_delta >= 0 else str(evaluator_output.affection_delta)
+            des_delta = f"+{evaluator_output.desire_delta}" if evaluator_output.desire_delta >= 0 else str(evaluator_output.desire_delta)
+            logger.info(f"🕵️‍♂️ [EVALUATOR] Finished in {elapsed:.2f}s | Tokens: {in_tokens} In / {out_tokens} Out | [Aff: {aff_delta}, Des: {des_delta}] [Posture: {evaluator_output.player_posture}] [Action: {action}]")
             
             return evaluator_output
 
         except Exception as e:
-            logger.error(f"Evaluator Agent Error: {e}")
+            raw_preview = result_text[:180].replace("\n", " ") if 'result_text' in locals() else 'None'
+            logger.error(f"🚨 [ALARM: GATE 4: EVALUATOR JSON PARSE ERROR] Culprit: EvaluatorAgent ({self.model_name}) | Error: {e} | Raw Preview: {raw_preview}")
             # 🌟 [ENGINE 5.0 FIX]: คืนค่า Fallback ให้ตรงกับ Schema ตัวใหม่เป๊ะๆ!
             return EvaluatorOutput(
                 affection_delta=0, 

@@ -20,17 +20,20 @@ from engine.postgres_core import get_postgres_core
 from genesis.redis_hot import GenesisRedisHotCache
 from engine.transitions import SceneTransitionManager, resolve_world_file_path
 from engine.memory_core import MemoryCore
+from engine.telemetry import TurnTracer, IS_CLOUD_RUN
 
 # ==========================================
 # ⚙️ MONITORING CONFIGURATION
 # ==========================================
 logger.remove()
 FORMAT = (
+    "🕒 {time:HH:mm:ss} | {level: <8} | {message}"
+) if IS_CLOUD_RUN else (
     "<cyan>🕒 {time:HH:mm:ss}</cyan> | "
     "<level>{level: <8}</level> | "
     "{message}"
 )
-logger.add(sys.stdout, colorize=True, format=FORMAT, level="DEBUG")
+logger.add(sys.stdout, colorize=not IS_CLOUD_RUN, format=FORMAT, level="DEBUG")
 
 # ==========================================
 # 🔐 AUTHENTICATION (GCP vs GEMINI API KEY)
@@ -225,12 +228,23 @@ class GamePipeline:
         
         # [ROUND TURN CALCULATION]
         current_turn = beat_turn_count if active_event_id else sandbox_turn_count
-        
+        raw_world_id = world_id or session.get("world_id") or "unknown"
+
+        # 🎬 [DIAGNOSTIC TELEMETRY] กล่องดำติดตามสถานะและสมรรถนะของแต่ละเทิร์น
+        tracer = TurnTracer(
+            turn_number=current_turn,
+            user_id=user_id,
+            character_id=character_id,
+            world_id=raw_world_id,
+            session_id=session_id,
+            user_message=user_message
+        )
 
         # ==================================================
         # 🧠 [MEMORY] STEP 1.5: Qdrant Memory Retrieval (RAG - Parallel Background Task)
         # ==================================================
         rag_task = None
+        rag_start_time = time.perf_counter()
         if not user_message.startswith("[SYSTEM]"):
             rag_task = asyncio.create_task(
                 self.memory.retrieve_relevant_memories(
@@ -246,24 +260,28 @@ class GamePipeline:
         # --------------------------------------------------
         # 🌍 STEP 2: WORLD BIBLE LOADING (ย้ายมาโหลดก่อนเพื่อดึงค่าเริ่มต้น)
         # --------------------------------------------------
+        gate1_start = time.perf_counter()
         current_time = current_world_state.get("time", "ไม่ระบุ")
         current_loc = current_world_state.get("location", "ไม่ระบุ")
         current_weather = current_world_state.get("weather", "ไม่ระบุ")
 
         # 🌟 [SMART WORLD RESOLUTION] ดึง world_id จากหน้าบ้านหรือ Session และ Resolve ID
-        raw_world_id = world_id or session.get("world_id")
         actual_world_id, world_file_path = resolve_world_file_path(raw_world_id)
         logger.info(f"🌍 [WORLD RESOLVER] Raw: '{raw_world_id}' -> Resolved: '{actual_world_id}' | Path: {world_file_path}")
 
         # 🌟 [NEON + REDIS HOT CACHE] ดึงข้อมูลโลกจากแคมเปญที่ Publish แล้ว หรือ Fallback Local World File
         world_data_json = {}
+        contract_source = "LOCAL FILE"
         campaign = await self.get_published_campaign(actual_world_id)
         if campaign and campaign.get("world_data"):
             world_data_json = campaign.get("world_data")
+            contract_source = "REDIS/NEON HIT"
         elif os.path.exists(world_file_path):
             with open(world_file_path, "r", encoding="utf-8") as f:
                 world_data_json = json.load(f)
+            contract_source = "LOCAL FILE"
         else:
+            contract_source = "EMPTY FALLBACK"
             logger.warning(f"⚠️ [WORLD WARNING] File not found: {world_file_path}, world_data_json is empty")
 
         # 🛡️ [DEFENSIVE PARSING] ป้องกันกรณี world_data หลุดมาเป็น Escaped JSON String
@@ -352,6 +370,21 @@ class GamePipeline:
                 logger.info(f"⚡ [REDIS HOT CACHE HIT] Live State Loaded -> A_POS: '{actor_posture}', P_POS: '{player_posture}', Affection: {affection_val}, Desire: {desire_val}")
         except Exception as cache_err:
             logger.warning(f"⚠️ [REDIS HOT CACHE] Could not load live state from cache: {cache_err}")
+
+        # 🚪 [GATE 1: CONTRACT & STATE RESTORE]
+        gate1_latency_ms = (time.perf_counter() - gate1_start) * 1000
+        missing_fields = []
+        if not world_data_json.get("starting_state"): missing_fields.append("starting_state")
+        if not world_data_json.get("locations"): missing_fields.append("locations")
+        char_name = character_data.get("name") if isinstance(character_data, dict) else None
+        
+        tracer.gate_contract(
+            source=contract_source,
+            latency_ms=gate1_latency_ms,
+            char_name=char_name,
+            outfit=current_outfit if isinstance(current_outfit, str) else str(current_outfit),
+            missing_fields=missing_fields if missing_fields else None
+        )
         shatter_count = session.get("shatter_count", 0)
         peaceful_turns_count = session.get("peaceful_turns_count", 0)
         player_vibe_override = session.get("player_vibe_override")
@@ -555,6 +588,8 @@ class GamePipeline:
                 yield f"data: {json.dumps({'type': 'debug_prompt', 'agent': 'evaluator', 'prompt': evaluator_prompt}, ensure_ascii=False)}\n\n"
 
             # 📡 2. สัญญาณสอง: เริ่มทำงานสอดแนมความเร็วสูง (Evaluator)
+            eval_t0 = time.perf_counter()
+            eval_dt = 0.0
             if user_message.strip().startswith("[SYSTEM]"):
                 logger.info("🕒 🕵️‍♂️ [EVALUATOR] Bypassed for [SYSTEM] message.")
                 from api.schemas import EvaluatorOutput
@@ -599,6 +634,7 @@ class GamePipeline:
                     
             else:
                 eval_result = await self.evaluator.evaluate_interaction(evaluator_prompt=evaluator_prompt)
+                eval_dt = time.perf_counter() - eval_t0
                 
                 if getattr(eval_result, "memory_extracted", None):
                     # 1. 🐘 บันทึกลง Neon PostgreSQL
@@ -707,6 +743,18 @@ class GamePipeline:
             if peaceful_turns_count >= 3:
                 shatter_count = max(0, shatter_count - 3)
                 peaceful_turns_count = 0
+
+            # 🚪 [GATE 4: EVALUATOR & SCHEMA GATE]
+            tracer.gate_evaluator(
+                success=(eval_result is not None),
+                elapsed_s=eval_dt,
+                affection_val=affection_val,
+                affection_delta=getattr(eval_result, 'affection_delta', 0),
+                desire_val=desire_val,
+                desire_delta=getattr(eval_result, 'desire_delta', 0),
+                shield=inhibition_shield_status,
+                extracted_memory=getattr(eval_result, 'memory_extracted', None),
+            )
 
             event_cancelled = False
             pacing_control_triggered = False
@@ -853,12 +901,20 @@ class GamePipeline:
 
             # 🧠 [PARALLEL RAG RESOLVE] ดึงความจำที่รันคู่ขนานมาตั้งแต่ Step 1.5 (รันเสร็จนานแล้ว)
             retrieved_memory = ""
+            rag_latency_ms = 0.0
             if rag_task:
                 try:
                     retrieved_memory = await rag_task
+                    rag_latency_ms = (time.perf_counter() - rag_start_time) * 1000
+                    mem_count = len([m for m in retrieved_memory.split("\n") if m.strip().startswith("-")]) if retrieved_memory else 0
+                    tracer.gate_rag(status="SUCCESS", match_count=mem_count, latency_ms=rag_latency_ms, query_text=user_message)
                 except Exception as e:
                     logger.error(f"Error awaiting background RAG task: {e}")
                     retrieved_memory = ""
+                    rag_latency_ms = (time.perf_counter() - rag_start_time) * 1000
+                    tracer.gate_rag(status="FAILED", latency_ms=rag_latency_ms)
+            else:
+                tracer.gate_rag(status="BYPASS")
 
             actor_prompt = self.context_builder.build_actor_prompt(
                 character_data=character_data, director_context=director_context, retrieved_memory=retrieved_memory,
@@ -893,12 +949,15 @@ class GamePipeline:
             logger.info(f"🕒 🔀 [PIPELINE] Building Prompts & Spawning Concurrent Tasks (needs_vo={needs_vo})...")
 
             async def timed_director():
+                t0 = time.perf_counter()
                 try:
                     res = await self.director.analyze_scene(director_prompt=director_prompt)
-                    return ("director", res)
+                    dt = time.perf_counter() - t0
+                    return ("director", res, dt)
                 except Exception as e:
+                    dt = time.perf_counter() - t0
                     logger.error(f"Director Agent Error: {e}", exc_info=True)
-                    return ("director", None)
+                    return ("director", None, dt)
 
             if user_message.startswith("[SYSTEM]"):
                 actor_history = chat_history[-12:] + [{"role": "user", "content": "เริ่มต้นฉากที่หนึ่ง: คุณอยู่ในบทบาทของตัวละครหลัก กำลังเริ่มเปิดฉากแรกของเรื่องราว จงแสดงกิริยาท่าทางเปิดตัวและกล่าวทักทายผู้มาเยือนอย่างเป็นธรรมชาติและสุภาพตามบทบาท"}]
@@ -906,6 +965,11 @@ class GamePipeline:
                 actor_history = chat_history[-12:] + [{"role": "user", "content": user_message}]
 
             actor_queue = asyncio.Queue()
+            actor_t0 = time.perf_counter()
+            first_chunk_received = False
+            ttft_s = 0.0
+            seg_count = 0
+            first_dialogue = ""
 
             async def run_actor_worker():
                 try:
@@ -920,13 +984,14 @@ class GamePipeline:
             actor_task = asyncio.create_task(run_actor_worker())
 
             director_out = None
+            director_dt = 0.0
 
             # 2. Gatekeeper: ควบคุมการปล่อย VO
             if needs_vo:
                 # 🌟 เทิร์นเปลี่ยนฉาก / เพลงขึ้น (Gear 1 หรือ Gear 2):
                 # รอ Director ทำงานเสร็จก่อนเพื่อพ่น VO ออกไปเป็นอันดับแรก จากนั้นค่อยให้ Actor ตามมา
                 logger.info("🎬 [PIPELINE] needs_vo=True (Gear 1/2): Awaiting Director VO before streaming Actor...")
-                _, director_out = await director_task
+                _, director_out, director_dt = await director_task
                 vo_text = getattr(director_out, "voice_over", None)
                 if not vo_text or str(vo_text).lower() in ["none", "null", ""]:
                     if user_message.startswith("[SYSTEM]") or is_new_phase or not chat_history:
@@ -941,6 +1006,13 @@ class GamePipeline:
                     yield f"data: {json.dumps({'type': 'voice_over', 'content': cleaned_vo}, ensure_ascii=False)}\n\n"
                 if director_out and user_role in ["admin", "creator"]:
                     yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'director', 'response': director_out.model_dump(), 'thinking': getattr(director_out, 'director_analysis', None)}, ensure_ascii=False)}\n\n"
+
+                # 🚪 [GATE 3: DIRECTOR & SCENE ATMOSPHERE GATE]
+                tracer.gate_director(
+                    success=(director_out is not None),
+                    elapsed_s=director_dt,
+                    vo_text=vo_text
+                )
             else:
                 # 🌟 เทิร์นทั่วไป (Gear 3): ไม่ต้องรอ Director เลย! Actor สตรีมบับเบิ้ลลงจอได้ทันทีด้วยความเร็วสูงสุด
                 logger.info("⚡ [PIPELINE] needs_vo=False (Gear 3): Actor streaming immediately without waiting for Director!")
@@ -949,9 +1021,15 @@ class GamePipeline:
             actor_out = None
             while True:
                 item = await actor_queue.get()
+                if not first_chunk_received:
+                    first_chunk_received = True
+                    ttft_s = time.perf_counter() - actor_t0
                 kind = item[0]
                 if kind == "segment":
+                    seg_count += 1
                     _, seg_data, seg_idx = item
+                    if isinstance(seg_data, dict) and seg_data.get("type") == "dialogue" and not first_dialogue:
+                        first_dialogue = seg_data.get("content", "")
                     yield f"data: {json.dumps({'type': 'actor_segment', 'index': seg_idx, 'segment': seg_data}, ensure_ascii=False)}\n\n"
                 elif kind == "final_output":
                     _, actor_out, _ = item
@@ -961,16 +1039,28 @@ class GamePipeline:
                     break
 
             await actor_task
+            actor_elapsed_s = time.perf_counter() - actor_t0
 
             # 4. สำหรับกรณี needs_vo=False ให้รอเก็บผลลัพธ์ Director ที่รันคู่ขนานเสร็จแล้ว พร้อม Hard Clamp voice_over = None
             if not needs_vo:
-                _, director_out = await director_task
+                _, director_out, director_dt = await director_task
                 if director_out and user_role in ["admin", "creator"]:
                     # 🛑 บังคับตัด voice_over เป็น None เด็ดขาด 100% ป้องกัน AI ละเมอ
                     director_out.voice_over = None
                     yield f"data: {json.dumps({'type': 'debug_response', 'agent': 'director', 'response': director_out.model_dump(), 'thinking': getattr(director_out, 'director_analysis', None)}, ensure_ascii=False)}\n\n"
 
+                # 🚪 [GATE 3: DIRECTOR & SCENE ATMOSPHERE GATE]
+                tracer.gate_director(
+                    success=(director_out is not None),
+                    elapsed_s=director_dt,
+                    vo_text=None
+                )
+
+            is_fallback = False
+            fallback_reason = None
             if not actor_out:
+                is_fallback = True
+                fallback_reason = "Actor stream failed with empty output"
                 actor_out = ActorOutput(
                     thinking="System Error",
                     a_pos="นั่งทรุดตัวลงด้วยความมึนงง",
@@ -979,6 +1069,26 @@ class GamePipeline:
                         ResponseSegment(type="dialogue", content="...")
                     ]
                 )
+            elif getattr(actor_out, "thinking", "") == "In-character fallback response":
+                is_fallback = True
+                fallback_reason = "Dual-model fallback engaged"
+
+            if not first_dialogue and actor_out and actor_out.response_sequence:
+                for s in actor_out.response_sequence:
+                    if getattr(s, "type", "") == "dialogue":
+                        first_dialogue = getattr(s, "content", "")
+                        break
+
+            # 🚪 [GATE 5: ACTOR & FINAL DELIVERY GATE]
+            tracer.gate_actor(
+                success=(not is_fallback or actor_out.thinking == "In-character fallback response"),
+                elapsed_s=actor_elapsed_s,
+                ttft_s=ttft_s,
+                segment_count=seg_count or (len(actor_out.response_sequence) if actor_out else 0),
+                dialogue_preview=first_dialogue,
+                fallback_used=is_fallback,
+                fallback_reason=fallback_reason
+            )
 
             # 4. ส่ง Sequence รวมรอบสุดท้ายเพื่อความสมบูรณ์และเป็น Sync Fallback
             yield f"data: {json.dumps({'type': 'chat_message_array', 'sequence': [s.model_dump() for s in actor_out.response_sequence], 'system_choices': current_system_choices_dict}, ensure_ascii=False)}\n\n"
@@ -1085,7 +1195,11 @@ class GamePipeline:
             yield f"data: {json.dumps({'type': 'unified_round', 'data': unified_round}, ensure_ascii=False)}\n\n"
             logger.info(f"🕒 📦 [UNIFIED ROUND] Assembled Round {beat_turn_count} with {len(unified_round['response'])} segments successfully!")
 
-            # ⚡ [REDIS HOT CACHE] ซิงก์ 20 เทิร์นล่าสุด และ Live Kinematics (a_pos / p_pos) ลง Redis
+            # ⚡ [REDIS HOT CACHE & PERSISTENCE]
+            persist_t0 = time.perf_counter()
+            persist_success = True
+            coins_deducted = 0
+            new_redis_coins = 0
             try:
                 live_state_snapshot = {
                     "id": session_id,
@@ -1127,6 +1241,7 @@ class GamePipeline:
                 # 🪙 [TOKEN ECONOMY] หักเหรียญ 10 เหรียญต่อ 1 รอบการสนทนา
                 if user_id:
                     COIN_COST_PER_ROUND = 10
+                    coins_deducted = COIN_COST_PER_ROUND
                     new_redis_coins = self.redis.decr_user_coins(user_id, COIN_COST_PER_ROUND)
                     asyncio.create_task(
                         get_postgres_core().deduct_coins_for_round(
@@ -1139,10 +1254,25 @@ class GamePipeline:
                     yield f"data: {json.dumps({'type': 'wallet_update', 'coins_deducted': COIN_COST_PER_ROUND, 'remaining_coins': new_redis_coins}, ensure_ascii=False)}\n\n"
                     logger.info(f"🪙 [COIN DEDUCTED] Deducted {COIN_COST_PER_ROUND} coins from {user_id} for round {beat_turn_count}. Remaining: {new_redis_coins}")
             except Exception as r_sync_err:
+                persist_success = False
                 logger.warning(f"⚠️ [HOT CACHE / POSTGRES] Failed to sync cache/db: {r_sync_err}")
+
+            persist_latency_ms = (time.perf_counter() - persist_t0) * 1000
+
+            # 🚪 [GATE 6: PERSIST & TOKEN LEDGER]
+            tracer.gate_persist(
+                success=persist_success,
+                latency_ms=persist_latency_ms,
+                round_number=beat_turn_count,
+                coins_deducted=coins_deducted,
+                remaining_coins=new_redis_coins
+            )
 
             total_elapsed = time.time() - turn_start_time
             logger.info(f"🕒 ✅ [PIPELINE] Turn Complete | Total Latency: {total_elapsed:.2f}s")
+
+            # 🏁 [TURN SUMMARY TELEMETRY]
+            tracer.finish_summary()
 
             yield "data: [DONE]\n\n"
 

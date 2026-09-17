@@ -86,21 +86,22 @@ export function MessageBubble({
           สำหรับฝั่งตัวละคร: เยื้องเข้ามา pl-[38px] sm:pl-[42px] ให้ตรงกับแนวใต้ชื่อเสมอ */}
       <div className={`w-full flex ${isMe ? 'justify-end' : 'justify-start pl-[38px] sm:pl-[42px]'}`}>
         {isAction ? (
-          // 🌟 Action (ภาษากาย / ท่าทาง):
-          // เส้นขีด | สีขาวบางเฉียบ + ตัวเอียงสีเทา #9E9EA0 + ระยะห่างสบายตา my-1.5
-          <div className="flex items-start gap-2.5 py-0.5 select-text my-1.5 max-w-[90%] sm:max-w-[80%]">
-            <div className="w-[2px] self-stretch min-h-[16px] rounded-full bg-white/30 shrink-0 my-0.5" />
-            <p className="text-[13.5px] sm:text-[14px] leading-relaxed text-[#9E9EA0] italic font-normal">
+          // 🌟 Action (ภาษากาย / ท่าทาง): สไตล์ Literary Subtext ตามภาพอ้างอิง
+          // เส้นขีด | สีขาวบาง 1.5px (bg-white/40) + ตัวเอียงสีเทาเงิน #B2B2BC + ระยะห่างสบายตา my-2.5
+          <div className="flex items-start gap-2.5 py-0.5 select-text my-2.5 max-w-[92%] sm:max-w-[85%]">
+            <div className="w-[2px] self-stretch min-h-[16px] rounded-full bg-white/40 shrink-0 my-0.5" />
+            <p className="text-[13.5px] sm:text-[14px] leading-relaxed text-[#B2B2BC] italic font-normal">
               {message.text}
             </p>
           </div>
         ) : (
           // 💬 Dialogue (บับเบิ้ลคำพูด):
-          // ทรงแคปซูลมนสมดุล rounded-2xl + Padding อิ่มตัว px-4.5 py-3 + ขอบคม 1px
+          // ฝั่งผู้เล่น: สีกำมะหยี่ไวน์แดงเข้ม (#8C1D38 -> #5A0E20) + ขอบ Rose 1px (border-[#A82B49]/40) + ฟอนต์นุ่มนวล #F8D2DB
+          // ฝั่งตัวละคร: สี Apple Dark Gray (#1C1C1E) + ขอบคม 1px (border-white/[0.08]) + ฟอนต์สว่าง #EDEDED
           <div className={`
-            px-4.5 py-2.5 sm:px-5 sm:py-3 text-[15px] leading-relaxed select-text max-w-[85%] sm:max-w-[75%] rounded-2xl shadow-sm
+            px-5 py-3 text-[15px] leading-relaxed select-text max-w-[85%] sm:max-w-[75%] rounded-2xl shadow-sm
             ${isMe 
-              ? 'bg-gradient-to-br from-[#D22147] via-[#B8163A] to-[#8E0D29] text-app-primary border border-white/10' 
+              ? 'bg-gradient-to-br from-[#8C1D38] via-[#75162D] to-[#5A0E20] text-[#F8D2DB] border border-[#A82B49]/40' 
               : 'bg-[#1C1C1E] text-[#EDEDED] border border-white/[0.08]'}
           `}>
             {message.text}

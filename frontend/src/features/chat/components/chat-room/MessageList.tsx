@@ -14,22 +14,31 @@ export function MessageList({
       {messages.map((msg, index) => {
         const isMe = msg.sender === 'me'
         
-        // ตรวจสอบข้อความก่อนหน้าว่าเป็นคนเดียวกันไหม (ข้าม vo)
-        let isSameSenderAsPrev = false
-        let isAfterVo = false
-        if (index > 0) {
-          const prevMsg = messages[index - 1]
-          if (prevMsg.type === 'vo') {
-            isAfterVo = true
-          } else if (prevMsg.sender === msg.sender) {
-            isSameSenderAsPrev = true
-          }
-        }
-        const marginTop = isAfterVo ? 'mt-0' : (isSameSenderAsPrev ? 'mt-0.5' : 'mt-4')
-        const isLast = index === messages.length - 1
+        const isVo = msg.type === 'vo'
+        
+        // ตรวจสอบข้อความก่อนหน้าและถัดไป เพื่อจัดกลุ่ม Stack (Bubble Clustering)
+        const prevMsg = index > 0 ? messages[index - 1] : null
+        const nextMsg = index < messages.length - 1 ? messages[index + 1] : null
 
-        // ตรวจสอบว่าเป็นข้อความสุดท้ายในกลุ่มของผู้เล่น
-        const isLastInMeGroup = isMe && (index === messages.length - 1 || messages[index + 1]?.sender !== 'me')
+        const isSameSenderAsPrev = Boolean(prevMsg && prevMsg.type !== 'vo' && prevMsg.sender === msg.sender)
+        const isSameSenderAsNext = Boolean(nextMsg && nextMsg.type !== 'vo' && nextMsg.sender === msg.sender)
+
+        const isFirstInGroup = !isSameSenderAsPrev
+        const isLastInGroup = !isSameSenderAsNext
+
+        // Spacing: จัดระยะห่างตามสรีระสายตา (Ergonomic Spacing)
+        let marginTop = 'mt-5 sm:mt-6'
+        if (isVo) {
+          marginTop = 'my-6 sm:my-8'
+        } else if (index === 0) {
+          marginTop = 'mt-1'
+        } else if (prevMsg?.type === 'vo') {
+          marginTop = 'mt-3'
+        } else if (isSameSenderAsPrev) {
+          marginTop = 'mt-1.5 sm:mt-2'
+        }
+
+        const isLast = index === messages.length - 1
         const isRead = isMe && Boolean(msg.read)
 
         return (
@@ -38,7 +47,8 @@ export function MessageList({
             message={msg}
             isMe={isMe}
             isLast={isLast}
-            isLastInGroup={isLastInMeGroup}
+            isFirstInGroup={isFirstInGroup}
+            isLastInGroup={isLastInGroup}
             isRead={isRead}
             marginTop={marginTop}
             chatAvatar={chatAvatar}

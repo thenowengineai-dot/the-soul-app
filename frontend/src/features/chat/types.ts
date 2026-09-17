@@ -116,6 +116,7 @@ export interface MessageBubbleProps {
   message: ChatMessage
   isMe?: boolean
   isLast?: boolean
+  isFirstInGroup?: boolean
   isLastInGroup?: boolean
   isRead?: boolean
   marginTop?: string

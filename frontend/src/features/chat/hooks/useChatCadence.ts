@@ -78,7 +78,7 @@ export function useChatCadence({
   defaultModelTier = 'flash_think_low',
 }: UseChatCadenceOptions) {
   const [isBotTyping, setIsBotTyping] = useState(false)
-  const [indicatorVariant, setIndicatorVariant] = useState<CadenceIndicatorVariant>('hybrid')
+  const [indicatorVariant, setIndicatorVariant] = useState<CadenceIndicatorVariant>('action')
   const [isCadenceActive, setIsCadenceActive] = useState(false)
 
   // คิวของข้อความที่รอการแสดงผล
@@ -211,8 +211,8 @@ export function useChatCadence({
         }
       } else if (currentItem.type === 'action') {
         // 🎬 BEAT 2: ACTION (ภาษากาย)
-        // 🌟 แสดง Hybrid Indicator (✦ • • •) สัญลักษณ์สากลแห่งการมีชีวิต
-        setIndicatorVariant('hybrid')
+        // 🌟 แสดง Action Presence Indicator (✦ กำลังเคลื่อนไหว...)
+        setIndicatorVariant('action')
 
         // ถ้ายังไม่ได้ Mark อ่านแล้ว ให้ Mark ทันที
         if (!hasMarkedReadRef.current) {
@@ -358,8 +358,8 @@ export function useChatCadence({
     setIsCadenceActive(false)
     isEarlyTypingActiveRef.current = false
     typingStartTimeRef.current = null
-    // 🌟 เริ่มต้นด้วย Hybrid Living Presence Indicator (✦ • • •) สัญลักษณ์สากล
-    setIndicatorVariant('hybrid')
+    // 🌟 เริ่มต้นด้วย Action Presence Indicator (✦ กำลังเคลื่อนไหว...) เฉพาะก่อนเริ่มก้อนแรก
+    setIndicatorVariant('action')
 
     // 2. อัปเดต Model Tier ตามที่ระบุ (หรือใช้ค่าเริ่มต้น)
     if (tier) {
@@ -375,10 +375,10 @@ export function useChatCadence({
         onMarkReadRef.current()
       }
 
-      // ขั้นที่ 2: พักสายตา 700ms เท่าเดิม (ความใส่ใจ) ก่อนที่ ✦ • • • จะเริ่มเปล่งประกายซื้อเวลา
+      // ขั้นที่ 2: พักสายตา 700ms เท่าเดิม (ความใส่ใจ) ก่อนที่ ✦ กำลังเคลื่อนไหว... จะเริ่มเปล่งประกายซื้อเวลา
       turnIntroTimerRef.current = setTimeout(() => {
-        // เปิด Hybrid Living Presence Indicator (✦ • • •) จำลองตัวตนมีชีวิตซื้อเวลาให้โมเดล
-        setIndicatorVariant('hybrid')
+        // เปิด Action Presence Indicator (✦ กำลังเคลื่อนไหว...) สร้างความตื่นเต้นชวนลุ้นซื้อเวลาให้โมเดล
+        setIndicatorVariant('action')
         setIsBotTyping(true)
         setIsCadenceActive(true)
         isEarlyTypingActiveRef.current = true

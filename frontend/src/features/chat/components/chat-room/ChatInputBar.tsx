@@ -190,7 +190,7 @@ export function ChatInputBar({
                     : 'bg-[#18181C]/90 hover:bg-[#222228] border-white/[0.08] hover:border-white/20 text-[#D1D1D6]'
                 }`}
               >
-                <MessageSquare size={13} className="text-[#A1A1A8]" />
+                <MessageSquare size={13} className="text-[#38BDF8]" />
                 <span>{activeMode.label}</span>
                 <ChevronDown size={12} className={`text-[#8E8E93] transition-transform duration-200 ${isModeMenuOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -285,32 +285,32 @@ export function ChatInputBar({
         </div>
 
         {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-            แถวที่ 2: Unified Capsule Input Bar (กล่องพิมพ์ทรงแคปซูลชิ้นเดียวสมบูรณ์แบบ)
+            แถวที่ 2: Unified Capsule Input Bar (กล่องหมอนพิมพ์ข้อความ h-[58px]/h-[60px] สี #202024)
             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
         <div className="w-full relative">
           <div 
-            className={`w-full h-[52px] bg-[#18181C]/95 backdrop-blur-xl rounded-full flex items-center pl-2 pr-2 sm:pl-2.5 sm:pr-2.5 border border-white/10 hover:border-white/15 focus-within:border-white/30 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.45)] ${
+            className={`w-full h-[58px] sm:h-[60px] bg-[#202024]/95 backdrop-blur-2xl rounded-full flex items-center px-2.5 sm:px-3 border border-white/[0.08] hover:border-white/15 focus-within:border-white/25 transition-all shadow-[0_6px_28px_rgba(0,0,0,0.55)] ${
               isStreaming ? 'opacity-70' : ''
             }`}
           >
-            {/* ปุ่ม (+) ด้านในกล่องพิมพ์ซ้ายมือ (เปิดเมนู/ใส่อีโมจิ) */}
+            {/* ปุ่ม (+) ด้านในกล่องพิมพ์ซ้ายมือ (เปิดเมนู/ใส่อีโมจิ) ทรงกลมมน 40px นุ่มนวล */}
             <div className="relative shrink-0 flex items-center" ref={plusMenuRef}>
               <button 
                 type="button"
                 onClick={() => setIsPlusMenuOpen(prev => !prev)}
                 title="ตัวเลือกเพิ่มเติม"
-                className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer active:scale-95 ${
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer active:scale-95 ${
                   isPlusMenuOpen || isEmojiOpen
                     ? 'bg-white/20 text-white shadow-inner'
-                    : 'bg-white/[0.07] hover:bg-white/12 text-[#C7C7CC] hover:text-white'
+                    : 'bg-white/[0.05] hover:bg-white/[0.1] text-white/45 hover:text-white'
                 }`}
               >
-                <Plus size={18} className={`transition-transform duration-200 ${isPlusMenuOpen ? 'rotate-45' : ''}`} />
+                <Plus size={19} strokeWidth={1.75} className={`transition-transform duration-200 ${isPlusMenuOpen ? 'rotate-45' : ''}`} />
               </button>
 
               {/* Plus Menu Action Popover */}
               {isPlusMenuOpen && (
-                <div className="absolute bottom-[calc(100%+10px)] left-0 z-50 w-[200px] bg-[#161618]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-1.5 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute bottom-[calc(100%+12px)] left-0 z-50 w-[200px] bg-[#161618]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-1.5 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
                   <button
                     type="button"
                     onClick={() => {
@@ -352,7 +352,7 @@ export function ChatInputBar({
               />
             </div>
 
-            {/* ช่องกรอกข้อความ (Personalized Placeholder) */}
+            {/* ช่องกรอกข้อความ (Personalized Placeholder พร้อมระยะ Breathing Room) */}
             <input 
               ref={inputRef}
               type="text" 
@@ -365,31 +365,31 @@ export function ChatInputBar({
                   ? "กำลังตอบกลับ..." 
                   : `กำลังส่งข้อความไปหา ${chatName || 'ตัวละคร'}...`
               } 
-              className={`flex-1 bg-transparent outline-none text-[#F2F2F5] placeholder-[#71767B] text-[14.5px] sm:text-[15px] px-3 font-normal ${
+              className={`flex-1 bg-transparent outline-none text-[#F2F2F5] placeholder-white/35 text-[15px] px-3.5 font-normal ${
                 isStreaming ? 'cursor-not-allowed' : ''
               }`} 
             />
 
-            {/* ปุ่มด้านขวามือในกล่องพิมพ์: Waveform/Mic ตอนว่างเปล่า vs. Send Arrow ตอนมีข้อความ */}
+            {/* ปุ่มด้านขวามือในกล่องพิมพ์: Waveform 40px ตอนว่างเปล่า vs. Send Arrow 40px ตอนมีข้อความ */}
             {hasText ? (
               <button 
                 type="button"
                 onClick={onSendMessage}
                 disabled={isStreaming}
                 title="ส่งข้อความ"
-                className={`w-9 h-9 rounded-full bg-gradient-to-br from-[#8C1D38] via-[#75162D] to-[#5A0E20] border border-[#A82B49]/50 text-white flex items-center justify-center hover:brightness-110 active:scale-95 transition-all shrink-0 cursor-pointer shadow-md ${
+                className={`w-10 h-10 rounded-full bg-gradient-to-br from-[#8C1D38] via-[#75162D] to-[#5A0E20] border border-[#A82B49]/50 text-[#F8D2DB] flex items-center justify-center hover:brightness-110 active:scale-95 transition-all shrink-0 cursor-pointer shadow-md ${
                   isStreaming ? 'opacity-40 cursor-not-allowed active:scale-100' : ''
                 }`}
               >
-                <ArrowUp size={18} strokeWidth={2.5} />
+                <ArrowUp size={19} strokeWidth={2.5} />
               </button>
             ) : (
               <button
                 type="button"
                 title="ข้อความเสียง"
-                className="w-9 h-9 rounded-full flex items-center justify-center text-[#8E8E93] hover:text-[#EDEDED] hover:bg-white/[0.06] active:scale-95 transition-all shrink-0 cursor-pointer"
+                className="w-10 h-10 rounded-full flex items-center justify-center text-white/45 hover:text-white hover:bg-white/[0.05] active:scale-95 transition-all shrink-0 cursor-pointer"
               >
-                <AudioLines size={18} />
+                <AudioLines size={20} strokeWidth={1.75} />
               </button>
             )}
           </div>

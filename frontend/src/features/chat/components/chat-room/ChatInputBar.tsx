@@ -14,6 +14,7 @@ export function ChatInputBar({
   onKeyDown,
   isStreaming = false,
   isTyping = false,
+  typingVariant = 'bubble',
   chatAvatar = '',
   chatName = '',
 }: ChatInputBarProps) {
@@ -87,7 +88,7 @@ export function ChatInputBar({
         {/* 💬 Typing Indicator Docked Right Above Input Box & Floating in Front of Bubbles (Twitter / X Style) */}
         {isTyping && (
           <div className="absolute bottom-[calc(100%+8px)] left-4 sm:left-6 z-30 pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-200">
-            <TypingIndicator avatarUrl={chatAvatar} name={chatName} />
+            <TypingIndicator avatarUrl={chatAvatar} name={chatName} variant={typingVariant} />
           </div>
         )}
 

@@ -990,6 +990,7 @@ export function ChatRoom({
           onSendMessage={handleSendMessage}
           isStreaming={isStreaming || cadence.isCadenceActive}
           isTyping={cadence.isBotTyping || (!cadence.isCadenceActive && !isStreaming && (!!currentChat.isTyping || !!currentChat.isSample))}
+          typingVariant={cadence.indicatorVariant}
           chatAvatar={currentChat.avatar}
           chatName={currentChat.name}
         />

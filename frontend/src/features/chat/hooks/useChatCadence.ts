@@ -68,6 +68,9 @@ export interface UseChatCadenceOptions {
  * 4. Dynamic Read Receipt: สลับเป็น "อ่านแล้ว" ทันใจ และพัก 700ms ก่อนเริ่มพิมพ์
  * 5. Tap-to-Advance: แตะหน้าจอเพื่อข้ามเวลาหน่วงและปล่อยบับเบิ้ลถัดไปทันที
  */
+/** 🌟 ประเภทของ Indicator: จุดไข่ปลาคำพูด (bubble) หรือ ประกายดาวภาษากาย (action) */
+export type CadenceIndicatorVariant = 'bubble' | 'action'
+
 export function useChatCadence({
   onEmitMessage,
   onMarkUserMessageAsRead,
@@ -75,6 +78,7 @@ export function useChatCadence({
   defaultModelTier = 'flash_think_low',
 }: UseChatCadenceOptions) {
   const [isBotTyping, setIsBotTyping] = useState(false)
+  const [indicatorVariant, setIndicatorVariant] = useState<CadenceIndicatorVariant>('action')
   const [isCadenceActive, setIsCadenceActive] = useState(false)
 
   // คิวของข้อความที่รอการแสดงผล
@@ -207,15 +211,31 @@ export function useChatCadence({
         }
       } else if (currentItem.type === 'action') {
         // 🎬 BEAT 2: ACTION (ภาษากาย)
+        // 🌟 สลับ Indicator เป็น 'action' เพื่อแสดง "✦ กำลังเคลื่อนไหว..." ให้สมจริง
+        setIndicatorVariant('action')
+
         // ถ้ายังไม่ได้ Mark อ่านแล้ว ให้ Mark ทันที
         if (!hasMarkedReadRef.current) {
           hasMarkedReadRef.current = true
           onMarkReadRef.current()
-          // 👁️ สไตล์ X: ให้สถานะ "อ่านแล้ว" ขึ้นก่อนนิดนึง (~500ms - 700ms) ก่อนภาษากาย Action จะปรากฏ
           const readAnticipationMs = Math.floor(550 + Math.random() * 150)
           await sleepWithSkip(readAnticipationMs)
         }
-        // Action จะปิด Typing Indicator ก่อนแสดงผลภาษากาย
+
+        // เปิด Action Presence Indicator (✦ กำลังเคลื่อนไหว...) ดุ๊กดิ๊กซื้อเวลา
+        setIsBotTyping(true)
+        const alreadyTypingMs = (isEarlyTypingActiveRef.current && typingStartTimeRef.current)
+          ? (Date.now() - typingStartTimeRef.current)
+          : 0
+
+        // จังหวะภาษากายซื้อเวลาขั้นต่ำ ~2.0s - 3.2s
+        const targetActionPresenceMs = Math.min(3200, Math.max(2000, (currentItem.text || '').length * 15))
+        const remainingPresenceMs = Math.max(0, targetActionPresenceMs - alreadyTypingMs)
+        if (remainingPresenceMs > 0) {
+          await sleepWithSkip(remainingPresenceMs)
+        }
+
+        // Action จะปิด Indicator ก่อนแสดงผลภาษากายลงจอ
         setIsBotTyping(false)
         isEarlyTypingActiveRef.current = false
         typingStartTimeRef.current = null
@@ -231,6 +251,9 @@ export function useChatCadence({
         }
       } else {
         // 🎬 BEAT 3: DIALOGUE (คำพูดแชท)
+        // 💬 สลับ Indicator เป็น 'bubble' (จุดไข่ปลา 3 จุดพิมพ์ดีด) สำหรับคำพูด!
+        setIndicatorVariant('bubble')
+
         // ถ้ายังไม่ได้ Mark อ่านแล้ว (กรณีเน็ตเวิร์กตอบเร็วกว่า Intro Timer) ให้ Mark ทันที
         if (!hasMarkedReadRef.current) {
           hasMarkedReadRef.current = true
@@ -245,9 +268,7 @@ export function useChatCadence({
           : 0
 
         // ถ้ายังไม่ได้เปิด ให้เปิดจุดไข่ปลา
-        if (!isEarlyTypingActiveRef.current) {
-          setIsBotTyping(true)
-        }
+        setIsBotTyping(true)
 
         // หักลบเวลาที่พิมพ์ล่วงหน้าระหว่างรอโมเดล ออกจากเวลาพิมพ์จริงของคำพูดก้อนนี้
         const remainingTypingMs = Math.max(0, typingDuration - alreadyTypingMs)
@@ -337,6 +358,8 @@ export function useChatCadence({
     setIsCadenceActive(false)
     isEarlyTypingActiveRef.current = false
     typingStartTimeRef.current = null
+    // 🌟 เริ่มต้นด้วย Action Presence Indicator (✦ กำลังเคลื่อนไหว...) เสมอ
+    setIndicatorVariant('action')
 
     // 2. อัปเดต Model Tier ตามที่ระบุ (หรือใช้ค่าเริ่มต้น)
     if (tier) {
@@ -352,9 +375,10 @@ export function useChatCadence({
         onMarkReadRef.current()
       }
 
-      // ขั้นที่ 2: พักสายตา 700ms เท่าเดิม (ความใส่ใจ) ก่อนจุดไข่ปลา Typing จะเริ่มดุ๊กดิ๊ก
+      // ขั้นที่ 2: พักสายตา 700ms เท่าเดิม (ความใส่ใจ) ก่อนที่ ✦ กำลังเคลื่อนไหว... จะเริ่มดุ๊กดิ๊ก
       turnIntroTimerRef.current = setTimeout(() => {
-        // เปิด Typing Indicator จำลองการคิด/ลังเลซื้อเวลาให้โมเดล
+        // เปิด Action Presence Indicator จำลองการเคลื่อนไหวซื้อเวลาให้โมเดล
+        setIndicatorVariant('action')
         setIsBotTyping(true)
         setIsCadenceActive(true)
         isEarlyTypingActiveRef.current = true
@@ -410,6 +434,7 @@ export function useChatCadence({
     startNewTurn,
     cancelTurn,
     isBotTyping,
+    indicatorVariant,
     isCadenceActive,
     isActive,
   }

@@ -67,14 +67,14 @@ export function useChatCadence({
     }
 
     if (item.type === 'action') {
-      // 🌟 Action: เว้นจังหวะให้เห็นภาษากายก่อนอ้าปากพูด (ความยาวจริง ~265 ตัวอักษร -> ~6.3s)
-      const readingDuration = Math.min(7500, Math.max(4500, len * 24))
+      // 🌟 Action: เว้นจังหวะให้เห็นภาษากายก่อนอ้าปากพูด (กระชับพอดี 3.0s - 5.0s)
+      const readingDuration = Math.min(5000, Math.max(3000, len * 20))
       return { readingDuration, typingDuration: 0 }
     }
 
     // 🌟 Dialogue: คำพูดแชท
-    // 1. typingDuration: ช่วงเวลาดุ๊กดิ๊กตอนพิมพ์ (~1.35s - 2.7s) - จุดสมดุลพอดีเป๊ะ ไม่เร็วเกินและไม่อืด
-    const typingDuration = Math.min(2700, Math.max(1350, 450 + len * 22))
+    // 1. typingDuration: ช่วงเวลาดุ๊กดิ๊กตอนพิมพ์ (~1.8s - 3.0s) - เว้นให้อ่านบับเบิ้ลก่อนหน้าทัน
+    const typingDuration = Math.min(3000, Math.max(1800, 500 + len * 22))
     // 2. readingDuration: ช่วงเวลาให้อ่านคำพูดหลังเด้งลงจอ เมื่อก้อนถัดไปเป็น Action (~2.5s - 4.5s)
     const readingDuration = Math.min(4500, Math.max(2500, len * 25))
     return { readingDuration, typingDuration }

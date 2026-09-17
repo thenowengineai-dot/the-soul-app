@@ -27,7 +27,7 @@ class GenesisFactory:
     def __init__(self, project_id: Optional[str] = None, location: Optional[str] = None):
         self.project_id = project_id or os.getenv("VERTEX_PROJECT") or os.getenv("GOOGLE_CLOUD_PROJECT")
         self.location = location or os.getenv("VERTEX_LOCATION", "global")
-        self.model_name = os.getenv("FACTORY_MODEL", "gemini-3.8-flash-qcd")
+        self.model_name = os.getenv("FACTORY_MODEL", "gemini-3.8-flash")
         self.thinking_level = os.getenv("FACTORY_THINKING_LEVEL", "medium")
 
         self._client = None

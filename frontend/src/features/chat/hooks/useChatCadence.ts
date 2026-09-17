@@ -8,6 +8,47 @@ export interface CadenceItem {
   read?: boolean
 }
 
+/** 🌟 ระดับโมเดลที่ส่งผลต่อจังหวะคิดและการซื้อเวลา (Hesitation Profile) */
+export type CadenceModelTier = 'flash_lite' | 'flash_think_low' | 'flash_think_medium'
+
+export interface ModelHesitationProfile {
+  /** เวลารอให้อ่านข้อความผู้เล่น (~1.1s - 1.4s) เพื่อให้ "อ่านแล้ว" ปรากฏเร็วทันใจ */
+  readDelayMs: number
+  /** ช่องว่างจาก "อ่านแล้ว" ไปถึงเริ่ม Typing (~650ms - 850ms) ตามจังหวะใส่ใจเดิม */
+  readToTypingGapMs: number
+  /** เวลาขึ้น Typing Indicator ขั้นต่ำ เพื่อซื้อเวลาและจำลองการคิด/ลังเล (Hesitation Typing) */
+  minTypingMs: number
+  /** ตัวคูณเวลาพิมพ์ตามความยาวตัวอักษร */
+  typingCharMs: number
+  /** เพดานเวลาพิมพ์สูงสุด */
+  maxTypingMs: number
+}
+
+/** 🎭 ตารางจังหวะทางจิตวิทยาแยกตามประเภทโมเดล */
+export const MODEL_HESITATION_PROFILES: Record<CadenceModelTier, ModelHesitationProfile> = {
+  flash_lite: {
+    readDelayMs: 1100,       // อ่านไวมาก (~1.1s)
+    readToTypingGapMs: 650,  // พัก 0.65s เท่าเดิม
+    minTypingMs: 2200,       // พิมพ์กระชับฉับไว (~2.2s)
+    typingCharMs: 18,
+    maxTypingMs: 3200,
+  },
+  flash_think_low: {
+    readDelayMs: 1250,       // อ่านไวแบบธรรมชาติ (~1.25s)
+    readToTypingGapMs: 700,  // พัก 0.70s เท่าเดิม
+    minTypingMs: 3000,       // พิมพ์มีจังหวะนึก ลังเลนิดหน่อย ซื้อเวลา ~3.0s
+    typingCharMs: 22,
+    maxTypingMs: 4200,
+  },
+  flash_think_medium: {
+    readDelayMs: 1400,       // อ่านพอดีๆ (~1.4s)
+    readToTypingGapMs: 750,  // พัก 0.75s เท่าเดิม
+    minTypingMs: 4000,       // พิมพ์นาน คิดหนัก/ลังเลคัดสรรคำพูด ซื้อเวลา ~4.0s
+    typingCharMs: 26,
+    maxTypingMs: 5500,
+  },
+}
+
 export interface UseChatCadenceOptions {
   /** เรียกเมื่อถึงจังหวะปล่อยข้อความลงจอจริง */
   onEmitMessage: (message: CadenceItem) => void
@@ -15,19 +56,23 @@ export interface UseChatCadenceOptions {
   onMarkUserMessageAsRead: () => void
   /** เรียกเมื่อการแสดงผลข้อความในคิวทั้งหมดเสร็จสิ้นสมบูรณ์ */
   onCadenceComplete?: () => void
+  /** ระดับโมเดลเริ่มต้นสำหรับคำนวณจังหวะคิด/พิมพ์ (ค่าเริ่มต้น: flash_think_low) */
+  defaultModelTier?: CadenceModelTier
 }
 
 /**
  * 🎬 useChatCadence: เครื่องยนต์ควบคุมจังหวะและจิตวิทยาการสนทนา (Cinematic Cadence & Pacing)
  * 1. The Stash & Cadence Buffer: กักเก็บข้อความจาก SSE Stream ไว้ในคิว แล้วทยอยปล่อยตามสรีรวิทยาจริงของมนุษย์
  * 2. 3-Beat Rhythm: VO (สงบ 5.5-8.0s) -> Action (ภาษากาย 3.0-4.5s) -> Dialogue (กำลังพิมพ์ 1.2-2.5s)
- * 3. Dynamic Read Receipt: เปลี่ยนสถานะเป็น "อ่านแล้ว" เฉพาะเมื่อพร้อมปล่อยบับเบิ้ล หรือหลังอ่าน VO จบ
- * 4. Tap-to-Advance: แตะหน้าจอเพื่อข้ามเวลาหน่วงและปล่อยบับเบิ้ลถัดไปทันที
+ * 3. The Hesitation Illusion: โกงเวลาการประมวลผลด้วย Fast Read (~1.2s) + Hesitation Typing (~3-4s)
+ * 4. Dynamic Read Receipt: สลับเป็น "อ่านแล้ว" ทันใจ และพัก 700ms ก่อนเริ่มพิมพ์
+ * 5. Tap-to-Advance: แตะหน้าจอเพื่อข้ามเวลาหน่วงและปล่อยบับเบิ้ลถัดไปทันที
  */
 export function useChatCadence({
   onEmitMessage,
   onMarkUserMessageAsRead,
   onCadenceComplete,
+  defaultModelTier = 'flash_think_low',
 }: UseChatCadenceOptions) {
   const [isBotTyping, setIsBotTyping] = useState(false)
   const [isCadenceActive, setIsCadenceActive] = useState(false)
@@ -37,6 +82,13 @@ export function useChatCadence({
   // บันทึก ID ที่เคยส่งเข้าคิวหรือแสดงผลแล้วเพื่อป้องกันการซ้ำ
   const processedIdsRef = useRef<Set<string | number>>(new Set())
   
+  // ระดับโมเดลและโปรไฟล์การซื้อเวลา
+  const modelTierRef = useRef<CadenceModelTier>(defaultModelTier)
+  // ตัวควบคุม Timer สำหรับ Fast Read & Early Hesitation Typing
+  const turnIntroTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const typingStartTimeRef = useRef<number | null>(null)
+  const isEarlyTypingActiveRef = useRef<boolean>(false)
+
   // ตัวควบคุม Timer ปัจจุบัน
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const skipResolverRef = useRef<(() => void) | null>(null)
@@ -55,10 +107,11 @@ export function useChatCadence({
   onCompleteRef.current = onCadenceComplete
 
   /**
-   * คำนวณเวลาหน่วงตามประเภทและความยาวตัวอักษรจริง
+   * คำนวณเวลาหน่วงตามประเภทและความยาวตัวอักษรจริง (อิงตาม Model Hesitation Profile)
    */
   const calculateDurations = useCallback((item: CadenceItem) => {
     const len = (item.text || '').length
+    const profile = MODEL_HESITATION_PROFILES[modelTierRef.current]
 
     if (item.type === 'vo') {
       // 🌟 VO: ปล่อยให้อ่านบรรยากาศอย่างสงบ (ความยาวจริง ~470 ตัวอักษร -> ~10.3s)
@@ -72,10 +125,11 @@ export function useChatCadence({
       return { readingDuration, typingDuration: 0 }
     }
 
-    // 🌟 Dialogue: คำพูดแชท
-    // 1. typingDuration: ช่วงเวลาดุ๊กดิ๊กตอนพิมพ์ (~1.8s - 3.0s) - เว้นให้อ่านบับเบิ้ลก่อนหน้าทัน
-    const typingDuration = Math.min(3000, Math.max(1800, 500 + len * 22))
-    // 2. readingDuration: ช่วงเวลาให้อ่านคำพูดหลังเด้งลงจอ เมื่อก้อนถัดไปเป็น Action (~2.5s - 4.5s)
+    // 🌟 Dialogue: คำพูดแชท (คำนวณตาม Model Hesitation Profile เพื่อซื้อเวลาคิด/ลังเล)
+    const typingDuration = Math.min(
+      profile.maxTypingMs,
+      Math.max(profile.minTypingMs, 500 + len * profile.typingCharMs)
+    )
     const readingDuration = Math.min(4500, Math.max(2500, len * 25))
     return { readingDuration, typingDuration }
   }, [])
@@ -122,12 +176,21 @@ export function useChatCadence({
       const currentItem = queueRef.current.shift()
       if (!currentItem) break
 
+      // ตัด Intro Timer ที่อาจกำลังรอรันอยู่ เพราะข้อมูลจริงจากเซิร์ฟเวอร์มาถึงแล้ว
+      if (turnIntroTimerRef.current) {
+        clearTimeout(turnIntroTimerRef.current)
+        turnIntroTimerRef.current = null
+      }
+
       const { readingDuration, typingDuration } = calculateDurations(currentItem)
 
       if (currentItem.type === 'vo') {
         // 🎬 BEAT 1: VOICE OVER (บรรยายฉาก)
-        // 1. ปิด Typing Indicator ทันที
+        // 1. ปิด Typing Indicator ทันที (ถ้ากำลังเปิดซื้อเวลาอยู่)
         setIsBotTyping(false)
+        isEarlyTypingActiveRef.current = false
+        typingStartTimeRef.current = null
+
         // 2. ปล่อย VO ขึ้นจอทันที
         onEmitRef.current(currentItem)
         // 3. หน่วงเวลาอ่านอย่างสงบ (ไม่ขึ้น "อ่านแล้ว" และไม่ขึ้น Typing)
@@ -144,7 +207,7 @@ export function useChatCadence({
         }
       } else if (currentItem.type === 'action') {
         // 🎬 BEAT 2: ACTION (ภาษากาย)
-        // ถ้ายังไม่ได้ Mark อ่านแล้ว (เช่น ไม่มี VO) ให้ Mark ทันที
+        // ถ้ายังไม่ได้ Mark อ่านแล้ว ให้ Mark ทันที
         if (!hasMarkedReadRef.current) {
           hasMarkedReadRef.current = true
           onMarkReadRef.current()
@@ -152,7 +215,11 @@ export function useChatCadence({
           const readAnticipationMs = Math.floor(550 + Math.random() * 150)
           await sleepWithSkip(readAnticipationMs)
         }
+        // Action จะปิด Typing Indicator ก่อนแสดงผลภาษากาย
         setIsBotTyping(false)
+        isEarlyTypingActiveRef.current = false
+        typingStartTimeRef.current = null
+
         // ปล่อย Action ขึ้นจอ
         onEmitRef.current(currentItem)
         // เว้นจังหวะหายใจ ให้ผู้เล่นอ่านภาษากายก่อน
@@ -164,22 +231,39 @@ export function useChatCadence({
         }
       } else {
         // 🎬 BEAT 3: DIALOGUE (คำพูดแชท)
+        // ถ้ายังไม่ได้ Mark อ่านแล้ว (กรณีเน็ตเวิร์กตอบเร็วกว่า Intro Timer) ให้ Mark ทันที
         if (!hasMarkedReadRef.current) {
           hasMarkedReadRef.current = true
           onMarkReadRef.current()
-          // 👁️ สไตล์ X: ขึ้นสถานะ "อ่านแล้ว" นำก่อนนิดนึง (~650ms - 850ms) ให้อีกฝ่ายรู้ว่าเปิดอ่านแล้ว ก่อนที่จุดไข่ปลา Typing จะเริ่มขยับ
           const readAnticipationMs = Math.floor(700 + Math.random() * 180)
           await sleepWithSkip(readAnticipationMs)
         }
-        // 1. เปิด Typing Indicator ดุ๊กดิ๊ก
-        setIsBotTyping(true)
-        // 2. หน่วงเวลาพิมพ์ตามความยาวตัวอักษรจริง
-        await sleepWithSkip(typingDuration)
-        // 3. ปิด Typing Indicator
+
+        // คำนวณว่าจุดไข่ปลา (Typing Indicator) เปิดซื้อเวลาไประหว่างรอโมเดลกี่มิลลิวินาทีแล้ว
+        const alreadyTypingMs = (isEarlyTypingActiveRef.current && typingStartTimeRef.current)
+          ? (Date.now() - typingStartTimeRef.current)
+          : 0
+
+        // ถ้ายังไม่ได้เปิด ให้เปิดจุดไข่ปลา
+        if (!isEarlyTypingActiveRef.current) {
+          setIsBotTyping(true)
+        }
+
+        // หักลบเวลาที่พิมพ์ล่วงหน้าระหว่างรอโมเดล ออกจากเวลาพิมพ์จริงของคำพูดก้อนนี้
+        const remainingTypingMs = Math.max(0, typingDuration - alreadyTypingMs)
+        if (remainingTypingMs > 0) {
+          await sleepWithSkip(remainingTypingMs)
+        }
+
+        // ปิด Typing Indicator และรีเซ็ตสถานะ Early Typing
         setIsBotTyping(false)
-        // 4. ปล่อยบับเบิ้ลคำพูดลงจอ
+        isEarlyTypingActiveRef.current = false
+        typingStartTimeRef.current = null
+
+        // ปล่อยบับเบิ้ลคำพูดลงจอ
         onEmitRef.current(currentItem)
-        // 5. 🌟 ถ้ายังมีก้อนถัดไปในคิว:
+
+        // 🌟 ถ้ายังมีก้อนถัดไปในคิว:
         if (queueRef.current.length > 0) {
           const nextItem = queueRef.current[0]
           // 🛑 ถ้าก้อนถัดไปเป็น Action หรือ VO: หน่วงเวลาให้อ่านคำพูดก้อนนี้ให้จบก่อน!
@@ -198,6 +282,8 @@ export function useChatCadence({
 
     // จบการประมวลผลคิวทั้งหมด
     setIsBotTyping(false)
+    isEarlyTypingActiveRef.current = false
+    typingStartTimeRef.current = null
     setIsCadenceActive(false)
     isPlayingRef.current = false
     onCompleteRef.current?.()
@@ -230,13 +316,17 @@ export function useChatCadence({
   }, [])
 
   /**
-   * รีเซ็ตคิวและเริ่มรอบใหม่เมื่อผู้เล่นส่งข้อความ
+   * 🌟 รีเซ็ตคิวและเริ่มรอบใหม่ พร้อมรัน The Hesitation Illusion Routine ซื้อเวลาให้โมเดล
    */
-  const startNewTurn = useCallback(() => {
-    // เคลียร์ Timer ที่ค้างอยู่
+  const startNewTurn = useCallback((tier?: CadenceModelTier) => {
+    // 1. เคลียร์ Timer ที่ค้างอยู่
     if (timerRef.current) {
       clearTimeout(timerRef.current)
       timerRef.current = null
+    }
+    if (turnIntroTimerRef.current) {
+      clearTimeout(turnIntroTimerRef.current)
+      turnIntroTimerRef.current = null
     }
     skipResolverRef.current = null
     queueRef.current = []
@@ -245,13 +335,61 @@ export function useChatCadence({
     isPlayingRef.current = false
     setIsBotTyping(false)
     setIsCadenceActive(false)
+    isEarlyTypingActiveRef.current = false
+    typingStartTimeRef.current = null
+
+    // 2. อัปเดต Model Tier ตามที่ระบุ (หรือใช้ค่าเริ่มต้น)
+    if (tier) {
+      modelTierRef.current = tier
+    }
+    const profile = MODEL_HESITATION_PROFILES[modelTierRef.current]
+
+    // 3. 🎬 รัน The Hesitation Illusion Sequence ซื้อเวลาล่วงหน้าระหว่างรอเน็ตเวิร์ก:
+    // ขั้นที่ 1: รอเวลาอ่านสั้นๆ (~1.1s - 1.4s) ให้ "อ่านแล้ว" ปรากฏเร็วทันใจ
+    turnIntroTimerRef.current = setTimeout(() => {
+      if (!hasMarkedReadRef.current) {
+        hasMarkedReadRef.current = true
+        onMarkReadRef.current()
+      }
+
+      // ขั้นที่ 2: พักสายตา 700ms เท่าเดิม (ความใส่ใจ) ก่อนจุดไข่ปลา Typing จะเริ่มดุ๊กดิ๊ก
+      turnIntroTimerRef.current = setTimeout(() => {
+        // เปิด Typing Indicator จำลองการคิด/ลังเลซื้อเวลาให้โมเดล
+        setIsBotTyping(true)
+        setIsCadenceActive(true)
+        isEarlyTypingActiveRef.current = true
+        typingStartTimeRef.current = Date.now()
+      }, profile.readToTypingGapMs)
+    }, profile.readDelayMs)
+  }, [])
+
+  /**
+   * ยกเลิกรอบปัจจุบันทันที (เช่น เมื่อเกิด Network Error หรือเปลี่ยนห้องแชท)
+   */
+  const cancelTurn = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+    if (turnIntroTimerRef.current) {
+      clearTimeout(turnIntroTimerRef.current)
+      turnIntroTimerRef.current = null
+    }
+    skipResolverRef.current = null
+    queueRef.current = []
+    processedIdsRef.current.clear()
+    isPlayingRef.current = false
+    setIsBotTyping(false)
+    setIsCadenceActive(false)
+    isEarlyTypingActiveRef.current = false
+    typingStartTimeRef.current = null
   }, [])
 
   /**
    * ตรวจสอบว่ายังมีงานค้างในคิวหรือกำลังเล่น Cadence อยู่หรือไม่ (ป้องกัน Stale Closure)
    */
   const isActive = useCallback((): boolean => {
-    return isPlayingRef.current || queueRef.current.length > 0
+    return isPlayingRef.current || queueRef.current.length > 0 || isEarlyTypingActiveRef.current
   }, [])
 
   // Cleanup เมื่อ Component Unmount
@@ -260,6 +398,9 @@ export function useChatCadence({
       if (timerRef.current) {
         clearTimeout(timerRef.current)
       }
+      if (turnIntroTimerRef.current) {
+        clearTimeout(turnIntroTimerRef.current)
+      }
     }
   }, [])
 
@@ -267,6 +408,7 @@ export function useChatCadence({
     enqueue,
     tapToAdvance,
     startNewTurn,
+    cancelTurn,
     isBotTyping,
     isCadenceActive,
     isActive,

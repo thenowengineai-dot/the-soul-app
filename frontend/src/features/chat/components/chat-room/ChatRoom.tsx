@@ -714,8 +714,8 @@ export function ChatRoom({
       read: false, // 🌟 เริ่มต้นเป็นยังไม่อ่าน! จะเปลี่ยนเป็น "อ่านแล้ว" ตามจังหวะของ Cadence
     }
 
-    // เริ่มต้นรอบใหม่ใน Cadence
-    cadence.startNewTurn()
+    // 🎬 เริ่มต้นรอบใหม่ใน Cadence พร้อมรัน The Hesitation Illusion Routine (Optimistic Fast Read & Hesitation Typing)
+    cadence.startNewTurn('flash_think_low')
     setChatMessages(prev => [...prev, userMsg])
     setInputText('')
     setIsStreaming(true)
@@ -902,6 +902,7 @@ export function ChatRoom({
             }
           },
           onInsufficientCoins: (data) => {
+            cadence.cancelTurn()
             setIsStreaming(false)
             setInsufficientCoinsModal({
               isOpen: true,
@@ -912,6 +913,7 @@ export function ChatRoom({
           },
           onError: (err) => {
             console.error('[STREAM ERROR]:', err)
+            cadence.cancelTurn()
             setIsStreaming(false)
           },
           onDone: () => {
@@ -923,6 +925,7 @@ export function ChatRoom({
       )
     } catch (err) {
       console.error('[CHAT ERROR]:', err)
+      cadence.cancelTurn()
       setIsStreaming(false)
     }
   }

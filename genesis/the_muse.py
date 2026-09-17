@@ -28,7 +28,7 @@ class TheMuse:
         """
         self.project_id = project_id or os.getenv("VERTEX_PROJECT") or os.getenv("GOOGLE_CLOUD_PROJECT")
         self.location = location or os.getenv("VERTEX_LOCATION", "global")
-        self.model_name = os.getenv("MUSE_MODEL", "gemini-3.8-flash")
+        self.model_name = os.getenv("MUSE_MODEL", "gemini-3.8-flash-qcd")
         self.thinking_level = os.getenv("MUSE_THINKING_LEVEL", "medium")
 
         self._client = None

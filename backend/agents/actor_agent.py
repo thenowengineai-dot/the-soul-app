@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import os
@@ -136,7 +137,7 @@ class ActorAgent:
     def __init__(
         self, 
         credentials=None, 
-        model_name: str = "gemini-3.8-flash", # 🌟 โมเดลหลัก Vertex AI (เปิดโหมดคิดระดับ Low / 512 tokens)
+        model_name: str = None, # 🌟 ใช้ base_model: gemini-3.8-flash-qcd (10M TPM Enterprise Quota)
         project_id: str = None
     ):
         """
@@ -144,8 +145,15 @@ class ActorAgent:
         """
         import os
         self.credentials = credentials
-        self.model_name = model_name
+        self.model_name = model_name or os.getenv("ACTOR_MODEL", "gemini-3.8-flash-qcd")
         self.project_id = project_id or os.getenv("VERTEX_PROJECT") or os.getenv("GOOGLE_CLOUD_PROJECT")
+        if not self.project_id:
+            try:
+                import google.auth
+                _, default_project = google.auth.default()
+                self.project_id = default_project
+            except Exception:
+                pass
         self.location = os.getenv("VERTEX_LOCATION", "global")
         self.client = genai.Client(vertexai=True, project=self.project_id, location=self.location)
 
@@ -412,7 +420,11 @@ class ActorAgent:
             config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_budget=thinking_budget)
 
         models_to_try = [self.model_name]
-        fallback_model = os.getenv("ACTOR_FALLBACK_MODEL", "gemini-3.5-flash-lite")
+        if "-qcd" in self.model_name:
+            alt_model = self.model_name.replace("-qcd", "")
+            if alt_model not in models_to_try:
+                models_to_try.append(alt_model)
+        fallback_model = os.getenv("ACTOR_FALLBACK_MODEL", "gemini-2.5-flash")
         if fallback_model not in models_to_try:
             models_to_try.append(fallback_model)
 
@@ -473,7 +485,8 @@ class ActorAgent:
                 err_str = str(stream_err)
                 logger.warning(f"Actor stream error with model '{model_candidate}': {stream_err}")
                 if ("429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "Resource exhausted" in err_str) and not emitted_segments and model_candidate != models_to_try[-1]:
-                    logger.warning(f"🚨 [ALARM: GATE 5: ACTOR DUAL-MODEL FALLBACK] Model '{model_candidate}' hit 429 RESOURCE_EXHAUSTED! Retrying stream with secondary model '{models_to_try[-1]}'...")
+                    logger.warning(f"🚨 [ALARM: GATE 5: ACTOR DUAL-MODEL FALLBACK] Model '{model_candidate}' hit 429 RESOURCE_EXHAUSTED! Waiting 1.5s backoff before trying next candidate...")
+                    await asyncio.sleep(1.5)
                     continue
                 
                 logger.error(f"🚨 [ALARM: GATE 5: ACTOR STREAM ERROR] Model '{model_candidate}' error: {stream_err}", exc_info=True)

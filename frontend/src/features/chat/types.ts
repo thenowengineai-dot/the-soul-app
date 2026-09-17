@@ -138,7 +138,7 @@ export interface ChatInputBarProps {
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void
   isStreaming?: boolean
   isTyping?: boolean
-  typingVariant?: 'bubble' | 'action' | 'with-text'
+  typingVariant?: 'bubble' | 'action' | 'hybrid' | 'with-text'
   chatAvatar?: string
   chatName?: string
 }

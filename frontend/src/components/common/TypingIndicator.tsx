@@ -12,7 +12,7 @@ export interface TypingIndicatorProps {
   /** ข้อความอธิบายสถานะเพิ่มเติม (deprecated: เพื่อความคลีน ไม่แสดงผลใต้บับเบิ้ล) */
   subtext?: string;
   /** รูปแบบการแสดงผล */
-  variant?: 'bubble' | 'with-text' | 'action';
+  variant?: 'bubble' | 'with-text' | 'action' | 'hybrid';
   /** คลาส CSS เพิ่มเติมสำหรับ wrapper */
   className?: string;
 }
@@ -22,7 +22,8 @@ export interface TypingIndicatorProps {
  * ดีไซน์เดียวกับบับเบิ้ลข้อความฝั่ง AI เป๊ะๆ 1:1 ทั้งความสูง (34.5px/35px), สีพื้นหลัง (#1D1D1F),
  * มุมโค้ง (rounded-[18px] rounded-bl-none), และ Padding (px-[15px] py-1.5)
  * ไร้ข้อความอธิบายด้านล่างตามหลักมินิมอล เพื่อความคลีน สวยงาม และเป็นธรรมชาติ
- * 🌟 รองรับ variant='action' สำหรับแสดง Action Presence (✦ กำลังเคลื่อนไหว...)
+ * 🌟 รองรับ variant='hybrid' สำหรับ Hybrid Living Presence (✦ • • •) สัญลักษณ์สากลแห่งการมีชีวิต
+ * 🌟 รองรับ variant='action' สำหรับ Action Presence (✦ กำลังเคลื่อนไหว...)
  */
 export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
   dotColor,
@@ -36,7 +37,13 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
     <div
       className={`inline-flex items-center gap-2 select-none animate-in fade-in duration-200 ${className}`}
       role="status"
-      aria-label={variant === 'action' ? `${name || 'AI'} กำลังเคลื่อนไหว...` : `${name || 'AI'} is typing...`}
+      aria-label={
+        variant === 'action'
+          ? `${name || 'AI'} กำลังเคลื่อนไหว...`
+          : variant === 'hybrid'
+          ? `${name || 'AI'} กำลังตอบสนอง...`
+          : `${name || 'AI'} is typing...`
+      }
     >
       {/* 1. Avatar จิ๋ว (แสดงเฉพาะเมื่อเปิด showAvatar เป็น true) */}
       {showAvatar && avatarUrl && (
@@ -47,8 +54,37 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
         />
       )}
 
-      {/* 2. บับเบิ้ลแสดงสถานะ: แยกประเภทระหว่าง Action Presence (✦ กำลังเคลื่อนไหว...) กับ Typing (3 จุด) */}
-      {variant === 'action' ? (
+      {/* 2. บับเบิ้ลแสดงสถานะ: รองรับทั้ง Hybrid (✦ • • •), Action (✦ กำลังเคลื่อนไหว...), และ Typing (3 จุด) */}
+      {variant === 'hybrid' ? (
+        // 🌟 Hybrid Living Presence Indicator: ดาวประกายคู่จุดไข่ปลา (✦ • • •)
+        // สัญลักษณ์สากล: ตัวละครมีชีวิต กำลังรับรู้ และกำลังตอบสนอง (ครอบคลุมทั้งกิริยาท่าทางและบทพูด)
+        <div className="inline-flex items-center gap-2 px-[13px] py-1.5 min-h-[34.5px] h-[34.5px] bg-app-surface border border-white/10 rounded-[18px] rounded-bl-none shadow-sm animate-in fade-in zoom-in-95 duration-200">
+          {/* ดาวประกาย 4 แฉก (Four-point Starlight Sparkle) กะพริบจังหวะนุ่มนวล */}
+          <svg 
+            viewBox="0 0 24 24" 
+            className="w-3.5 h-3.5 text-white/90 animate-pulse shrink-0" 
+            fill="currentColor"
+          >
+            <path d="M12 0 Q12 12 0 12 Q12 12 12 24 Q12 12 24 12 Q12 12 12 0 Z" />
+          </svg>
+
+          {/* จุดไข่ปลา 3 จุด คลื่นความคิดกำลังประมวลผล */}
+          <div className="inline-flex items-center gap-1.5">
+            <span
+              className="w-1.5 h-1.5 rounded-full animate-typing-dot-1 shrink-0"
+              style={{ backgroundColor: dotColor || '#BEBEC4' }}
+            />
+            <span
+              className="w-1.5 h-1.5 rounded-full animate-typing-dot-2 shrink-0"
+              style={{ backgroundColor: dotColor || '#BEBEC4' }}
+            />
+            <span
+              className="w-1.5 h-1.5 rounded-full animate-typing-dot-3 shrink-0"
+              style={{ backgroundColor: dotColor || '#BEBEC4' }}
+            />
+          </div>
+        </div>
+      ) : variant === 'action' ? (
         // 🌟 Action Presence Indicator (The Starlight Pulse: ✦ กำลังเคลื่อนไหว...)
         <div className="inline-flex items-center gap-2 px-[14px] py-1.5 min-h-[34.5px] h-[34.5px] bg-app-surface border border-white/10 rounded-[18px] rounded-bl-none shadow-sm animate-in fade-in zoom-in-95 duration-200">
           {/* ดาวประกาย 4 แฉก (Four-point Starlight Sparkle) กะพริบจังหวะลมหายใจ */}

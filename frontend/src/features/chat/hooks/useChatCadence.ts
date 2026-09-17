@@ -68,8 +68,8 @@ export interface UseChatCadenceOptions {
  * 4. Dynamic Read Receipt: สลับเป็น "อ่านแล้ว" ทันใจ และพัก 700ms ก่อนเริ่มพิมพ์
  * 5. Tap-to-Advance: แตะหน้าจอเพื่อข้ามเวลาหน่วงและปล่อยบับเบิ้ลถัดไปทันที
  */
-/** 🌟 ประเภทของ Indicator: จุดไข่ปลาคำพูด (bubble) หรือ ประกายดาวภาษากาย (action) */
-export type CadenceIndicatorVariant = 'bubble' | 'action'
+/** 🌟 ประเภทของ Indicator: จุดไข่ปลาคำพูด (bubble) หรือ ประกายดาวภาษากาย (action) หรือ สัญลักษณ์มีชีวิตสากล (hybrid: ✦ • • •) */
+export type CadenceIndicatorVariant = 'bubble' | 'action' | 'hybrid'
 
 export function useChatCadence({
   onEmitMessage,
@@ -78,7 +78,7 @@ export function useChatCadence({
   defaultModelTier = 'flash_think_low',
 }: UseChatCadenceOptions) {
   const [isBotTyping, setIsBotTyping] = useState(false)
-  const [indicatorVariant, setIndicatorVariant] = useState<CadenceIndicatorVariant>('action')
+  const [indicatorVariant, setIndicatorVariant] = useState<CadenceIndicatorVariant>('hybrid')
   const [isCadenceActive, setIsCadenceActive] = useState(false)
 
   // คิวของข้อความที่รอการแสดงผล
@@ -211,8 +211,8 @@ export function useChatCadence({
         }
       } else if (currentItem.type === 'action') {
         // 🎬 BEAT 2: ACTION (ภาษากาย)
-        // 🌟 สลับ Indicator เป็น 'action' เพื่อแสดง "✦ กำลังเคลื่อนไหว..." ให้สมจริง
-        setIndicatorVariant('action')
+        // 🌟 แสดง Hybrid Indicator (✦ • • •) สัญลักษณ์สากลแห่งการมีชีวิต
+        setIndicatorVariant('hybrid')
 
         // ถ้ายังไม่ได้ Mark อ่านแล้ว ให้ Mark ทันที
         if (!hasMarkedReadRef.current) {
@@ -358,8 +358,8 @@ export function useChatCadence({
     setIsCadenceActive(false)
     isEarlyTypingActiveRef.current = false
     typingStartTimeRef.current = null
-    // 🌟 เริ่มต้นด้วย Action Presence Indicator (✦ กำลังเคลื่อนไหว...) เสมอ
-    setIndicatorVariant('action')
+    // 🌟 เริ่มต้นด้วย Hybrid Living Presence Indicator (✦ • • •) สัญลักษณ์สากล
+    setIndicatorVariant('hybrid')
 
     // 2. อัปเดต Model Tier ตามที่ระบุ (หรือใช้ค่าเริ่มต้น)
     if (tier) {
@@ -375,10 +375,10 @@ export function useChatCadence({
         onMarkReadRef.current()
       }
 
-      // ขั้นที่ 2: พักสายตา 700ms เท่าเดิม (ความใส่ใจ) ก่อนที่ ✦ กำลังเคลื่อนไหว... จะเริ่มดุ๊กดิ๊ก
+      // ขั้นที่ 2: พักสายตา 700ms เท่าเดิม (ความใส่ใจ) ก่อนที่ ✦ • • • จะเริ่มเปล่งประกายซื้อเวลา
       turnIntroTimerRef.current = setTimeout(() => {
-        // เปิด Action Presence Indicator จำลองการเคลื่อนไหวซื้อเวลาให้โมเดล
-        setIndicatorVariant('action')
+        // เปิด Hybrid Living Presence Indicator (✦ • • •) จำลองตัวตนมีชีวิตซื้อเวลาให้โมเดล
+        setIndicatorVariant('hybrid')
         setIsBotTyping(true)
         setIsCadenceActive(true)
         isEarlyTypingActiveRef.current = true

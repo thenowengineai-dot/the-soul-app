@@ -177,9 +177,12 @@ export function useChatCadence({
         if (queueRef.current.length > 0) {
           const nextItem = queueRef.current[0]
           // 🛑 ถ้าก้อนถัดไปเป็น Action หรือ VO: หน่วงเวลาให้อ่านคำพูดก้อนนี้ให้จบก่อน!
-          // แต่ถ้าก้อนถัดไปเป็น Dialogue (คำพูดต่อคำพูด): ไม่ต้องรออ่าน ให้พักนิ้วแล้วขึ้น Typing ต่อทันที!
           if (nextItem && nextItem.type !== 'msg') {
             await sleepWithSkip(readingDuration)
+          } else if (nextItem && nextItem.type === 'msg') {
+            // 💬 Dialogue -> Dialogue: เว้นจังหวะให้อ่านก้อนแรกอีกนิดนึง (~850ms - 1,400ms) ให้เป็นธรรมชาติก่อนเริ่มพิมพ์ก้อนถัดไป
+            const dialogueReadingPause = Math.min(1400, Math.max(850, (currentItem.text?.length || 0) * 12))
+            await sleepWithSkip(dialogueReadingPause)
           }
           const breathMs = Math.floor(450 + Math.random() * 200)
           await sleepWithSkip(breathMs)

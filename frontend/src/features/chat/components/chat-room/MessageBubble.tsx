@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import type { MessageBubbleProps } from '../../types'
 
 export type { MessageBubbleProps }
@@ -10,6 +11,21 @@ export function MessageBubble({
   isRead = false,
   marginTop = 'mt-4' 
 }: MessageBubbleProps) {
+  // 🌟 Tactile Feedback สไตล์ X: หน่วงเวลาก่อนขึ้น "ส่งแล้ว" เล็กน้อย (~380ms) เพื่อจำลอง Network Flight
+  // หากเป็นข้อความเดิมที่อ่านแล้ว (isRead = true) ให้แสดงผลทันทีโดยไม่ต้องหน่วง
+  const [isDelivered, setIsDelivered] = useState(isRead)
+
+  useEffect(() => {
+    if (isRead) {
+      setIsDelivered(true)
+      return
+    }
+    const timer = setTimeout(() => {
+      setIsDelivered(true)
+    }, 380)
+    return () => clearTimeout(timer)
+  }, [isRead])
+
   // 1. จัดการ VO (Voice Over / คำบรรยายบรรยากาศและฉาก สไตล์มังงะ / X Card - space บนล่างโปร่งสบายตา my-14)
   if (message.type === 'vo') {
     return (
@@ -65,9 +81,9 @@ export function MessageBubble({
 
       {isMe && (isLastInGroup || isRead) && (
         <span 
-          className={`text-[11px] mt-1 mr-1 select-none font-normal transition-all duration-300 animate-in fade-in ${
-            isRead ? 'text-app-secondary' : 'text-app-secondary/60'
-          }`}
+          className={`text-[11px] mt-1 mr-1 select-none font-normal transition-all duration-300 ${
+            isDelivered ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-0.5 pointer-events-none'
+          } ${isRead ? 'text-app-secondary' : 'text-app-secondary/60'}`}
         >
           {isRead ? 'อ่านแล้ว' : 'ส่งแล้ว'}
         </span>

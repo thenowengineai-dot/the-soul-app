@@ -137,9 +137,9 @@ export function useChatCadence({
           hasMarkedReadRef.current = true
           onMarkReadRef.current()
         }
-        // จังหวะพักสายตาสั้นๆ ก่อนก้อนถัดไป (ถ้ามี)
+        // จังหวะพักสายตาสั้นๆ ให้เห็น "อ่านแล้ว" ก่อนก้อนถัดไปเริ่ม (~650ms - 850ms)
         if (queueRef.current.length > 0) {
-          const breathMs = Math.floor(450 + Math.random() * 250)
+          const breathMs = Math.floor(650 + Math.random() * 200)
           await sleepWithSkip(breathMs)
         }
       } else if (currentItem.type === 'action') {
@@ -148,6 +148,9 @@ export function useChatCadence({
         if (!hasMarkedReadRef.current) {
           hasMarkedReadRef.current = true
           onMarkReadRef.current()
+          // 👁️ สไตล์ X: ให้สถานะ "อ่านแล้ว" ขึ้นก่อนนิดนึง (~500ms - 700ms) ก่อนภาษากาย Action จะปรากฏ
+          const readAnticipationMs = Math.floor(550 + Math.random() * 150)
+          await sleepWithSkip(readAnticipationMs)
         }
         setIsBotTyping(false)
         // ปล่อย Action ขึ้นจอ
@@ -164,6 +167,9 @@ export function useChatCadence({
         if (!hasMarkedReadRef.current) {
           hasMarkedReadRef.current = true
           onMarkReadRef.current()
+          // 👁️ สไตล์ X: ขึ้นสถานะ "อ่านแล้ว" นำก่อนนิดนึง (~650ms - 850ms) ให้อีกฝ่ายรู้ว่าเปิดอ่านแล้ว ก่อนที่จุดไข่ปลา Typing จะเริ่มขยับ
+          const readAnticipationMs = Math.floor(700 + Math.random() * 180)
+          await sleepWithSkip(readAnticipationMs)
         }
         // 1. เปิด Typing Indicator ดุ๊กดิ๊ก
         setIsBotTyping(true)

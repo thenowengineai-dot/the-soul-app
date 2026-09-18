@@ -131,7 +131,7 @@ export default function HeroShowcase({
         <div 
           onClick={prevSlide}
           title={prevItem.title}
-          className="hidden md:block relative w-[100px] lg:w-[160px] xl:w-[200px] h-[200px] sm:h-[250px] lg:h-[290px] min-h-[200px] sm:min-h-[250px] lg:min-h-[290px] rounded-[20px] sm:rounded-[26px] overflow-hidden opacity-20 hover:opacity-40 transition-all duration-700 scale-[0.93] shrink-0 cursor-pointer border border-white/[0.04] shadow-xl"
+          className="hidden md:block relative w-[120px] lg:w-[180px] xl:w-[220px] h-[300px] sm:h-[350px] lg:h-[390px] min-h-[300px] sm:min-h-[350px] lg:min-h-[390px] rounded-[22px] sm:rounded-[28px] overflow-hidden opacity-25 hover:opacity-50 transition-all duration-700 scale-[0.93] shrink-0 cursor-pointer border border-white/[0.04] shadow-xl"
         >
           {prevItem.videoUrl ? (
             <video 
@@ -152,10 +152,10 @@ export default function HeroShowcase({
           <div className="absolute inset-0 bg-black/60 pointer-events-none" />
         </div>
 
-        {/* Center Main Hero Card - Cinematic Ultrawide Stage (21:9 Aesthetic) */}
+        {/* Center Main Hero Card - Majestic Apple Showcase Scale */}
         <div 
           onClick={() => handleCardClick(currentSlide)}
-          className="relative w-full max-w-[860px] lg:max-w-[940px] xl:max-w-[980px] h-[230px] sm:h-[280px] lg:h-[320px] min-h-[230px] sm:min-h-[280px] lg:min-h-[320px] rounded-[24px] sm:rounded-[32px] overflow-hidden shadow-2xl border border-white/[0.06] shrink-0 mx-2 sm:mx-4 group/hero cursor-pointer bg-[#141418]"
+          className="relative w-full max-w-[880px] lg:max-w-[960px] xl:max-w-[1020px] h-[340px] sm:h-[400px] lg:h-[440px] min-h-[340px] sm:min-h-[400px] lg:min-h-[440px] rounded-[28px] sm:rounded-[36px] overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.6)] border border-white/[0.08] shrink-0 mx-2 sm:mx-4 group/hero cursor-pointer bg-[#141418]"
         >
           {/* Native Video or Hi-Res Image */}
           {currentSlide.videoUrl ? (
@@ -176,52 +176,33 @@ export default function HeroShowcase({
             />
           )}
 
-          {/* Gentle Bottom Scrim Gradient - Leaves 60%+ Art Unadorned and Luminous */}
-          <div className="absolute inset-x-0 bottom-0 h-[52%] bg-gradient-to-t from-[#0a0a0c]/90 via-[#0a0a0c]/30 to-transparent pointer-events-none" />
+          {/* Gentle Bottom Scrim Gradient - Leaves 55%+ of Art Pure and Unobstructed */}
+          <div className="absolute inset-x-0 bottom-0 h-[48%] bg-gradient-to-t from-[#0a0a0c]/95 via-[#0a0a0c]/40 to-transparent pointer-events-none" />
 
-          {/* Left & Right Chevron Buttons - Discreet Tactile Glass, Reveals on Hover */}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              prevSlide();
-            }}
-            title="สไลด์ก่อนหน้า"
-            className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/30 hover:bg-black/60 backdrop-blur-xl border border-white/10 hover:border-white/25 text-white/70 hover:text-white flex items-center justify-center opacity-0 group-hover/hero:opacity-100 transition-all duration-300 cursor-pointer z-20 active:scale-95 shadow-md"
-          >
-            <ChevronLeft size={18} strokeWidth={2.2} />
-          </button>
-
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              nextSlide();
-            }}
-            title="สไลด์ถัดไป"
-            className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/30 hover:bg-black/60 backdrop-blur-xl border border-white/10 hover:border-white/25 text-white/70 hover:text-white flex items-center justify-center opacity-0 group-hover/hero:opacity-100 transition-all duration-300 cursor-pointer z-20 active:scale-95 shadow-md"
-          >
-            <ChevronRight size={18} strokeWidth={2.2} />
-          </button>
-
-          {/* Editorial Content Overlay - Pure, Restrained Apple Typography */}
-          <div className="absolute bottom-0 inset-x-0 p-5 sm:p-6 lg:p-7 flex flex-col pointer-events-none">
-            {/* Subtle Overline - Clean Editorial Category without any Tacky Badge Pills */}
+          {/* Editorial Content Overlay - Apple Grandeur & Card Consistency */}
+          <div className="absolute bottom-0 inset-x-0 p-6 sm:p-8 lg:p-10 flex flex-col pointer-events-none">
+            {/* Subtle Overline Category */}
             {currentSlide.badge && (
-              <p className="text-[10.5px] sm:text-[11px] font-semibold tracking-widest uppercase text-white/50 mb-1 drop-shadow-sm select-none">
+              <p className="text-[11px] sm:text-[11.5px] font-semibold tracking-[0.2em] uppercase text-[#EF264C] mb-1 drop-shadow-sm select-none">
                 {currentSlide.badge}
               </p>
             )}
 
-            {/* Character Name / Title */}
-            <h2 className="text-[20px] sm:text-[23px] lg:text-[25px] font-bold text-[#F5F5F7] tracking-tight leading-snug drop-shadow-md truncate">
+            {/* Character Name / Title (Scaled for Hero Grandeur) */}
+            <h2 className="text-[26px] sm:text-[30px] lg:text-[34px] font-bold text-[#F5F5F7] tracking-tight leading-tight drop-shadow-lg truncate">
               {currentSlide.title}
             </h2>
 
-            {/* Subtitle / Dialogue */}
-            <p className="text-[12px] sm:text-[13px] text-[#A1A1A6] mt-0.5 sm:mt-1 line-clamp-1 font-normal drop-shadow-sm leading-relaxed max-w-[90%]">
+            {/* Dialogue / Quote (Italic for Complete Consistency with CharacterCard) */}
+            <p className="text-[14px] sm:text-[15.5px] lg:text-[16.5px] text-[#A1A1A6] italic mt-1 sm:mt-1.5 line-clamp-1 sm:line-clamp-2 font-normal drop-shadow-md leading-relaxed max-w-[85%]">
               {currentSlide.subtitle}
             </p>
+
+            {/* Apple Action Cue (Subtle Prompt: 'เริ่มบทสนทนา >') */}
+            <div className="flex items-center gap-1 mt-2.5 sm:mt-3 text-[13px] sm:text-[13.5px] font-medium text-[#F5F5F7]/90 group-hover/hero:text-white transition-colors">
+              <span>เริ่มบทสนทนา</span>
+              <ChevronRight size={14} className="group-hover/hero:translate-x-0.5 transition-transform" />
+            </div>
           </div>
         </div>
 
@@ -229,7 +210,7 @@ export default function HeroShowcase({
         <div 
           onClick={nextSlide}
           title={nextItem.title}
-          className="hidden md:block relative w-[100px] lg:w-[160px] xl:w-[200px] h-[200px] sm:h-[250px] lg:h-[290px] min-h-[200px] sm:min-h-[250px] lg:min-h-[290px] rounded-[20px] sm:rounded-[26px] overflow-hidden opacity-20 hover:opacity-40 transition-all duration-700 scale-[0.93] shrink-0 cursor-pointer border border-white/[0.04] shadow-xl"
+          className="hidden md:block relative w-[120px] lg:w-[180px] xl:w-[220px] h-[300px] sm:h-[350px] lg:h-[390px] min-h-[300px] sm:min-h-[350px] lg:min-h-[390px] rounded-[22px] sm:rounded-[28px] overflow-hidden opacity-25 hover:opacity-50 transition-all duration-700 scale-[0.93] shrink-0 cursor-pointer border border-white/[0.04] shadow-xl"
         >
           {nextItem.videoUrl ? (
             <video 
@@ -252,24 +233,47 @@ export default function HeroShowcase({
 
       </div>
 
-      {/* Apple Subtle Micro-Dots (Discreet, Whisper-Quiet Fluid Indicator) */}
-      <div className="flex items-center justify-center gap-1.5 mt-3 sm:mt-4 shrink-0">
-        {slides.map((_, idx) => {
-          const isActive = currentIndex === idx;
-          return (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => setCurrentIndex(idx)}
-              title={`สไลด์ที่ ${idx + 1}`}
-              className={`h-1 rounded-full transition-all duration-500 cursor-pointer ${
-                isActive 
-                  ? 'w-4 bg-[#F5F5F7]' 
-                  : 'w-1 bg-white/20 hover:bg-white/40'
-              }`}
-            />
-          );
-        })}
+      {/* Apple Unified Navigation Dock (Flanked Circle Arrows + Centered Micro-Dots Pill) */}
+      <div className="flex items-center justify-center gap-2.5 sm:gap-3 mt-4 sm:mt-5 shrink-0 select-none">
+        {/* Left Circular Arrow */}
+        <button
+          type="button"
+          onClick={prevSlide}
+          title="สไลด์ก่อนหน้า"
+          className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/[0.08] hover:border-white/20 text-[#A1A1A6] hover:text-[#F5F5F7] flex items-center justify-center transition-all cursor-pointer active:scale-90 shadow-sm"
+        >
+          <ChevronLeft size={16} strokeWidth={2.2} />
+        </button>
+
+        {/* Apple Tactile Micro-Dots Pill */}
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] shadow-sm">
+          {slides.map((_, idx) => {
+            const isActive = currentIndex === idx;
+            return (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setCurrentIndex(idx)}
+                title={`สไลด์ที่ ${idx + 1}`}
+                className={`rounded-full transition-all duration-300 cursor-pointer ${
+                  isActive 
+                    ? 'w-5 h-1.5 bg-[#F5F5F7] shadow-sm' 
+                    : 'w-1.5 h-1.5 bg-white/25 hover:bg-white/50'
+                }`}
+              />
+            );
+          })}
+        </div>
+
+        {/* Right Circular Arrow */}
+        <button
+          type="button"
+          onClick={nextSlide}
+          title="สไลด์ถัดไป"
+          className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/[0.08] hover:border-white/20 text-[#A1A1A6] hover:text-[#F5F5F7] flex items-center justify-center transition-all cursor-pointer active:scale-90 shadow-sm"
+        >
+          <ChevronRight size={16} strokeWidth={2.2} />
+        </button>
       </div>
     </div>
   );

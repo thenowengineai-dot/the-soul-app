@@ -206,8 +206,8 @@ function HomeView({
 
         </div>
 
-      {/* Character Cards Section: ปรับระยะห่างให้พอดี สร้างจังหวะหายใจที่ต่อเนื่อง */}
-      <div className="pt-4 sm:pt-5 w-full">
+      {/* Character Cards Section: ปรับระยะห่างให้พอดี แนบชิปฟิลเตอร์เข้าหาแคตตาล็อก */}
+      <div className="pt-1 sm:pt-1.5 w-full">
 
         {/* Apple-Style Sections: จังหวะแถวพอดีสายตา (Visual Peek-Through) */}
         <div className="flex flex-col gap-8 sm:gap-10 lg:gap-12 pb-16">

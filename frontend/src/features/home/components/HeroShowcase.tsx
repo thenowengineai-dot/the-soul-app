@@ -140,7 +140,7 @@ export default function HeroShowcase({
 
   return (
     <div 
-      className={`w-full shrink-0 pt-6 sm:pt-8 pb-5 sm:pb-7 flex flex-col items-center select-none overflow-hidden ${className}`}
+      className={`w-full shrink-0 pt-6 sm:pt-8 pb-9 sm:pb-12 flex flex-col items-center select-none overflow-hidden ${className}`}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >

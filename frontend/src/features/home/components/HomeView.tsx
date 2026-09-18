@@ -96,35 +96,35 @@ function HomeView({
   return (
     <div 
       style={{ overscrollBehavior: 'none' }}
-      className="flex-1 flex flex-col h-full overflow-y-auto overflow-x-hidden no-scrollbar relative z-10 bg-[rgb(13,13,13)] backdrop-blur-xl overscroll-none"
+      className="flex-1 flex flex-col h-full overflow-y-auto overflow-x-hidden no-scrollbar relative z-10 bg-[#121214] overscroll-none"
     >
       {/* Sticky Pill Bar: ฝั่งซ้าย Filter & Sort Controls | เส้นแบ่ง | ฝั่งขวา Category Pills */}
-      <div className="sticky top-0 z-20 bg-[rgb(13,13,13)]/95 backdrop-blur-xl border-b border-white/[0.06] flex items-center gap-3 px-4 sm:px-6 py-2 sm:py-2.5 w-full transition-all duration-300 select-none">
+      <div className="sticky top-0 z-20 bg-[#121214]/95 backdrop-blur-xl border-b border-white/[0.06] flex items-center gap-3 px-4 sm:px-6 py-2.5 sm:py-3 w-full transition-all duration-300 select-none">
         
-        {/* ฝั่งซ้าย: Controls & Sorting (เพศ, กำลังมาแรง, ยอดนิยม, ล่าสุด สไตล์ขอบสีแบรนด์หลัก #EF264C) */}
+        {/* ฝั่งซ้าย: Controls & Sorting (เพศ, กำลังมาแรง, ยอดนิยม, ล่าสุด สไตล์ Apple Droplet Pills) */}
         <div className="flex-shrink-0 flex items-center gap-2">
             
-            {/* 1. ปุ่ม Gender Dropdown (ขอบสีแบรนด์ ตัวหนังสือสีขาว ไม่มีไอคอน) */}
+            {/* 1. ปุ่ม Gender Dropdown (ขอบมนหยดน้ำ สีเทาเงินนุ่มตา) */}
             <div className="relative" ref={genderDropdownRef}>
               <button
                 type="button"
                 onClick={() => setIsGenderOpen(!isGenderOpen)}
-                className={`h-[31px] sm:h-[32px] px-3.5 rounded-full border transition-all flex items-center gap-1.5 text-[13px] font-medium cursor-pointer whitespace-nowrap flex-shrink-0 ${
+                className={`h-[34px] sm:h-[35px] px-3.5 rounded-full border transition-all flex items-center gap-1.5 text-[13px] font-medium cursor-pointer whitespace-nowrap flex-shrink-0 ${
                   selectedGender !== 'all' || isGenderOpen
-                    ? 'border-[#EF264C] bg-[#EF264C]/20 text-app-primary shadow-[0_0_12px_rgba(239,38,76,0.25)] font-semibold'
-                    : 'border-[#EF264C]/40 hover:border-[#EF264C]/80 bg-[#EF264C]/5 hover:bg-[#EF264C]/10 text-app-primary'
+                    ? 'border-white/25 bg-white/15 text-[#F5F5F7] font-semibold shadow-sm'
+                    : 'border-white/[0.08] hover:border-white/20 bg-white/[0.05] hover:bg-white/10 text-[#86868B] hover:text-[#F5F5F7]'
                 }`}
               >
                 <span>เพศ: {GENDER_OPTIONS.find(g => g.id === selectedGender)?.label}</span>
                 <ChevronDown 
                   size={14} 
-                  className={`text-app-secondary transition-transform duration-200 ${isGenderOpen ? 'rotate-180 text-app-primary' : ''}`} 
+                  className={`text-[#86868B] transition-transform duration-200 ${isGenderOpen ? 'rotate-180 text-[#F5F5F7]' : ''}`} 
                 />
               </button>
 
               {/* เมนู Dropdown ลอยลงมา (Glassmorphism Panel) */}
               {isGenderOpen && (
-                <div className="absolute left-0 top-full mt-2 w-48 bg-[#18181B]/95 backdrop-blur-2xl border border-white/15 rounded-2xl shadow-2xl p-1.5 z-50 flex flex-col gap-0.5 animate-fadeIn">
+                <div className="absolute left-0 top-full mt-2 w-48 bg-[#18181D]/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl p-1.5 z-50 flex flex-col gap-0.5 animate-fadeIn">
                   {GENDER_OPTIONS.map(option => {
                     const isSelected = selectedGender === option.id;
                     return (
@@ -137,8 +137,8 @@ function HomeView({
                         }}
                         className={`flex items-center justify-between px-3 py-1.5 rounded-xl text-[13px] transition-colors cursor-pointer text-left ${
                           isSelected
-                            ? 'bg-[#EF264C]/15 text-app-primary font-medium'
-                            : 'text-app-secondary hover:text-app-primary hover:bg-white/10'
+                            ? 'bg-white/15 text-[#F5F5F7] font-medium'
+                            : 'text-[#86868B] hover:text-[#F5F5F7] hover:bg-white/[0.06]'
                         }`}
                       >
                         <span>{option.fullLabel || option.label}</span>
@@ -152,7 +152,7 @@ function HomeView({
               )}
             </div>
 
-            {/* 2. ปุ่ม Sort แต่ละปุ่มแยกกัน (Trending, Popular, Recent) สไตล์ขอบสีแบรนด์ ตัวหนังสือขาว ไอคอนเวกเตอร์ Lucide */}
+            {/* 2. ปุ่ม Sort แต่ละปุ่มแยกกัน (Trending, Popular, Recent) สไตล์ Apple Droplet Pill */}
             {SORT_OPTIONS.map(sort => {
               const isActive = activeSort === sort.id;
               const Icon = sort.icon;
@@ -161,13 +161,13 @@ function HomeView({
                   key={sort.id}
                   type="button"
                   onClick={() => setActiveSort(isActive ? null : sort.id)}
-                  className={`h-[31px] sm:h-[32px] px-3.5 rounded-full border transition-all flex items-center gap-1.5 text-[13px] font-medium cursor-pointer whitespace-nowrap flex-shrink-0 ${
+                  className={`h-[34px] sm:h-[35px] px-3.5 rounded-full border transition-all flex items-center gap-1.5 text-[13px] font-medium cursor-pointer whitespace-nowrap flex-shrink-0 ${
                     isActive
-                      ? 'border-[#EF264C] bg-[#EF264C]/20 text-app-primary font-semibold shadow-[0_0_12px_rgba(239,38,76,0.25)]'
-                      : 'border-[#EF264C]/40 hover:border-[#EF264C]/80 bg-[#EF264C]/5 hover:bg-[#EF264C]/10 text-app-primary'
+                      ? 'border-white/25 bg-white/15 text-[#F5F5F7] font-semibold shadow-sm'
+                      : 'border-white/[0.08] hover:border-white/20 bg-white/[0.05] hover:bg-white/10 text-[#86868B] hover:text-[#F5F5F7]'
                   }`}
                 >
-                  <Icon size={14} className={isActive ? 'text-[#EF264C]' : 'text-app-primary'} />
+                  <Icon size={14} className={isActive ? 'text-[#EF264C]' : 'text-[#86868B]'} />
                   <span>{sort.label}</span>
                 </button>
               );
@@ -176,7 +176,7 @@ function HomeView({
           </div>
 
           {/* เส้นแบ่งโซนแนวตั้ง (Vertical Hairline Divider |) */}
-          <div className="w-[1px] h-4 bg-white/20 shrink-0" />
+          <div className="w-[1px] h-4 bg-white/15 shrink-0" />
 
           {/* ฝั่งขวา: Category Pills (เลื่อนซ้าย-ขวาได้อิสระ) */}
           <div className="flex-1 flex items-center gap-2 overflow-x-auto no-scrollbar min-w-0">
@@ -188,10 +188,10 @@ function HomeView({
                   type="button"
                   onClick={() => setSelectedCategory(category)}
                   className={`
-                    h-[31px] sm:h-[32px] px-3.5 rounded-full text-[13px] font-medium transition-all whitespace-nowrap cursor-pointer flex-shrink-0 flex items-center justify-center
+                    h-[34px] sm:h-[35px] px-4 rounded-full text-[13px] font-medium transition-all whitespace-nowrap cursor-pointer flex-shrink-0 flex items-center justify-center
                     ${isActive 
-                      ? 'bg-white text-black font-semibold shadow-md' 
-                      : 'bg-white/[0.06] hover:bg-white/[0.12] text-app-primary backdrop-blur-md border border-white/[0.08] hover:border-white/20'}
+                      ? 'bg-white text-black font-semibold shadow-sm' 
+                      : 'bg-white/[0.05] hover:bg-white/[0.1] text-[#86868B] hover:text-[#F5F5F7] backdrop-blur-md border border-white/[0.06] hover:border-white/15'}
                   `}
                 >
                   {category}
@@ -210,11 +210,11 @@ function HomeView({
 
         {/* Apple-Style Sections: แยกเป็นแถวตามรูป พร้อมหัวข้อตามสไตล์ Apple */}
         <div className="flex flex-col gap-10 sm:gap-12 lg:gap-14 pb-16">
-          {/* Row 1: สินค้าใหม่ ✨ */}
+          {/* Row 1: ดวงวิญญาณใหม่ล่าสุด ✨ */}
           <CharacterSliderRow 
-            title="สินค้าใหม่"
+            title="ดวงวิญญาณใหม่ล่าสุด"
             emoji="✨"
-            subtitle="แชทบอทล่าสุดที่พร้อมพูดคุยกับคุณ"
+            subtitle="พร้อมรับฟังและพูดคุยกับคุณในค่ำคืนนี้"
             characters={characters.slice(0, 8)}
             onCardClick={handleCardClick}
           />

@@ -88,7 +88,7 @@ function Sidebar({
     <div className={`
       ${isSidebarExpanded ? 'w-[228px] px-2.5' : 'w-[72px] px-2'} 
       ${isHomeMode ? 'h-full pt-2 sm:pt-2.5' : 'h-screen pt-2 sm:pt-2.5'} 
-      flex-shrink-0 border-r border-app-border flex flex-col pb-2.5 sm:pb-3 bg-app-bg/50 backdrop-blur-xl relative transition-all duration-300 ease-in-out z-20 select-none overscroll-none touch-pan-y
+      flex-shrink-0 border-r border-white/[0.06] flex flex-col pb-2.5 sm:pb-3 bg-[#101012]/95 backdrop-blur-xl relative transition-all duration-300 ease-in-out z-20 select-none overscroll-none touch-pan-y
     `}>
       {/* Circular Hamburger Button sitting directly on the gray divider line (เฉพาะตอนเข้าห้องแชท / !isHomeMode ตามการออกแบบเดิม) */}
       {!isHomeMode && (
@@ -114,7 +114,7 @@ function Sidebar({
             <img 
               src="/logo/logo.png" 
               alt="Maomoi Ai Logo" 
-              className="w-[30px] h-[30px] sm:w-[32px] sm:h-[32px] object-contain drop-shadow-[0_2px_10px_rgba(236,72,153,0.35)] group-hover:scale-105 transition-transform duration-200" 
+              className="w-8 h-8 sm:w-[34px] sm:h-[34px] object-contain drop-shadow-[0_2px_10px_rgba(236,72,153,0.35)] group-hover:scale-105 transition-transform duration-200" 
             />
           </div>
           {isSidebarExpanded && (
@@ -138,14 +138,18 @@ function Sidebar({
             const isActive = selectedMenu === item.id;
             
             if (!isSidebarExpanded) {
-              // Collapsed Mode (Icon only + Tooltip) - 50px Standard
+              // Collapsed Mode (Icon only + Tooltip) - Soft Island
               return (
                 <div key={item.id} className="relative flex items-center justify-center w-full">
                   <button
                     type="button"
                     title={item.label}
                     onClick={() => handleMenuClick(item.id)}
-                    className="w-[50px] h-[50px] flex items-center justify-center rounded-xl cursor-pointer transition-all duration-150 text-app-primary hover:bg-white/10"
+                    className={`w-[48px] h-[48px] flex items-center justify-center rounded-2xl cursor-pointer transition-all duration-150 ${
+                      isActive 
+                        ? 'bg-white/10 text-[#F5F5F7] shadow-sm' 
+                        : 'text-[#86868B] hover:text-[#F5F5F7] hover:bg-white/[0.06]'
+                    }`}
                   >
                     <MenuIcon id={item.id} isActive={isActive} DefaultIcon={Icon} />
                   </button>
@@ -153,14 +157,16 @@ function Sidebar({
               );
             }
 
-            // Expanded Mode (Row with Icon + Text Label as in Ref Image) - 48px Standard
+            // Expanded Mode (Row with Icon + Text Label - Soft Cushion Island)
             return (
               <button
                 key={item.id}
                 type="button"
                 onClick={() => handleMenuClick(item.id)}
-                className={`w-full h-[48px] flex items-center gap-2.5 px-2.5 rounded-xl cursor-pointer transition-all duration-150 text-left text-app-primary hover:bg-white/10 ${
-                  isActive ? 'font-medium' : ''
+                className={`w-full h-[46px] flex items-center gap-3 px-3 rounded-2xl cursor-pointer transition-all duration-150 text-left ${
+                  isActive 
+                    ? 'bg-white/10 text-[#F5F5F7] font-semibold shadow-sm' 
+                    : 'text-[#86868B] hover:text-[#F5F5F7] hover:bg-white/[0.06]'
                 }`}
               >
                 <MenuIcon id={item.id} isActive={isActive} DefaultIcon={Icon} />
@@ -173,7 +179,7 @@ function Sidebar({
         </div>
 
         {/* Gray Hairline Divider Between Main Menu & Subscriptions */}
-        <div className="w-full h-[1px] bg-app-border my-2.5 shrink-0" />
+        <div className="w-full h-[1px] bg-white/[0.06] my-2.5 shrink-0" />
 
         {/* Creator Subscriptions (YouTube Style: Circular Avatar + Creator Name + New Bot Dot) */}
         <CreatorSubscriptions 
@@ -183,20 +189,20 @@ function Sidebar({
         />
 
         {/* Gray Hairline Divider Before Action Button */}
-        <div className="w-full h-[1px] bg-app-border my-2.5 shrink-0" />
+        <div className="w-full h-[1px] bg-white/[0.06] my-2.5 shrink-0" />
 
-        {/* Create Button ("สร้าง" with SquarePlus icon on White background) */}
+        {/* Create Button ("สร้าง" with SquarePlus icon in Pill Capsule) */}
         <div className={`mt-0.5 mb-2 ${isSidebarExpanded ? 'w-full' : 'relative flex justify-center'}`}>
           <button 
             type="button"
             title="สร้าง"
             onClick={handleCompose}
             className={`
-              ${isSidebarExpanded ? 'w-full h-[48px] px-2.5 rounded-xl flex items-center gap-2.5 font-medium' : 'w-[50px] h-[50px] rounded-xl flex items-center justify-center'}
-              bg-app-primary text-black hover:opacity-90 transition-all cursor-pointer shadow-md
+              ${isSidebarExpanded ? 'w-full h-[46px] px-4 rounded-full flex items-center justify-center gap-2.5 font-medium' : 'w-[48px] h-[48px] rounded-full flex items-center justify-center'}
+              bg-white text-black hover:bg-white/90 active:scale-95 transition-all cursor-pointer shadow-[0_4px_16px_rgba(255,255,255,0.12)]
             `}
           >
-            <SquarePlus strokeWidth={2} size={22} className="flex-shrink-0" />
+            <SquarePlus strokeWidth={2} size={20} className="flex-shrink-0" />
             {isSidebarExpanded && <span className="text-[14px] font-semibold truncate">สร้าง</span>}
           </button>
         </div>

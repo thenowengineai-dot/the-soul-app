@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
 @theme {
-  --color-app-bg: #090909;
-  --color-app-border: #2F3336;
-  --color-app-primary: rgb(242, 242, 245);
-  --color-app-secondary: rgb(190, 190, 196);
-  --color-app-muted: #71767B;
-  --color-app-surface: #242426;
+  --color-app-bg: #121214;
+  --color-app-border: rgba(255, 255, 255, 0.08);
+  --color-app-primary: #F5F5F7;
+  --color-app-secondary: #86868B;
+  --color-app-muted: #6E6E73;
+  --color-app-surface: #1E1E22;
   --color-app-brand: #EF264C;
 }
 

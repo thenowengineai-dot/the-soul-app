@@ -27,7 +27,7 @@ export default function CharacterCard({
         aspectRatio: '9 / 16',
         ...style,
       }}
-      className={`flex-shrink-0 snap-start self-start h-auto group/card relative aspect-[9/16] rounded-2xl overflow-hidden bg-[#1c1c1e] border border-white/5 hover:border-white/20 transition-all duration-300 shadow-xl cursor-pointer ${className}`}
+      className={`flex-shrink-0 snap-start self-start h-auto group/card relative aspect-[9/16] rounded-[24px] overflow-hidden bg-[#18181B] border border-white/[0.08] hover:border-white/25 hover:scale-[1.02] transition-all duration-300 shadow-xl hover:shadow-2xl cursor-pointer ${className}`}
     >
       {/* Thumbnail Artwork with smooth zoom on hover */}
       <img 
@@ -35,12 +35,12 @@ export default function CharacterCard({
         alt={name} 
         referrerPolicy="no-referrer"
         loading="lazy"
-        className="w-full h-full object-cover object-center group-hover/card:scale-105 transition-transform duration-300 ease-out" 
+        className="w-full h-full object-cover object-center group-hover/card:scale-105 transition-transform duration-500 ease-out" 
       />
       
-      {/* Top Left Tag (ป้ายแท็ก 'ใหม่' สไตล์ Dark Glassmorphism สี่เหลี่ยมขอบมนน้อยลง + สีแบรนด์ #EF264C) */}
+      {/* Top Left Tag (ป้ายแท็กแคปซูลมน 'ใหม่' สไตล์ Dark Glassmorphism) */}
       {displayBadge && (
-        <div className="absolute top-2.5 left-2.5 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/65 backdrop-blur-md border border-[#EF264C]/60 shadow-[0_0_12px_rgba(239,38,76,0.25)] select-none">
+        <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#EF264C]/45 shadow-[0_0_12px_rgba(239,38,76,0.2)] select-none">
           <span className="w-1.5 h-1.5 rounded-full bg-[#EF264C] shadow-[0_0_8px_#EF264C] animate-pulse" />
           <span className="text-[#EF264C] text-[11px] font-bold tracking-wider leading-none">
             {displayBadge}
@@ -48,41 +48,31 @@ export default function CharacterCard({
         </div>
       )}
 
-      {/* Dark Gradient Overlay for bottom text and icons readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent via-25% pointer-events-none" />
+      {/* Dark Velvet Gradient Overlay for bottom text and icons readability */}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#101014]/95 via-[#101014]/45 to-transparent via-35% pointer-events-none" />
 
-      {/* Card Content Overlay */}
-      <div className="absolute bottom-0 inset-x-0 px-2.5 sm:px-3 pb-3 sm:pb-3.5 flex items-start gap-2 sm:gap-2.5 pointer-events-none">
-        {/* Creator Channel Avatar Circle with initial letter */}
-        <div className="w-[30px] h-[30px] sm:w-[33px] sm:h-[33px] rounded-full shrink-0 ring-1 ring-white/15 shadow-lg bg-gradient-to-br from-[#2D2D32] to-[#1C1C1E] border border-white/10 flex items-center justify-center mt-0.5">
-          <span className="text-[13px] sm:text-[14px] font-bold text-app-primary select-none leading-none">
-            {name.charAt(0)}
+      {/* Card Content Overlay (ตัดวงกลมตัวย่อออก ให้ชื่อและคำพูดวางเต็มความกว้างอย่างสง่างาม) */}
+      <div className="absolute bottom-0 inset-x-0 px-3.5 sm:px-4 pb-3.5 sm:pb-4 flex flex-col pointer-events-none">
+        {/* Character Name (ขาวนวล 20% Punch) */}
+        <h3 className="text-[16px] sm:text-[17px] font-bold text-[#F5F5F7] tracking-tight leading-snug drop-shadow-md truncate">
+          {name}
+        </h3>
+
+        {/* Character Dialogue / Quote (เทาเงินกระซิบ 80% Whisper) */}
+        <p className="text-[12.5px] sm:text-[13px] text-[#A1A1A6] mt-1 line-clamp-2 leading-relaxed drop-shadow font-normal italic">
+          {quote}
+        </p>
+
+        {/* Stats: Views & Message Count with Icons (Compact k/M formatting) */}
+        <div className="flex items-center gap-3.5 mt-2 text-[11.5px] sm:text-[12px] text-[#86868B] font-normal">
+          <span className="flex items-center gap-1.5">
+            <Eye size={13} className="text-[#86868B] flex-shrink-0" strokeWidth={1.8} />
+            <span>{formatCompactNumber(views)}</span>
           </span>
-        </div>
-
-        {/* Text Details */}
-        <div className="flex-1 min-w-0 flex flex-col">
-          {/* Character Name */}
-          <h3 className="text-[15px] sm:text-[16px] lg:text-[17px] font-bold text-app-primary tracking-wide leading-tight drop-shadow-md truncate">
-            {name}
-          </h3>
-
-          {/* Character Dialogue / Quote */}
-          <p className="text-[12px] sm:text-[12.5px] lg:text-[13px] text-app-secondary mt-1.5 line-clamp-1 leading-snug drop-shadow font-normal opacity-95">
-            {quote}
-          </p>
-
-          {/* Stats: Views & Message Count with Icons (Compact k/M formatting) */}
-          <div className="flex items-center gap-3.5 mt-2 text-[11px] sm:text-[12px] text-app-secondary font-normal">
-            <span className="flex items-center gap-1.5">
-              <Eye size={13.5} className="text-app-secondary flex-shrink-0" strokeWidth={2} />
-              <span>{formatCompactNumber(views)}</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <MessageCircle size={13.5} className="text-app-secondary flex-shrink-0" strokeWidth={2} />
-              <span>{formatCompactNumber(messages)}</span>
-            </span>
-          </div>
+          <span className="flex items-center gap-1.5">
+            <MessageCircle size={13} className="text-[#86868B] flex-shrink-0" strokeWidth={1.8} />
+            <span>{formatCompactNumber(messages)}</span>
+          </span>
         </div>
       </div>
     </div>

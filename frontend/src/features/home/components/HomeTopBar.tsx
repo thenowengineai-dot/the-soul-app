@@ -28,7 +28,7 @@ export default function HomeTopBar({
   onSignOut,
 }: HomeTopBarProps) {
   return (
-    <header className="w-full bg-[rgb(13,13,13)]/95 backdrop-blur-xl border-b border-app-border z-30 transition-all duration-200 flex items-center justify-between pl-[22px] pr-4 sm:pr-6 md:pr-8 py-3 sm:py-3.5 shrink-0 select-none">
+    <header className="w-full bg-[#121214]/95 backdrop-blur-xl border-b border-white/[0.06] z-30 transition-all duration-200 flex items-center justify-between pl-[22px] pr-4 sm:pr-6 md:pr-8 py-2.5 sm:py-3 shrink-0 select-none">
       {/* 1. Far Left: Hamburger Menu + Full Logo (YouTube Style) */}
       <div className="flex items-center gap-4 shrink-0">
         {onToggleSidebar && (
@@ -65,17 +65,20 @@ export default function HomeTopBar({
         </div>
       </div>
 
-      {/* 2. Center: Search Box (Same design as original) */}
+      {/* 2. Center: Pillow Search Capsule (Apple Spotlight / Safari Style) */}
       <div className="flex-1 flex justify-center max-w-[460px] md:max-w-[520px] lg:max-w-[560px] mx-3 sm:mx-6">
-        <div className="group flex items-center w-full h-[42px] sm:h-[44px] bg-transparent rounded-full px-4 border border-app-border hover:border-white/20 focus-within:border-[#EF264C] focus-within:hover:border-[#EF264C] transition-all duration-200">
-          <Search className="text-app-secondary transition-colors flex-shrink-0" size={17} strokeWidth={2} />
+        <div className="group flex items-center w-full h-[44px] sm:h-[46px] bg-[#18181D]/90 backdrop-blur-xl rounded-full px-4 border border-white/[0.08] hover:border-white/20 focus-within:border-white/30 shadow-[0_2px_12px_rgba(0,0,0,0.35)] transition-all duration-200">
+          <Search className="text-[#86868B] group-focus-within:text-[#F5F5F7] transition-colors flex-shrink-0" size={17} strokeWidth={1.8} />
           <input 
             type="text" 
-            placeholder="ค้นหา..." 
+            placeholder="ค้นหาตัวละคร, เรื่องราว, หรือบทบาท..." 
             value={searchQuery}
             onChange={(e) => onSearchChange?.(e.target.value)}
-            className="w-full bg-transparent text-app-primary placeholder-app-secondary pl-3 outline-none text-[14px] sm:text-[15px]" 
+            className="w-full bg-transparent text-[#F5F5F7] placeholder-[#86868B] pl-3 pr-2 outline-none text-[14px] sm:text-[14.5px] font-normal" 
           />
+          <kbd className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-mono text-[#86868B] bg-white/[0.06] border border-white/[0.08] select-none shrink-0">
+            ⌘K
+          </kbd>
         </div>
       </div>
 

@@ -120,18 +120,18 @@ export default function HeroShowcase({
 
   return (
     <div 
-      className={`w-full shrink-0 pt-4 sm:pt-6 pb-2 sm:pb-3 flex flex-col items-center select-none overflow-hidden ${className}`}
+      className={`w-full shrink-0 pt-6 sm:pt-8 pb-3 sm:pb-4 flex flex-col items-center select-none overflow-hidden ${className}`}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
       {/* Visual Peek-Through Carousel Stage */}
       <div className="relative flex items-center justify-center w-full max-w-[1440px] px-3 sm:px-6 shrink-0">
         
-        {/* Previous Peek Wing (Left) */}
+        {/* Previous Peek Wing (Left) - Subtle Atmospheric Hint */}
         <div 
           onClick={prevSlide}
           title={prevItem.title}
-          className="hidden md:block relative w-[140px] lg:w-[220px] h-[230px] sm:h-[300px] lg:h-[340px] min-h-[230px] sm:min-h-[300px] lg:min-h-[340px] rounded-[22px] overflow-hidden opacity-35 hover:opacity-65 transition-all duration-500 scale-[0.92] shrink-0 cursor-pointer border border-white/[0.06] shadow-lg"
+          className="hidden md:block relative w-[100px] lg:w-[160px] xl:w-[200px] h-[200px] sm:h-[250px] lg:h-[290px] min-h-[200px] sm:min-h-[250px] lg:min-h-[290px] rounded-[20px] sm:rounded-[26px] overflow-hidden opacity-20 hover:opacity-40 transition-all duration-700 scale-[0.93] shrink-0 cursor-pointer border border-white/[0.04] shadow-xl"
         >
           {prevItem.videoUrl ? (
             <video 
@@ -152,10 +152,10 @@ export default function HeroShowcase({
           <div className="absolute inset-0 bg-black/60 pointer-events-none" />
         </div>
 
-        {/* Center Main Hero Card */}
+        {/* Center Main Hero Card - Cinematic Ultrawide Stage (21:9 Aesthetic) */}
         <div 
           onClick={() => handleCardClick(currentSlide)}
-          className="relative w-full max-w-[820px] lg:max-w-[880px] h-[260px] sm:h-[340px] lg:h-[380px] min-h-[260px] sm:min-h-[340px] lg:min-h-[380px] rounded-[24px] sm:rounded-[28px] overflow-hidden shadow-2xl border border-white/10 shrink-0 mx-2 sm:mx-4 group/hero cursor-pointer bg-[#141418]"
+          className="relative w-full max-w-[860px] lg:max-w-[940px] xl:max-w-[980px] h-[230px] sm:h-[280px] lg:h-[320px] min-h-[230px] sm:min-h-[280px] lg:min-h-[320px] rounded-[24px] sm:rounded-[32px] overflow-hidden shadow-2xl border border-white/[0.06] shrink-0 mx-2 sm:mx-4 group/hero cursor-pointer bg-[#141418]"
         >
           {/* Native Video or Hi-Res Image */}
           {currentSlide.videoUrl ? (
@@ -166,20 +166,20 @@ export default function HeroShowcase({
               loop
               muted
               playsInline
-              className="absolute inset-0 w-full h-full object-cover object-center group-hover/hero:scale-105 transition-transform duration-700 ease-out"
+              className="absolute inset-0 w-full h-full object-cover object-center group-hover/hero:scale-[1.03] transition-transform duration-1000 ease-out"
             />
           ) : (
             <img 
               src={currentSlide.imageUrl} 
               alt={currentSlide.title} 
-              className="absolute inset-0 w-full h-full object-cover object-center group-hover/hero:scale-105 transition-transform duration-700 ease-out"
+              className="absolute inset-0 w-full h-full object-cover object-center group-hover/hero:scale-[1.03] transition-transform duration-1000 ease-out"
             />
           )}
 
-          {/* Cinematic Dark Velvet Scrim Gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c]/95 via-[#0a0a0c]/35 to-transparent via-50% pointer-events-none" />
+          {/* Gentle Bottom Scrim Gradient - Leaves 60%+ Art Unadorned and Luminous */}
+          <div className="absolute inset-x-0 bottom-0 h-[52%] bg-gradient-to-t from-[#0a0a0c]/90 via-[#0a0a0c]/30 to-transparent pointer-events-none" />
 
-          {/* Left & Right Chevron Navigation Buttons */}
+          {/* Left & Right Chevron Buttons - Discreet Tactile Glass, Reveals on Hover */}
           <button
             type="button"
             onClick={(e) => {
@@ -187,9 +187,9 @@ export default function HeroShowcase({
               prevSlide();
             }}
             title="สไลด์ก่อนหน้า"
-            className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/50 hover:bg-black/80 backdrop-blur-md border border-white/15 hover:border-white/35 text-white flex items-center justify-center transition-all cursor-pointer z-20 active:scale-90 shadow-lg"
+            className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/30 hover:bg-black/60 backdrop-blur-xl border border-white/10 hover:border-white/25 text-white/70 hover:text-white flex items-center justify-center opacity-0 group-hover/hero:opacity-100 transition-all duration-300 cursor-pointer z-20 active:scale-95 shadow-md"
           >
-            <ChevronLeft size={20} strokeWidth={2.2} />
+            <ChevronLeft size={18} strokeWidth={2.2} />
           </button>
 
           <button
@@ -199,44 +199,37 @@ export default function HeroShowcase({
               nextSlide();
             }}
             title="สไลด์ถัดไป"
-            className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/50 hover:bg-black/80 backdrop-blur-md border border-white/15 hover:border-white/35 text-white flex items-center justify-center transition-all cursor-pointer z-20 active:scale-90 shadow-lg"
+            className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/30 hover:bg-black/60 backdrop-blur-xl border border-white/10 hover:border-white/25 text-white/70 hover:text-white flex items-center justify-center opacity-0 group-hover/hero:opacity-100 transition-all duration-300 cursor-pointer z-20 active:scale-95 shadow-md"
           >
-            <ChevronRight size={20} strokeWidth={2.2} />
+            <ChevronRight size={18} strokeWidth={2.2} />
           </button>
 
-          {/* Editorial Content Overlay (Bottom Left) */}
-          <div className="absolute bottom-0 inset-x-0 p-4 sm:p-6 lg:p-7 flex flex-col pointer-events-none">
-            {/* Badges Bar */}
-            <div className="flex items-center gap-2 mb-2 sm:mb-2.5">
-              {currentSlide.badge && (
-                <span className="px-2.5 py-0.5 rounded-full bg-[#EF264C] text-white text-[11px] sm:text-[11.5px] font-bold tracking-wide shadow-sm select-none">
-                  {currentSlide.badge}
-                </span>
-              )}
-              {currentSlide.subBadge && (
-                <span className="px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-[#F5F5F7] text-[11px] sm:text-[11.5px] font-medium flex items-center gap-1.5 shadow-sm select-none">
-                  {currentSlide.subBadge}
-                </span>
-              )}
-            </div>
+          {/* Editorial Content Overlay - Pure, Restrained Apple Typography */}
+          <div className="absolute bottom-0 inset-x-0 p-5 sm:p-6 lg:p-7 flex flex-col pointer-events-none">
+            {/* Subtle Overline - Clean Editorial Category without any Tacky Badge Pills */}
+            {currentSlide.badge && (
+              <p className="text-[10.5px] sm:text-[11px] font-semibold tracking-widest uppercase text-white/50 mb-1 drop-shadow-sm select-none">
+                {currentSlide.badge}
+              </p>
+            )}
 
             {/* Character Name / Title */}
-            <h2 className="text-[19px] sm:text-[24px] lg:text-[27px] font-bold text-[#F5F5F7] tracking-tight leading-snug drop-shadow-lg truncate">
+            <h2 className="text-[20px] sm:text-[23px] lg:text-[25px] font-bold text-[#F5F5F7] tracking-tight leading-snug drop-shadow-md truncate">
               {currentSlide.title}
             </h2>
 
             {/* Subtitle / Dialogue */}
-            <p className="text-[12px] sm:text-[13.5px] text-[#A1A1A6] mt-0.5 sm:mt-1 line-clamp-1 font-normal drop-shadow leading-relaxed">
+            <p className="text-[12px] sm:text-[13px] text-[#A1A1A6] mt-0.5 sm:mt-1 line-clamp-1 font-normal drop-shadow-sm leading-relaxed max-w-[90%]">
               {currentSlide.subtitle}
             </p>
           </div>
         </div>
 
-        {/* Next Peek Wing (Right) */}
+        {/* Next Peek Wing (Right) - Subtle Atmospheric Hint */}
         <div 
           onClick={nextSlide}
           title={nextItem.title}
-          className="hidden md:block relative w-[140px] lg:w-[220px] h-[230px] sm:h-[300px] lg:h-[340px] min-h-[230px] sm:min-h-[300px] lg:min-h-[340px] rounded-[22px] overflow-hidden opacity-35 hover:opacity-65 transition-all duration-500 scale-[0.92] shrink-0 cursor-pointer border border-white/[0.06] shadow-lg"
+          className="hidden md:block relative w-[100px] lg:w-[160px] xl:w-[200px] h-[200px] sm:h-[250px] lg:h-[290px] min-h-[200px] sm:min-h-[250px] lg:min-h-[290px] rounded-[20px] sm:rounded-[26px] overflow-hidden opacity-20 hover:opacity-40 transition-all duration-700 scale-[0.93] shrink-0 cursor-pointer border border-white/[0.04] shadow-xl"
         >
           {nextItem.videoUrl ? (
             <video 
@@ -259,8 +252,8 @@ export default function HeroShowcase({
 
       </div>
 
-      {/* Apple-Style Segmented Dash Indicators (— — — — —) */}
-      <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-3 sm:mt-3.5 shrink-0">
+      {/* Apple Subtle Micro-Dots (Discreet, Whisper-Quiet Fluid Indicator) */}
+      <div className="flex items-center justify-center gap-1.5 mt-3 sm:mt-4 shrink-0">
         {slides.map((_, idx) => {
           const isActive = currentIndex === idx;
           return (
@@ -269,10 +262,10 @@ export default function HeroShowcase({
               type="button"
               onClick={() => setCurrentIndex(idx)}
               title={`สไลด์ที่ ${idx + 1}`}
-              className={`h-1 sm:h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+              className={`h-1 rounded-full transition-all duration-500 cursor-pointer ${
                 isActive 
-                  ? 'w-7 sm:w-9 bg-[#F5F5F7]' 
-                  : 'w-3 sm:w-3.5 bg-white/20 hover:bg-white/40'
+                  ? 'w-4 bg-[#F5F5F7]' 
+                  : 'w-1 bg-white/20 hover:bg-white/40'
               }`}
             />
           );

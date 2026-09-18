@@ -48,9 +48,9 @@ function AnnouncementBanner() {
   const currentItem: AnnouncementItem = ANNOUNCEMENT_ITEMS[currentIndex];
 
   return (
-    <div className="px-8 sm:px-10 xl:px-12 pt-5 sm:pt-6 pb-2.5 sm:pb-3.5 w-full shrink-0">
+    <div className="w-full shrink-0 pt-3 sm:pt-4 pb-3 sm:pb-4 px-4 sm:px-6">
       {/* Container เดี่ยวจัดกึ่งกลาง เว้นพื้นที่ว่าง (space) ด้านซ้ายและขวาอย่างสมดุล */}
-      <div className="max-w-[820px] mx-auto w-full">
+      <div className="max-w-[860px] lg:max-w-[940px] xl:max-w-[980px] mx-auto w-full">
         <div 
           onClick={() => {}}
           onMouseEnter={() => {

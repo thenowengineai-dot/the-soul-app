@@ -16,7 +16,6 @@ export function HeaderActionGroup({
   className = '',
   isLoggedIn = false,
   onLoginClick,
-  onSignupClick,
   isProfileDropdownOpen = false,
   onCloseProfileDropdown,
   onEditProfileClick,
@@ -41,19 +40,12 @@ export function HeaderActionGroup({
 
       {/* 2. สลับการแสดงผลตามสถานะการล็อกอิน */}
       {!isLoggedIn ? (
-        /* สถานะยังไม่ล็อกอิน: ปุ่ม สมัครสมาชิก (Text ขาว) + เข้าสู่ระบบ (Carmine Red Pill) ขนาดใหญ่ขึ้น */
-        <div className="flex items-center gap-1.5 sm:gap-2.5 ml-1">
-          <button
-            type="button"
-            onClick={onSignupClick}
-            className="text-[14px] sm:text-[15px] font-medium text-[#F2F2F5] hover:opacity-80 px-2.5 sm:px-3 py-1.5 transition-opacity cursor-pointer select-none"
-          >
-            สมัครสมาชิก
-          </button>
+        /* สถานะยังไม่ล็อกอิน: Apple Tactile Glass Pill ปุ่มเข้าสู่ระบบ (นุ่มลึก ไม่แย่งสายตา) */
+        <div className="flex items-center ml-1">
           <button
             type="button"
             onClick={onLoginClick}
-            className="h-[34px] sm:h-[36px] px-4 sm:px-5 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white font-medium text-[13.5px] sm:text-[14.5px] transition-all duration-200 cursor-pointer shadow-sm active:scale-95 flex items-center justify-center select-none"
+            className="h-8 px-4 rounded-full border border-white/20 hover:border-white/40 bg-white/[0.05] hover:bg-white/10 text-[#F5F5F7] font-medium text-[13px] transition-all duration-200 cursor-pointer shadow-sm active:scale-95 flex items-center justify-center select-none"
           >
             เข้าสู่ระบบ
           </button>

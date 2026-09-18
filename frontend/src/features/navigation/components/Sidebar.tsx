@@ -1,4 +1,4 @@
-import { PanelLeft, SquarePlus, Settings, User } from 'lucide-react'
+import { PanelLeft, SquarePlus, Settings } from 'lucide-react'
 import { SIDEBAR_MENU } from '../mockData'
 import CreatorSubscriptions from './CreatorSubscriptions'
 import type { SidebarProps } from '../types'
@@ -79,7 +79,6 @@ function Sidebar({
   userInitial = 'A',
   userHandle = '@alice',
   isLoggedIn = false,
-  onLoginClick,
 }: SidebarProps) {
   const handleLogo = onLogoClick || (() => handleMenuClick('home'));
   const handleCompose = onComposeClick || (() => handleMenuClick('chats'));
@@ -189,19 +188,19 @@ function Sidebar({
         {/* Gray Hairline Divider Before Action Button */}
         <div className="w-full h-[1px] bg-white/[0.06] my-2 shrink-0" />
 
-        {/* Create Button ("สร้าง" 40px Pill Capsule) */}
+        {/* Create Button ("สร้าง" - Apple Tactile Dark Velvet Pill) */}
         <div className={`mt-0.5 mb-2 ${isSidebarExpanded ? 'w-full' : 'relative flex justify-center'}`}>
           <button 
             type="button"
             title="สร้าง"
             onClick={handleCompose}
             className={`
-              ${isSidebarExpanded ? 'w-full h-10 px-3 rounded-full flex items-center justify-center gap-2 font-medium' : 'w-10 h-10 rounded-full flex items-center justify-center'}
-              bg-white text-black hover:bg-white/90 active:scale-95 transition-all cursor-pointer shadow-[0_3px_12px_rgba(255,255,255,0.1)]
+              ${isSidebarExpanded ? 'w-full h-9 px-3 rounded-full flex items-center justify-center gap-2 font-medium text-[13px]' : 'w-10 h-10 rounded-full flex items-center justify-center'}
+              border border-white/15 bg-white/[0.06] hover:bg-white/12 hover:border-white/30 text-[#F5F5F7] active:scale-95 transition-all cursor-pointer select-none
             `}
           >
-            <SquarePlus strokeWidth={1.8} size={18} className="flex-shrink-0" />
-            {isSidebarExpanded && <span className="text-[13.5px] font-semibold truncate">สร้าง</span>}
+            <SquarePlus strokeWidth={1.8} size={17} className="flex-shrink-0 text-[#F5F5F7]" />
+            {isSidebarExpanded && <span className="font-semibold truncate">สร้าง</span>}
           </button>
         </div>
 
@@ -262,30 +261,7 @@ function Sidebar({
               </button>
             </div>
           )
-        ) : (
-          /* Guest Mode: ปุ่มเข้าสู่ระบบแบบกระชับ */
-          isSidebarExpanded ? (
-            <button
-              type="button"
-              onClick={onLoginClick}
-              className="w-full h-10 flex items-center justify-center gap-2 px-3 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white text-[13.5px] font-medium cursor-pointer transition-all shadow-sm active:scale-95"
-            >
-              <User size={18} />
-              <span>เข้าสู่ระบบ</span>
-            </button>
-          ) : (
-            <div className="relative flex items-center justify-center w-full">
-              <button
-                type="button"
-                title="เข้าสู่ระบบ"
-                onClick={onLoginClick}
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-[#EF264C]/15 hover:bg-[#EF264C]/25 text-[#EF264C] border border-[#EF264C]/30 cursor-pointer transition-all duration-150 active:scale-95"
-              >
-                <User size={18} strokeWidth={2} />
-              </button>
-            </div>
-          )
-        )}
+        ) : null}
 
         {/* Settings Button (40px Row) */}
         {isSidebarExpanded ? (

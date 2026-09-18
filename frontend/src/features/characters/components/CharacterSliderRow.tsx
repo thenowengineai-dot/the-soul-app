@@ -83,7 +83,7 @@ function CharacterSliderRow({
           />
         )}
 
-        {/* Horizontal Scroll Track: 16px gap, 200-240px card width for 3:4 ratio */}
+        {/* Horizontal Scroll Track: 16px gap, 190-230px card width for 2:3 ratio */}
         <div 
           ref={sliderRef}
           onScroll={checkScroll}
@@ -96,7 +96,7 @@ function CharacterSliderRow({
               character={item}
               isOriginal={isOriginal}
               onClick={() => onCardClick?.(item)}
-              style={{ width: 'calc((100% - 96px) / 5.25)', minWidth: '200px', maxWidth: '240px' }}
+              style={{ width: 'calc((100% - 96px) / 5.25)', minWidth: '190px', maxWidth: '230px' }}
             />
           ))}
         </div>

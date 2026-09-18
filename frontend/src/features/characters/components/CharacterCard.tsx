@@ -29,18 +29,18 @@ export default function CharacterCard({
     <div 
       onClick={onClick}
       style={{
-        aspectRatio: '3 / 4',
+        aspectRatio: '2 / 3',
         ...style,
       }}
-      className={`flex-shrink-0 snap-start self-start h-auto group/card relative aspect-[3/4] rounded-[20px] sm:rounded-[22px] overflow-hidden bg-[#18181B] ${borderAndShadowClass} hover:scale-[1.02] transition-all duration-300 cursor-pointer ${className}`}
+      className={`flex-shrink-0 snap-start self-start h-auto group/card relative aspect-[2/3] rounded-[20px] sm:rounded-[22px] overflow-hidden bg-[#18181B] ${borderAndShadowClass} hover:scale-[1.02] transition-all duration-300 cursor-pointer ${className}`}
     >
-      {/* Thumbnail Artwork with smooth zoom on hover */}
+      {/* Thumbnail Artwork with smooth zoom on hover (object-top ensures heads & hair are never cropped) */}
       <img 
         src={image} 
         alt={name} 
         referrerPolicy="no-referrer"
         loading="lazy"
-        className="w-full h-full object-cover object-center group-hover/card:scale-105 transition-transform duration-500 ease-out" 
+        className="w-full h-full object-cover object-top group-hover/card:scale-105 transition-transform duration-500 ease-out" 
       />
       
       {/* Top Left Tag (ป้ายแท็กแคปซูลมน 'ใหม่' สไตล์ Dark Glassmorphism) */}
@@ -53,8 +53,8 @@ export default function CharacterCard({
         </div>
       )}
 
-      {/* Crystal Clear Artwork: Bottom scrim gradient only covering text area (~45%), leaving upper 55% pure and bright */}
-      <div className="absolute bottom-0 inset-x-0 h-[45%] bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
+      {/* Crystal Clear Artwork: Bottom scrim gradient only covering text area (~42%), leaving upper 58% pure and bright */}
+      <div className="absolute bottom-0 inset-x-0 h-[42%] bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
 
       {/* Card Content Overlay (8pt Harmonic Grid: compact padding, 15px title, single line quote) */}
       <div className="absolute bottom-0 inset-x-0 p-3 sm:p-3.5 flex flex-col pointer-events-none">

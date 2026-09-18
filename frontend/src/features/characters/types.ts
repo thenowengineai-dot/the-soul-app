@@ -55,6 +55,7 @@ export interface CharacterCardProps {
   style?: CSSProperties
   className?: string
   badge?: string
+  isOriginal?: boolean
 }
 
 export interface CharacterSliderRowProps {
@@ -63,6 +64,7 @@ export interface CharacterSliderRowProps {
   subtitle?: string
   characters: Character[]
   onCardClick?: (character: Character) => void
+  isOriginal?: boolean
 }
 
 export interface CharacterDetailModalProps {

@@ -13,21 +13,26 @@ export default function CharacterCard({
   onClick, 
   style, 
   className = '',
-  badge 
+  badge,
+  isOriginal = false
 }: CharacterCardProps) {
   if (!character) return null;
 
   const { name = '', quote = '', views = '', messages = '', image = '', badge: charBadge } = character;
   const displayBadge = badge ?? charBadge;
 
+  const borderAndShadowClass = isOriginal 
+    ? 'border border-[#EF264C]/50 hover:border-[#EF264C] shadow-[0_0_15px_rgba(239,38,76,0.15)]' 
+    : 'border-0 hover:ring-1 hover:ring-white/20 shadow-xl hover:shadow-2xl';
+
   return (
     <div 
       onClick={onClick}
       style={{
-        aspectRatio: '9 / 16',
+        aspectRatio: '3 / 4',
         ...style,
       }}
-      className={`flex-shrink-0 snap-start self-start h-auto group/card relative aspect-[9/16] rounded-[20px] sm:rounded-[22px] overflow-hidden bg-[#18181B] border border-white/[0.08] hover:border-white/25 hover:scale-[1.02] transition-all duration-300 shadow-xl hover:shadow-2xl cursor-pointer ${className}`}
+      className={`flex-shrink-0 snap-start self-start h-auto group/card relative aspect-[3/4] rounded-[20px] sm:rounded-[22px] overflow-hidden bg-[#18181B] ${borderAndShadowClass} hover:scale-[1.02] transition-all duration-300 cursor-pointer ${className}`}
     >
       {/* Thumbnail Artwork with smooth zoom on hover */}
       <img 
@@ -48,18 +53,18 @@ export default function CharacterCard({
         </div>
       )}
 
-      {/* Dark Velvet Gradient Overlay for bottom text and icons readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#101014]/95 via-[#101014]/45 to-transparent via-35% pointer-events-none" />
+      {/* Crystal Clear Artwork: Bottom scrim gradient only covering text area (~45%), leaving upper 55% pure and bright */}
+      <div className="absolute bottom-0 inset-x-0 h-[45%] bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
 
-      {/* Card Content Overlay (8pt Harmonic Grid: 14px padding, 15px title, leading 1.5) */}
-      <div className="absolute bottom-0 inset-x-0 p-3.5 sm:p-4 flex flex-col pointer-events-none">
+      {/* Card Content Overlay (8pt Harmonic Grid: compact padding, 15px title, single line quote) */}
+      <div className="absolute bottom-0 inset-x-0 p-3 sm:p-3.5 flex flex-col pointer-events-none">
         {/* Character Name (Apple 80/20: Primary White Punch) */}
         <h3 className="text-[15px] sm:text-[15.5px] font-bold text-[#F5F5F7] tracking-tight leading-snug drop-shadow-md truncate">
           {name}
         </h3>
 
-        {/* Character Dialogue / Quote (Apple 80/20: Secondary Silver Whisper) */}
-        <p className="text-[12px] sm:text-[12.5px] text-[#A1A1A6] mt-1 line-clamp-2 leading-[1.5] drop-shadow font-normal italic">
+        {/* Character Dialogue / Quote (Apple 80/20: Secondary Silver Whisper - Single Line) */}
+        <p className="text-[12px] sm:text-[12.5px] text-[#A1A1A6] mt-0.5 truncate leading-tight drop-shadow font-normal italic">
           {quote}
         </p>
 

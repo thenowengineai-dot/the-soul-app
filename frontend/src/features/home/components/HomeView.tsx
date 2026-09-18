@@ -210,12 +210,13 @@ function HomeView({
 
         {/* Apple-Style Sections: จังหวะแถวพอดีสายตา (Visual Peek-Through) */}
         <div className="flex flex-col gap-8 sm:gap-10 lg:gap-12 pb-16">
-          {/* Row 1: ดวงวิญญาณใหม่ล่าสุด ✨ */}
+          {/* Row 1: ดวงวิญญาณใหม่ล่าสุด ✨ (Originals / Featured) */}
           <CharacterSliderRow 
             title="ดวงวิญญาณใหม่ล่าสุด"
             emoji="✨"
             subtitle="พร้อมรับฟังและพูดคุยกับคุณในค่ำคืนนี้"
             characters={characters.slice(0, 8)}
+            isOriginal={true}
             onCardClick={handleCardClick}
           />
 

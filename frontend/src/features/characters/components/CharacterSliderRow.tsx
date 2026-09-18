@@ -10,7 +10,8 @@ function CharacterSliderRow({
   emoji, 
   subtitle, 
   characters, 
-  onCardClick 
+  onCardClick,
+  isOriginal = false
 }: CharacterSliderRowProps) {
   const sliderRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState<boolean>(false);
@@ -47,9 +48,14 @@ function CharacterSliderRow({
     <div className="w-full">
       {/* Apple-Style Section Header: ขนาดฟอนต์และระยะเว้นตาม Apple 8pt Grid */}
       <div className="px-6 sm:px-8 xl:px-10 mb-3 sm:mb-3.5 flex items-baseline flex-wrap gap-x-3 gap-y-1">
-        <h2 className="text-[19px] sm:text-[21px] lg:text-[22px] font-bold text-app-primary tracking-tight">
-          {title} {emoji && <span>{emoji}</span>}
-        </h2>
+        <div className="flex items-center gap-2.5">
+          <h2 className="text-[19px] sm:text-[21px] lg:text-[22px] font-bold text-app-primary tracking-tight">
+            {title} {emoji && <span>{emoji}</span>}
+          </h2>
+          {isOriginal && (
+            <div className="h-[2px] w-16 sm:w-24 bg-gradient-to-r from-[#EF264C] to-transparent rounded-full ml-1" />
+          )}
+        </div>
         {subtitle && (
           <span className="text-[13px] sm:text-[14px] text-app-secondary font-normal">
             {subtitle}
@@ -77,7 +83,7 @@ function CharacterSliderRow({
           />
         )}
 
-        {/* Horizontal Scroll Track: 16px gap, 220-255px card width (Apple Visual Peek-Through) */}
+        {/* Horizontal Scroll Track: 16px gap, 200-240px card width for 3:4 ratio */}
         <div 
           ref={sliderRef}
           onScroll={checkScroll}
@@ -88,8 +94,9 @@ function CharacterSliderRow({
             <CharacterCard 
               key={item.id}
               character={item}
+              isOriginal={isOriginal}
               onClick={() => onCardClick?.(item)}
-              style={{ width: 'calc((100% - 96px) / 5.25)', minWidth: '220px', maxWidth: '255px' }}
+              style={{ width: 'calc((100% - 96px) / 5.25)', minWidth: '200px', maxWidth: '240px' }}
             />
           ))}
         </div>

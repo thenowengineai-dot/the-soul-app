@@ -51,20 +51,20 @@ export default function CharacterCard({
       {/* Dark Velvet Gradient Overlay for bottom text and icons readability */}
       <div className="absolute inset-0 bg-gradient-to-t from-[#101014]/95 via-[#101014]/45 to-transparent via-35% pointer-events-none" />
 
-      {/* Card Content Overlay (ตัดวงกลมตัวย่อออก ให้ชื่อและคำพูดวางเต็มความกว้างอย่างสง่างาม) */}
-      <div className="absolute bottom-0 inset-x-0 px-3.5 sm:px-4 pb-3.5 sm:pb-4 flex flex-col pointer-events-none">
-        {/* Character Name (ขาวนวล 20% Punch) */}
-        <h3 className="text-[16px] sm:text-[17px] font-bold text-[#F5F5F7] tracking-tight leading-snug drop-shadow-md truncate">
+      {/* Card Content Overlay (8pt Harmonic Grid: 16px padding, 16px title, leading 1.6) */}
+      <div className="absolute bottom-0 inset-x-0 p-4 flex flex-col pointer-events-none">
+        {/* Character Name (Apple 80/20: Primary White Punch) */}
+        <h3 className="text-[16px] font-bold text-[#F5F5F7] tracking-tight leading-snug drop-shadow-md truncate">
           {name}
         </h3>
 
-        {/* Character Dialogue / Quote (เทาเงินกระซิบ 80% Whisper) */}
-        <p className="text-[12.5px] sm:text-[13px] text-[#A1A1A6] mt-1 line-clamp-2 leading-relaxed drop-shadow font-normal italic">
+        {/* Character Dialogue / Quote (Apple 80/20: Secondary Silver Whisper) */}
+        <p className="text-[12.5px] sm:text-[13px] text-[#A1A1A6] mt-1.5 line-clamp-2 leading-[1.6] drop-shadow font-normal italic">
           {quote}
         </p>
 
         {/* Stats: Views & Message Count with Icons (Compact k/M formatting) */}
-        <div className="flex items-center gap-3.5 mt-2 text-[11.5px] sm:text-[12px] text-[#86868B] font-normal">
+        <div className="flex items-center gap-3 mt-2 text-[12px] text-[#86868B] font-normal">
           <span className="flex items-center gap-1.5">
             <Eye size={13} className="text-[#86868B] flex-shrink-0" strokeWidth={1.8} />
             <span>{formatCompactNumber(views)}</span>

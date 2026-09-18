@@ -45,8 +45,8 @@ function CharacterSliderRow({
 
   return (
     <div className="w-full">
-      {/* Apple-Style Section Header: ขนาดฟอนต์และระยะเว้นตาม Apple */}
-      <div className="px-8 sm:px-10 xl:px-12 mb-3.5 sm:mb-4 flex items-baseline flex-wrap gap-x-2.5 gap-y-1">
+      {/* Apple-Style Section Header: ขนาดฟอนต์และระยะเว้นตาม Apple 8pt Grid */}
+      <div className="px-6 sm:px-8 xl:px-10 mb-4 flex items-baseline flex-wrap gap-x-3 gap-y-1">
         <h2 className="text-[20px] sm:text-[22px] lg:text-[24px] font-bold text-app-primary tracking-tight">
           {title} {emoji && <span>{emoji}</span>}
         </h2>
@@ -77,12 +77,12 @@ function CharacterSliderRow({
           />
         )}
 
-        {/* Horizontal Scroll Track: สไตล์เดิม 100% ไม่แตะต้องขนาดการ์ดหรือระยะห่าง */}
+        {/* Horizontal Scroll Track: 16px gap, 24-40px padding */}
         <div 
           ref={sliderRef}
           onScroll={checkScroll}
-          style={{ scrollPaddingLeft: '40px' }}
-          className="flex items-start gap-4.5 overflow-x-auto no-scrollbar scroll-smooth pl-8 sm:pl-10 xl:pl-12 pr-14 sm:pr-16 snap-x snap-proximity"
+          style={{ scrollPaddingLeft: '32px' }}
+          className="flex items-start gap-4 overflow-x-auto no-scrollbar scroll-smooth pl-6 sm:pl-8 xl:pl-10 pr-12 sm:pr-16 snap-x snap-proximity"
         >
           {characters.map(item => (
             <CharacterCard 

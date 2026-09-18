@@ -98,18 +98,18 @@ function HomeView({
       style={{ overscrollBehavior: 'none' }}
       className="flex-1 flex flex-col h-full overflow-y-auto overflow-x-hidden no-scrollbar relative z-10 bg-[#121214] overscroll-none"
     >
-      {/* Sticky Pill Bar: ฝั่งซ้าย Filter & Sort Controls | เส้นแบ่ง | ฝั่งขวา Category Pills */}
-      <div className="sticky top-0 z-20 bg-[#121214]/95 backdrop-blur-xl border-b border-white/[0.06] flex items-center gap-3 px-4 sm:px-6 py-2.5 sm:py-3 w-full transition-all duration-300 select-none">
+      {/* Sticky Pill Bar: ฝั่งซ้าย Filter & Sort Controls | เส้นแบ่ง | ฝั่งขวา Category Pills (Apple 8pt Harmonic Rhythm) */}
+      <div className="sticky top-0 z-20 h-14 bg-[#121214]/95 backdrop-blur-xl border-b border-white/[0.06] flex items-center gap-3 px-6 w-full transition-all duration-300 select-none">
         
         {/* ฝั่งซ้าย: Controls & Sorting (เพศ, กำลังมาแรง, ยอดนิยม, ล่าสุด สไตล์ Apple Droplet Pills) */}
         <div className="flex-shrink-0 flex items-center gap-2">
             
-            {/* 1. ปุ่ม Gender Dropdown (ขอบมนหยดน้ำ สีเทาเงินนุ่มตา) */}
+            {/* 1. ปุ่ม Gender Dropdown (ขอบมนหยดน้ำ 36px/16px สไตล์ Apple) */}
             <div className="relative" ref={genderDropdownRef}>
               <button
                 type="button"
                 onClick={() => setIsGenderOpen(!isGenderOpen)}
-                className={`h-[34px] sm:h-[35px] px-3.5 rounded-full border transition-all flex items-center gap-1.5 text-[13px] font-medium cursor-pointer whitespace-nowrap flex-shrink-0 ${
+                className={`h-9 px-4 rounded-full border transition-all flex items-center gap-2 text-[13px] font-medium cursor-pointer whitespace-nowrap flex-shrink-0 ${
                   selectedGender !== 'all' || isGenderOpen
                     ? 'border-white/25 bg-white/15 text-[#F5F5F7] font-semibold shadow-sm'
                     : 'border-white/[0.08] hover:border-white/20 bg-white/[0.05] hover:bg-white/10 text-[#86868B] hover:text-[#F5F5F7]'
@@ -161,7 +161,7 @@ function HomeView({
                   key={sort.id}
                   type="button"
                   onClick={() => setActiveSort(isActive ? null : sort.id)}
-                  className={`h-[34px] sm:h-[35px] px-3.5 rounded-full border transition-all flex items-center gap-1.5 text-[13px] font-medium cursor-pointer whitespace-nowrap flex-shrink-0 ${
+                  className={`h-9 px-4 rounded-full border transition-all flex items-center gap-2 text-[13px] font-medium cursor-pointer whitespace-nowrap flex-shrink-0 ${
                     isActive
                       ? 'border-white/25 bg-white/15 text-[#F5F5F7] font-semibold shadow-sm'
                       : 'border-white/[0.08] hover:border-white/20 bg-white/[0.05] hover:bg-white/10 text-[#86868B] hover:text-[#F5F5F7]'
@@ -175,10 +175,10 @@ function HomeView({
 
           </div>
 
-          {/* เส้นแบ่งโซนแนวตั้ง (Vertical Hairline Divider |) */}
+          {/* เส้นแบ่งโซนแนวตั้ง (Vertical Hairline Divider 16px |) */}
           <div className="w-[1px] h-4 bg-white/15 shrink-0" />
 
-          {/* ฝั่งขวา: Category Pills (เลื่อนซ้าย-ขวาได้อิสระ) */}
+          {/* ฝั่งขวา: Category Pills (เลื่อนซ้าย-ขวาได้อิสระ สูง 36px เบาะนุ่มนวล) */}
           <div className="flex-1 flex items-center gap-2 overflow-x-auto no-scrollbar min-w-0">
             {CATEGORIES.map(category => {
               const isActive = selectedCategory === category;
@@ -188,7 +188,7 @@ function HomeView({
                   type="button"
                   onClick={() => setSelectedCategory(category)}
                   className={`
-                    h-[34px] sm:h-[35px] px-4 rounded-full text-[13px] font-medium transition-all whitespace-nowrap cursor-pointer flex-shrink-0 flex items-center justify-center
+                    h-9 px-4 rounded-full text-[13px] font-medium transition-all whitespace-nowrap cursor-pointer flex-shrink-0 flex items-center justify-center
                     ${isActive 
                       ? 'bg-white text-black font-semibold shadow-sm' 
                       : 'bg-white/[0.05] hover:bg-white/[0.1] text-[#86868B] hover:text-[#F5F5F7] backdrop-blur-md border border-white/[0.06] hover:border-white/15'}

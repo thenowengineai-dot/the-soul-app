@@ -86,9 +86,9 @@ function Sidebar({
 
   return (
     <div className={`
-      ${isSidebarExpanded ? 'w-[228px] px-2.5' : 'w-[72px] px-2'} 
+      ${isSidebarExpanded ? 'w-[240px] px-3' : 'w-[72px] px-2'} 
       ${isHomeMode ? 'h-full pt-2 sm:pt-2.5' : 'h-screen pt-2 sm:pt-2.5'} 
-      flex-shrink-0 border-r border-white/[0.06] flex flex-col pb-2.5 sm:pb-3 bg-[#101012]/95 backdrop-blur-xl relative transition-all duration-300 ease-in-out z-20 select-none overscroll-none touch-pan-y
+      flex-shrink-0 border-r border-white/[0.06] flex flex-col pb-3 bg-[#101012]/95 backdrop-blur-xl relative transition-all duration-300 ease-in-out z-20 select-none overscroll-none touch-pan-y
     `}>
       {/* Circular Hamburger Button sitting directly on the gray divider line (เฉพาะตอนเข้าห้องแชท / !isHomeMode ตามการออกแบบเดิม) */}
       {!isHomeMode && (
@@ -108,13 +108,13 @@ function Sidebar({
         <div 
           onClick={handleLogo}
           title="Maomoi Ai"
-          className={`flex items-center ${isSidebarExpanded ? 'px-1 mb-2 gap-2.5' : 'justify-center mb-2'} h-[38px] sm:h-[40px] cursor-pointer group select-none`}
+          className={`flex items-center ${isSidebarExpanded ? 'px-1 mb-2 gap-3' : 'justify-center mb-2'} h-10 cursor-pointer group select-none`}
         >
-          <div className="w-[36px] h-[36px] sm:w-[38px] sm:h-[38px] flex items-center justify-center rounded-xl group-hover:bg-white/[0.06] transition-all flex-shrink-0">
+          <div className="w-8 h-8 flex items-center justify-center rounded-xl group-hover:bg-white/[0.06] transition-all flex-shrink-0">
             <img 
               src="/logo/logo.png" 
               alt="Maomoi Ai Logo" 
-              className="w-8 h-8 sm:w-[34px] sm:h-[34px] object-contain drop-shadow-[0_2px_10px_rgba(236,72,153,0.35)] group-hover:scale-105 transition-transform duration-200" 
+              className="w-8 h-8 object-contain drop-shadow-[0_2px_10px_rgba(236,72,153,0.35)] group-hover:scale-105 transition-transform duration-200" 
             />
           </div>
           {isSidebarExpanded && (
@@ -122,7 +122,7 @@ function Sidebar({
               <img 
                 src="/logo/maomoi_ai_white.png" 
                 alt="Maomoi Ai" 
-                className="h-[18px] sm:h-[20px] w-auto object-contain flex-shrink-0" 
+                className="h-5 w-auto object-contain flex-shrink-0" 
               />
             </div>
           )}
@@ -130,22 +130,22 @@ function Sidebar({
       )}
 
       {/* Middle Scrollable Section: Menu Items + Divider + Creator Subscriptions */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar flex flex-col min-h-0 py-0.5 overscroll-contain touch-pan-y">
-        {/* Menu Items (YouTube Style with comfortable spacing) */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar flex flex-col min-h-0 py-1 overscroll-contain touch-pan-y">
+        {/* Menu Items (Apple 48px Height Cushion System) */}
         <div className="flex flex-col gap-1.5 w-full">
           {SIDEBAR_MENU.map(item => {
             const Icon = item.icon;
             const isActive = selectedMenu === item.id;
             
             if (!isSidebarExpanded) {
-              // Collapsed Mode (Icon only + Tooltip) - Soft Island
+              // Collapsed Mode (48px Icon Capsule) - Soft Island
               return (
                 <div key={item.id} className="relative flex items-center justify-center w-full">
                   <button
                     type="button"
                     title={item.label}
                     onClick={() => handleMenuClick(item.id)}
-                    className={`w-[48px] h-[48px] flex items-center justify-center rounded-2xl cursor-pointer transition-all duration-150 ${
+                    className={`w-12 h-12 flex items-center justify-center rounded-2xl cursor-pointer transition-all duration-150 ${
                       isActive 
                         ? 'bg-white/10 text-[#F5F5F7] shadow-sm' 
                         : 'text-[#86868B] hover:text-[#F5F5F7] hover:bg-white/[0.06]'
@@ -157,13 +157,13 @@ function Sidebar({
               );
             }
 
-            // Expanded Mode (Row with Icon + Text Label - Soft Cushion Island)
+            // Expanded Mode (Row with Icon + Text Label - 48px Soft Cushion Island)
             return (
               <button
                 key={item.id}
                 type="button"
                 onClick={() => handleMenuClick(item.id)}
-                className={`w-full h-[46px] flex items-center gap-3 px-3 rounded-2xl cursor-pointer transition-all duration-150 text-left ${
+                className={`w-full h-12 flex items-center gap-3 px-3 rounded-2xl cursor-pointer transition-all duration-150 text-left ${
                   isActive 
                     ? 'bg-white/10 text-[#F5F5F7] font-semibold shadow-sm' 
                     : 'text-[#86868B] hover:text-[#F5F5F7] hover:bg-white/[0.06]'
@@ -179,9 +179,9 @@ function Sidebar({
         </div>
 
         {/* Gray Hairline Divider Between Main Menu & Subscriptions */}
-        <div className="w-full h-[1px] bg-white/[0.06] my-2.5 shrink-0" />
+        <div className="w-full h-[1px] bg-white/[0.06] my-3 shrink-0" />
 
-        {/* Creator Subscriptions (YouTube Style: Circular Avatar + Creator Name + New Bot Dot) */}
+        {/* Creator Subscriptions */}
         <CreatorSubscriptions 
           isSidebarExpanded={isSidebarExpanded}
           creators={followedCreators}
@@ -189,16 +189,16 @@ function Sidebar({
         />
 
         {/* Gray Hairline Divider Before Action Button */}
-        <div className="w-full h-[1px] bg-white/[0.06] my-2.5 shrink-0" />
+        <div className="w-full h-[1px] bg-white/[0.06] my-3 shrink-0" />
 
-        {/* Create Button ("สร้าง" with SquarePlus icon in Pill Capsule) */}
+        {/* Create Button ("สร้าง" 48px Pill Capsule) */}
         <div className={`mt-0.5 mb-2 ${isSidebarExpanded ? 'w-full' : 'relative flex justify-center'}`}>
           <button 
             type="button"
             title="สร้าง"
             onClick={handleCompose}
             className={`
-              ${isSidebarExpanded ? 'w-full h-[46px] px-4 rounded-full flex items-center justify-center gap-2.5 font-medium' : 'w-[48px] h-[48px] rounded-full flex items-center justify-center'}
+              ${isSidebarExpanded ? 'w-full h-12 px-4 rounded-full flex items-center justify-center gap-2.5 font-medium' : 'w-12 h-12 rounded-full flex items-center justify-center'}
               bg-white text-black hover:bg-white/90 active:scale-95 transition-all cursor-pointer shadow-[0_4px_16px_rgba(255,255,255,0.12)]
             `}
           >
@@ -209,8 +209,8 @@ function Sidebar({
 
       </div>
 
-      {/* Bottom Area: User Profile Dock (Twitter/X & ChatGPT Style) + Settings */}
-      <div className="mt-auto pt-2 border-t border-app-border w-full flex flex-col gap-1.5">
+      {/* Bottom Area: User Profile Dock + Settings (Apple 8pt Rhythm) */}
+      <div className="mt-auto pt-2 border-t border-white/[0.06] w-full flex flex-col gap-1.5">
         {/* User Profile Dock: คลิกเพื่อเข้าหน้าโปรไฟล์ & ศูนย์ควบคุม */}
         {isLoggedIn ? (
           isSidebarExpanded ? (
@@ -218,14 +218,14 @@ function Sidebar({
               type="button"
               title="โปรไฟล์ & ศูนย์ควบคุมของคุณ"
               onClick={() => handleMenuClick('profile')}
-              className={`w-full h-[52px] flex items-center gap-2 px-2.5 rounded-2xl cursor-pointer transition-all duration-150 text-left ${
+              className={`w-full h-14 flex items-center gap-3 px-3 rounded-2xl cursor-pointer transition-all duration-150 text-left ${
                 selectedMenu === 'profile'
                   ? 'bg-white/15 border border-white/20 text-white font-medium shadow-md'
                   : 'hover:bg-white/10 text-app-primary border border-transparent'
               }`}
             >
               <div className="relative shrink-0">
-                <div className="w-[34px] h-[34px] rounded-full ring-1 ring-[#2F3336] bg-gradient-to-br from-[#2D2D32] to-[#1C1C1E] flex items-center justify-center">
+                <div className="w-9 h-9 rounded-full ring-1 ring-[#2F3336] bg-gradient-to-br from-[#2D2D32] to-[#1C1C1E] flex items-center justify-center">
                   <span className="text-[13px] font-bold text-app-primary leading-none">
                     {userInitial}
                   </span>
@@ -247,14 +247,14 @@ function Sidebar({
                 type="button"
                 title={`โปรไฟล์: ${userName}`}
                 onClick={() => handleMenuClick('profile')}
-                className={`w-[52px] h-[52px] flex items-center justify-center rounded-xl cursor-pointer transition-all duration-150 ${
+                className={`w-12 h-12 flex items-center justify-center rounded-2xl cursor-pointer transition-all duration-150 ${
                   selectedMenu === 'profile'
                     ? 'bg-white/15 border border-white/20'
                     : 'hover:bg-white/10'
                 }`}
               >
                 <div className="relative">
-                  <div className="w-[32px] h-[32px] rounded-full ring-1 ring-[#2F3336] bg-gradient-to-br from-[#2D2D32] to-[#1C1C1E] flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full ring-1 ring-[#2F3336] bg-gradient-to-br from-[#2D2D32] to-[#1C1C1E] flex items-center justify-center">
                     <span className="text-[12px] font-bold text-app-primary leading-none">
                       {userInitial}
                     </span>
@@ -270,7 +270,7 @@ function Sidebar({
             <button
               type="button"
               onClick={onLoginClick}
-              className="w-full h-[46px] flex items-center justify-center gap-2 px-2.5 rounded-xl bg-[#EF264C] hover:bg-[#d91d40] text-white text-[14px] font-medium cursor-pointer transition-all shadow-sm active:scale-95"
+              className="w-full h-12 flex items-center justify-center gap-2 px-3 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white text-[14px] font-medium cursor-pointer transition-all shadow-sm active:scale-95"
             >
               <User size={20} />
               <span>เข้าสู่ระบบ</span>
@@ -281,20 +281,20 @@ function Sidebar({
                 type="button"
                 title="เข้าสู่ระบบ"
                 onClick={onLoginClick}
-                className="w-[52px] h-[52px] flex items-center justify-center rounded-xl bg-[#EF264C]/15 hover:bg-[#EF264C]/25 text-[#EF264C] border border-[#EF264C]/30 cursor-pointer transition-all duration-150 active:scale-95"
+                className="w-12 h-12 flex items-center justify-center rounded-full bg-[#EF264C]/15 hover:bg-[#EF264C]/25 text-[#EF264C] border border-[#EF264C]/30 cursor-pointer transition-all duration-150 active:scale-95"
               >
-                <User size={22} strokeWidth={2} />
+                <User size={20} strokeWidth={2} />
               </button>
             </div>
           )
         )}
 
-        {/* Settings Button */}
+        {/* Settings Button (48px Row) */}
         {isSidebarExpanded ? (
           <button
             type="button"
             onClick={() => handleMenuClick('settings')}
-            className={`w-full h-[46px] flex items-center gap-2.5 px-2.5 rounded-xl cursor-pointer transition-all duration-150 text-left text-app-secondary hover:text-app-primary hover:bg-white/5 ${
+            className={`w-full h-12 flex items-center gap-3 px-3 rounded-2xl cursor-pointer transition-all duration-150 text-left text-app-secondary hover:text-app-primary hover:bg-white/5 ${
               selectedMenu === 'settings' ? 'font-medium text-app-primary bg-white/5' : ''
             }`}
           >
@@ -309,7 +309,7 @@ function Sidebar({
               type="button"
               title="การตั้งค่า"
               onClick={() => handleMenuClick('settings')}
-              className="w-[52px] h-[46px] flex items-center justify-center rounded-xl cursor-pointer transition-all duration-150 text-app-secondary hover:text-app-primary hover:bg-white/5"
+              className="w-12 h-12 flex items-center justify-center rounded-2xl cursor-pointer transition-all duration-150 text-app-secondary hover:text-app-primary hover:bg-white/5"
             >
               <Settings strokeWidth={2} size={22} />
             </button>

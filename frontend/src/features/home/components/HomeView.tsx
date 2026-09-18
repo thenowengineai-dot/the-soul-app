@@ -102,9 +102,6 @@ function HomeView({
       {/* Featured Hero Showcase (Cinematic Billboard Carousel with Native Video Loop) */}
       <HeroShowcase onSelectCharacter={handleCardClick} />
 
-      {/* Top Announcement & Promo Banners (แบนเนอร์เดี่ยวจัดกึ่งกลาง พร้อมระบบ Auto-Fade สลับสีสไตล์เรฟ) */}
-      <AnnouncementBanner />
-
       {/* Sticky Pill Bar: Frameless Floating Pebbles (ตัดเส้นขีดแนวนอนล่างออก ชิปลอยเหนือผืนผ้าใบมืด) */}
       <div className="sticky top-0 z-20 h-12 bg-[#121214]/90 backdrop-blur-xl flex items-center gap-3 px-6 sm:px-12 lg:px-14 xl:px-16 w-full transition-all duration-300 select-none shrink-0">
         
@@ -223,6 +220,11 @@ function HomeView({
             isOriginal={true}
             onCardClick={handleCardClick}
           />
+
+          {/* Editorial Intermezzo: Top Announcement & Promo Banners (จังหวะคั่นแถวสไตล์ Apple Editorial) */}
+          <div className="w-full -my-2 sm:-my-3">
+            <AnnouncementBanner />
+          </div>
 
           {/* Row 2: เทรนด์ประจำสัปดาห์ ⚡ */}
           <CharacterSliderRow 

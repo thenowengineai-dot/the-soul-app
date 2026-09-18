@@ -103,9 +103,7 @@ export default function HeroShowcase({
   };
 
   const currentSlide = slides[currentIndex];
-  const prevIndex = (currentIndex - 1 + slides.length) % slides.length;
   const nextIndex = (currentIndex + 1) % slides.length;
-  const prevItem = slides[prevIndex];
   const nextItem = slides[nextIndex];
 
   const handleCardClick = (slide: HeroSlide) => {
@@ -124,38 +122,13 @@ export default function HeroShowcase({
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      {/* Visual Peek-Through Carousel Stage */}
-      <div className="relative flex items-center justify-center w-full max-w-[1440px] px-3 sm:px-6 shrink-0">
+      {/* Visual Peek-Through Carousel Stage (Apple Stage: Left Anchor with Right Peek) */}
+      <div className="relative flex items-center justify-center w-full max-w-[1440px] px-4 sm:px-8 lg:px-12 shrink-0">
         
-        {/* Previous Peek Wing (Left) - Subtle Atmospheric Hint */}
-        <div 
-          onClick={prevSlide}
-          title={prevItem.title}
-          className="hidden md:block relative w-[120px] lg:w-[180px] xl:w-[220px] h-[300px] sm:h-[350px] lg:h-[390px] min-h-[300px] sm:min-h-[350px] lg:min-h-[390px] rounded-[22px] sm:rounded-[28px] overflow-hidden opacity-25 hover:opacity-50 transition-all duration-700 scale-[0.93] shrink-0 cursor-pointer border border-white/[0.04] shadow-xl"
-        >
-          {prevItem.videoUrl ? (
-            <video 
-              src={prevItem.videoUrl} 
-              muted 
-              loop 
-              autoPlay 
-              playsInline 
-              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-            />
-          ) : (
-            <img 
-              src={prevItem.imageUrl} 
-              alt={prevItem.title} 
-              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-            />
-          )}
-          <div className="absolute inset-0 bg-black/60 pointer-events-none" />
-        </div>
-
-        {/* Center Main Hero Card - Majestic Apple Showcase Scale */}
+        {/* Center Main Hero Card - Majestic Apple Showcase Stage */}
         <div 
           onClick={() => handleCardClick(currentSlide)}
-          className="relative w-full max-w-[880px] lg:max-w-[960px] xl:max-w-[1020px] h-[340px] sm:h-[400px] lg:h-[440px] min-h-[340px] sm:min-h-[400px] lg:min-h-[440px] rounded-[28px] sm:rounded-[36px] overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.6)] border border-white/[0.08] shrink-0 mx-2 sm:mx-4 group/hero cursor-pointer bg-[#141418]"
+          className="relative w-full max-w-[1040px] xl:max-w-[1140px] h-[360px] sm:h-[420px] lg:h-[460px] min-h-[360px] sm:min-h-[420px] lg:min-h-[460px] rounded-[28px] sm:rounded-[36px] overflow-hidden shadow-[0_16px_50px_rgba(0,0,0,0.7)] border border-white/[0.06] shrink-0 mx-2 sm:mx-4 group/hero cursor-pointer bg-[#141418]"
         >
           {/* Native Video or Hi-Res Image */}
           {currentSlide.videoUrl ? (
@@ -166,13 +139,13 @@ export default function HeroShowcase({
               loop
               muted
               playsInline
-              className="absolute inset-0 w-full h-full object-cover object-center group-hover/hero:scale-[1.03] transition-transform duration-1000 ease-out"
+              className="absolute inset-0 w-full h-full object-cover object-center group-hover/hero:scale-[1.025] transition-transform duration-1000 ease-out"
             />
           ) : (
             <img 
               src={currentSlide.imageUrl} 
               alt={currentSlide.title} 
-              className="absolute inset-0 w-full h-full object-cover object-center group-hover/hero:scale-[1.03] transition-transform duration-1000 ease-out"
+              className="absolute inset-0 w-full h-full object-cover object-center group-hover/hero:scale-[1.025] transition-transform duration-1000 ease-out"
             />
           )}
 
@@ -180,37 +153,37 @@ export default function HeroShowcase({
           <div className="absolute inset-x-0 bottom-0 h-[48%] bg-gradient-to-t from-[#0a0a0c]/95 via-[#0a0a0c]/40 to-transparent pointer-events-none" />
 
           {/* Editorial Content Overlay - Apple Grandeur & Card Consistency */}
-          <div className="absolute bottom-0 inset-x-0 p-6 sm:p-8 lg:p-10 flex flex-col pointer-events-none">
+          <div className="absolute bottom-0 inset-x-0 p-6 sm:p-10 lg:p-12 flex flex-col pointer-events-none">
             {/* Subtle Overline Category */}
             {currentSlide.badge && (
-              <p className="text-[11px] sm:text-[11.5px] font-semibold tracking-[0.2em] uppercase text-[#EF264C] mb-1 drop-shadow-sm select-none">
+              <p className="text-[11px] sm:text-[12px] font-semibold tracking-[0.25em] uppercase text-[#EF264C] mb-1.5 drop-shadow-sm select-none">
                 {currentSlide.badge}
               </p>
             )}
 
             {/* Character Name / Title (Scaled for Hero Grandeur) */}
-            <h2 className="text-[26px] sm:text-[30px] lg:text-[34px] font-bold text-[#F5F5F7] tracking-tight leading-tight drop-shadow-lg truncate">
+            <h2 className="text-[28px] sm:text-[34px] lg:text-[40px] font-bold text-[#F5F5F7] tracking-tight leading-none drop-shadow-xl truncate">
               {currentSlide.title}
             </h2>
 
             {/* Dialogue / Quote (Italic for Complete Consistency with CharacterCard) */}
-            <p className="text-[14px] sm:text-[15.5px] lg:text-[16.5px] text-[#A1A1A6] italic mt-1 sm:mt-1.5 line-clamp-1 sm:line-clamp-2 font-normal drop-shadow-md leading-relaxed max-w-[85%]">
+            <p className="text-[14.5px] sm:text-[16px] lg:text-[17px] text-[#A1A1A6] italic mt-2 sm:mt-2.5 line-clamp-1 sm:line-clamp-2 font-normal drop-shadow-md leading-relaxed max-w-[80%]">
               {currentSlide.subtitle}
             </p>
 
             {/* Apple Action Cue (Subtle Prompt: 'เริ่มบทสนทนา >') */}
-            <div className="flex items-center gap-1 mt-2.5 sm:mt-3 text-[13px] sm:text-[13.5px] font-medium text-[#F5F5F7]/90 group-hover/hero:text-white transition-colors">
+            <div className="flex items-center gap-1.5 mt-3.5 sm:mt-4 text-[13.5px] sm:text-[14px] font-medium text-[#F5F5F7]/90 group-hover/hero:text-white transition-colors">
               <span>เริ่มบทสนทนา</span>
-              <ChevronRight size={14} className="group-hover/hero:translate-x-0.5 transition-transform" />
+              <ChevronRight size={15} className="group-hover/hero:translate-x-1 transition-transform" />
             </div>
           </div>
         </div>
 
-        {/* Next Peek Wing (Right) - Subtle Atmospheric Hint */}
+        {/* Next Peek Card (Right Only - Exactly Like Apple Store Carousel) */}
         <div 
           onClick={nextSlide}
           title={nextItem.title}
-          className="hidden md:block relative w-[120px] lg:w-[180px] xl:w-[220px] h-[300px] sm:h-[350px] lg:h-[390px] min-h-[300px] sm:min-h-[350px] lg:min-h-[390px] rounded-[22px] sm:rounded-[28px] overflow-hidden opacity-25 hover:opacity-50 transition-all duration-700 scale-[0.93] shrink-0 cursor-pointer border border-white/[0.04] shadow-xl"
+          className="hidden lg:block relative w-[140px] xl:w-[220px] h-[330px] sm:h-[390px] lg:h-[430px] min-h-[330px] sm:min-h-[390px] lg:min-h-[430px] rounded-[24px] sm:rounded-[30px] overflow-hidden opacity-25 hover:opacity-50 transition-all duration-700 scale-[0.95] shrink-0 cursor-pointer border border-white/[0.04] shadow-xl"
         >
           {nextItem.videoUrl ? (
             <video 
@@ -228,7 +201,7 @@ export default function HeroShowcase({
               className="absolute inset-0 w-full h-full object-cover pointer-events-none"
             />
           )}
-          <div className="absolute inset-0 bg-black/60 pointer-events-none" />
+          <div className="absolute inset-0 bg-black/50 pointer-events-none" />
         </div>
 
       </div>

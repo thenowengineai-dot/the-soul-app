@@ -12,6 +12,7 @@
 the_soul_app/
 ├── .gitignore                         👉 ป้องกัน .env, service_account_key, node_modules
 ├── README.md                          👉 เอกสารคู่มือระบบและการ Deploy
+├── THE_SOUL_DESIGN_BIBLE.md           👉 คัมภีร์แม่บทสุนทรียศาสตร์ & ดีเอ็นเอ Apple Tactile Fluidity
 ├── UNIFIED_ROUND_SPEC.md              👉 มาตรฐาน 1 Interaction Round = 1 Atomic Document
 │
 ├── frontend/                          👉 [หน้าบ้านผู้เล่นใหม่ (สำหรับ Cloudflare Pages)]

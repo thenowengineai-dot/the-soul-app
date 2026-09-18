@@ -48,7 +48,7 @@ function AnnouncementBanner() {
   const currentItem: AnnouncementItem = ANNOUNCEMENT_ITEMS[currentIndex];
 
   return (
-    <div className="px-8 sm:px-10 xl:px-12 pt-5 sm:pt-6 pb-2.5 sm:pb-3.5 w-full">
+    <div className="px-8 sm:px-10 xl:px-12 pt-5 sm:pt-6 pb-2.5 sm:pb-3.5 w-full shrink-0">
       {/* Container เดี่ยวจัดกึ่งกลาง เว้นพื้นที่ว่าง (space) ด้านซ้ายและขวาอย่างสมดุล */}
       <div className="max-w-[820px] mx-auto w-full">
         <div 

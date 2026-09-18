@@ -120,18 +120,18 @@ export default function HeroShowcase({
 
   return (
     <div 
-      className={`w-full pt-4 sm:pt-6 pb-2 sm:pb-3 flex flex-col items-center select-none overflow-hidden ${className}`}
+      className={`w-full shrink-0 pt-4 sm:pt-6 pb-2 sm:pb-3 flex flex-col items-center select-none overflow-hidden ${className}`}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
       {/* Visual Peek-Through Carousel Stage */}
-      <div className="relative flex items-center justify-center w-full max-w-[1440px] px-3 sm:px-6">
+      <div className="relative flex items-center justify-center w-full max-w-[1440px] px-3 sm:px-6 shrink-0">
         
         {/* Previous Peek Wing (Left) */}
         <div 
           onClick={prevSlide}
           title={prevItem.title}
-          className="hidden md:block relative w-[140px] lg:w-[220px] h-[230px] sm:h-[300px] lg:h-[340px] rounded-[22px] overflow-hidden opacity-35 hover:opacity-65 transition-all duration-500 scale-[0.92] shrink-0 cursor-pointer border border-white/[0.06] shadow-lg"
+          className="hidden md:block relative w-[140px] lg:w-[220px] h-[230px] sm:h-[300px] lg:h-[340px] min-h-[230px] sm:min-h-[300px] lg:min-h-[340px] rounded-[22px] overflow-hidden opacity-35 hover:opacity-65 transition-all duration-500 scale-[0.92] shrink-0 cursor-pointer border border-white/[0.06] shadow-lg"
         >
           {prevItem.videoUrl ? (
             <video 
@@ -155,7 +155,7 @@ export default function HeroShowcase({
         {/* Center Main Hero Card */}
         <div 
           onClick={() => handleCardClick(currentSlide)}
-          className="relative w-full max-w-[820px] lg:max-w-[880px] h-[260px] sm:h-[340px] lg:h-[380px] rounded-[24px] sm:rounded-[28px] overflow-hidden shadow-2xl border border-white/10 shrink-0 mx-2 sm:mx-4 group/hero cursor-pointer bg-[#141418]"
+          className="relative w-full max-w-[820px] lg:max-w-[880px] h-[260px] sm:h-[340px] lg:h-[380px] min-h-[260px] sm:min-h-[340px] lg:min-h-[380px] rounded-[24px] sm:rounded-[28px] overflow-hidden shadow-2xl border border-white/10 shrink-0 mx-2 sm:mx-4 group/hero cursor-pointer bg-[#141418]"
         >
           {/* Native Video or Hi-Res Image */}
           {currentSlide.videoUrl ? (
@@ -236,7 +236,7 @@ export default function HeroShowcase({
         <div 
           onClick={nextSlide}
           title={nextItem.title}
-          className="hidden md:block relative w-[140px] lg:w-[220px] h-[230px] sm:h-[300px] lg:h-[340px] rounded-[22px] overflow-hidden opacity-35 hover:opacity-65 transition-all duration-500 scale-[0.92] shrink-0 cursor-pointer border border-white/[0.06] shadow-lg"
+          className="hidden md:block relative w-[140px] lg:w-[220px] h-[230px] sm:h-[300px] lg:h-[340px] min-h-[230px] sm:min-h-[300px] lg:min-h-[340px] rounded-[22px] overflow-hidden opacity-35 hover:opacity-65 transition-all duration-500 scale-[0.92] shrink-0 cursor-pointer border border-white/[0.06] shadow-lg"
         >
           {nextItem.videoUrl ? (
             <video 
@@ -260,7 +260,7 @@ export default function HeroShowcase({
       </div>
 
       {/* Apple-Style Segmented Dash Indicators (— — — — —) */}
-      <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-3 sm:mt-3.5">
+      <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-3 sm:mt-3.5 shrink-0">
         {slides.map((_, idx) => {
           const isActive = currentIndex === idx;
           return (

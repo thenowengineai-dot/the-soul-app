@@ -131,7 +131,7 @@ export default function HeroShowcase({
         <div 
           onClick={prevSlide}
           title={prevItem.title}
-          className="hidden md:block relative w-[140px] lg:w-[220px] aspect-[16/9] sm:aspect-[21/9] rounded-[22px] overflow-hidden opacity-35 hover:opacity-65 transition-all duration-500 scale-[0.92] shrink-0 cursor-pointer border border-white/[0.06] shadow-lg"
+          className="hidden md:block relative w-[140px] lg:w-[220px] h-[230px] sm:h-[300px] lg:h-[340px] rounded-[22px] overflow-hidden opacity-35 hover:opacity-65 transition-all duration-500 scale-[0.92] shrink-0 cursor-pointer border border-white/[0.06] shadow-lg"
         >
           {prevItem.videoUrl ? (
             <video 
@@ -140,13 +140,13 @@ export default function HeroShowcase({
               loop 
               autoPlay 
               playsInline 
-              className="w-full h-full object-cover pointer-events-none"
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
             />
           ) : (
             <img 
               src={prevItem.imageUrl} 
               alt={prevItem.title} 
-              className="w-full h-full object-cover pointer-events-none"
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
             />
           )}
           <div className="absolute inset-0 bg-black/60 pointer-events-none" />
@@ -155,7 +155,7 @@ export default function HeroShowcase({
         {/* Center Main Hero Card */}
         <div 
           onClick={() => handleCardClick(currentSlide)}
-          className="relative w-full max-w-[800px] lg:max-w-[860px] aspect-[16/9] sm:aspect-[21/9] rounded-[24px] sm:rounded-[28px] overflow-hidden shadow-2xl border border-white/10 shrink-0 mx-2 sm:mx-4 group/hero cursor-pointer bg-[#141418]"
+          className="relative w-full max-w-[820px] lg:max-w-[880px] h-[260px] sm:h-[340px] lg:h-[380px] rounded-[24px] sm:rounded-[28px] overflow-hidden shadow-2xl border border-white/10 shrink-0 mx-2 sm:mx-4 group/hero cursor-pointer bg-[#141418]"
         >
           {/* Native Video or Hi-Res Image */}
           {currentSlide.videoUrl ? (
@@ -166,13 +166,13 @@ export default function HeroShowcase({
               loop
               muted
               playsInline
-              className="w-full h-full object-cover object-center group-hover/hero:scale-105 transition-transform duration-700 ease-out"
+              className="absolute inset-0 w-full h-full object-cover object-center group-hover/hero:scale-105 transition-transform duration-700 ease-out"
             />
           ) : (
             <img 
               src={currentSlide.imageUrl} 
               alt={currentSlide.title} 
-              className="w-full h-full object-cover object-center group-hover/hero:scale-105 transition-transform duration-700 ease-out"
+              className="absolute inset-0 w-full h-full object-cover object-center group-hover/hero:scale-105 transition-transform duration-700 ease-out"
             />
           )}
 
@@ -236,7 +236,7 @@ export default function HeroShowcase({
         <div 
           onClick={nextSlide}
           title={nextItem.title}
-          className="hidden md:block relative w-[140px] lg:w-[220px] aspect-[16/9] sm:aspect-[21/9] rounded-[22px] overflow-hidden opacity-35 hover:opacity-65 transition-all duration-500 scale-[0.92] shrink-0 cursor-pointer border border-white/[0.06] shadow-lg"
+          className="hidden md:block relative w-[140px] lg:w-[220px] h-[230px] sm:h-[300px] lg:h-[340px] rounded-[22px] overflow-hidden opacity-35 hover:opacity-65 transition-all duration-500 scale-[0.92] shrink-0 cursor-pointer border border-white/[0.06] shadow-lg"
         >
           {nextItem.videoUrl ? (
             <video 
@@ -245,13 +245,13 @@ export default function HeroShowcase({
               loop 
               autoPlay 
               playsInline 
-              className="w-full h-full object-cover pointer-events-none"
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
             />
           ) : (
             <img 
               src={nextItem.imageUrl} 
               alt={nextItem.title} 
-              className="w-full h-full object-cover pointer-events-none"
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
             />
           )}
           <div className="absolute inset-0 bg-black/60 pointer-events-none" />

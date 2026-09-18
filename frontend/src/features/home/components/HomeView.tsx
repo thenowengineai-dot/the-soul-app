@@ -99,6 +99,12 @@ function HomeView({
       style={{ overscrollBehavior: 'none' }}
       className="flex-1 flex flex-col h-full overflow-y-auto overflow-x-hidden no-scrollbar relative z-10 bg-[#121214] overscroll-none"
     >
+      {/* Featured Hero Showcase (Cinematic Billboard Carousel with Native Video Loop) */}
+      <HeroShowcase onSelectCharacter={handleCardClick} />
+
+      {/* Top Announcement & Promo Banners (แบนเนอร์เดี่ยวจัดกึ่งกลาง พร้อมระบบ Auto-Fade สลับสีสไตล์เรฟ) */}
+      <AnnouncementBanner />
+
       {/* Sticky Pill Bar: Frameless Floating Pebbles (ตัดเส้นขีดแนวนอนล่างออก ชิปลอยเหนือผืนผ้าใบมืด) */}
       <div className="sticky top-0 z-20 h-12 bg-[#121214]/90 backdrop-blur-xl flex items-center gap-3 px-6 sm:px-12 lg:px-14 xl:px-16 w-full transition-all duration-300 select-none">
         
@@ -202,12 +208,6 @@ function HomeView({
           </div>
 
         </div>
-
-      {/* Featured Hero Showcase (Cinematic Billboard Carousel with Native Video Loop) */}
-      <HeroShowcase onSelectCharacter={handleCardClick} />
-
-      {/* Top Announcement & Promo Banners (แบนเนอร์เดี่ยวจัดกึ่งกลาง พร้อมระบบ Auto-Fade สลับสีสไตล์เรฟ) */}
-      <AnnouncementBanner />
 
       {/* Character Cards Section: ปรับระยะห่างให้พอดี สร้างจังหวะหายใจที่ต่อเนื่อง */}
       <div className="pt-4 sm:pt-5 w-full">

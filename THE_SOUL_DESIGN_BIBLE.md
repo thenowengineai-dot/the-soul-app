@@ -175,13 +175,18 @@ The Soul App สร้างขึ้นบนสมมติฐานที่�
 ```
 
 ### 6.1 ป้ายบิลบอร์ดภาพยนตร์เคลื่อนไหวบนสุด (Featured Hero Showcase)
-* **ตำแหน่งทองคำ (The Golden Hero Position):** วางอยู่บนสุดเหนือ Announcement Banner เป็นประตูด่านแรกที่สะกดสายตาผู้เล่น
+* **ตำแหน่งทองคำ (The Golden Hero Position & Layout Hierarchy):**
+  - **ลำดับที่ 1 (บนสุดของหน้า):** `HeroShowcase` แสดงผลเต็มความสูงอย่างสง่างาม ไม่ถูกแถบชิปหรือสิ่งอื่นบดบัง
+  - **ลำดับที่ 2:** `AnnouncementBanner` แบนเนอร์ประกาศและโปรโมชันพร้อมตัวนับเวลาถอยหลัง
+  - **ลำดับที่ 3:** `Sticky Pill Bar` แถบชิปฟิลเตอร์และจัดเรียงแบบ Frameless Floating Pebble — อยู่เหนือแถวการ์ดตัวละคร และจะลอยติดขอบบน (`sticky top-0 z-20`) เมื่อผู้ใช้เลื่อนหน้าจอลงมาดูการ์ด
+  - **ลำดับที่ 4:** แถวการ์ดตัวละคร (`CharacterSliderRow`)
+* **โครงสร้างมิติและขนาดที่แน่นอน (Explicit Non-Collapsing Dimensions):**
+  - **การ์ดกลาง (Main Hero):** กำหนดความสูงตาม Responsive Breakpoints ชัดเจน `h-[260px] sm:h-[340px] lg:h-[380px]` กว้าง `max-w-[820px] lg:max-w-[880px]` โค้งมนประณีต `rounded-[24px] sm:rounded-[28px]`
+  - **สื่อวิดีโอ/ภาพ:** ใช้ `absolute inset-0 w-full h-full object-cover object-center` เพื่อป้องกันปัญหา Flex/Aspect Ratio Height Collapse ในทุกเบราว์เซอร์
+  - **ปีกซ้ายและขวา (Peek Wings):** ขนาด `w-[140px] lg:w-[220px] h-[230px] sm:h-[300px] lg:h-[340px]` ความทึบ `opacity-35 hover:opacity-65` สเกล `scale-[0.92]` เพื่อส่งสัญญาณเชื้อเชิญให้เลื่อนชม
 * **วิดีโอแท้รันวนลูป (HTML5 Native `<video>` Loop):**
   - รันด้วย `autoPlay loop muted playsInline` อัตโนมัติ 60fps ไม่มีกระตุก
   - ไร้โลโก้ภายนอก ไร้ปุ่มกวนสายตา สะอาดบริสุทธิ์ 100%
-* **มิติปีกซ้าย-ขวา (Visual Peek-Through Wings):**
-  - บนจอ Desktop: การ์ดกลางขนาดใหญ่ (`max-w-[800px]–[860px]` สัดส่วน `16:9 / 21:9`) โค้งมนนุ่ม `rounded-[28px]`
-  - ปีกซ้ายและขวามีการ์ดสไลด์ก่อนหน้าและถัดไปโผล่มาเล็กน้อย (`opacity-35 scale-[0.92]`) เพื่อส่งสัญญาณเชื้อเชิญให้เลื่อนชม
 * **ระบบตัวบอกตำแหน่ง (Apple Segmented Dash Indicators):**
   - ใช้ขีดแนวนอน `— — — — —` กึ่งกลางด้านล่างการ์ด โดยขีดที่กำลังแสดงจะขยายกว้างและสว่างขาวนวลตา
   - ระบบ Auto-Advance หมุนเวียนทุกๆ 7.5 วินาที พร้อมระบบ Pause ชั่วคราวเมื่อผู้ใช้ Hover เมาส์ค้างไว้เพื่ออ่านเนื้อหา

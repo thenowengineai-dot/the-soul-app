@@ -7,6 +7,7 @@ import {
   type LucideIcon 
 } from 'lucide-react'
 import AnnouncementBanner from './AnnouncementBanner'
+import HeroShowcase from './HeroShowcase'
 import { 
   CharacterSliderRow, 
   CharacterDetailModal, 
@@ -201,6 +202,9 @@ function HomeView({
           </div>
 
         </div>
+
+      {/* Featured Hero Showcase (Cinematic Billboard Carousel with Native Video Loop) */}
+      <HeroShowcase onSelectCharacter={handleCardClick} />
 
       {/* Top Announcement & Promo Banners (แบนเนอร์เดี่ยวจัดกึ่งกลาง พร้อมระบบ Auto-Fade สลับสีสไตล์เรฟ) */}
       <AnnouncementBanner />

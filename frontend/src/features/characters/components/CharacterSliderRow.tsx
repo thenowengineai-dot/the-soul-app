@@ -46,8 +46,8 @@ function CharacterSliderRow({
 
   return (
     <div className="w-full">
-      {/* Apple-Style Section Header: ขนาดฟอนต์และระยะเว้นตาม Apple 8pt Grid */}
-      <div className="px-6 sm:px-8 xl:px-10 mb-3 sm:mb-3.5 flex items-baseline flex-wrap gap-x-3 gap-y-1">
+      {/* Apple-Style Section Header: ขนาดฟอนต์และระยะเว้นตาม Apple 8pt Grid (48px - 64px initial stage) */}
+      <div className="px-6 sm:px-12 lg:px-14 xl:px-16 mb-3 sm:mb-3.5 flex items-baseline flex-wrap gap-x-3 gap-y-1">
         <div className="flex items-center gap-2.5">
           <h2 className="text-[19px] sm:text-[21px] lg:text-[22px] font-bold text-app-primary tracking-tight">
             {title} {emoji && <span>{emoji}</span>}
@@ -64,7 +64,21 @@ function CharacterSliderRow({
       </div>
 
       {/* Apple-Style Horizontal Cards Slider Container */}
-      <div className="relative group/slider w-full">
+      <div className="relative group/slider w-full overflow-hidden">
+        {/* Soft Edge Dissolve (Left): ปรากฏขึ้นเฉพาะตอนเริ่มเลื่อน เพื่อให้การ์ดค่อยๆ ละลายกลืนลงไปก่อนถึงเส้นแบ่ง */}
+        <div 
+          className={`absolute left-0 top-0 bottom-0 w-12 sm:w-16 bg-gradient-to-r from-[#121214] via-[#121214]/80 to-transparent pointer-events-none z-20 transition-opacity duration-300 ${
+            canScrollLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`} 
+        />
+
+        {/* Soft Edge Dissolve (Right): ละลายปลายขวาของการ์ดอย่างนุ่มนวลเพื่อส่งสายตา */}
+        <div 
+          className={`absolute right-0 top-0 bottom-0 w-12 sm:w-16 bg-gradient-to-l from-[#121214] via-[#121214]/80 to-transparent pointer-events-none z-20 transition-opacity duration-300 ${
+            canScrollRight ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`} 
+        />
+
         {/* Scroll Left Button */}
         {canScrollLeft && (
           <SliderNavButton
@@ -83,12 +97,12 @@ function CharacterSliderRow({
           />
         )}
 
-        {/* Horizontal Scroll Track: 16px gap, 190-230px card width for 2:3 ratio */}
+        {/* Horizontal Scroll Track: 48px - 64px initial padding, free scrolling across padding on drag/scroll */}
         <div 
           ref={sliderRef}
           onScroll={checkScroll}
-          style={{ scrollPaddingLeft: '32px' }}
-          className="flex items-start gap-3.5 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth pl-6 sm:pl-8 xl:pl-10 pr-12 sm:pr-16 snap-x snap-proximity"
+          style={{ scrollPaddingLeft: '56px' }}
+          className="flex items-start gap-3.5 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth pl-6 sm:pl-12 lg:pl-14 xl:pl-16 pr-12 sm:pr-20 snap-x snap-proximity"
         >
           {characters.map(item => (
             <CharacterCard 

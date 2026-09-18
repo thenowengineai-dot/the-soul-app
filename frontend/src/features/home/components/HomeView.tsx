@@ -99,7 +99,7 @@ function HomeView({
       className="flex-1 flex flex-col h-full overflow-y-auto overflow-x-hidden no-scrollbar relative z-10 bg-[#121214] overscroll-none"
     >
       {/* Sticky Pill Bar: Frameless Floating Pebbles (ตัดเส้นขีดแนวนอนล่างออก ชิปลอยเหนือผืนผ้าใบมืด) */}
-      <div className="sticky top-0 z-20 h-12 bg-[#121214]/90 backdrop-blur-xl flex items-center gap-3 px-6 w-full transition-all duration-300 select-none">
+      <div className="sticky top-0 z-20 h-12 bg-[#121214]/90 backdrop-blur-xl flex items-center gap-3 px-6 sm:px-12 lg:px-14 xl:px-16 w-full transition-all duration-300 select-none">
         
         {/* ฝั่งซ้าย: Controls & Sorting (เพศ, กำลังมาแรง, ยอดนิยม, ล่าสุด - 32px Frameless Droplets) */}
         <div className="flex-shrink-0 flex items-center gap-2">

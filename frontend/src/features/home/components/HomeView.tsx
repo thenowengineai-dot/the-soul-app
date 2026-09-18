@@ -98,18 +98,18 @@ function HomeView({
       style={{ overscrollBehavior: 'none' }}
       className="flex-1 flex flex-col h-full overflow-y-auto overflow-x-hidden no-scrollbar relative z-10 bg-[#121214] overscroll-none"
     >
-      {/* Sticky Pill Bar: ฝั่งซ้าย Filter & Sort Controls | เส้นแบ่ง | ฝั่งขวา Category Pills (Apple 8pt Harmonic Rhythm) */}
-      <div className="sticky top-0 z-20 h-14 bg-[#121214]/95 backdrop-blur-xl border-b border-white/[0.06] flex items-center gap-3 px-6 w-full transition-all duration-300 select-none">
+      {/* Sticky Pill Bar: Frameless Floating Pebbles (ตัดเส้นขีดแนวนอนล่างออก ชิปลอยเหนือผืนผ้าใบมืด) */}
+      <div className="sticky top-0 z-20 h-12 bg-[#121214]/90 backdrop-blur-xl flex items-center gap-3 px-6 w-full transition-all duration-300 select-none">
         
-        {/* ฝั่งซ้าย: Controls & Sorting (เพศ, กำลังมาแรง, ยอดนิยม, ล่าสุด สไตล์ Apple Droplet Pills) */}
+        {/* ฝั่งซ้าย: Controls & Sorting (เพศ, กำลังมาแรง, ยอดนิยม, ล่าสุด - 32px Frameless Droplets) */}
         <div className="flex-shrink-0 flex items-center gap-2">
             
-            {/* 1. ปุ่ม Gender Dropdown (ขอบมนหยดน้ำ 36px/16px สไตล์ Apple) */}
+            {/* 1. ปุ่ม Gender Dropdown (32px ก้อนกรวดแม่น้ำเรียบเนียน) */}
             <div className="relative" ref={genderDropdownRef}>
               <button
                 type="button"
                 onClick={() => setIsGenderOpen(!isGenderOpen)}
-                className={`h-9 px-4 rounded-full border transition-all flex items-center gap-2 text-[13px] font-medium cursor-pointer whitespace-nowrap flex-shrink-0 ${
+                className={`h-8 px-3.5 rounded-full border transition-all flex items-center gap-1.5 text-[12.5px] font-medium cursor-pointer whitespace-nowrap flex-shrink-0 ${
                   selectedGender !== 'all' || isGenderOpen
                     ? 'border-white/25 bg-white/15 text-[#F5F5F7] font-semibold shadow-sm'
                     : 'border-white/[0.08] hover:border-white/20 bg-white/[0.05] hover:bg-white/10 text-[#86868B] hover:text-[#F5F5F7]'
@@ -117,14 +117,14 @@ function HomeView({
               >
                 <span>เพศ: {GENDER_OPTIONS.find(g => g.id === selectedGender)?.label}</span>
                 <ChevronDown 
-                  size={14} 
+                  size={13} 
                   className={`text-[#86868B] transition-transform duration-200 ${isGenderOpen ? 'rotate-180 text-[#F5F5F7]' : ''}`} 
                 />
               </button>
 
               {/* เมนู Dropdown ลอยลงมา (Glassmorphism Panel) */}
               {isGenderOpen && (
-                <div className="absolute left-0 top-full mt-2 w-48 bg-[#18181D]/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl p-1.5 z-50 flex flex-col gap-0.5 animate-fadeIn">
+                <div className="absolute left-0 top-full mt-1.5 w-48 bg-[#18181D]/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl p-1.5 z-50 flex flex-col gap-0.5 animate-fadeIn">
                   {GENDER_OPTIONS.map(option => {
                     const isSelected = selectedGender === option.id;
                     return (
@@ -135,7 +135,7 @@ function HomeView({
                           setSelectedGender(option.id);
                           setIsGenderOpen(false);
                         }}
-                        className={`flex items-center justify-between px-3 py-1.5 rounded-xl text-[13px] transition-colors cursor-pointer text-left ${
+                        className={`flex items-center justify-between px-3 py-1.5 rounded-xl text-[12.5px] transition-colors cursor-pointer text-left ${
                           isSelected
                             ? 'bg-white/15 text-[#F5F5F7] font-medium'
                             : 'text-[#86868B] hover:text-[#F5F5F7] hover:bg-white/[0.06]'
@@ -152,7 +152,7 @@ function HomeView({
               )}
             </div>
 
-            {/* 2. ปุ่ม Sort แต่ละปุ่มแยกกัน (Trending, Popular, Recent) สไตล์ Apple Droplet Pill */}
+            {/* 2. ปุ่ม Sort แต่ละปุ่มแยกกัน (Trending, Popular, Recent) สไตล์ Apple River Pebble 32px */}
             {SORT_OPTIONS.map(sort => {
               const isActive = activeSort === sort.id;
               const Icon = sort.icon;
@@ -161,13 +161,13 @@ function HomeView({
                   key={sort.id}
                   type="button"
                   onClick={() => setActiveSort(isActive ? null : sort.id)}
-                  className={`h-9 px-4 rounded-full border transition-all flex items-center gap-2 text-[13px] font-medium cursor-pointer whitespace-nowrap flex-shrink-0 ${
+                  className={`h-8 px-3.5 rounded-full border transition-all flex items-center gap-1.5 text-[12.5px] font-medium cursor-pointer whitespace-nowrap flex-shrink-0 ${
                     isActive
                       ? 'border-white/25 bg-white/15 text-[#F5F5F7] font-semibold shadow-sm'
                       : 'border-white/[0.08] hover:border-white/20 bg-white/[0.05] hover:bg-white/10 text-[#86868B] hover:text-[#F5F5F7]'
                   }`}
                 >
-                  <Icon size={14} className={isActive ? 'text-[#EF264C]' : 'text-[#86868B]'} />
+                  <Icon size={13} className={isActive ? 'text-[#EF264C]' : 'text-[#86868B]'} />
                   <span>{sort.label}</span>
                 </button>
               );
@@ -175,10 +175,10 @@ function HomeView({
 
           </div>
 
-          {/* เส้นแบ่งโซนแนวตั้ง (Vertical Hairline Divider 16px |) */}
-          <div className="w-[1px] h-4 bg-white/15 shrink-0" />
+          {/* เส้นแบ่งโซนแนวตั้ง (Vertical Hairline Divider 14px |) */}
+          <div className="w-[1px] h-3.5 bg-white/15 shrink-0" />
 
-          {/* ฝั่งขวา: Category Pills (เลื่อนซ้าย-ขวาได้อิสระ สูง 36px เบาะนุ่มนวล) */}
+          {/* ฝั่งขวา: Category Pills (เลื่อนซ้าย-ขวาได้อิสระ สูง 32px ไร้กรงขังเส้น) */}
           <div className="flex-1 flex items-center gap-2 overflow-x-auto no-scrollbar min-w-0">
             {CATEGORIES.map(category => {
               const isActive = selectedCategory === category;
@@ -188,7 +188,7 @@ function HomeView({
                   type="button"
                   onClick={() => setSelectedCategory(category)}
                   className={`
-                    h-9 px-4 rounded-full text-[13px] font-medium transition-all whitespace-nowrap cursor-pointer flex-shrink-0 flex items-center justify-center
+                    h-8 px-3.5 rounded-full text-[12.5px] font-medium transition-all whitespace-nowrap cursor-pointer flex-shrink-0 flex items-center justify-center
                     ${isActive 
                       ? 'bg-white text-black font-semibold shadow-sm' 
                       : 'bg-white/[0.05] hover:bg-white/[0.1] text-[#86868B] hover:text-[#F5F5F7] backdrop-blur-md border border-white/[0.06] hover:border-white/15'}
@@ -205,11 +205,11 @@ function HomeView({
       {/* Top Announcement & Promo Banners (แบนเนอร์เดี่ยวจัดกึ่งกลาง พร้อมระบบ Auto-Fade สลับสีสไตล์เรฟ) */}
       <AnnouncementBanner />
 
-      {/* Character Cards Section: ปรับระยะห่างด้านบนให้พอดีกับ Banner ด้านบน */}
-      <div className="pt-6 sm:pt-7 w-full">
+      {/* Character Cards Section: ปรับระยะห่างให้พอดี สร้างจังหวะหายใจที่ต่อเนื่อง */}
+      <div className="pt-4 sm:pt-5 w-full">
 
-        {/* Apple-Style Sections: แยกเป็นแถวตามรูป พร้อมหัวข้อตามสไตล์ Apple */}
-        <div className="flex flex-col gap-10 sm:gap-12 lg:gap-14 pb-16">
+        {/* Apple-Style Sections: จังหวะแถวพอดีสายตา (Visual Peek-Through) */}
+        <div className="flex flex-col gap-8 sm:gap-10 lg:gap-12 pb-16">
           {/* Row 1: ดวงวิญญาณใหม่ล่าสุด ✨ */}
           <CharacterSliderRow 
             title="ดวงวิญญาณใหม่ล่าสุด"

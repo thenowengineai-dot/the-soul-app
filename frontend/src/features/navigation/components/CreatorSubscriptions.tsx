@@ -15,7 +15,7 @@ export function CreatorSubscriptions({
   const visibleCreators = showAll ? creators : creators.slice(0, initialVisibleCount);
 
   if (!isSidebarExpanded) {
-    // Collapsed Mode: Collapsed into YouTube-style Subscriptions icon with 48px standard
+    // Collapsed Mode: Collapsed into YouTube-style Subscriptions icon with 40px standard
     const hasAnyNewBot = creators.some(c => c.hasNewBot);
     return (
       <div className="relative flex items-center justify-center w-full">
@@ -23,11 +23,11 @@ export function CreatorSubscriptions({
           type="button"
           title={`การติดตาม${hasAnyNewBot ? ' (มีบอทใหม่ ✨)' : ''}`}
           onClick={() => onCreatorClick?.(creators[0]?.id ?? '')}
-          className="relative w-12 h-12 flex items-center justify-center rounded-2xl cursor-pointer transition-all duration-150 text-app-primary hover:bg-white/10"
+          className="relative w-10 h-10 flex items-center justify-center rounded-xl cursor-pointer transition-all duration-150 text-app-primary hover:bg-white/10"
         >
-          <TvMinimalPlay strokeWidth={2} size={24} />
+          <TvMinimalPlay strokeWidth={1.75} size={20} />
           {hasAnyNewBot && (
-            <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-[#EF264C] ring-2 ring-[rgb(13,13,13)] shadow-[0_0_4px_#EF264C]" />
+            <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#EF264C] ring-2 ring-[rgb(13,13,13)] shadow-[0_0_4px_#EF264C]" />
           )}
         </button>
       </div>
@@ -36,22 +36,22 @@ export function CreatorSubscriptions({
 
   // Expanded Mode: Exact YouTube Subscriptions UI matching reference image
   return (
-    <div className="flex flex-col gap-1.5 w-full py-1">
-      {/* Section Header: Large Primary White with ChevronRight (No count badge) */}
+    <div className="flex flex-col gap-1 w-full py-1">
+      {/* Section Header: Primary White with ChevronRight */}
       <div 
-        className="flex items-center gap-2 px-3 py-2 text-app-primary cursor-pointer select-none group transition-colors mb-0.5"
+        className="flex items-center gap-2 px-2.5 py-1.5 text-app-primary cursor-pointer select-none group transition-colors mb-0.5"
       >
-        <span className="text-[14px] font-semibold tracking-tight text-app-primary group-hover:text-white transition-colors">
+        <span className="text-[13.5px] font-semibold tracking-tight text-app-primary group-hover:text-white transition-colors">
           การติดตาม
         </span>
         <ChevronRight 
-          size={16} 
-          strokeWidth={2.2} 
+          size={15} 
+          strokeWidth={2} 
           className="text-app-primary/80 group-hover:text-white group-hover:translate-x-0.5 transition-all" 
         />
       </div>
 
-      {/* Creator Items: 24px Avatar, gap-3, 14px font, right-side pink dot */}
+      {/* Creator Items: 22px Avatar, gap-2.5, 13px font, right-side pink dot */}
       {visibleCreators.map(creator => {
         const isSelected = selectedCreatorId === creator.id;
         return (
@@ -59,25 +59,25 @@ export function CreatorSubscriptions({
             key={creator.id}
             type="button"
             onClick={() => onCreatorClick?.(creator.id)}
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all duration-150 cursor-pointer text-left group text-app-primary hover:bg-white/[0.08] ${
+            className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl transition-all duration-150 cursor-pointer text-left group text-app-primary hover:bg-white/[0.08] ${
               isSelected ? 'font-medium' : ''
             }`}
           >
-            <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
               {creator.avatar ? (
                 <img
                   src={creator.avatar}
                   alt={creator.name}
-                  className="w-6 h-6 rounded-full object-cover shrink-0 ring-1 ring-white/15"
+                  className="w-[22px] h-[22px] rounded-full object-cover shrink-0 ring-1 ring-white/15"
                 />
               ) : (
-                <div className="w-6 h-6 rounded-full shrink-0 ring-1 ring-white/15 shadow-sm bg-gradient-to-br from-[#2D2D32] to-[#1C1C1E] border border-white/10 flex items-center justify-center">
-                  <span className="text-[11px] font-bold text-app-primary select-none leading-none">
+                <div className="w-[22px] h-[22px] rounded-full shrink-0 ring-1 ring-white/15 shadow-sm bg-gradient-to-br from-[#2D2D32] to-[#1C1C1E] border border-white/10 flex items-center justify-center">
+                  <span className="text-[10px] font-bold text-app-primary select-none leading-none">
                     {creator.name.charAt(0).toUpperCase()}
                   </span>
                 </div>
               )}
-              <span className="text-[13.5px] text-app-primary font-normal truncate leading-snug group-hover:text-white transition-colors">
+              <span className="text-[13px] text-app-primary font-normal truncate leading-snug group-hover:text-white transition-colors">
                 {creator.name}
               </span>
             </div>
@@ -93,21 +93,21 @@ export function CreatorSubscriptions({
         );
       })}
 
-      {/* Show More / Show Less Toggle Button (Icon aligned with 24px avatar column) */}
+      {/* Show More / Show Less Toggle Button */}
       {creators.length > initialVisibleCount && (
         <button
           type="button"
           onClick={() => setShowAll(!showAll)}
-          className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-app-primary hover:bg-white/[0.08] transition-all text-left cursor-pointer mt-1 group"
+          className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-app-primary hover:bg-white/[0.08] transition-all text-left cursor-pointer mt-0.5 group"
         >
-          <div className="w-[24px] h-[24px] flex items-center justify-center shrink-0">
+          <div className="w-[22px] h-[22px] flex items-center justify-center shrink-0">
             {showAll ? (
-              <ChevronUp size={18} strokeWidth={2.2} className="text-app-primary group-hover:text-white transition-colors" />
+              <ChevronUp size={16} strokeWidth={2} className="text-app-primary group-hover:text-white transition-colors" />
             ) : (
-              <ChevronDown size={18} strokeWidth={2.2} className="text-app-primary group-hover:text-white transition-colors" />
+              <ChevronDown size={16} strokeWidth={2} className="text-app-primary group-hover:text-white transition-colors" />
             )}
           </div>
-          <span className="text-[14px] text-app-primary font-normal leading-snug group-hover:text-white transition-colors">
+          <span className="text-[13px] text-app-primary font-normal leading-snug group-hover:text-white transition-colors">
             {showAll ? 'แสดงน้อยลง' : 'แสดงเพิ่มเติม'}
           </span>
         </button>

@@ -46,12 +46,12 @@ function CharacterSliderRow({
   return (
     <div className="w-full">
       {/* Apple-Style Section Header: ขนาดฟอนต์และระยะเว้นตาม Apple 8pt Grid */}
-      <div className="px-6 sm:px-8 xl:px-10 mb-4 flex items-baseline flex-wrap gap-x-3 gap-y-1">
-        <h2 className="text-[20px] sm:text-[22px] lg:text-[24px] font-bold text-app-primary tracking-tight">
+      <div className="px-6 sm:px-8 xl:px-10 mb-3 sm:mb-3.5 flex items-baseline flex-wrap gap-x-3 gap-y-1">
+        <h2 className="text-[19px] sm:text-[21px] lg:text-[22px] font-bold text-app-primary tracking-tight">
           {title} {emoji && <span>{emoji}</span>}
         </h2>
         {subtitle && (
-          <span className="text-[14px] sm:text-[15px] lg:text-[16px] text-app-secondary font-normal">
+          <span className="text-[13px] sm:text-[14px] text-app-secondary font-normal">
             {subtitle}
           </span>
         )}
@@ -77,19 +77,19 @@ function CharacterSliderRow({
           />
         )}
 
-        {/* Horizontal Scroll Track: 16px gap, 24-40px padding */}
+        {/* Horizontal Scroll Track: 16px gap, 220-255px card width (Apple Visual Peek-Through) */}
         <div 
           ref={sliderRef}
           onScroll={checkScroll}
           style={{ scrollPaddingLeft: '32px' }}
-          className="flex items-start gap-4 overflow-x-auto no-scrollbar scroll-smooth pl-6 sm:pl-8 xl:pl-10 pr-12 sm:pr-16 snap-x snap-proximity"
+          className="flex items-start gap-3.5 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth pl-6 sm:pl-8 xl:pl-10 pr-12 sm:pr-16 snap-x snap-proximity"
         >
           {characters.map(item => (
             <CharacterCard 
               key={item.id}
               character={item}
               onClick={() => onCardClick?.(item)}
-              style={{ width: 'calc((100% - 112px) / 4.10)', minWidth: '290px' }}
+              style={{ width: 'calc((100% - 96px) / 5.25)', minWidth: '220px', maxWidth: '255px' }}
             />
           ))}
         </div>

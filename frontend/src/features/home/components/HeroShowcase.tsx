@@ -200,9 +200,9 @@ export default function HeroShowcase({
             </div>
           </div>
 
-          {/* In-Card Apple Navigation Dock (Discreet Glass Capsule at Bottom-Right) */}
+          {/* In-Card Apple Navigation Dock (Liquid Frosted Glass Capsule at Bottom-Right) */}
           <div 
-            className="absolute bottom-5 right-5 sm:bottom-7 sm:right-8 z-20 flex items-center gap-1.5 sm:gap-2 bg-[#101014]/80 backdrop-blur-xl border border-white/10 rounded-full px-2.5 py-1 sm:px-3 sm:py-1.5 shadow-[0_8px_25px_rgba(0,0,0,0.6)] select-none"
+            className="absolute bottom-5 right-5 sm:bottom-7 sm:right-8 z-20 flex items-center gap-1.5 sm:gap-2 bg-black/25 hover:bg-black/40 backdrop-blur-2xl border border-white/[0.08] rounded-full px-2.5 py-1 sm:px-3 sm:py-1.5 shadow-[0_4px_20px_rgba(0,0,0,0.25)] transition-all duration-300 select-none"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Prev Arrow */}
@@ -210,7 +210,7 @@ export default function HeroShowcase({
               type="button"
               onClick={prevSlide}
               title="สไลด์ก่อนหน้า"
-              className="w-6 h-6 sm:w-6.5 sm:h-6.5 rounded-full hover:bg-white/15 text-[#A1A1A6] hover:text-[#F5F5F7] flex items-center justify-center transition-all cursor-pointer active:scale-90"
+              className="w-6 h-6 sm:w-6.5 sm:h-6.5 rounded-full hover:bg-white/15 text-white/60 hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-90"
             >
               <ChevronLeft size={14} strokeWidth={2.4} />
             </button>
@@ -227,8 +227,8 @@ export default function HeroShowcase({
                     title={`สไลด์ที่ ${idx + 1}`}
                     className={`rounded-full transition-all duration-300 cursor-pointer ${
                       isActive 
-                        ? 'w-4 h-1.5 bg-[#F5F5F7] shadow-sm' 
-                        : 'w-1.5 h-1.5 bg-white/30 hover:bg-white/60'
+                        ? 'w-4 h-1.5 bg-white/90 shadow-sm' 
+                        : 'w-1.5 h-1.5 bg-white/30 hover:bg-white/50'
                     }`}
                   />
                 );
@@ -240,7 +240,7 @@ export default function HeroShowcase({
               type="button"
               onClick={nextSlide}
               title="สไลด์ถัดไป"
-              className="w-6 h-6 sm:w-6.5 sm:h-6.5 rounded-full hover:bg-white/15 text-[#A1A1A6] hover:text-[#F5F5F7] flex items-center justify-center transition-all cursor-pointer active:scale-90"
+              className="w-6 h-6 sm:w-6.5 sm:h-6.5 rounded-full hover:bg-white/15 text-white/60 hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-90"
             >
               <ChevronRight size={14} strokeWidth={2.4} />
             </button>

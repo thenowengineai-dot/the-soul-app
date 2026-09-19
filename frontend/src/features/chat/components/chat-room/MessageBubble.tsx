@@ -94,13 +94,13 @@ export function MessageBubble({
             </p>
           </div>
         ) : (
-          // 💬 Dialogue (บับเบิ้ลคำพูดทรงหมอน Squircle สไตล์ Velvet Carmine Micro-Tuned):
-          // ฝั่งผู้เล่น: สดใสแต่ตัดแสงแยงตา (Peak Glare Cut) ด้วยเฉดกำมะหยี่หรูหรา (#D9264D -> #BF1B3E -> #8E102D) + เส้นขอบกุหลาบ 1px + ไร้เงาฟุ้งแสบตา
+          // 💬 Dialogue (บับเบิ้ลคำพูดทรงหมอน Squircle สไตล์ Juicy Ruby Velvet):
+          // ฝั่งผู้เล่น: สีแดงคาร์ไมน์ฉ่ำสด อิ่มแน่น ไม่ซีด ไม่แสบตา (#EA1D52 -> #D11142 -> #9C0C30) + ตัวหนังสือ Blush White (#FFEBF0) + ขอบและเงากำมะหยี่ทับทิม 3D
           // ฝั่งตัวละคร: กระจกฝ้าโปร่งแสง สบายตา (bg-white/[0.07] to white/[0.02]) + เส้นขอบบาง 1px + แสงสะท้อน Inset 1px
           <div className={`
             px-5 py-3 text-[15px] leading-relaxed select-text max-w-[85%] sm:max-w-[78%] transition-all
             ${isMe 
-              ? 'rounded-[22px] rounded-br-[6px] bg-gradient-to-br from-[#D9264D] via-[#BF1B3E] to-[#8E102D] text-[#FDF0F3] border border-[#FF6B8B]/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_4px_14px_rgba(0,0,0,0.35)]' 
+              ? 'rounded-[22px] rounded-br-[6px] bg-gradient-to-br from-[#EA1D52] via-[#D11142] to-[#9C0C30] text-[#FFEBF0] border border-[#FF4D75]/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_4px_16px_rgba(209,17,66,0.35)]' 
               : 'rounded-[22px] rounded-bl-[6px] bg-gradient-to-b from-white/[0.07] via-white/[0.04] to-white/[0.02] backdrop-blur-xl text-[#F2F2F5] border border-white/[0.07] shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_4px_18px_rgba(0,0,0,0.35)]'}
           `}>
             {message.text}

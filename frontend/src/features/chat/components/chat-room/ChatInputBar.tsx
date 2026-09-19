@@ -377,7 +377,7 @@ export function ChatInputBar({
                 onClick={onSendMessage}
                 disabled={isStreaming}
                 title="ส่งข้อความ"
-                className={`w-10 h-10 rounded-full bg-gradient-to-br from-[#D9264D] via-[#BF1B3E] to-[#8E102D] border border-[#FF6B8B]/25 text-white flex items-center justify-center hover:brightness-110 active:scale-95 transition-all shrink-0 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_2px_8px_rgba(0,0,0,0.35)] ${
+                className={`w-10 h-10 rounded-full bg-gradient-to-br from-[#EA1D52] via-[#D11142] to-[#9C0C30] border border-[#FF4D75]/40 text-white flex items-center justify-center hover:brightness-110 active:scale-95 transition-all shrink-0 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_2px_12px_rgba(209,17,66,0.4)] ${
                   isStreaming ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >

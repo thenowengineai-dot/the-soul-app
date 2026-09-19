@@ -3,11 +3,6 @@ import type React from 'react'
 import { 
   Plus, 
   ArrowUp, 
-  Sparkles, 
-  MessageSquare, 
-  ChevronDown, 
-  Maximize2, 
-  SlidersHorizontal,
   AudioLines,
   Asterisk,
   Smile,
@@ -18,21 +13,6 @@ import type { ChatInputBarProps } from '../../types'
 import EmojiPickerPopover from './EmojiPickerPopover'
 
 export type { ChatInputBarProps }
-
-// คำแนะนำเริ่มต้นสำหรับการกด "คำตอบที่แนะนำ"
-const SUGGESTED_REPLIES = [
-  'สวัสดี! วันนี้เป็นอย่างไรบ้าง?',
-  '*เดินเข้าไปทักทายด้วยรอยยิ้ม* มีเวลาคุยกันไหม?',
-  'คิดถึงจัง ช่วงนี้ทำอะไรอยู่บ้าง?',
-  '*สบตาเงียบๆ ก่อนจะเอ่ยขึ้นมา* กำลังคิดอะไรอยู่เหรอ?',
-]
-
-// ตัวเลือกโหมดการสนทนา
-const CONVERSATION_MODES = [
-  { id: 'daily', label: 'การสนทนาประจำวัน', icon: '💬' },
-  { id: 'roleplay', label: 'โหมดสวมบทบาท (Roleplay)', icon: '🎭' },
-  { id: 'intimate', label: 'บรรยากาศใกล้ชิด (Intimate)', icon: '✨' },
-]
 
 export function ChatInputBar({
   inputMessage = '',
@@ -47,25 +27,14 @@ export function ChatInputBar({
 }: ChatInputBarProps) {
   const [isEmojiOpen, setIsEmojiOpen] = useState(false)
   const [isPlusMenuOpen, setIsPlusMenuOpen] = useState(false)
-  const [isModeMenuOpen, setIsModeMenuOpen] = useState(false)
-  const [isSuggestedOpen, setIsSuggestedOpen] = useState(false)
-  const [activeMode, setActiveMode] = useState(CONVERSATION_MODES[0])
 
   const inputRef = useRef<HTMLInputElement>(null)
-  const modeMenuRef = useRef<HTMLDivElement>(null)
-  const suggestedMenuRef = useRef<HTMLDivElement>(null)
   const plusMenuRef = useRef<HTMLDivElement>(null)
 
   // ปิดเมนูป็อปอัพเมื่อคลิกด้านนอก
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Node
-      if (modeMenuRef.current && !modeMenuRef.current.contains(target)) {
-        setIsModeMenuOpen(false)
-      }
-      if (suggestedMenuRef.current && !suggestedMenuRef.current.contains(target)) {
-        setIsSuggestedOpen(false)
-      }
       if (plusMenuRef.current && !plusMenuRef.current.contains(target)) {
         setIsPlusMenuOpen(false)
       }
@@ -117,15 +86,6 @@ export function ChatInputBar({
     }
   }
 
-  // ✦ แทรกลิสต์คำตอบที่แนะนำลงในกล่องข้อความ
-  const handleSelectSuggested = (reply: string) => {
-    onInputChange?.(reply)
-    setIsSuggestedOpen(false)
-    requestAnimationFrame(() => {
-      inputRef.current?.focus()
-    })
-  }
-
   // แทรกอีโมจิตรงตำแหน่ง Cursor ทันที พร้อมคงสถานะ Focus
   const handleSelectEmoji = (emoji: string) => {
     const input = inputRef.current
@@ -154,9 +114,9 @@ export function ChatInputBar({
       data-no-advance 
       className="sticky bottom-0 z-20 w-full pt-2 pb-4 sm:pb-5 mt-auto bg-gradient-to-t from-[#121214] via-[#121214]/95 to-transparent pointer-events-none"
     >
-      <div className="w-full max-w-[740px] mx-auto px-4 sm:px-6 relative pointer-events-auto flex flex-col gap-2.5">
+      <div className="w-full max-w-[740px] mx-auto px-4 sm:px-6 relative pointer-events-auto">
         
-        {/* 💬 Typing Indicator Docked Right Above Context Chips (Twitter / X Style) */}
+        {/* 💬 Typing Indicator Docked Right Above Input Capsule (Apple iMessage / Telegram Style) */}
         {isTyping && (
           <div className="absolute bottom-[calc(100%+10px)] left-4 sm:left-6 z-30 pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-200">
             <TypingIndicator avatarUrl={chatAvatar} name={chatName} variant={typingVariant} />
@@ -164,128 +124,7 @@ export function ChatInputBar({
         )}
 
         {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-            แถวที่ 1: Contextual Action Chips Row (แถบชิปบริบทสไตล์ Reference Image)
-            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-        <div className="w-full flex items-center justify-between gap-1.5 sm:gap-2 px-0.5">
-          {/* ซ้ายสุด: ปุ่มขยายหน้าจอ (Maximize) */}
-          <button
-            type="button"
-            title="ขยายหน้าจอ"
-            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[#8E8E93] hover:text-[#EDEDED] hover:bg-white/[0.08] active:scale-95 transition-all shrink-0 cursor-pointer"
-          >
-            <Maximize2 size={15} />
-          </button>
-
-          {/* ชิปตรงกลาง (เลื่อนแนวนอนได้บนจอมือถือ) */}
-          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5">
-            {/* ชิปที่ 1: โหมดการสนทนา [ 💬 การสนทนาประจำวัน ▼ ] */}
-            <div className="relative shrink-0" ref={modeMenuRef}>
-              <button
-                type="button"
-                onClick={() => setIsModeMenuOpen(prev => !prev)}
-                title="เลือกโหมดการสนทนา"
-                className={`px-3 py-1.5 rounded-full text-[12px] sm:text-[12.5px] font-medium flex items-center gap-1.5 transition-all cursor-pointer border shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] ${
-                  isModeMenuOpen 
-                    ? 'bg-white/15 border-white/25 text-[#EDEDED]' 
-                    : 'bg-gradient-to-b from-white/[0.05] to-white/[0.02] backdrop-blur-xl hover:bg-white/[0.05] border-white/[0.06] hover:border-white/15 text-[#D1D1D6]'
-                }`}
-              >
-                <MessageSquare size={13} className="text-[#38BDF8]" />
-                <span>{activeMode.label}</span>
-                <ChevronDown size={12} className={`text-[#8E8E93] transition-transform duration-200 ${isModeMenuOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {/* Mode Menu Dropdown */}
-              {isModeMenuOpen && (
-                <div className="absolute bottom-full mb-2 left-0 z-50 w-[220px] bg-[#18181B]/95 backdrop-blur-2xl border border-white/[0.12] shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_12px_32px_rgba(0,0,0,0.6)] rounded-2xl p-1.5 animate-in fade-in zoom-in-95 duration-150">
-                  <div className="text-[11px] font-semibold text-[#8E8E93] px-3 py-1.5 uppercase tracking-wider">
-                    โหมดการสนทนา
-                  </div>
-                  {CONVERSATION_MODES.map(mode => (
-                    <button
-                      key={mode.id}
-                      type="button"
-                      onClick={() => {
-                        setActiveMode(mode)
-                        setIsModeMenuOpen(false)
-                      }}
-                      className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[12.5px] text-left transition-all cursor-pointer ${
-                        activeMode.id === mode.id 
-                          ? 'bg-white/12 text-white font-medium' 
-                          : 'text-[#C7C7CC] hover:bg-white/[0.06] hover:text-white'
-                      }`}
-                    >
-                      <span className="text-[14px]">{mode.icon}</span>
-                      <span>{mode.label}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* ชิปที่ 2: เพิ่มสถานการณ์ [ ✻ เพิ่มสถานการณ์ ] */}
-            <button
-              type="button"
-              onClick={handleInsertAsterisk}
-              title="แทรกเครื่องหมายสถานการณ์ (*ท่าทาง*)"
-              className="px-3 py-1.5 rounded-full bg-gradient-to-b from-white/[0.05] to-white/[0.02] backdrop-blur-xl hover:bg-white/[0.05] border border-white/[0.06] hover:border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] text-[#D1D1D6] hover:text-[#EDEDED] text-[12px] sm:text-[12.5px] font-medium flex items-center gap-1.5 transition-all shrink-0 cursor-pointer group active:scale-95"
-            >
-              <Asterisk size={13} className="text-[#A1A1A8] transition-transform duration-200 group-hover:rotate-45" />
-              <span>เพิ่มสถานการณ์</span>
-            </button>
-
-            {/* ชิปที่ 3: คำตอบที่แนะนำ [ ✦ คำตอบที่แนะนำ ] */}
-            <div className="relative shrink-0" ref={suggestedMenuRef}>
-              <button
-                type="button"
-                onClick={() => setIsSuggestedOpen(prev => !prev)}
-                title="เลือกคำตอบที่แนะนำ"
-                className={`px-3 py-1.5 rounded-full text-[12px] sm:text-[12.5px] font-medium flex items-center gap-1.5 transition-all cursor-pointer border shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] ${
-                  isSuggestedOpen 
-                    ? 'bg-white/15 border-white/25 text-[#EDEDED]' 
-                    : 'bg-gradient-to-b from-white/[0.05] to-white/[0.02] backdrop-blur-xl hover:bg-white/[0.05] border-white/[0.06] hover:border-white/15 text-[#D1D1D6]'
-                }`}
-              >
-                <Sparkles size={13} className="text-amber-400/90" />
-                <span>คำตอบที่แนะนำ</span>
-              </button>
-
-              {/* Suggested Replies Popover */}
-              {isSuggestedOpen && (
-                <div className="absolute bottom-full mb-2 right-0 sm:left-0 z-50 w-[280px] sm:w-[320px] bg-[#18181B]/95 backdrop-blur-2xl border border-white/[0.12] shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_12px_32px_rgba(0,0,0,0.6)] rounded-2xl p-2 animate-in fade-in zoom-in-95 duration-150">
-                  <div className="text-[11px] font-semibold text-[#8E8E93] px-2.5 py-1 uppercase tracking-wider flex items-center justify-between">
-                    <span>คำตอบที่แนะนำ</span>
-                    <Sparkles size={11} className="text-amber-400" />
-                  </div>
-                  <div className="flex flex-col gap-1 mt-1">
-                    {SUGGESTED_REPLIES.map((reply, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => handleSelectSuggested(reply)}
-                        className="w-full text-left px-3 py-2 rounded-xl text-[12.5px] text-[#D1D1D6] hover:text-white hover:bg-white/[0.08] active:scale-[0.98] transition-all cursor-pointer leading-snug"
-                      >
-                        {reply}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* ขวาสุด: ปุ่มปรับแต่งการสนทนา (Sliders / Tune) */}
-          <button
-            type="button"
-            title="ปรับแต่งการสนทนา"
-            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[#8E8E93] hover:text-[#EDEDED] hover:bg-white/[0.08] active:scale-95 transition-all shrink-0 cursor-pointer"
-          >
-            <SlidersHorizontal size={15} />
-          </button>
-        </div>
-
-        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-            แถวที่ 2: Unified Capsule Input Bar (กล่องหมอนพิมพ์ข้อความนุ่มฟู สไตล์กระจกฝ้า สบายตา)
+            Unified Capsule Input Bar (Apple iMessage Minimalist Pill)
             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
         <div className="w-full relative">
           <div 

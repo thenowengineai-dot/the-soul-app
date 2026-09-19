@@ -53,7 +53,7 @@ function CharacterSliderRow({
             {title} {emoji && <span>{emoji}</span>}
           </h2>
           {isOriginal && (
-            <div className="h-[2px] w-16 sm:w-24 bg-gradient-to-r from-[#EF264C] to-transparent rounded-full ml-1" />
+            <div className="h-[1px] w-20 sm:w-28 bg-gradient-to-r from-[#D22147]/60 via-[#8E0D29]/25 to-transparent rounded-full ml-2" />
           )}
         </div>
         {subtitle && (

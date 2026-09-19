@@ -22,7 +22,7 @@ export default function CharacterCard({
   const displayBadge = badge ?? charBadge;
 
   const borderAndShadowClass = isOriginal 
-    ? 'border border-[#EF264C]/50 hover:border-[#EF264C] shadow-[0_0_15px_rgba(239,38,76,0.15)]' 
+    ? 'border border-[#D22147]/30 hover:border-[#D22147]/65 shadow-[0_12px_32px_rgba(0,0,0,0.6)] hover:shadow-[0_16px_36px_rgba(184,22,58,0.2)]' 
     : 'border-0 hover:ring-1 hover:ring-white/20 shadow-xl hover:shadow-2xl';
 
   return (

@@ -13,9 +13,10 @@ export function MessageList({
     <div className="w-full max-w-[700px] mx-auto px-4 sm:px-6 pt-2 flex-1 flex flex-col">
       {messages.map((msg, index) => {
         const isMe = msg.sender === 'me'
-        
         const isVo = msg.type === 'vo'
-        
+        const isMsg = msg.type === 'msg' || !msg.type
+        const isAction = msg.type === 'action'
+
         // ตรวจสอบข้อความก่อนหน้าและถัดไป เพื่อจัดกลุ่ม Stack (Bubble Clustering)
         const prevMsg = index > 0 ? messages[index - 1] : null
         const nextMsg = index < messages.length - 1 ? messages[index + 1] : null
@@ -23,19 +24,33 @@ export function MessageList({
         const isSameSenderAsPrev = Boolean(prevMsg && prevMsg.type !== 'vo' && prevMsg.sender === msg.sender)
         const isSameSenderAsNext = Boolean(nextMsg && nextMsg.type !== 'vo' && nextMsg.sender === msg.sender)
 
-        const isFirstInGroup = !isSameSenderAsPrev
-        const isLastInGroup = !isSameSenderAsNext
+        // สำหรับบับเบิ้ลคำพูด (Dialogue): 
+        // จะถือว่าเป็นลูกสุดท้ายในกลุ่ม (ต้องมีหาง) ถ้าข้อความถัดไปเป็นคนละคน, หรือเป็น VO, หรือเป็น Action
+        const isLastInGroup = isMsg 
+          ? Boolean(!nextMsg || nextMsg.sender !== msg.sender || nextMsg.type === 'vo' || nextMsg.type === 'action')
+          : !isSameSenderAsNext
+
+        const isFirstInGroup = isMsg
+          ? Boolean(!prevMsg || prevMsg.sender !== msg.sender || prevMsg.type === 'vo' || prevMsg.type === 'action')
+          : !isSameSenderAsPrev
 
         // Spacing: จัดระยะห่างตามสรีระสายตาของ Apple iMessage (Clustered Stack Cadence)
         let marginTop = 'mt-4 sm:mt-5'
         if (isVo) {
-          marginTop = 'my-6 sm:my-8'
+          marginTop = 'my-8 sm:my-10'
         } else if (index === 0) {
           marginTop = 'mt-1'
         } else if (prevMsg?.type === 'vo') {
-          marginTop = 'mt-3'
+          marginTop = 'mt-4 sm:mt-5'
         } else if (isSameSenderAsPrev) {
-          marginTop = 'mt-1'
+          // ถ้าคนเดียวกัน:
+          // - ข้อความสลับกับ Action (เช่น Dialogue -> Action หรือ Action -> Dialogue): เว้น 10px (mt-2.5) ให้มีพื้นที่ของภาษากาย
+          // - บับเบิ้ลคำพูดต่อกัน (Dialogue -> Dialogue): เว้นชิดกัน 4px (mt-1) ตามสไตล์ Clustered Stack
+          if (isAction || prevMsg?.type === 'action') {
+            marginTop = 'mt-2.5'
+          } else {
+            marginTop = 'mt-1'
+          }
         }
 
         const isLast = index === messages.length - 1

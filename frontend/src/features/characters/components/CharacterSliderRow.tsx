@@ -84,7 +84,7 @@ function CharacterSliderRow({
           <SliderNavButton
             direction="left"
             onClick={() => handleScroll('left')}
-            className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 z-30"
+            className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-30"
           />
         )}
 
@@ -93,7 +93,7 @@ function CharacterSliderRow({
           <SliderNavButton
             direction="right"
             onClick={() => handleScroll('right')}
-            className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 z-30"
+            className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-30"
           />
         )}
 

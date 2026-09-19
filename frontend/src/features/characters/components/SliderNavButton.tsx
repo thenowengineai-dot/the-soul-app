@@ -1,11 +1,12 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { SliderNavButtonProps } from '../types'
 
 export type { SliderNavButtonProps }
 
 /**
  * SliderNavButton: คอมโพเนนต์ปุ่มลูกศรเลื่อนสไลเดอร์ (< และ >)
- * สไตล์ Apple Dark Glassmorphism ตามแบบฉบับการ์ดหน้าแรก
- * รองรับการปรับขนาด (sm, md, lg) และทิศทาง (left, right)
+ * สไตล์ Liquid Frosted Glass (Apple visionOS) โปร่งแสงหักเหแสง
+ * ขนาดกะทัดรัด เรียบหรู ไม่บดบังงานศิลปะของตัวละคร
  */
 export default function SliderNavButton({
   direction,
@@ -18,22 +19,19 @@ export default function SliderNavButton({
   const isRight = direction === 'right';
   const defaultTitle = title || (isRight ? 'เลื่อนไปทางขวา' : 'เลื่อนไปทางซ้าย');
 
-  // สัดส่วนขนาดปุ่มและขนาดไอคอนตามโหมด
+  // สัดส่วนขนาดปุ่มและขนาดไอคอนตามโหมด (ปรับขนาดให้กะทัดรัดลงตามปรัชญา Apple Ergonomics & Subtractive Design)
   const sizeStyles = {
     sm: {
-      button: 'w-[32px] h-[32px] sm:w-[36px] sm:h-[36px]',
-      icon: 'w-[14px] h-[14px] sm:w-[15px] sm:h-[15px]',
-      stroke: '3.2',
+      button: 'w-[28px] h-[28px] sm:w-[32px] sm:h-[32px]',
+      iconSize: 13,
     },
     md: {
-      button: 'w-[52px] h-[52px] sm:w-[56px] sm:h-[56px]',
-      icon: 'w-[20px] h-[20px] sm:w-[22px] sm:h-[22px]',
-      stroke: '3.2',
+      button: 'w-[36px] h-[36px] sm:w-[40px] sm:h-[40px]',
+      iconSize: 16,
     },
     lg: {
-      button: 'w-[60px] h-[60px] sm:w-[64px] sm:h-[64px]',
-      icon: 'w-[24px] h-[24px] sm:w-[26px] sm:h-[26px]',
-      stroke: '3.4',
+      button: 'w-[44px] h-[44px] sm:w-[48px] sm:h-[48px]',
+      iconSize: 19,
     },
   }[size];
 
@@ -45,29 +43,21 @@ export default function SliderNavButton({
       title={defaultTitle}
       aria-label={defaultTitle}
       className={`
-        rounded-full bg-[#D2D2D7]/65 hover:bg-[#E5E5EA]/85 active:bg-white/95 
-        text-[#393B40] backdrop-blur-xl flex items-center justify-center 
+        rounded-full bg-black/35 hover:bg-black/55 active:bg-black/75 
+        text-white/75 hover:text-white active:text-white
+        backdrop-blur-2xl border border-white/[0.12] hover:border-white/25
+        shadow-[0_4px_20px_rgba(0,0,0,0.35)] flex items-center justify-center 
         transition-all duration-200 cursor-pointer select-none 
-        hover:scale-105 active:scale-95 disabled:opacity-30 disabled:pointer-events-none
+        hover:scale-105 active:scale-90 disabled:opacity-0 disabled:pointer-events-none
         ${sizeStyles.button}
         ${className}
       `}
     >
-      <svg
-        className={`text-[#393B40] transition-colors ${sizeStyles.icon} ${isRight ? 'ml-0.5' : '-ml-0.5'}`}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={sizeStyles.stroke}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        {isRight ? (
-          <polyline points="9 4 16 12 9 20" />
-        ) : (
-          <polyline points="15 4 8 12 15 20" />
-        )}
-      </svg>
+      {isRight ? (
+        <ChevronRight size={sizeStyles.iconSize} strokeWidth={2.4} className="ml-0.5" />
+      ) : (
+        <ChevronLeft size={sizeStyles.iconSize} strokeWidth={2.4} className="-ml-0.5" />
+      )}
     </button>
   );
 }

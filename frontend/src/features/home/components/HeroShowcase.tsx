@@ -147,10 +147,10 @@ export default function HeroShowcase({
       {/* Visual Peek-Through Carousel Stage (Apple Stage: Left Anchor with Right Peek) */}
       <div className="relative flex items-center justify-center w-full max-w-[1440px] px-4 sm:px-8 lg:px-12 shrink-0">
         
-        {/* Center Main Hero Card - Majestic Apple Showcase Stage (Borderless Cinema Screen) */}
+        {/* Center Main Hero Card - Majestic Apple Showcase Stage (Specular Glass Rim & Ambient Under-Glow) */}
         <div 
           onClick={() => handleCardClick(currentSlide)}
-          className="relative w-full max-w-[1040px] xl:max-w-[1140px] h-[360px] sm:h-[420px] lg:h-[460px] min-h-[360px] sm:min-h-[420px] lg:min-h-[460px] rounded-[28px] sm:rounded-[36px] overflow-hidden shadow-[0_16px_50px_rgba(0,0,0,0.7)] shrink-0 mx-2 sm:mx-4 group/hero cursor-pointer bg-[#141418]"
+          className="relative w-full max-w-[1040px] xl:max-w-[1140px] h-[360px] sm:h-[420px] lg:h-[460px] min-h-[360px] sm:min-h-[420px] lg:min-h-[460px] rounded-[28px] sm:rounded-[36px] overflow-hidden shadow-[0_22px_60px_rgba(0,0,0,0.85),0_12px_28px_-6px_rgba(210,33,71,0.18)] ring-1 ring-inset ring-white/[0.08] shrink-0 mx-2 sm:mx-4 group/hero cursor-pointer bg-[#141418]"
         >
           {/* Native Video or Hi-Res Image */}
           {currentSlide.videoUrl ? (
@@ -171,8 +171,8 @@ export default function HeroShowcase({
             />
           )}
 
-          {/* Gentle Bottom Scrim Gradient - Leaves 50%+ of Art Pure and Unobstructed */}
-          <div className="absolute inset-x-0 bottom-0 h-[52%] bg-gradient-to-t from-[#09090c]/95 via-[#09090c]/50 to-transparent pointer-events-none" />
+          {/* Gentle Bottom Scrim Gradient - Elevated Surface Level 1 for Perfect Bottom Separation */}
+          <div className="absolute inset-x-0 bottom-0 h-[52%] bg-gradient-to-t from-[#141419]/95 via-[#141419]/45 to-transparent pointer-events-none" />
 
           {/* Editorial Content Overlay - Scenario Event Presentation */}
           <div className="absolute bottom-0 inset-x-0 p-6 sm:p-9 lg:p-10 flex flex-col pointer-events-none pr-28 sm:pr-36 lg:pr-40">
@@ -251,7 +251,7 @@ export default function HeroShowcase({
         <div 
           onClick={nextSlide}
           title={nextItem.eventHook || nextItem.characterName || nextItem.title}
-          className="hidden lg:block relative w-[140px] xl:w-[220px] h-[330px] sm:h-[390px] lg:h-[430px] min-h-[330px] sm:min-h-[390px] lg:min-h-[430px] rounded-[24px] sm:rounded-[30px] overflow-hidden opacity-25 hover:opacity-50 transition-all duration-700 scale-[0.95] shrink-0 cursor-pointer shadow-xl"
+          className="hidden lg:block relative w-[140px] xl:w-[220px] h-[330px] sm:h-[390px] lg:h-[430px] min-h-[330px] sm:min-h-[390px] lg:min-h-[430px] rounded-[24px] sm:rounded-[30px] overflow-hidden opacity-25 hover:opacity-50 transition-all duration-700 scale-[0.95] shrink-0 cursor-pointer shadow-2xl ring-1 ring-inset ring-white/[0.05]"
         >
           {nextItem.videoUrl ? (
             <video 

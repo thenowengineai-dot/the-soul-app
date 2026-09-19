@@ -10,7 +10,7 @@ export function MessageList({
   endRef 
 }: MessageListProps) {
   return (
-    <div className="w-full max-w-[700px] mx-auto px-4 sm:px-6 pt-2 flex-1 flex flex-col">
+    <div className="w-full max-w-[840px] mx-auto px-4 sm:px-6 pt-2 flex-1 flex flex-col">
       {messages.map((msg, index) => {
         const isMe = msg.sender === 'me'
         const isVo = msg.type === 'vo'

@@ -154,7 +154,7 @@ export function ChatInputBar({
       data-no-advance 
       className="sticky bottom-0 z-20 w-full pt-2 pb-4 sm:pb-5 mt-auto bg-gradient-to-t from-[#121214] via-[#121214]/95 to-transparent pointer-events-none"
     >
-      <div className="w-full max-w-[700px] mx-auto px-4 sm:px-6 relative pointer-events-auto flex flex-col gap-2.5">
+      <div className="w-full max-w-[840px] mx-auto px-4 sm:px-6 relative pointer-events-auto flex flex-col gap-2.5">
         
         {/* 💬 Typing Indicator Docked Right Above Context Chips (Twitter / X Style) */}
         {isTyping && (

@@ -183,11 +183,11 @@ export function ChatInputBar({
               <button
                 type="button"
                 onClick={() => setIsModeMenuOpen(prev => !prev)}
-                title="เปลี่ยนโหมดการสนทนา"
-                className={`px-3 py-1.5 rounded-full text-[12px] sm:text-[12.5px] font-medium flex items-center gap-1.5 transition-all cursor-pointer border shadow-sm ${
+                title="เลือกโหมดการสนทนา"
+                className={`px-3 py-1.5 rounded-full text-[12px] sm:text-[12.5px] font-medium flex items-center gap-1.5 transition-all cursor-pointer border shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] ${
                   isModeMenuOpen 
                     ? 'bg-white/15 border-white/25 text-[#EDEDED]' 
-                    : 'bg-[#18181C]/90 hover:bg-[#222228] border-white/[0.08] hover:border-white/20 text-[#D1D1D6]'
+                    : 'bg-gradient-to-b from-white/[0.05] to-white/[0.02] backdrop-blur-xl hover:bg-white/[0.05] border-white/[0.06] hover:border-white/15 text-[#D1D1D6]'
                 }`}
               >
                 <MessageSquare size={13} className="text-[#38BDF8]" />
@@ -197,7 +197,7 @@ export function ChatInputBar({
 
               {/* Mode Menu Dropdown */}
               {isModeMenuOpen && (
-                <div className="absolute bottom-full mb-2 left-0 z-50 w-[220px] bg-[#161618]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-1.5 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute bottom-full mb-2 left-0 z-50 w-[220px] bg-[#18181B]/95 backdrop-blur-2xl border border-white/[0.12] shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_12px_32px_rgba(0,0,0,0.6)] rounded-2xl p-1.5 animate-in fade-in zoom-in-95 duration-150">
                   <div className="text-[11px] font-semibold text-[#8E8E93] px-3 py-1.5 uppercase tracking-wider">
                     โหมดการสนทนา
                   </div>
@@ -228,7 +228,7 @@ export function ChatInputBar({
               type="button"
               onClick={handleInsertAsterisk}
               title="แทรกเครื่องหมายสถานการณ์ (*ท่าทาง*)"
-              className="px-3 py-1.5 rounded-full bg-[#18181C]/90 hover:bg-[#222228] border border-white/[0.08] hover:border-white/20 text-[#D1D1D6] hover:text-[#EDEDED] text-[12px] sm:text-[12.5px] font-medium flex items-center gap-1.5 transition-all shrink-0 cursor-pointer shadow-sm group active:scale-95"
+              className="px-3 py-1.5 rounded-full bg-gradient-to-b from-white/[0.05] to-white/[0.02] backdrop-blur-xl hover:bg-white/[0.05] border border-white/[0.06] hover:border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] text-[#D1D1D6] hover:text-[#EDEDED] text-[12px] sm:text-[12.5px] font-medium flex items-center gap-1.5 transition-all shrink-0 cursor-pointer group active:scale-95"
             >
               <Asterisk size={13} className="text-[#A1A1A8] transition-transform duration-200 group-hover:rotate-45" />
               <span>เพิ่มสถานการณ์</span>
@@ -240,10 +240,10 @@ export function ChatInputBar({
                 type="button"
                 onClick={() => setIsSuggestedOpen(prev => !prev)}
                 title="เลือกคำตอบที่แนะนำ"
-                className={`px-3 py-1.5 rounded-full text-[12px] sm:text-[12.5px] font-medium flex items-center gap-1.5 transition-all cursor-pointer border shadow-sm ${
+                className={`px-3 py-1.5 rounded-full text-[12px] sm:text-[12.5px] font-medium flex items-center gap-1.5 transition-all cursor-pointer border shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] ${
                   isSuggestedOpen 
                     ? 'bg-white/15 border-white/25 text-[#EDEDED]' 
-                    : 'bg-[#18181C]/90 hover:bg-[#222228] border-white/[0.08] hover:border-white/20 text-[#D1D1D6]'
+                    : 'bg-gradient-to-b from-white/[0.05] to-white/[0.02] backdrop-blur-xl hover:bg-white/[0.05] border-white/[0.06] hover:border-white/15 text-[#D1D1D6]'
                 }`}
               >
                 <Sparkles size={13} className="text-amber-400/90" />
@@ -252,7 +252,7 @@ export function ChatInputBar({
 
               {/* Suggested Replies Popover */}
               {isSuggestedOpen && (
-                <div className="absolute bottom-full mb-2 right-0 sm:left-0 z-50 w-[280px] sm:w-[320px] bg-[#161618]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute bottom-full mb-2 right-0 sm:left-0 z-50 w-[280px] sm:w-[320px] bg-[#18181B]/95 backdrop-blur-2xl border border-white/[0.12] shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_12px_32px_rgba(0,0,0,0.6)] rounded-2xl p-2 animate-in fade-in zoom-in-95 duration-150">
                   <div className="text-[11px] font-semibold text-[#8E8E93] px-2.5 py-1 uppercase tracking-wider flex items-center justify-between">
                     <span>คำตอบที่แนะนำ</span>
                     <Sparkles size={11} className="text-amber-400" />
@@ -285,11 +285,11 @@ export function ChatInputBar({
         </div>
 
         {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-            แถวที่ 2: Unified Capsule Input Bar (กล่องหมอนพิมพ์ข้อความ h-[58px]/h-[60px] สี #202024)
+            แถวที่ 2: Unified Capsule Input Bar (กล่องหมอนพิมพ์ข้อความนุ่มฟู สไตล์กระจกฝ้า สบายตา)
             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
         <div className="w-full relative">
           <div 
-            className={`w-full h-[58px] sm:h-[60px] bg-[#202024]/95 backdrop-blur-2xl rounded-full flex items-center px-2.5 sm:px-3 border border-white/[0.08] hover:border-white/15 focus-within:border-white/25 transition-all shadow-[0_6px_28px_rgba(0,0,0,0.55)] ${
+            className={`w-full h-[58px] sm:h-[60px] bg-gradient-to-b from-white/[0.06] via-white/[0.035] to-white/[0.015] backdrop-blur-2xl rounded-full flex items-center px-2.5 sm:px-3 border border-white/[0.07] hover:border-white/15 focus-within:border-white/25 focus-within:shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.6)] transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_6px_28px_rgba(0,0,0,0.55)] ${
               isStreaming ? 'opacity-70' : ''
             }`}
           >
@@ -299,10 +299,10 @@ export function ChatInputBar({
                 type="button"
                 onClick={() => setIsPlusMenuOpen(prev => !prev)}
                 title="ตัวเลือกเพิ่มเติม"
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer active:scale-95 ${
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer active:scale-95 border ${
                   isPlusMenuOpen || isEmojiOpen
-                    ? 'bg-white/20 text-white shadow-inner'
-                    : 'bg-white/[0.05] hover:bg-white/[0.1] text-white/45 hover:text-white'
+                    ? 'bg-white/20 text-white border-white/25 shadow-inner'
+                    : 'bg-white/[0.04] hover:bg-white/[0.08] text-white/50 hover:text-white border-white/[0.05]'
                 }`}
               >
                 <Plus size={19} strokeWidth={1.75} className={`transition-transform duration-200 ${isPlusMenuOpen ? 'rotate-45' : ''}`} />
@@ -310,7 +310,7 @@ export function ChatInputBar({
 
               {/* Plus Menu Action Popover */}
               {isPlusMenuOpen && (
-                <div className="absolute bottom-[calc(100%+12px)] left-0 z-50 w-[200px] bg-[#161618]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-1.5 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute bottom-[calc(100%+12px)] left-0 z-50 w-[200px] bg-[#18181B]/95 backdrop-blur-2xl border border-white/[0.12] shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_12px_32px_rgba(0,0,0,0.6)] rounded-2xl p-1.5 animate-in fade-in zoom-in-95 duration-150">
                   <button
                     type="button"
                     onClick={() => {
@@ -377,19 +377,20 @@ export function ChatInputBar({
                 onClick={onSendMessage}
                 disabled={isStreaming}
                 title="ส่งข้อความ"
-                className={`w-10 h-10 rounded-full bg-gradient-to-br from-[#8C1D38] via-[#75162D] to-[#5A0E20] border border-[#A82B49]/50 text-[#F8D2DB] flex items-center justify-center hover:brightness-110 active:scale-95 transition-all shrink-0 cursor-pointer shadow-md ${
-                  isStreaming ? 'opacity-40 cursor-not-allowed active:scale-100' : ''
+                className={`w-10 h-10 rounded-full bg-gradient-to-b from-[#EF264C] via-[#DC1E43] to-[#B01333] border border-white/20 text-white flex items-center justify-center hover:brightness-110 active:scale-95 transition-all shrink-0 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_2px_12px_rgba(239,38,76,0.35)] ${
+                  isStreaming ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
-                <ArrowUp size={19} strokeWidth={2.5} />
+                <ArrowUp size={19} strokeWidth={2.2} />
               </button>
             ) : (
-              <button
+              <button 
                 type="button"
-                title="ข้อความเสียง"
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white/45 hover:text-white hover:bg-white/[0.05] active:scale-95 transition-all shrink-0 cursor-pointer"
+                disabled
+                title="การส่งเสียง (Voice Input)"
+                className="w-10 h-10 rounded-full flex items-center justify-center text-white/35 transition-all shrink-0 cursor-default"
               >
-                <AudioLines size={20} strokeWidth={1.75} />
+                <AudioLines size={18} strokeWidth={1.75} />
               </button>
             )}
           </div>

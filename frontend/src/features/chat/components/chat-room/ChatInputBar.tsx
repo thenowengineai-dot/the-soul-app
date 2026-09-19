@@ -124,73 +124,74 @@ export function ChatInputBar({
         )}
 
         {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-            Unified Capsule Input Bar (Apple iMessage Minimalist Pill)
+            Input Bar with Standalone Front (+) Button (Apple iMessage Style)
             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-        <div className="w-full relative">
+        <div className="w-full relative flex items-center gap-2 sm:gap-2.5">
+          {/* ปุ่ม (+) แยกเดี่ยวอยู่ด้านหน้ากล่อง (Apple iMessage Standalone Circle) */}
+          <div className="relative shrink-0 flex items-center" ref={plusMenuRef}>
+            <button 
+              type="button"
+              onClick={() => setIsPlusMenuOpen(prev => !prev)}
+              title="ตัวเลือกเพิ่มเติม"
+              className={`w-[44px] h-[44px] sm:w-[48px] sm:h-[48px] rounded-full flex items-center justify-center transition-all cursor-pointer active:scale-95 border ${
+                isPlusMenuOpen || isEmojiOpen
+                  ? 'bg-white/20 text-white border-white/25 shadow-inner'
+                  : 'bg-white/[0.08] hover:bg-white/[0.12] text-[#A1A1A8] hover:text-white border-white/[0.08] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_4px_16px_rgba(0,0,0,0.3)]'
+              }`}
+            >
+              <Plus size={20} strokeWidth={2} className={`transition-transform duration-200 ${isPlusMenuOpen ? 'rotate-45' : ''}`} />
+            </button>
+
+            {/* Plus Menu Action Popover */}
+            {isPlusMenuOpen && (
+              <div className="absolute bottom-[calc(100%+12px)] left-0 z-50 w-[200px] bg-[#18181B]/95 backdrop-blur-2xl border border-white/[0.12] shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_12px_32px_rgba(0,0,0,0.6)] rounded-2xl p-1.5 animate-in fade-in zoom-in-95 duration-150">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsPlusMenuOpen(false)
+                    setIsEmojiOpen(true)
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] text-[#D1D1D6] hover:text-white hover:bg-white/[0.08] transition-all cursor-pointer"
+                >
+                  <Smile size={16} className="text-amber-400" />
+                  <span>ใส่อีโมจิ</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsPlusMenuOpen(false)
+                    handleInsertAsterisk()
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] text-[#D1D1D6] hover:text-white hover:bg-white/[0.08] transition-all cursor-pointer"
+                >
+                  <Asterisk size={16} className="text-[#8E8E93]" />
+                  <span>แทรกสถานการณ์ (*...*)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsPlusMenuOpen(false)}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] text-[#D1D1D6] hover:text-white hover:bg-white/[0.08] transition-all cursor-pointer"
+                >
+                  <ImageIcon size={16} className="text-blue-400" />
+                  <span>ส่งรูปภาพ</span>
+                </button>
+              </div>
+            )}
+
+            {/* Native Dark Glassmorphic Emoji Popover */}
+            <EmojiPickerPopover 
+              isOpen={isEmojiOpen}
+              onClose={() => setIsEmojiOpen(false)}
+              onSelectEmoji={handleSelectEmoji}
+            />
+          </div>
+
+          {/* Unified Capsule Input Box (กล่องพิมพ์ข้อความทรงแคปซูลมน) */}
           <div 
-            className={`w-full h-[58px] sm:h-[60px] bg-gradient-to-b from-white/[0.06] via-white/[0.035] to-white/[0.015] backdrop-blur-2xl rounded-full flex items-center px-2.5 sm:px-3 border border-white/[0.07] hover:border-white/15 focus-within:border-white/25 focus-within:shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.6)] transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_6px_28px_rgba(0,0,0,0.55)] ${
+            className={`flex-1 h-[52px] sm:h-[56px] bg-gradient-to-b from-white/[0.06] via-white/[0.035] to-white/[0.015] backdrop-blur-2xl rounded-full flex items-center pl-4 sm:pl-5 pr-1.5 sm:pr-2 border border-white/[0.07] hover:border-white/15 focus-within:border-white/25 focus-within:shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.6)] transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_6px_28px_rgba(0,0,0,0.55)] ${
               isStreaming ? 'opacity-70' : ''
             }`}
           >
-            {/* ปุ่ม (+) ด้านในกล่องพิมพ์ซ้ายมือ (เปิดเมนู/ใส่อีโมจิ) ทรงกลมมน 40px นุ่มนวล */}
-            <div className="relative shrink-0 flex items-center" ref={plusMenuRef}>
-              <button 
-                type="button"
-                onClick={() => setIsPlusMenuOpen(prev => !prev)}
-                title="ตัวเลือกเพิ่มเติม"
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer active:scale-95 border ${
-                  isPlusMenuOpen || isEmojiOpen
-                    ? 'bg-white/20 text-white border-white/25 shadow-inner'
-                    : 'bg-white/[0.04] hover:bg-white/[0.08] text-white/50 hover:text-white border-white/[0.05]'
-                }`}
-              >
-                <Plus size={19} strokeWidth={1.75} className={`transition-transform duration-200 ${isPlusMenuOpen ? 'rotate-45' : ''}`} />
-              </button>
-
-              {/* Plus Menu Action Popover */}
-              {isPlusMenuOpen && (
-                <div className="absolute bottom-[calc(100%+12px)] left-0 z-50 w-[200px] bg-[#18181B]/95 backdrop-blur-2xl border border-white/[0.12] shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_12px_32px_rgba(0,0,0,0.6)] rounded-2xl p-1.5 animate-in fade-in zoom-in-95 duration-150">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsPlusMenuOpen(false)
-                      setIsEmojiOpen(true)
-                    }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] text-[#D1D1D6] hover:text-white hover:bg-white/[0.08] transition-all cursor-pointer"
-                  >
-                    <Smile size={16} className="text-amber-400" />
-                    <span>ใส่อีโมจิ</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsPlusMenuOpen(false)
-                      handleInsertAsterisk()
-                    }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] text-[#D1D1D6] hover:text-white hover:bg-white/[0.08] transition-all cursor-pointer"
-                  >
-                    <Asterisk size={16} className="text-[#8E8E93]" />
-                    <span>แทรกสถานการณ์ (*...*)</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsPlusMenuOpen(false)}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] text-[#D1D1D6] hover:text-white hover:bg-white/[0.08] transition-all cursor-pointer"
-                  >
-                    <ImageIcon size={16} className="text-blue-400" />
-                    <span>ส่งรูปภาพ</span>
-                  </button>
-                </div>
-              )}
-
-              {/* Native Dark Glassmorphic Emoji Popover */}
-              <EmojiPickerPopover 
-                isOpen={isEmojiOpen}
-                onClose={() => setIsEmojiOpen(false)}
-                onSelectEmoji={handleSelectEmoji}
-              />
-            </div>
-
             {/* ช่องกรอกข้อความ (Personalized Placeholder พร้อมระยะ Breathing Room) */}
             <input 
               ref={inputRef}
@@ -204,19 +205,19 @@ export function ChatInputBar({
                   ? "กำลังตอบกลับ..." 
                   : `กำลังส่งข้อความไปหา ${chatName || 'ตัวละคร'}...`
               } 
-              className={`flex-1 bg-transparent outline-none text-[#F2F2F5] placeholder-white/35 text-[15px] px-3.5 font-normal ${
+              className={`flex-1 bg-transparent outline-none text-[#F2F2F5] placeholder-white/35 text-[15px] pr-2 font-normal ${
                 isStreaming ? 'cursor-not-allowed' : ''
               }`} 
             />
 
-            {/* ปุ่มด้านขวามือในกล่องพิมพ์: Waveform 40px ตอนว่างเปล่า vs. Send Arrow 40px ตอนมีข้อความ */}
+            {/* ปุ่มด้านขวามือในกล่องพิมพ์: Waveform ตอนว่างเปล่า vs. Send Arrow ตอนมีข้อความ */}
             {hasText ? (
               <button 
                 type="button"
                 onClick={onSendMessage}
                 disabled={isStreaming}
                 title="ส่งข้อความ"
-                className={`w-10 h-10 rounded-full bg-gradient-to-br from-[#EA1D52] via-[#D11142] to-[#9C0C30] border border-[#FF4D75]/40 text-white flex items-center justify-center hover:brightness-110 active:scale-95 transition-all shrink-0 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_2px_12px_rgba(209,17,66,0.4)] ${
+                className={`w-[40px] h-[40px] sm:w-[42px] sm:h-[42px] rounded-full bg-gradient-to-br from-[#EA1D52] via-[#D11142] to-[#9C0C30] border border-[#FF4D75]/40 text-white flex items-center justify-center hover:brightness-110 active:scale-95 transition-all shrink-0 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_2px_12px_rgba(209,17,66,0.4)] ${
                   isStreaming ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
@@ -227,7 +228,7 @@ export function ChatInputBar({
                 type="button"
                 disabled
                 title="การส่งเสียง (Voice Input)"
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white/35 transition-all shrink-0 cursor-default"
+                className="w-[40px] h-[40px] sm:w-[42px] sm:h-[42px] rounded-full flex items-center justify-center text-white/35 transition-all shrink-0 cursor-default"
               >
                 <AudioLines size={18} strokeWidth={1.75} />
               </button>

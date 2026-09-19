@@ -45,7 +45,7 @@ export function MessageBubble({
   if (message.type === 'vo') {
     return (
       <div className={`w-full flex justify-center px-4 select-text my-8 sm:my-10`}>
-        <div className="w-full max-w-[620px] flex flex-col items-center py-2.5">
+        <div className="w-full max-w-[590px] flex flex-col items-center py-2.5">
           {/* เส้นคั่นบางเฉียบด้านบนแบบไล่เฉดจางหายหัว-ท้าย */}
           <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent mb-4" />
           
@@ -71,7 +71,7 @@ export function MessageBubble({
         {isAction ? (
           // 🌟 Action (บทกวีกำกับฉาก / Whispered Stage Direction สไตล์ Apple):
           // ไร้กล่องทึบ แนบขอบซ้ายอย่างสง่างาม มีดาวประกาย ✦ สีทองอำพันจิ๋ว
-          <div className={`flex items-start gap-2 py-0.5 select-text my-1.5 max-w-[92%] sm:max-w-[86%] ${isMe ? 'justify-end' : 'justify-start px-1'}`}>
+          <div className={`flex items-start gap-2 py-0.5 select-text my-1.5 max-w-[92%] sm:max-w-[85%] ${isMe ? 'justify-end' : 'justify-start px-1'}`}>
             <span className="text-[11px] text-amber-400/80 shrink-0 select-none mt-1">✦</span>
             <p className="text-[13.5px] sm:text-[14px] leading-relaxed text-[#A1A1A8] italic font-normal tracking-wide">
               {message.text}
@@ -82,7 +82,7 @@ export function MessageBubble({
           // - ความสูงมาตรฐาน 1 บรรทัด: 38px (py-2 + leading-[22px]) สระไทยบน-ล่างไม่ถูกตัด
           // - บับเบิ้ลในกลุ่มซ้อน (Stack): Perfect Pill มนกลม ไม่มีหาง
           // - บับเบิ้ลสุดท้าย (isLastInGroup): มีหัวแหลม/หางคำพูด (Speech Tail) เชื่อมโยงหาผู้ส่ง
-          <div className="relative inline-block max-w-[85%] sm:max-w-[76%]">
+          <div className="relative inline-block max-w-[85%] sm:max-w-[75%]">
             <div className={`
               px-4 py-2 text-[15px] leading-[22px] select-text transition-all min-h-[38px] flex items-center
               ${isMe 

@@ -205,7 +205,7 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
             {/* Top Floating Controls on Image: สถานะสด (ซ้ายบน) + จุดไข่ปลา & ปุ่มปิดแถบ (ขวาบน) */}
             <div className="absolute top-2.5 inset-x-2.5 z-20 flex items-center justify-between pointer-events-none select-none">
               {/* Left: LIVE Status Pill */}
-              <div className="flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-[#121214]/80 backdrop-blur-xl border border-white/10 shadow-lg pointer-events-auto">
+              <div className="flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-[#121214]/80 backdrop-blur-xl border border-white/[0.12] shadow-[inset_0_1px_1px_rgba(255,255,255,0.18)] pointer-events-auto">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
                 <span className="text-[11px] font-bold tracking-wider text-app-primary">
                   LIVE
@@ -218,10 +218,10 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
                   type="button"
                   onClick={() => setIsMenuOpen(prev => !prev)}
                   title="ตั้งค่าขนาดแถบสถานะ"
-                  className={`w-7 h-7 rounded-full backdrop-blur-xl border transition-all cursor-pointer shadow-lg active:scale-95 flex items-center justify-center select-none ${
+                  className={`w-7 h-7 rounded-full backdrop-blur-xl border transition-all cursor-pointer shadow-[inset_0_1px_1px_rgba(255,255,255,0.18)] active:scale-95 flex items-center justify-center select-none ${
                     isMenuOpen 
-                      ? 'bg-white/15 border-white/30 text-app-primary' 
-                      : 'bg-[#121214]/80 border-white/10 hover:border-white/20 text-app-primary'
+                      ? 'bg-white/20 border-white/30 text-app-primary' 
+                      : 'bg-[#121214]/80 border-white/[0.12] hover:bg-white/[0.12] hover:border-white/25 text-app-primary'
                   }`}
                 >
                   <MoreVertical size={15} strokeWidth={1.8} />
@@ -231,7 +231,7 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
                   type="button"
                   onClick={onClose}
                   title="ซ่อนแถบสถานะตัวละคร"
-                  className="w-7 h-7 rounded-full bg-[#121214]/80 backdrop-blur-xl border border-white/10 hover:border-white/20 text-app-primary flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 select-none"
+                  className="w-7 h-7 rounded-full bg-[#121214]/80 backdrop-blur-xl border border-white/[0.12] hover:bg-white/[0.12] hover:border-white/25 text-app-primary flex items-center justify-center transition-all cursor-pointer shadow-[inset_0_1px_1px_rgba(255,255,255,0.18)] active:scale-95 select-none"
                 >
                   <PanelRightClose size={15} strokeWidth={1.8} />
                 </button>
@@ -239,9 +239,9 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
                 {/* Dropdown Menu (Glassmorphism Luxury) */}
                 {isMenuOpen && (
                   <div 
-                    className="absolute top-full right-0 mt-1.5 w-[220px] p-1.5 rounded-2xl bg-[#121214]/95 backdrop-blur-2xl border border-white/10 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 select-none"
+                    className="absolute top-full right-0 mt-1.5 w-[220px] p-1.5 rounded-2xl bg-[#18181B]/95 backdrop-blur-2xl border border-white/[0.15] shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_12px_32px_rgba(0,0,0,0.6)] z-50 animate-in fade-in zoom-in-95 duration-150 select-none"
                   >
-                    <div className="px-2.5 py-1.5 text-[10px] uppercase tracking-wider text-app-secondary font-semibold border-b border-white/[0.06] mb-1">
+                    <div className="px-2.5 py-1.5 text-[10px] uppercase tracking-wider text-app-secondary font-semibold border-b border-white/[0.08] mb-1">
                       ขนาดแถบสถานะ (HUD)
                     </div>
 
@@ -251,8 +251,8 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
                       onClick={() => handleSelectWidth('extra')}
                       className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-[12.5px] transition-all cursor-pointer ${
                         hudWidth === 'extra'
-                          ? 'bg-white/[0.08] text-app-primary font-medium'
-                          : 'text-app-secondary hover:text-app-primary hover:bg-white/[0.04]'
+                          ? 'bg-white/[0.10] text-app-primary font-medium'
+                          : 'text-app-secondary hover:text-app-primary hover:bg-white/[0.05]'
                       }`}
                     >
                       <div className="flex flex-col text-left">
@@ -270,8 +270,8 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
                       onClick={() => handleSelectWidth('wide')}
                       className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-[12.5px] transition-all cursor-pointer ${
                         hudWidth === 'wide'
-                          ? 'bg-white/[0.08] text-app-primary font-medium'
-                          : 'text-app-secondary hover:text-app-primary hover:bg-white/[0.04]'
+                          ? 'bg-white/[0.10] text-app-primary font-medium'
+                          : 'text-app-secondary hover:text-app-primary hover:bg-white/[0.05]'
                       }`}
                     >
                       <div className="flex flex-col text-left">
@@ -289,8 +289,8 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
                       onClick={() => handleSelectWidth('normal')}
                       className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-[12.5px] transition-all cursor-pointer ${
                         hudWidth === 'normal'
-                          ? 'bg-white/[0.08] text-app-primary font-medium'
-                          : 'text-app-secondary hover:text-app-primary hover:bg-white/[0.04]'
+                          ? 'bg-white/[0.10] text-app-primary font-medium'
+                          : 'text-app-secondary hover:text-app-primary hover:bg-white/[0.05]'
                       }`}
                     >
                       <div className="flex flex-col text-left">
@@ -326,77 +326,88 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
             </div>
           </div>
 
-          {/* Zone 2: Environment & World State (ย้ายสถานที่ วันที่ มาไว้บนสุดใต้รูป) */}
-          <div className="p-2.5 px-3 rounded-xl bg-white/[0.04] border border-white/[0.08] space-y-1.5 select-none">
+          {/* Zone 2: Environment & World State (สไตล์ Day 1 พร้อมแสงรัศมีขอบบนขวา Soft Ambient Bloom) */}
+          <div className="relative overflow-hidden p-3 rounded-2xl bg-gradient-to-b from-white/[0.09] via-white/[0.06] to-white/[0.03] backdrop-blur-xl border border-white/[0.12] shadow-[inset_0_1px_1px_rgba(255,255,255,0.18)] space-y-2 select-none group hover:from-white/[0.12] hover:to-white/[0.05] hover:border-white/25 transition-all duration-200">
+            {/* Ambient Corner Flare (กระจกฝ้าสะท้อนแสงมุมบนขวา ดั่งการ์ด Day 1) */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.08] rounded-full blur-2xl pointer-events-none -mr-10 -mt-10 group-hover:bg-white/[0.12] transition-colors duration-300" />
+
             {/* สถานที่ปัจจุบัน */}
-            <div className="flex items-center gap-2">
-              <MapPin size={13} className="text-[#EF264C] shrink-0" />
-              <p className="text-[12px] text-app-primary font-medium truncate">
+            <div className="flex items-center gap-2 relative z-10">
+              <div className="w-6 h-6 rounded-lg bg-white/[0.08] border border-white/10 flex items-center justify-center shrink-0">
+                <MapPin size={13} className="text-[#EF264C]" />
+              </div>
+              <p className="text-[12.5px] text-app-primary font-medium truncate">
                 {data.environment.location}
               </p>
             </div>
 
-            {/* เวลาและสภาพอากาศ */}
-            <div className="flex items-center gap-2 text-[11px] text-app-secondary pt-1 border-t border-white/[0.06]">
+            {/* เวลาและสภาพอากาศ (แท่นข้อมูลย่อยสไตล์ Day 2 / 3 metrics) */}
+            <div className="flex items-center gap-3 text-[11px] text-app-secondary pt-1.5 border-t border-white/[0.08] relative z-10">
               <div className="flex items-center gap-1.5 truncate">
                 <Clock size={12} className="text-sky-400 shrink-0" />
-                <span className="truncate">{data.environment.time}</span>
+                <span className="truncate text-white/80">{data.environment.time}</span>
               </div>
-              <span className="text-white/20">•</span>
+              <span className="text-white/25">•</span>
               <div className="flex items-center gap-1.5 truncate">
                 <CloudRain size={12} className="text-indigo-400 shrink-0" />
-                <span className="truncate">{data.environment.weather}</span>
+                <span className="truncate text-white/80">{data.environment.weather}</span>
               </div>
             </div>
           </div>
 
-          {/* Zone 3: Live Badges: Outfit & Poses (ย้ายชุดและท่าทางลงมาด้านล่าง) */}
-          <div className="space-y-1.5 select-none">
+          {/* Zone 3: Live Badges: Outfit & Poses (สไตล์กระจกฝ้า Day 2 / Day 3 ขอบสะท้อนแสง 3D Milled Glass) */}
+          <div className="space-y-2 select-none">
             {/* 1. ชุดปัจจุบัน (Current Outfit) */}
-            <div className="flex items-start gap-2 p-2 sm:p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] shadow-sm">
-              <Shirt size={14} className="text-[#EF264C] flex-shrink-0 mt-0.5" />
+            <div className="relative overflow-hidden flex items-start gap-2.5 p-2.5 sm:p-3 rounded-2xl bg-gradient-to-b from-white/[0.08] via-white/[0.05] to-white/[0.03] backdrop-blur-xl border border-white/[0.12] shadow-[inset_0_1px_1px_rgba(255,255,255,0.16)] hover:from-white/[0.11] hover:to-white/[0.05] hover:border-white/20 transition-all duration-200">
+              <div className="w-7 h-7 rounded-xl bg-white/[0.08] border border-white/10 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                <Shirt size={14} className="text-[#EF264C]" />
+              </div>
               <div className="min-w-0 flex-1">
-                <span className="block text-[10px] uppercase tracking-wider text-app-secondary font-semibold mb-0.5">
+                <span className="block text-[10px] uppercase tracking-wider text-white/45 font-semibold leading-none mb-1">
                   ชุดปัจจุบัน
                 </span>
-                <p className="text-[12px] text-app-primary font-normal leading-snug line-clamp-2">
+                <p className="text-[12px] sm:text-[12.5px] text-app-primary font-normal leading-snug line-clamp-2">
                   {data.outfit}
                 </p>
               </div>
             </div>
 
             {/* 2. ท่าทางตัวละคร (Character Pose) */}
-            <div className="flex items-start gap-2 p-2 sm:p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] shadow-sm">
-              <Smile size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
+            <div className="relative overflow-hidden flex items-start gap-2.5 p-2.5 sm:p-3 rounded-2xl bg-gradient-to-b from-white/[0.08] via-white/[0.05] to-white/[0.03] backdrop-blur-xl border border-white/[0.12] shadow-[inset_0_1px_1px_rgba(255,255,255,0.16)] hover:from-white/[0.11] hover:to-white/[0.05] hover:border-white/20 transition-all duration-200">
+              <div className="w-7 h-7 rounded-xl bg-white/[0.08] border border-white/10 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                <Smile size={14} className="text-amber-400" />
+              </div>
               <div className="min-w-0 flex-1">
-                <span className="block text-[10px] uppercase tracking-wider text-app-secondary font-semibold mb-0.5">
+                <span className="block text-[10px] uppercase tracking-wider text-white/45 font-semibold leading-none mb-1">
                   ท่าทางตัวละคร
                 </span>
-                <p className="text-[12px] text-app-primary font-normal leading-snug line-clamp-2">
+                <p className="text-[12px] sm:text-[12.5px] text-app-primary font-normal leading-snug line-clamp-2">
                   {data.pose}
                 </p>
               </div>
             </div>
 
             {/* 3. ท่าทางผู้เล่น (Player Pose) */}
-            <div className="flex items-start gap-2 p-2 sm:p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] shadow-sm">
-              <User size={14} className="text-sky-400 flex-shrink-0 mt-0.5" />
+            <div className="relative overflow-hidden flex items-start gap-2.5 p-2.5 sm:p-3 rounded-2xl bg-gradient-to-b from-white/[0.08] via-white/[0.05] to-white/[0.03] backdrop-blur-xl border border-white/[0.12] shadow-[inset_0_1px_1px_rgba(255,255,255,0.16)] hover:from-white/[0.11] hover:to-white/[0.05] hover:border-white/20 transition-all duration-200">
+              <div className="w-7 h-7 rounded-xl bg-white/[0.08] border border-white/10 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                <User size={14} className="text-sky-400" />
+              </div>
               <div className="min-w-0 flex-1">
-                <span className="block text-[10px] uppercase tracking-wider text-app-secondary font-semibold mb-0.5">
+                <span className="block text-[10px] uppercase tracking-wider text-white/45 font-semibold leading-none mb-1">
                   ท่าทางผู้เล่น
                 </span>
-                <p className="text-[12px] text-app-primary font-normal leading-snug line-clamp-2">
+                <p className="text-[12px] sm:text-[12.5px] text-app-primary font-normal leading-snug line-clamp-2">
                   {data.playerPose || 'ยืนสบตานิ่งๆ รอคำตอบ'}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Zone 4: Emotional & Roleplay Gauges (หลอดความสัมพันธ์และความปรารถนา พร้อมไอคอนหน้าหลอด) */}
-          <div className="space-y-1.5 pt-0.5 select-none">
+          {/* Zone 4: Emotional & Roleplay Gauges (กระจกฝ้า Day 1/Day 2 พร้อมไอคอนหน้าหลอด) */}
+          <div className="space-y-2 pt-0.5 select-none">
             {/* Apple Milestone Breakthrough Toast */}
             {milestoneToast && (
-              <div className="p-2 px-2.5 rounded-xl bg-[#1D1D1F]/95 backdrop-blur-2xl border border-white/20 shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-300 select-none">
+              <div className="p-2.5 px-3 rounded-2xl bg-[#1D1D1F]/95 backdrop-blur-2xl border border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_12px_24px_rgba(0,0,0,0.5)] flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-300 select-none">
                 <Sparkles size={13} className={`flex-shrink-0 animate-pulse ${milestoneToast.type === 'relationship' ? 'text-pink-400' : 'text-[#EF264C]'}`} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between">
@@ -425,7 +436,7 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
               <div 
                 onClick={() => handleTriggerMilestone('relationship')}
                 title="คลิกเพื่อสดับฟังความรู้สึก (แง้มดูความคืบหน้าเมื่อบรรลุเป้าหมาย)"
-                className="p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] space-y-1.5 flex flex-col justify-between relative overflow-hidden group cursor-pointer hover:bg-white/[0.07] hover:border-white/15 transition-all active:scale-[0.98]"
+                className="relative overflow-hidden p-3 rounded-2xl bg-gradient-to-b from-white/[0.08] via-white/[0.05] to-white/[0.03] backdrop-blur-xl border border-white/[0.12] shadow-[inset_0_1px_1px_rgba(255,255,255,0.16)] space-y-2 flex flex-col justify-between group cursor-pointer hover:from-white/[0.11] hover:to-white/[0.06] hover:border-white/20 transition-all duration-200 active:scale-[0.98]"
               >
                 <div className="flex items-center justify-between text-[11.5px]">
                   <span className="text-app-primary font-medium truncate">ความสัมพันธ์</span>
@@ -450,7 +461,7 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
                 {/* ไอคอนอยู่หน้าหลอด */}
                 <div className="flex items-center gap-1.5">
                   <Heart size={12} className="text-pink-400 fill-pink-400/30 shrink-0" />
-                  <div className="flex-1 h-[5px] rounded-full bg-white/10 overflow-hidden relative">
+                  <div className="flex-1 h-[6px] rounded-full bg-black/40 border border-white/[0.08] overflow-hidden relative shadow-inner">
                     <div 
                       className={`h-full rounded-full bg-gradient-to-r from-pink-500 to-[#EF264C] transition-all duration-700 ${
                         revealedGauge === 'relationship'
@@ -474,10 +485,10 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
               <div 
                 onClick={() => triggerDesireFlash(15)}
                 title="คลิกเพื่อจุดประกายไฟ (ทดสอบจังหวะสว่างวาบและมอดลงตามเวลา)"
-                className={`p-2.5 rounded-xl space-y-1.5 flex flex-col justify-between relative overflow-hidden group cursor-pointer transition-all active:scale-[0.98] ${
+                className={`relative overflow-hidden p-3 rounded-2xl space-y-2 flex flex-col justify-between group cursor-pointer transition-all duration-200 active:scale-[0.98] ${
                   isFlashing 
-                    ? 'bg-[#EF264C]/10 border border-[#EF264C]/40 shadow-[0_0_15px_rgba(239,38,76,0.2)]' 
-                    : 'bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.07] hover:border-white/15'
+                    ? 'bg-gradient-to-b from-[#EF264C]/25 via-[#EF264C]/15 to-white/[0.04] backdrop-blur-xl border border-[#EF264C]/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_0_20px_rgba(239,38,76,0.3)]' 
+                    : 'bg-gradient-to-b from-white/[0.08] via-white/[0.05] to-white/[0.03] backdrop-blur-xl border border-white/[0.12] shadow-[inset_0_1px_1px_rgba(255,255,255,0.16)] hover:from-white/[0.11] hover:to-white/[0.06] hover:border-white/20'
                 }`}
               >
                 <div className="flex items-center justify-between text-[11.5px]">
@@ -501,7 +512,7 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
                         : 'text-[#EF264C] fill-[#EF264C]/30'
                     }`} 
                   />
-                  <div className="flex-1 h-[5px] rounded-full bg-white/10 overflow-hidden relative">
+                  <div className="flex-1 h-[6px] rounded-full bg-black/40 border border-white/[0.08] overflow-hidden relative shadow-inner">
                     <div 
                       className={`h-full rounded-full transition-all ${
                         isFlashing 

@@ -29,27 +29,39 @@ export function MessageBubble({
     return () => clearTimeout(timer)
   }, [isRead])
 
-  // 1. จัดการ VO (Voice Over): สไตล์ Frameless Ambient Horizon ไร้กล่องทึบ ลอยโปร่งกลางเส้นคั่นไล่เฉดสี
+  // 1. จัดการ Date Divider (Apple Musical Rest): แถบวันที่คั่นจังหวะพักสายตากึ่งกลางจอ
+  if (message.type === 'date') {
+    return (
+      <div className="w-full flex items-center justify-center my-6 sm:my-8 select-none">
+        <span className="text-[11px] font-medium text-white/40 tracking-widest uppercase px-3.5 py-1 rounded-full bg-white/[0.03] border border-white/[0.05] shadow-sm">
+          {message.text}
+        </span>
+      </div>
+    )
+  }
+
+  // 2. จัดการ VO (Voice Over): เส้นขอบฟ้าแห่งการพักสายตา (Zenith Horizon of Rest)
+  // ลอยโปร่งกลางจอ เว้นระยะ space หายใจ my-8 sm:my-10 ตัวหนังสือเอียงบางเบา อ่านสบายตาดั่งพักบทสนทนา
   if (message.type === 'vo') {
     return (
-      <div className={`w-full flex justify-center px-4 select-text ${marginTop}`}>
-        <div className="w-full max-w-[620px] flex flex-col items-center py-2">
+      <div className={`w-full flex justify-center px-4 select-text my-8 sm:my-10`}>
+        <div className="w-full max-w-[580px] flex flex-col items-center py-2.5">
           {/* เส้นคั่นบางเฉียบด้านบนแบบไล่เฉดจางหายหัว-ท้าย */}
-          <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/15 to-transparent mb-3.5" />
+          <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent mb-4" />
           
-          {/* ข้อความบรรยายฉาก ฟอนต์ 13.5px สีเทาสว่าง อ่านสบายตา 3 บรรทัด */}
-          <p className="text-[13.5px] sm:text-[14px] leading-relaxed text-[#9CA3AF] font-light text-center px-4 tracking-wide select-text">
+          {/* ข้อความบรรยายฉาก ฟอนต์ 13.5px สีเงินนุ่มนวล อ่านสบายตา เว้นวรรคมีจังหวะ */}
+          <p className="text-[13.5px] sm:text-[14px] leading-relaxed text-[#9CA3AF] font-light text-center px-6 tracking-wide select-text italic">
             {message.text}
           </p>
 
           {/* เส้นคั่นบางเฉียบด้านล่างแบบไล่เฉดจางหายหัว-ท้าย */}
-          <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/15 to-transparent mt-3.5" />
+          <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent mt-4" />
         </div>
       </div>
     )
   }
 
-  // 2. Chat Bubbles & Actions (สไตล์ X Lights Out + Literary Roleplay)
+  // 3. Chat Bubbles & Actions (สไตล์ Apple Tactile Pill + ไร้เส้นขอบ + สรีระมือ)
   const isAction = message.type === 'action'
 
   return (
@@ -86,22 +98,23 @@ export function MessageBubble({
           สำหรับฝั่งตัวละคร: เยื้องเข้ามา pl-[38px] sm:pl-[42px] ให้ตรงกับแนวใต้ชื่อเสมอ */}
       <div className={`w-full flex ${isMe ? 'justify-end' : 'justify-start pl-[38px] sm:pl-[42px]'}`}>
         {isAction ? (
-          // 🌟 Action (ภาษากาย / ท่าทาง): วรรณกรรมกระซิบ ไร้เส้นขีดดิ่งกระด้าง ลอยนุ่มนวลด้วยประกายดาว ✦
-          <div className="flex items-start gap-2 py-0.5 select-text my-2 max-w-[92%] sm:max-w-[88%]">
+          // 🌟 Action (บทกวีกำกับฉาก / Whispered Stage Direction สไตล์ Apple):
+          // ไร้กล่องทึบ ปล่อยให้ Whitespace ทำหน้าที่สร้างความสงบนิ่ง มีดาวประกาย ✦ สีทองอำพันจิ๋ว
+          <div className="flex items-start gap-2.5 py-1 select-text my-2.5 max-w-[92%] sm:max-w-[88%]">
             <span className="text-[11px] text-amber-400/80 shrink-0 select-none mt-1">✦</span>
-            <p className="text-[13.5px] sm:text-[14px] leading-relaxed text-[#A1A1A6] italic font-normal tracking-wide">
+            <p className="text-[13.5px] sm:text-[14px] leading-relaxed text-[#A1A1A8] italic font-normal tracking-wide">
               {message.text}
             </p>
           </div>
         ) : (
-          // 💬 Dialogue (บับเบิ้ลคำพูดทรงหมอน Squircle สไตล์ Juicy Ruby Velvet):
-          // ฝั่งผู้เล่น: สีแดงคาร์ไมน์ฉ่ำสด อิ่มแน่น ไม่ซีด ไม่แสบตา (#EA1D52 -> #D11142 -> #9C0C30) + ตัวหนังสือ Blush White (#FFEBF0) + ขอบและเงากำมะหยี่ทับทิม 3D
-          // ฝั่งตัวละคร: กระจกฝ้าโปร่งแสง สบายตา (bg-white/[0.07] to white/[0.02]) + เส้นขอบบาง 1px + แสงสะท้อน Inset 1px
+          // 💬 Dialogue (บับเบิ้ลหมอน Squircle ไร้เส้นขอบกระด้าง - Pure Seamless Liquid Cushion):
+          // ฝั่งผู้เล่น: สีแดงฉ่ำสด Juicy Ruby Velvet ไร้เส้นขอบ + ขอบมน Asymmetric Pill (ชี้หาผู้ส่ง) + เงาลอยตัวนุ่มลึก
+          // ฝั่งตัวละคร: กระจกฝ้าโปร่งแสง ไร้เส้นขอบ + ขอบมน Asymmetric Pill (ชี้หาตัวละคร) + Inset แสงขอบบนบางเบา
           <div className={`
             px-5 py-3 text-[15px] leading-relaxed select-text max-w-[85%] sm:max-w-[78%] transition-all
             ${isMe 
-              ? 'rounded-[22px] rounded-br-[6px] bg-gradient-to-br from-[#EA1D52] via-[#D11142] to-[#9C0C30] text-[#FFEBF0] border border-[#FF4D75]/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_4px_16px_rgba(209,17,66,0.35)]' 
-              : 'rounded-[22px] rounded-bl-[6px] bg-gradient-to-b from-white/[0.07] via-white/[0.04] to-white/[0.02] backdrop-blur-xl text-[#F2F2F5] border border-white/[0.07] shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_4px_18px_rgba(0,0,0,0.35)]'}
+              ? 'rounded-[22px] rounded-br-[6px] bg-gradient-to-br from-[#EA1D52] via-[#D11142] to-[#9C0C30] text-[#FFEBF0] shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_4px_16px_rgba(209,17,66,0.28)]' 
+              : 'rounded-[22px] rounded-bl-[6px] bg-gradient-to-b from-white/[0.07] via-white/[0.04] to-white/[0.02] backdrop-blur-xl text-[#F2F2F5] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_18px_rgba(0,0,0,0.35)]'}
           `}>
             {message.text}
           </div>

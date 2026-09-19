@@ -7,12 +7,12 @@ export function MessageBubble({
   message, 
   isMe = false, 
   isLast: _isLast = false, 
-  isFirstInGroup = false,
+  isFirstInGroup: _isFirstInGroup = false,
   isLastInGroup = false,
   isRead = false,
   marginTop = 'mt-4',
-  chatAvatar,
-  chatName,
+  chatAvatar: _chatAvatar,
+  chatName: _chatName,
 }: MessageBubbleProps) {
   // 🌟 Tactile Feedback สไตล์ X: หน่วงเวลาก่อนขึ้น "ส่งแล้ว" เล็กน้อย (~380ms) เพื่อจำลอง Network Flight
   // หากเป็นข้อความเดิมที่อ่านแล้ว (isRead = true) ให้แสดงผลทันทีโดยไม่ต้องหน่วง
@@ -61,62 +61,66 @@ export function MessageBubble({
     )
   }
 
-  // 3. Chat Bubbles & Actions (สไตล์ Apple Tactile Pill + ไร้เส้นขอบ + สรีระมือ)
+  // 3. Chat Bubbles & Actions (สไตล์ Apple iMessage: ไร้รูปหน้า/ชื่อ + Perfect Pill + หางคำพูดที่ข้อความสุดท้าย)
   const isAction = message.type === 'action'
 
   return (
     <div className={`flex flex-col w-full ${isMe ? 'items-end' : 'items-start'} ${marginTop}`}>
-      {/* 🏷️ จุดยึดสายตาหัวแถว (Visual Anchor):
-          - ฝั่งผู้เล่น: ป้าย "ฉัน" สีเทาบางๆ
-          - ฝั่งตัวละคร: Avatar วงกลม (32px) + ชื่อตัวละคร */}
-      {isMe && isFirstInGroup && (
-        <span className="text-[12px] font-medium text-app-secondary/80 mr-2 mb-1.5 select-none tracking-wide">
-          ฉัน
-        </span>
-      )}
-
-      {!isMe && isFirstInGroup && (
-        <div className="flex items-center gap-2.5 mb-2 ml-0.5 select-none">
-          {chatAvatar ? (
-            <img
-              src={chatAvatar}
-              alt={chatName || 'Character'}
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-white/10 shadow-sm"
-            />
-          ) : (
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-[12px] text-white/80 font-medium">
-              {(chatName || 'C')[0]}
-            </div>
-          )}
-          <span className="text-[13.5px] font-medium text-[#F2F2F5] tracking-wide">
-            {chatName || 'Character'}
-          </span>
-        </div>
-      )}
-
-      {/* 💬 แถวคอนเทนต์ (Action หรือ Dialogue)
-          สำหรับฝั่งตัวละคร: เยื้องเข้ามา pl-[38px] sm:pl-[42px] ให้ตรงกับแนวใต้ชื่อเสมอ */}
-      <div className={`w-full flex ${isMe ? 'justify-end' : 'justify-start pl-[38px] sm:pl-[42px]'}`}>
+      {/* 💬 แถวคอนเทนต์ (Action หรือ Dialogue) - ปลด Avatar วงกลมและชื่อออก ให้บับเบิ้ลแนบขอบจออย่างสะอาดตาสไตล์ iMessage */}
+      <div className={`w-full flex ${isMe ? 'justify-end' : 'justify-start'}`}>
         {isAction ? (
           // 🌟 Action (บทกวีกำกับฉาก / Whispered Stage Direction สไตล์ Apple):
-          // ไร้กล่องทึบ ปล่อยให้ Whitespace ทำหน้าที่สร้างความสงบนิ่ง มีดาวประกาย ✦ สีทองอำพันจิ๋ว
-          <div className="flex items-start gap-2.5 py-1 select-text my-2.5 max-w-[92%] sm:max-w-[88%]">
+          // ไร้กล่องทึบ แนบขอบซ้ายอย่างสง่างาม มีดาวประกาย ✦ สีทองอำพันจิ๋ว
+          <div className={`flex items-start gap-2 py-0.5 select-text my-1.5 max-w-[92%] sm:max-w-[85%] ${isMe ? 'justify-end' : 'justify-start px-1'}`}>
             <span className="text-[11px] text-amber-400/80 shrink-0 select-none mt-1">✦</span>
             <p className="text-[13.5px] sm:text-[14px] leading-relaxed text-[#A1A1A8] italic font-normal tracking-wide">
               {message.text}
             </p>
           </div>
         ) : (
-          // 💬 Dialogue (บับเบิ้ลหมอน Squircle ไร้เส้นขอบกระด้าง - Pure Seamless Liquid Cushion):
-          // ฝั่งผู้เล่น: สีแดงฉ่ำสด Juicy Ruby Velvet ไร้เส้นขอบ + ขอบมน Asymmetric Pill (ชี้หาผู้ส่ง) + เงาลอยตัวนุ่มลึก
-          // ฝั่งตัวละคร: กระจกฝ้าโปร่งแสง ไร้เส้นขอบ + ขอบมน Asymmetric Pill (ชี้หาตัวละคร) + Inset แสงขอบบนบางเบา
-          <div className={`
-            px-5 py-3 text-[15px] leading-relaxed select-text max-w-[85%] sm:max-w-[78%] transition-all
-            ${isMe 
-              ? 'rounded-[22px] rounded-br-[6px] bg-gradient-to-br from-[#EA1D52] via-[#D11142] to-[#9C0C30] text-[#FFEBF0] shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_4px_16px_rgba(209,17,66,0.28)]' 
-              : 'rounded-[22px] rounded-bl-[6px] bg-gradient-to-b from-white/[0.07] via-white/[0.04] to-white/[0.02] backdrop-blur-xl text-[#F2F2F5] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_18px_rgba(0,0,0,0.35)]'}
-          `}>
-            {message.text}
+          // 💬 Dialogue (Apple iMessage Perfect Pill & Speech Tail):
+          // - ความสูงมาตรฐาน 1 บรรทัด: 38px (py-2 + leading-[22px]) สระไทยบน-ล่างไม่ถูกตัด
+          // - บับเบิ้ลในกลุ่มซ้อน (Stack): Perfect Pill มนกลม ไม่มีหาง
+          // - บับเบิ้ลสุดท้าย (isLastInGroup): มีหัวแหลม/หางคำพูด (Speech Tail) เชื่อมโยงหาผู้ส่ง
+          <div className="relative inline-block max-w-[85%] sm:max-w-[75%]">
+            <div className={`
+              px-4 py-2 text-[15px] leading-[22px] select-text transition-all min-h-[38px] flex items-center
+              ${isMe 
+                ? `bg-gradient-to-br from-[#EA1D52] via-[#D11142] to-[#9C0C30] text-[#FFEBF0] shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_3px_12px_rgba(209,17,66,0.25)] ${
+                    isLastInGroup 
+                      ? 'rounded-[18px] rounded-br-[4px]' 
+                      : 'rounded-[18px]'
+                  }` 
+                : `bg-[#26262A] text-[#F2F2F5] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_2px_8px_rgba(0,0,0,0.3)] ${
+                    isLastInGroup 
+                      ? 'rounded-[18px] rounded-bl-[4px]' 
+                      : 'rounded-[18px]'
+                  }`
+              }
+            `}>
+              {message.text}
+            </div>
+
+            {/* 📍 Apple Speech Tail (หัวแหลมคำพูด): แสดงเฉพาะข้อความสุดท้ายของแต่ละกลุ่ม (isLastInGroup) เท่านั้น */}
+            {isLastInGroup && isMe && (
+              <svg 
+                className="absolute bottom-0 -right-[6px] w-[10px] h-[15px] pointer-events-none" 
+                viewBox="0 0 10 15"
+                fill="#9C0C30"
+              >
+                <path d="M0,0 C0,5 3,11 10,15 L0,15 Z" />
+              </svg>
+            )}
+
+            {isLastInGroup && !isMe && (
+              <svg 
+                className="absolute bottom-0 -left-[6px] w-[10px] h-[15px] pointer-events-none" 
+                viewBox="0 0 10 15"
+                fill="#26262A"
+              >
+                <path d="M10,0 C10,5 7,11 0,15 L10,15 Z" />
+              </svg>
+            )}
           </div>
         )}
       </div>

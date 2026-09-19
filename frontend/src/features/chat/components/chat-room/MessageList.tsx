@@ -26,8 +26,8 @@ export function MessageList({
         const isFirstInGroup = !isSameSenderAsPrev
         const isLastInGroup = !isSameSenderAsNext
 
-        // Spacing: จัดระยะห่างตามสรีระสายตา (Ergonomic Spacing)
-        let marginTop = 'mt-5 sm:mt-6'
+        // Spacing: จัดระยะห่างตามสรีระสายตาของ Apple iMessage (Clustered Stack Cadence)
+        let marginTop = 'mt-4 sm:mt-5'
         if (isVo) {
           marginTop = 'my-6 sm:my-8'
         } else if (index === 0) {
@@ -35,7 +35,7 @@ export function MessageList({
         } else if (prevMsg?.type === 'vo') {
           marginTop = 'mt-3'
         } else if (isSameSenderAsPrev) {
-          marginTop = 'mt-1.5 sm:mt-2'
+          marginTop = 'mt-1'
         }
 
         const isLast = index === messages.length - 1

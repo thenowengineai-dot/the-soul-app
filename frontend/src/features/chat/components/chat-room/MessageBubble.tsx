@@ -86,23 +86,22 @@ export function MessageBubble({
           สำหรับฝั่งตัวละคร: เยื้องเข้ามา pl-[38px] sm:pl-[42px] ให้ตรงกับแนวใต้ชื่อเสมอ */}
       <div className={`w-full flex ${isMe ? 'justify-end' : 'justify-start pl-[38px] sm:pl-[42px]'}`}>
         {isAction ? (
-          // 🌟 Action (ภาษากาย / ท่าทาง): สไตล์ Literary Subtext ตามภาพอ้างอิง
-          // เส้นขีด | สีขาวบาง 1.5px (bg-white/40) + ตัวเอียงสีเทาเงิน #B2B2BC + ระยะห่างสบายตา my-2.5
-          <div className="flex items-start gap-2.5 py-0.5 select-text my-2.5 max-w-[92%] sm:max-w-[85%]">
-            <div className="w-[2px] self-stretch min-h-[16px] rounded-full bg-white/40 shrink-0 my-0.5" />
-            <p className="text-[13.5px] sm:text-[14px] leading-relaxed text-[#B2B2BC] italic font-normal">
+          // 🌟 Action (ภาษากาย / ท่าทาง): วรรณกรรมกระซิบ ไร้เส้นขีดดิ่งกระด้าง ลอยนุ่มนวลด้วยประกายดาว ✦
+          <div className="flex items-start gap-2 py-0.5 select-text my-2 max-w-[92%] sm:max-w-[88%]">
+            <span className="text-[11px] text-amber-400/80 shrink-0 select-none mt-1">✦</span>
+            <p className="text-[13.5px] sm:text-[14px] leading-relaxed text-[#A1A1A6] italic font-normal tracking-wide">
               {message.text}
             </p>
           </div>
         ) : (
-          // 💬 Dialogue (บับเบิ้ลคำพูด):
-          // ฝั่งผู้เล่น: สีกำมะหยี่ไวน์แดงเข้ม (#8C1D38 -> #5A0E20) + ขอบ Rose 1px (border-[#A82B49]/40) + ฟอนต์นุ่มนวล #F8D2DB
-          // ฝั่งตัวละคร: สี Apple Dark Gray (#1C1C1E) + ขอบคม 1px (border-white/[0.08]) + ฟอนต์สว่าง #EDEDED
+          // 💬 Dialogue (บับเบิ้ลคำพูดทรงหมอน Squircle):
+          // ฝั่งผู้เล่น: สีกำมะหยี่ไวน์แดงเข้ม + ขอบ Rose Specular Rim 1px + ฟอนต์นุ่มนวล #F8D2DB
+          // ฝั่งตัวละคร: สี Apple Charcoal (#1C1C20) + ขอบแรงตึงผิวหยดน้ำ 1px (border-white/[0.08]) + ฟอนต์สว่าง #EDEDED
           <div className={`
-            px-5 py-3 text-[15px] leading-relaxed select-text max-w-[85%] sm:max-w-[75%] rounded-2xl shadow-sm
+            px-5 py-3 text-[15px] leading-relaxed select-text max-w-[85%] sm:max-w-[78%] shadow-sm
             ${isMe 
-              ? 'bg-gradient-to-br from-[#8C1D38] via-[#75162D] to-[#5A0E20] text-[#F8D2DB] border border-[#A82B49]/40' 
-              : 'bg-[#1C1C1E] text-[#EDEDED] border border-white/[0.08]'}
+              ? 'rounded-[20px] rounded-br-[6px] bg-gradient-to-br from-[#8C1D38] via-[#75162D] to-[#5A0E20] text-[#F8D2DB] border border-[#A82B49]/40 shadow-[0_2px_12px_rgba(140,29,56,0.2)]' 
+              : 'rounded-[20px] rounded-bl-[6px] bg-[#1C1C20] text-[#EDEDED] border border-white/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.35)]'}
           `}>
             {message.text}
           </div>

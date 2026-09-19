@@ -15,8 +15,8 @@ export function ChatItem({
   unread, 
   isActive, 
   isTyping = false, 
-  showDivider = false,
-  dividerVariant = 'symmetric',
+  showDivider: _showDivider = false,
+  dividerVariant: _dividerVariant = 'symmetric',
   onClick 
 }: ChatItemProps) {
   const isImage = avatar?.startsWith('http')
@@ -24,12 +24,14 @@ export function ChatItem({
   return (
     <div 
       onClick={onClick} 
-      className={`relative flex items-center gap-3.5 sm:gap-4 px-3.5 sm:px-4 py-3.5 sm:py-4 cursor-pointer transition-colors select-none ${
-        isActive ? 'bg-white/[0.08]' : 'hover:bg-white/5'
+      className={`group relative mx-2 sm:mx-2.5 my-0.5 flex items-center gap-3 sm:gap-3.5 px-3 sm:px-3.5 py-2.5 sm:py-3 rounded-2xl cursor-pointer transition-all duration-200 select-none ${
+        isActive 
+          ? 'bg-white/[0.08] shadow-sm ring-1 ring-white/[0.06]' 
+          : 'hover:bg-white/[0.04] active:scale-[0.98]'
       }`}
     >
       {/* 1. รูปโปรไฟล์ตัวละคร */}
-      <div className={`w-[50px] sm:w-[52px] h-[50px] sm:h-[52px] rounded-full flex-shrink-0 overflow-hidden flex items-center justify-center text-xl font-medium ring-1 ring-white/10 ${!isImage ? color : 'bg-gray-700'}`}>
+      <div className={`w-[44px] sm:w-[46px] h-[44px] sm:h-[46px] rounded-full flex-shrink-0 overflow-hidden flex items-center justify-center text-lg font-medium ring-1 ring-white/10 shadow-sm ${!isImage ? color : 'bg-gray-700'}`}>
         {isImage ? (
           <img src={avatar} alt={name} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
         ) : (
@@ -40,30 +42,30 @@ export function ChatItem({
       {/* 2. ฝั่งเนื้อหา: 2 แถวแบบ Balance (Apple Messages / Telegram Style) */}
       <div className="flex-1 min-w-0 flex flex-col justify-center">
         {/* แถวที่ 1: ชื่อตัวละคร, ป้ายแท็กตัวอย่าง & ตัวเลขเวลา */}
-        <div className="flex items-center justify-between gap-2 mb-1 sm:mb-1.5 min-w-0">
+        <div className="flex items-center justify-between gap-2 mb-1 min-w-0">
           <div className="flex items-center gap-1.5 min-w-0">
-            <span className="font-bold text-app-primary truncate text-[14px] sm:text-[15px] leading-tight">
+            <span className="font-semibold text-[#F5F5F7] truncate text-[14px] sm:text-[14.5px] leading-tight">
               {name}
             </span>
             {badge && (
-              <span className="px-1.5 py-0.5 rounded text-[10.5px] font-semibold bg-[#EF264C]/15 border border-[#EF264C]/40 text-[#EF264C] shrink-0 select-none">
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#EF264C]/15 border border-[#EF264C]/35 text-[#EF264C] shrink-0 select-none">
                 {badge}
               </span>
             )}
-            {verified && <BadgeCheck size={15} className="text-[#EF264C] flex-shrink-0 fill-current text-black" />}
-            {locked && <Lock size={13} className="text-app-muted flex-shrink-0" />}
+            {verified && <BadgeCheck size={14} className="text-[#EF264C] flex-shrink-0 fill-current text-black" />}
+            {locked && <Lock size={12} className="text-[#6E6E73] flex-shrink-0" />}
           </div>
-          <span className="text-[12px] leading-tight text-app-muted font-normal shrink-0">
+          <span className="text-[11.5px] leading-tight text-[#6E6E73] font-normal shrink-0">
             {time}
           </span>
         </div>
         
-        {/* แถวที่ 2: ข้อความล่าสุด หรือ 1:1 Mini Replica Bubble (สไตล์ห้องแชทเป๊ะๆ ตัดมุมล่างซ้าย rounded-bl-none) */}
-        <div className="flex items-center justify-between gap-2 min-w-0 h-[21px]">
+        {/* แถวที่ 2: ข้อความล่าสุด หรือ 1:1 Mini Replica Bubble */}
+        <div className="flex items-center justify-between gap-2 min-w-0 h-[20px]">
           {isTyping ? (
             <div className="flex-1 min-w-0 flex items-center animate-in fade-in duration-200 select-none">
               <div 
-                className="inline-flex items-center justify-center gap-1 px-3 h-[21px] rounded-[11px] rounded-bl-none bg-app-surface border border-white/[0.06] shadow-sm"
+                className="inline-flex items-center justify-center gap-1 px-2.5 h-[20px] rounded-full bg-white/[0.08] border border-white/[0.06] shadow-sm"
                 role="status"
                 aria-label={`${name} กำลังพิมพ์...`}
               >
@@ -73,7 +75,7 @@ export function ChatItem({
               </div>
             </div>
           ) : (
-            <p className="flex-1 min-w-0 text-[13.5px] sm:text-[14px] text-app-muted truncate leading-snug">
+            <p className="flex-1 min-w-0 text-[13px] sm:text-[13.5px] text-[#86868B] group-hover:text-[#A1A1A6] truncate leading-snug font-normal">
               {message}
             </p>
           )}
@@ -82,17 +84,6 @@ export function ChatItem({
           )}
         </div>
       </div>
-
-      {/* 3. เส้นคั่นแนวนอนบางเฉียบสไตล์ Twitter X (บางเท่ากับเส้นใต้แชทสดฝั่งขวา ไม่ชิดขอบซ้ายขวา) */}
-      {showDivider && (
-        <div 
-          className={`absolute bottom-0 h-[1px] bg-[#2F3336]/60 pointer-events-none transition-opacity ${
-            dividerVariant === 'indented'
-              ? 'left-[76px] sm:left-[82px] right-3.5 sm:right-4'
-              : 'left-3.5 right-3.5 sm:left-4 sm:right-4'
-          }`} 
-        />
-      )}
     </div>
   )
 }

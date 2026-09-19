@@ -200,11 +200,11 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
           className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-3.5 space-y-3.5 sm:space-y-4 custom-scrollbar overscroll-none touch-pan-y"
         >
           
-          {/* Zone 1: Visual State (ภาพตัวละครสัดส่วน 9:16 พร้อมสถานะสด ซ้ายบน, จุดไข่ปลา และ ปุ่มปิดแท็บ ขวาบน ลอยอยู่บนภาพ) */}
-          <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-[#121214] shadow-xl group aspect-[9/16] w-full shrink-0">
+          {/* Zone 1: Visual State (ภาพตัวละครสัดส่วน 2:3 สไตล์การ์ดหน้าแรก ชัดเจน ไร้กล่องบดบัง พร้อมสถานะ LIVE) */}
+          <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-[#121214] shadow-xl group aspect-[2/3] w-full shrink-0 select-none">
             {/* Top Floating Controls on Image: สถานะสด (ซ้ายบน) + จุดไข่ปลา & ปุ่มปิดแถบ (ขวาบน) */}
             <div className="absolute top-2.5 inset-x-2.5 z-20 flex items-center justify-between pointer-events-none select-none">
-              {/* Left: LIVE Status Pill (h-7 สมดุลกับปุ่มวงกลม 28px ฝั่งขวา) */}
+              {/* Left: LIVE Status Pill */}
               <div className="flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-[#121214]/80 backdrop-blur-xl border border-white/10 shadow-lg pointer-events-auto">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
                 <span className="text-[11px] font-bold tracking-wider text-app-primary">
@@ -306,7 +306,7 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
               </div>
             </div>
 
-            {/* Character Portrait (แสดงผลสว่าง คมชัด สัดส่วน 9:16 แนวตั้ง) */}
+            {/* Character Portrait (สว่าง คมชัด ไร้สิ่งบดบัง) */}
             <img 
               src={data.image || data.avatar} 
               alt={data.name}
@@ -314,230 +314,214 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
               className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105" 
             />
             
-            {/* Soft Vignettes for top controls & bottom text readability */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/60 from-0% via-transparent via-25% pointer-events-none" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 from-5% via-black/35 via-35% to-transparent pointer-events-none" />
+            {/* Top Vignette for controls readability */}
+            <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/60 via-black/20 to-transparent pointer-events-none" />
 
-            {/* Live Badges: Outfit & Poses (แยกกล่องอิสระ ชัดเจนในแต่ละอย่าง สไตล์เดียวกัน 100%) */}
-            <div className="absolute bottom-0 inset-x-0 p-2.5 sm:p-3 space-y-1.5 sm:space-y-2 z-10 select-none">
-              {/* 1. ชุดปัจจุบัน (Current Outfit) */}
-              <div className="flex items-start gap-2 p-2 sm:p-2.5 rounded-xl bg-[#121214]/80 backdrop-blur-xl border border-white/10 shadow-xl">
-                <Shirt size={14} className="text-[#EF264C] flex-shrink-0 mt-0.5" />
-                <div className="min-w-0 flex-1">
-                  <span className="block text-[10px] uppercase tracking-wider text-app-secondary font-semibold mb-0.5">
-                    ชุดปัจจุบัน
-                  </span>
-                  <p className="text-[12px] text-app-primary font-normal leading-snug line-clamp-2">
-                    {data.outfit}
-                  </p>
-                </div>
-              </div>
-
-              {/* 2. ท่าทางตัวละคร (Character Pose) */}
-              <div className="flex items-start gap-2 p-2 sm:p-2.5 rounded-xl bg-[#121214]/80 backdrop-blur-xl border border-white/10 shadow-xl">
-                <Smile size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
-                <div className="min-w-0 flex-1">
-                  <span className="block text-[10px] uppercase tracking-wider text-app-secondary font-semibold mb-0.5">
-                    ท่าทางตัวละคร
-                  </span>
-                  <p className="text-[12px] text-app-primary font-normal leading-snug line-clamp-2">
-                    {data.pose}
-                  </p>
-                </div>
-              </div>
-
-              {/* 3. ท่าทางผู้เล่น (Player Pose) */}
-              <div className="flex items-start gap-2 p-2 sm:p-2.5 rounded-xl bg-[#121214]/80 backdrop-blur-xl border border-white/10 shadow-xl">
-                <User size={14} className="text-sky-400 flex-shrink-0 mt-0.5" />
-                <div className="min-w-0 flex-1">
-                  <span className="block text-[10px] uppercase tracking-wider text-app-secondary font-semibold mb-0.5">
-                    ท่าทางผู้เล่น
-                  </span>
-                  <p className="text-[12px] text-app-primary font-normal leading-snug line-clamp-2">
-                    {data.playerPose || 'ยืนสบตานิ่งๆ รอคำตอบ'}
-                  </p>
-                </div>
-              </div>
+            {/* Bottom Character Name Overlay (เรียบหรู คมชัด บนตัวการ์ด) */}
+            <div className="absolute bottom-0 inset-x-0 p-3 pt-10 bg-gradient-to-t from-black/85 via-black/35 to-transparent pointer-events-none flex items-center gap-1.5">
+              <h3 className="text-[16px] sm:text-[17px] font-bold text-app-primary tracking-tight">
+                {data.name}
+              </h3>
+              <BadgeCheck size={16} className="text-[#EF264C] fill-current text-black flex-shrink-0" />
             </div>
           </div>
 
-        {/* 3. Zone 2: Identity & Meta (ชื่อ, เพศ, อายุ, บทบาท) */}
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-1.5">
-            <h3 className="text-[17px] sm:text-[18px] font-bold text-app-primary tracking-tight">
-              {data.name}
-            </h3>
-            <BadgeCheck size={16} className="text-[#EF264C] fill-current text-black flex-shrink-0" />
-          </div>
-
-          {/* Meta Chips */}
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="px-2 py-0.5 rounded-full bg-white/[0.05] border border-white/[0.08] text-[11px] text-app-secondary">
-              เพศ: {data.gender}
-            </span>
-            <span className="px-2 py-0.5 rounded-full bg-white/[0.05] border border-white/[0.08] text-[11px] text-app-secondary">
-              อายุ: {data.age}
-            </span>
-            {data.role && (
-              <span className="px-2 py-0.5 rounded-full bg-white/[0.05] border border-white/[0.08] text-[11px] text-app-secondary">
-                {data.role}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* 4. Zone 3: Emotional & Roleplay Gauges (Apple Modular 2-Column Widgets - Total Mystery Edition) */}
-        <div className="space-y-1.5 pt-0.5">
-          {/* Apple Milestone Breakthrough Toast (แสดงชั่วคราวเมื่อปลดล็อกหรือแง้มดูความรู้สึก) */}
-          {milestoneToast && (
-            <div className="p-2 px-2.5 rounded-xl bg-[#1D1D1F]/95 backdrop-blur-2xl border border-white/20 shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-300 select-none">
-              <Sparkles size={13} className={`flex-shrink-0 animate-pulse ${milestoneToast.type === 'relationship' ? 'text-pink-400' : 'text-[#EF264C]'}`} />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-[9.5px] font-bold uppercase tracking-wider text-app-secondary">
-                    {milestoneToast.title}
-                  </span>
-                  {milestoneToast.type === 'relationship' ? (
-                    <span className="font-mono text-[11px] font-bold text-app-primary">
-                      {milestoneToast.value}%
-                    </span>
-                  ) : (
-                    <span className="text-[10.5px] font-bold text-[#FF3366] tracking-wide flex items-center gap-1">
-                      <Flame size={11} className="fill-current" /> จุดประกาย
-                    </span>
-                  )}
-                </div>
-                <p className="text-[11px] text-app-primary font-medium truncate">
-                  "{milestoneToast.status}"
-                </p>
-              </div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 gap-2">
-            {/* ความสัมพันธ์ Widget */}
-            <div 
-              onClick={() => handleTriggerMilestone('relationship')}
-              title="คลิกเพื่อสดับฟังความรู้สึก (แง้มดูความคืบหน้าเมื่อบรรลุเป้าหมาย)"
-              className="p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] space-y-1.5 flex flex-col justify-between relative overflow-hidden group cursor-pointer hover:bg-white/[0.07] hover:border-white/15 transition-all active:scale-[0.98]"
-            >
-              <div className="flex items-center justify-between text-[11.5px]">
-                <div className="flex items-center gap-1 text-app-primary font-medium truncate">
-                  <Heart size={13} className="text-pink-400 fill-pink-400/30 shrink-0" />
-                  <span className="truncate">ความสัมพันธ์</span>
-                </div>
-                
-                {/* Mystery Value: หมอกเบลอสไตล์ Apple Privacy */}
-                <div className="flex items-center gap-1 shrink-0 ml-1">
-                  {revealedGauge === 'relationship' ? (
-                    <span className="font-mono text-pink-400 font-bold text-[11px] animate-in fade-in duration-300">
-                      {data.relationship.current}%
-                    </span>
-                  ) : (
-                    <div className="flex items-center gap-0.5 select-none" title="ความรู้สึกกำลังก่อตัว (ซ่อนตัวเลข)">
-                      <span className="font-mono text-pink-400/60 font-bold text-[11px] filter blur-[3.5px] select-none">
-                        {data.relationship.current}%
-                      </span>
-                      <Lock size={9} className="text-pink-400/50 shrink-0" />
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Fog of War Gauge Bar: หลอดสีชมพูเรื่อฟุ้งสไตล์กระจกฝ้า Apple */}
-              <div className="w-full h-[5px] rounded-full bg-white/10 overflow-hidden relative">
-                <div 
-                  className={`h-full rounded-full bg-gradient-to-r from-pink-500 to-[#EF264C] transition-all duration-700 ${
-                    revealedGauge === 'relationship'
-                      ? 'filter-none shadow-sm'
-                      : 'filter blur-[2.5px] opacity-85 scale-y-125'
-                  }`}
-                  style={{ width: `${Math.min(100, Math.max(0, data.relationship.current))}%` }}
-                />
-              </div>
-
-              {/* Gut Feeling / Intuition Quote: ข้อความบอกใบ้ความรู้สึกแทนตัวเลข */}
-              <p className="text-[10px] text-app-secondary truncate leading-tight italic">
-                {revealedGauge === 'relationship' 
-                  ? (data.relationship.status || 'หวั่นไหวและเริ่มเปิดใจ')
-                  : `"${getIntuitionQuote(data.relationship.current, 'relationship')}"`}
+          {/* Zone 2: Environment & World State (ย้ายสถานที่ วันที่ มาไว้บนสุดใต้รูป) */}
+          <div className="p-2.5 px-3 rounded-xl bg-white/[0.04] border border-white/[0.08] space-y-1.5 select-none">
+            {/* สถานที่ปัจจุบัน */}
+            <div className="flex items-center gap-2">
+              <MapPin size={13} className="text-[#EF264C] shrink-0" />
+              <p className="text-[12px] text-app-primary font-medium truncate">
+                {data.environment.location}
               </p>
             </div>
 
-            {/* ความปรารถนา Widget (Idea 1: The Live Flash & Decay) */}
-            <div 
-              onClick={() => triggerDesireFlash(15)}
-              title="คลิกเพื่อจุดประกายไฟ (ทดสอบจังหวะสว่างวาบและมอดลงตามเวลา)"
-              className={`p-2.5 rounded-xl space-y-1.5 flex flex-col justify-between relative overflow-hidden group cursor-pointer transition-all active:scale-[0.98] ${
-                isFlashing 
-                  ? 'bg-[#EF264C]/10 border border-[#EF264C]/40 shadow-[0_0_15px_rgba(239,38,76,0.2)]' 
-                  : 'bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.07] hover:border-white/15'
-              }`}
-            >
-              <div className="flex items-center justify-between text-[11.5px]">
-                <div className="flex items-center gap-1.5 text-app-primary font-medium truncate">
+            {/* เวลาและสภาพอากาศ */}
+            <div className="flex items-center gap-2 text-[11px] text-app-secondary pt-1 border-t border-white/[0.06]">
+              <div className="flex items-center gap-1.5 truncate">
+                <Clock size={12} className="text-sky-400 shrink-0" />
+                <span className="truncate">{data.environment.time}</span>
+              </div>
+              <span className="text-white/20">•</span>
+              <div className="flex items-center gap-1.5 truncate">
+                <CloudRain size={12} className="text-indigo-400 shrink-0" />
+                <span className="truncate">{data.environment.weather}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Zone 3: Live Badges: Outfit & Poses (ย้ายชุดและท่าทางลงมาด้านล่าง) */}
+          <div className="space-y-1.5 select-none">
+            {/* 1. ชุดปัจจุบัน (Current Outfit) */}
+            <div className="flex items-start gap-2 p-2 sm:p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] shadow-sm">
+              <Shirt size={14} className="text-[#EF264C] flex-shrink-0 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                <span className="block text-[10px] uppercase tracking-wider text-app-secondary font-semibold mb-0.5">
+                  ชุดปัจจุบัน
+                </span>
+                <p className="text-[12px] text-app-primary font-normal leading-snug line-clamp-2">
+                  {data.outfit}
+                </p>
+              </div>
+            </div>
+
+            {/* 2. ท่าทางตัวละคร (Character Pose) */}
+            <div className="flex items-start gap-2 p-2 sm:p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] shadow-sm">
+              <Smile size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                <span className="block text-[10px] uppercase tracking-wider text-app-secondary font-semibold mb-0.5">
+                  ท่าทางตัวละคร
+                </span>
+                <p className="text-[12px] text-app-primary font-normal leading-snug line-clamp-2">
+                  {data.pose}
+                </p>
+              </div>
+            </div>
+
+            {/* 3. ท่าทางผู้เล่น (Player Pose) */}
+            <div className="flex items-start gap-2 p-2 sm:p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] shadow-sm">
+              <User size={14} className="text-sky-400 flex-shrink-0 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                <span className="block text-[10px] uppercase tracking-wider text-app-secondary font-semibold mb-0.5">
+                  ท่าทางผู้เล่น
+                </span>
+                <p className="text-[12px] text-app-primary font-normal leading-snug line-clamp-2">
+                  {data.playerPose || 'ยืนสบตานิ่งๆ รอคำตอบ'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Zone 4: Emotional & Roleplay Gauges (หลอดความสัมพันธ์และความปรารถนา พร้อมไอคอนหน้าหลอด) */}
+          <div className="space-y-1.5 pt-0.5 select-none">
+            {/* Apple Milestone Breakthrough Toast */}
+            {milestoneToast && (
+              <div className="p-2 px-2.5 rounded-xl bg-[#1D1D1F]/95 backdrop-blur-2xl border border-white/20 shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-300 select-none">
+                <Sparkles size={13} className={`flex-shrink-0 animate-pulse ${milestoneToast.type === 'relationship' ? 'text-pink-400' : 'text-[#EF264C]'}`} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9.5px] font-bold uppercase tracking-wider text-app-secondary">
+                      {milestoneToast.title}
+                    </span>
+                    {milestoneToast.type === 'relationship' ? (
+                      <span className="font-mono text-[11px] font-bold text-app-primary">
+                        {milestoneToast.value}%
+                      </span>
+                    ) : (
+                      <span className="text-[10.5px] font-bold text-[#FF3366] tracking-wide flex items-center gap-1">
+                        <Flame size={11} className="fill-current" /> จุดประกาย
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-app-primary font-medium truncate">
+                    "{milestoneToast.status}"
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-2">
+              {/* ความสัมพันธ์ Widget */}
+              <div 
+                onClick={() => handleTriggerMilestone('relationship')}
+                title="คลิกเพื่อสดับฟังความรู้สึก (แง้มดูความคืบหน้าเมื่อบรรลุเป้าหมาย)"
+                className="p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] space-y-1.5 flex flex-col justify-between relative overflow-hidden group cursor-pointer hover:bg-white/[0.07] hover:border-white/15 transition-all active:scale-[0.98]"
+              >
+                <div className="flex items-center justify-between text-[11.5px]">
+                  <span className="text-app-primary font-medium truncate">ความสัมพันธ์</span>
+                  
+                  {/* Mystery Value: หมอกเบลอสไตล์ Apple Privacy */}
+                  <div className="flex items-center gap-1 shrink-0 ml-1">
+                    {revealedGauge === 'relationship' ? (
+                      <span className="font-mono text-pink-400 font-bold text-[11px] animate-in fade-in duration-300">
+                        {data.relationship.current}%
+                      </span>
+                    ) : (
+                      <div className="flex items-center gap-0.5 select-none" title="ความรู้สึกกำลังก่อตัว (ซ่อนตัวเลข)">
+                        <span className="font-mono text-pink-400/60 font-bold text-[11px] filter blur-[3.5px] select-none">
+                          {data.relationship.current}%
+                        </span>
+                        <Lock size={9} className="text-pink-400/50 shrink-0" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* ไอคอนอยู่หน้าหลอด */}
+                <div className="flex items-center gap-1.5">
+                  <Heart size={12} className="text-pink-400 fill-pink-400/30 shrink-0" />
+                  <div className="flex-1 h-[5px] rounded-full bg-white/10 overflow-hidden relative">
+                    <div 
+                      className={`h-full rounded-full bg-gradient-to-r from-pink-500 to-[#EF264C] transition-all duration-700 ${
+                        revealedGauge === 'relationship'
+                          ? 'filter-none shadow-sm'
+                          : 'filter blur-[2.5px] opacity-85 scale-y-125'
+                      }`}
+                      style={{ width: `${Math.min(100, Math.max(0, data.relationship.current))}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Gut Feeling / Intuition Quote */}
+                <p className="text-[10px] text-app-secondary truncate leading-tight italic">
+                  {revealedGauge === 'relationship' 
+                    ? (data.relationship.status || 'หวั่นไหวและเริ่มเปิดใจ')
+                    : `"${getIntuitionQuote(data.relationship.current, 'relationship')}"`}
+                </p>
+              </div>
+
+              {/* ความปรารถนา Widget (Idea 1: The Live Flash & Decay) */}
+              <div 
+                onClick={() => triggerDesireFlash(15)}
+                title="คลิกเพื่อจุดประกายไฟ (ทดสอบจังหวะสว่างวาบและมอดลงตามเวลา)"
+                className={`p-2.5 rounded-xl space-y-1.5 flex flex-col justify-between relative overflow-hidden group cursor-pointer transition-all active:scale-[0.98] ${
+                  isFlashing 
+                    ? 'bg-[#EF264C]/10 border border-[#EF264C]/40 shadow-[0_0_15px_rgba(239,38,76,0.2)]' 
+                    : 'bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.07] hover:border-white/15'
+                }`}
+              >
+                <div className="flex items-center justify-between text-[11.5px]">
+                  <span className="text-app-primary font-medium truncate">ความปรารถนา</span>
+
+                  <div className="flex items-center gap-1 shrink-0 ml-1">
+                    {/* Live Spark on Flash */}
+                    {isFlashing && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#FF3366] animate-ping shrink-0" />
+                    )}
+                  </div>
+                </div>
+
+                {/* ไอคอนอยู่หน้าหลอด */}
+                <div className="flex items-center gap-1.5">
                   <Flame 
-                    size={13} 
+                    size={12} 
                     className={`shrink-0 transition-all duration-300 ${
                       isFlashing 
                         ? 'text-[#FF3366] fill-[#FF3366] scale-125 animate-pulse' 
                         : 'text-[#EF264C] fill-[#EF264C]/30'
                     }`} 
                   />
-                  <span className="truncate">ความปรารถนา</span>
+                  <div className="flex-1 h-[5px] rounded-full bg-white/10 overflow-hidden relative">
+                    <div 
+                      className={`h-full rounded-full transition-all ${
+                        isFlashing 
+                          ? 'bg-gradient-to-r from-[#EF264C] via-[#FF3366] to-[#FFA8BA] duration-300 shadow-sm' 
+                          : isDecaying
+                            ? 'bg-gradient-to-r from-[#8E0D29] via-[#D22147] to-[#EF264C] duration-1000 ease-out'
+                            : 'bg-gradient-to-r from-[#8E0D29] via-[#D22147] to-[#EF264C] duration-500'
+                      }`}
+                      style={{ width: `${Math.min(100, Math.max(0, desireLevel))}%` }}
+                    />
+                  </div>
                 </div>
 
-                {/* Live Spark on Flash (เฉพาะประกายไฟวูบวาบ ไร้ข้อความสถานะ) */}
-                {isFlashing && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#FF3366] animate-ping shrink-0" />
-                )}
+                {/* Intuition Quote */}
+                <p className="text-[10px] text-app-secondary truncate leading-tight italic">
+                  "{getIntuitionQuote(desireLevel, 'desire')}"
+                </p>
               </div>
-
-              {/* Live Thermal Bar: คมชัด ไร้เบลอ สว่างวาบและมอดลง */}
-              <div className="w-full h-[5px] rounded-full bg-white/10 overflow-hidden relative">
-                <div 
-                  className={`h-full rounded-full transition-all ${
-                    isFlashing 
-                      ? 'bg-gradient-to-r from-[#EF264C] via-[#FF3366] to-[#FFA8BA] duration-300 shadow-sm' 
-                      : isDecaying
-                        ? 'bg-gradient-to-r from-[#8E0D29] via-[#D22147] to-[#EF264C] duration-1000 ease-out'
-                        : 'bg-gradient-to-r from-[#8E0D29] via-[#D22147] to-[#EF264C] duration-500'
-                  }`}
-                  style={{ width: `${Math.min(100, Math.max(0, desireLevel))}%` }}
-                />
-              </div>
-
-              {/* Intuition Quote: ข้อความบอกใบ้ความรู้สึก */}
-              <p className="text-[10px] text-app-secondary truncate leading-tight italic">
-                "{getIntuitionQuote(desireLevel, 'desire')}"
-              </p>
             </div>
           </div>
-        </div>
-
-        {/* 5. Zone 4: Environment & World State (Apple Lockscreen Compact Widget) */}
-        <div className="p-2.5 px-3 rounded-xl bg-white/[0.04] border border-white/[0.08] space-y-1.5">
-          {/* สถานที่ปัจจุบัน */}
-          <div className="flex items-center gap-2">
-            <MapPin size={13} className="text-[#EF264C] shrink-0" />
-            <p className="text-[12px] text-app-primary font-medium truncate">
-              {data.environment.location}
-            </p>
-          </div>
-
-          {/* เวลาและสภาพอากาศ */}
-          <div className="flex items-center gap-2 text-[11px] text-app-secondary pt-1 border-t border-white/[0.06]">
-            <div className="flex items-center gap-1.5 truncate">
-              <Clock size={12} className="text-sky-400 shrink-0" />
-              <span className="truncate">{data.environment.time}</span>
-            </div>
-            <span className="text-white/20">•</span>
-            <div className="flex items-center gap-1.5 truncate">
-              <CloudRain size={12} className="text-indigo-400 shrink-0" />
-              <span className="truncate">{data.environment.weather}</span>
-            </div>
-          </div>
-        </div>
 
       </div>
     </aside>

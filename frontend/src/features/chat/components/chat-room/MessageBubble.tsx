@@ -40,16 +40,22 @@ export function MessageBubble({
     )
   }
 
-  // 2. จัดการ VO (Voice Over): แนวทาง B [Whispered Glass Pill - แคปซูลหมอนแก้วลอยตัว สไตล์ X Date Stamp]
-  // ลอยโปร่งกลางจอในแคปซูลกระจกฝ้าเนื้อแมตต์ เว้นระยะ space หายใจ my-8 sm:my-10 ทำหน้าที่เป็นจุดพักสายตาอย่างแนบเนียน
+  // 2. จัดการ VO (Voice Over): Apple Editorial Poetry (Subtractive Frameless Sanctuary)
+  // ไร้กล่องทึบ ไร้เงาดำ ลอยตัวกลางจออย่างสง่างาม ดุจบทกวีคั่นฉากของบทละครเวที / Apple Books Interlude
   if (message.type === 'vo') {
     return (
-      <div className="w-full flex justify-center px-4 select-text my-8 sm:my-10">
-        <div className="max-w-[580px] px-5 py-2.5 sm:px-6 sm:py-3 rounded-[20px] sm:rounded-full bg-gradient-to-b from-white/[0.045] to-white/[0.02] backdrop-blur-xl border border-white/[0.07] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_24px_rgba(0,0,0,0.35)] flex items-center justify-center">
-          <p className="text-[13px] sm:text-[13.5px] leading-[1.7] text-[#A1A1A8] font-light text-center tracking-wide select-text italic">
-            {message.text}
-          </p>
+      <div className="w-full flex flex-col items-center justify-center px-4 select-text my-7 sm:my-9 animate-in fade-in duration-300">
+        {/* สัญลักษณ์คั่นฉากจิ๋ว (Atmosphere Asterism) ละมุนตา ไม่แย่งสายตา */}
+        <div className="flex items-center justify-center gap-2 mb-2.5 select-none opacity-60">
+          <span className="w-5 sm:w-8 h-[1px] bg-gradient-to-r from-transparent to-white/25" />
+          <span className="text-[10px] text-amber-400/80 tracking-widest">✦</span>
+          <span className="w-5 sm:w-8 h-[1px] bg-gradient-to-l from-transparent to-white/25" />
         </div>
+
+        {/* ข้อความบทบรรยายฉาก ลอยโปร่งสบายตา ไร้กรอบ ไร้เงา */}
+        <p className="max-w-[560px] text-[13.5px] sm:text-[14px] leading-[1.8] text-[#BEBEC4] font-normal text-center tracking-wide select-text italic">
+          {message.text}
+        </p>
       </div>
     )
   }

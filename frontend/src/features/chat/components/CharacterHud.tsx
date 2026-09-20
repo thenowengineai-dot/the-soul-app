@@ -326,8 +326,8 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
             </div>
           </div>
 
-          {/* Zone 2: Environment & World State (Apple Subtle White Frosted Glass) */}
-          <div className="relative overflow-hidden p-2.5 sm:p-3 rounded-2xl bg-white/[0.06] hover:bg-white/[0.09] backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] space-y-2 select-none transition-all duration-200">
+          {/* Zone 2: Environment & World State (Apple Eye-Comfort Frosted Glass) */}
+          <div className="relative overflow-hidden p-2.5 sm:p-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.07] backdrop-blur-2xl border border-white/[0.07] hover:border-white/[0.14] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] space-y-2 select-none transition-all duration-200">
             {/* สถานที่ปัจจุบัน */}
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-lg bg-white/[0.03] border border-white/[0.05] flex items-center justify-center shrink-0">
@@ -352,10 +352,10 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
             </div>
           </div>
 
-          {/* Zone 3: Live Badges: Outfit & Poses (Apple Subtle White Frosted Glass) */}
+          {/* Zone 3: Live Badges: Outfit & Poses (Apple Eye-Comfort Frosted Glass) */}
           <div className="space-y-1.5 select-none">
             {/* 1. ชุดปัจจุบัน (Current Outfit) */}
-            <div className="relative overflow-hidden flex items-start gap-2.5 p-2.5 rounded-2xl bg-white/[0.06] hover:bg-white/[0.09] backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-all duration-200">
+            <div className="relative overflow-hidden flex items-start gap-2.5 p-2.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.07] backdrop-blur-2xl border border-white/[0.07] hover:border-white/[0.14] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all duration-200">
               <div className="w-6 h-6 rounded-lg bg-white/[0.03] border border-white/[0.05] flex items-center justify-center shrink-0 mt-0.5">
                 <Shirt size={13} className="text-[#EF264C]" />
               </div>
@@ -370,7 +370,7 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
             </div>
 
             {/* 2. ท่าทางตัวละคร (Character Pose) */}
-            <div className="relative overflow-hidden flex items-start gap-2.5 p-2.5 rounded-2xl bg-white/[0.06] hover:bg-white/[0.09] backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-all duration-200">
+            <div className="relative overflow-hidden flex items-start gap-2.5 p-2.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.07] backdrop-blur-2xl border border-white/[0.07] hover:border-white/[0.14] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all duration-200">
               <div className="w-6 h-6 rounded-lg bg-white/[0.03] border border-white/[0.05] flex items-center justify-center shrink-0 mt-0.5">
                 <Smile size={13} className="text-amber-400" />
               </div>
@@ -385,7 +385,7 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
             </div>
 
             {/* 3. ท่าทางผู้เล่น (Player Pose) */}
-            <div className="relative overflow-hidden flex items-start gap-2.5 p-2.5 rounded-2xl bg-white/[0.06] hover:bg-white/[0.09] backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-all duration-200">
+            <div className="relative overflow-hidden flex items-start gap-2.5 p-2.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.07] backdrop-blur-2xl border border-white/[0.07] hover:border-white/[0.14] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all duration-200">
               <div className="w-6 h-6 rounded-lg bg-white/[0.03] border border-white/[0.05] flex items-center justify-center shrink-0 mt-0.5">
                 <User size={13} className="text-sky-400" />
               </div>
@@ -400,11 +400,11 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
             </div>
           </div>
 
-          {/* Zone 4: Emotional & Roleplay Gauges (Apple Subtle White Frosted Glass) */}
+          {/* Zone 4: Emotional & Roleplay Gauges (Apple Eye-Comfort Frosted Glass) */}
           <div className="space-y-1.5 pt-0.5 select-none">
             {/* Apple Milestone Breakthrough Toast */}
             {milestoneToast && (
-              <div className="p-2.5 px-3 rounded-2xl bg-white/[0.08] backdrop-blur-2xl border border-white/[0.12] shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_12px_24px_rgba(0,0,0,0.5)] flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-300 select-none">
+              <div className="p-2.5 px-3 rounded-2xl bg-white/[0.06] backdrop-blur-2xl border border-white/[0.09] shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_12px_24px_rgba(0,0,0,0.5)] flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-300 select-none">
                 <Sparkles size={13} className={`flex-shrink-0 animate-pulse ${milestoneToast.type === 'relationship' ? 'text-pink-400' : 'text-[#EF264C]'}`} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between">
@@ -433,7 +433,7 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
               <div 
                 onClick={() => handleTriggerMilestone('relationship')}
                 title="คลิกเพื่อสดับฟังความรู้สึก (แง้มดูความคืบหน้าเมื่อบรรลุเป้าหมาย)"
-                className="relative overflow-hidden p-2.5 sm:p-3 rounded-2xl bg-white/[0.06] hover:bg-white/[0.09] backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] space-y-1.5 flex flex-col justify-between group cursor-pointer transition-all duration-200 active:scale-[0.98]"
+                className="relative overflow-hidden p-2.5 sm:p-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.07] backdrop-blur-2xl border border-white/[0.07] hover:border-white/[0.14] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] space-y-1.5 flex flex-col justify-between group cursor-pointer transition-all duration-200 active:scale-[0.98]"
               >
                 <div className="flex items-center justify-between text-[11.5px]">
                   <span className="text-[#D1D1D6] font-medium truncate">ความสัมพันธ์</span>
@@ -485,7 +485,7 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
                 className={`relative overflow-hidden p-2.5 sm:p-3 rounded-2xl space-y-1.5 flex flex-col justify-between group cursor-pointer transition-all duration-200 active:scale-[0.98] ${
                   isFlashing 
                     ? 'bg-gradient-to-b from-[#EF264C]/25 via-[#EF264C]/15 to-white/[0.06] backdrop-blur-2xl border border-[#EF264C]/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_0_15px_rgba(239,38,76,0.25)]' 
-                    : 'bg-white/[0.06] hover:bg-white/[0.09] backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]'
+                    : 'bg-white/[0.04] hover:bg-white/[0.07] backdrop-blur-2xl border border-white/[0.07] hover:border-white/[0.14] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
                 }`}
               >
                 <div className="flex items-center justify-between text-[11.5px]">

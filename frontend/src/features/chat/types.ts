@@ -67,7 +67,6 @@ export interface ChatItemProps {
 
 export interface ChatListHeaderProps {
   onBackToHome: () => void
-  onToggleCollapse?: () => void
 }
 
 export interface ChatSearchBoxProps {

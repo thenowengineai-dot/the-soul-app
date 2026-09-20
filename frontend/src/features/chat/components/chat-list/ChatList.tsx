@@ -13,7 +13,6 @@ export function ChatList({
   onSelectChat, 
   isOpen = true,
   dividerVariant = 'symmetric',
-  onToggleCollapse,
 }: ChatListProps) {
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -38,7 +37,7 @@ export function ChatList({
           
           {/* Sticky Header & Search Box (Apple Frosted Glass Style) */}
           <div className="sticky top-0 z-20 px-3.5 sm:px-4 pt-3.5 sm:pt-4 pb-3 sm:pb-3.5 bg-[#131315]/90 backdrop-blur-md flex flex-col gap-2.5">
-            <ChatListHeader onBackToHome={onBackToHome} onToggleCollapse={onToggleCollapse} />
+            <ChatListHeader onBackToHome={onBackToHome} />
             <ChatSearchBox searchQuery={searchQuery} onSearchChange={setSearchQuery} />
           </div>
 

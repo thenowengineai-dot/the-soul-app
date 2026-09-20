@@ -109,25 +109,70 @@ The Soul App สร้างขึ้นบนสมมติฐานที่�
 
 ในห้องแชท ผู้เล่นไม่ได้กำลังคุยกับบอท แต่กำลังสารภาพความรู้สึกใน "วิหารลับส่วนตัวยามค่ำคืน":
 
-### 4.1 บับเบิ้ลผู้เล่นสีไวน์แดงกำมะหยี่เข้ม (Deep Wine Velvet)
-* ไม่ใช้สีแดงสดฉูดฉาด ไม่ใช้สีชมพูหวาน
-* ใช้เฉดไวน์แดงกำมะหยี่เข้ม: `bg-gradient-to-br from-[#8C1D38] via-[#75162D] to-[#5A0E20]`
-* ตัดขอบบางเฉียบ Rose-tinted 1px `border border-[#A82B49]/40`
-* ตัวหนังสือสีชมพูนวลตา `#F8D2DB` สบายตาเมื่ออ่านในที่มืด
+### 4.1 บับเบิ้ลผู้เล่น (User Bubble - Velvet Carmine / Vibrant Passion)
+* **สีพื้นหลัง (Background):** ไล่เฉดสีแดงคาร์ไมน์กำมะหยี่สดใสเร้าใจ:
+  * Vibrant Gradient: `bg-gradient-to-br from-[#ff0030] to-[#ea0063]`
+  * หรือ Velvet Carmine: `bg-gradient-to-br from-[#D22147] via-[#B8163A] to-[#8E0D29]`
+  * ขอบมนนุ่มนวล `rounded-[18px]` โดยหากเป็นข้อความสุดท้ายในกลุ่ม (`isLastInGroup`) จะมีมุมแหลม `rounded-br-[4px]`
+* **หัวแหลมคำพูด (Apple Speech Tail):** มีหางคำพูด SVG รูปสามเหลี่ยมโค้งมนพุ่งออกจากมุมล่างขวา (`bottom-0 -right-[6px] w-[10px] h-[15px] fill-[#ea0063]`) เฉพาะข้อความสุดท้ายในกลุ่ม
+* **ตัวหนังสือ (Typography):**
+  * ขนาดฟอนต์: **`text-[15px]`**
+  * ความหนา: **`font-normal`** (น้ำหนัก 400 ไม่หนาเทอะทะ)
+  * สีตัวอักษร: สีขาวคมชัด **`text-white`** (`#FFFFFF` / `#F5F5F7`)
+  * ระยะความสูงบรรทัด: **`leading-[22px]`** (ป้องกันสระภาษาไทยด้านบน-ล่างถูกตัด)
+* **มิติและช่องไฟ (Dimensions & Padding):**
+  * `px-4 py-2 min-h-[38px] flex items-center`
+  * ความกว้างสูงสุด: `max-w-[85%] sm:max-w-[75%]`
+* **สถานะการส่ง (Delivery & Read Receipt):**
+  * ตัวหนังสือขนาดกะทัดรัด `text-[11.5px] sm:text-[12px] font-normal mt-1 mr-1`
+  * สถานะ "ส่งแล้ว": สีเงินจาง `text-white/35`
+  * สถานะ "อ่านแล้ว": สีขาวนวล `text-white/60`
 
-### 4.2 บับเบิ้ลตัวละครสี Apple Charcoal (`#1C1C1E` / `#202024`)
-* นุ่มลึก มินิมอล ตัวหนังสือสีขาวนวล `#EDEDED` ขนาด `15px`
-* ขอบมนนุ่ม `rounded-[18px] rounded-bl-none`
+### 4.2 บับเบิ้ลตัวละคร (Character / Bot Bubble - Apple Charcoal)
+* **สีพื้นหลัง (Background):** สีถ่านดำด้านนุ่มลึก **`#2f2f35`** (หรือ `#1D1D1F` / `#202024`) มินิมอล ถนอมสายตา และสร้างบรรยากาศห้องลับส่วนตัว
+* **รูปทรง (Border Radius):**
+  * ข้อความทั่วไปในกลุ่ม: ขอบมนเต็ม `rounded-[18px]`
+  * ข้อความสุดท้ายในกลุ่ม (`isLastInGroup`): ขอบมน `rounded-[18px] rounded-bl-[4px]` พร้อม Speech Tail ด้านล่างซ้าย (`bottom-0 -left-[6px] w-[10px] h-[15px] fill-[#2f2f35]`)
+* **ตัวหนังสือ (Typography):**
+  * ขนาดฟอนต์: **`text-[15px]`**
+  * ความหนา: **`font-normal`**
+  * สีตัวอักษร: สีขาวนวลตา **`text-white`** (`#EDEDED` / `#F5F5F7`)
+  * ระยะความสูงบรรทัด: **`leading-[22px]`** รองรับสระไทยสมบูรณ์แบบ 100%
+* **มิติและช่องไฟ (Dimensions & Padding):**
+  * `px-4 py-2 min-h-[38px] flex items-center`
+  * ความกว้างสูงสุด: `max-w-[85%] sm:max-w-[75%]`
 
-### 4.3 ภาษากายสไตล์วรรณกรรมกระซิบ (Literary Subtext Action)
-* **ตัดเครื่องหมายคำพูดหนาๆ และเส้นขีดดิ่งแข็งๆ ออก**
-* ใช้ข้อความตัวเอียงสีเงินจาง `#9E9EA8` หรือ `#B2B2BC` ขนาด `13.5px`
-* นำหน้าด้วยประกายดาวจิ๋ว `✦` สื่อถึงภาษากายที่มีชีวิต
+### 4.3 ภาษากายและท่าทาง (Whispered Stage Direction Action)
+* **แนวคิดการออกแบบ:** ตัดกล่องสี่เหลี่ยมทึบแสงและกรอบแข็งทิ้งทั้งหมด จัดวางให้แนบระนาบซ้ายอย่างโปร่งสบายและมีความกวี
+* **สัญลักษณ์นำสายตา:** ใช้จุดประกายดาวจิ๋วสีเงินมินิมอล **`✦`** ขนาด `text-[10px] text-white/35 shrink-0 mt-1` (คุมโทนขาวดำ ไม่ใช้สีทอง)
+* **ตัวหนังสือ (Typography):**
+  * ขนาดฟอนต์: **`text-[13.5px] sm:text-[14px]`**
+  * สไตล์: **ตัวเอียง (`italic`)**
+  * ความหนา: **`font-normal`**
+  * สีตัวอักษร: สีเงินเงาจันทร์ **`#A1A1A8`**
+  * ระยะบรรทัด: **`leading-relaxed tracking-wide`**
+* **ช่องไฟและความกว้าง:** `py-0.5 max-w-[92%] sm:max-w-[85%] px-1`
 
-### 4.4 บรรยายฉากขอบฟ้ากว้าง (Cinematic Horizon Voice Over)
-* ขยายความกว้าง `max-w-[660px]`
-* ไร้กรอบทึบ ใช้กระจกฝ้าบางเบา `bg-[#131315]/80 backdrop-blur-xl border-white/[0.08]`
-* มีหัวข้อกระซิบ `บรรยากาศของฉาก` ลอยเด่นเหนือข้อความ
+### 4.4 บทบรรยายฉากภาพยนตร์ (Cinematic Prologue Voice Over - VO)
+* **แนวคิดการออกแบบ:** ทำหน้าที่เป็น "ฉากเปิดภาพยนตร์" หรือ "บทกวีบอกเล่าบรรยากาศ" ลอยเด่นกึ่งกลางจออย่างทรงพลัง
+* **เส้นขอบฟ้าคู่ (Horizon Hairline Gradient):** ขนาบหัวและท้ายข้อความด้วยเส้นคั่นบางเฉียบ 1px ที่ค่อยๆ จางละลายออกสองข้าง:
+  `w-full max-w-[280px] sm:max-w-[420px] h-[1px] bg-gradient-to-r from-transparent via-white/[0.14] to-transparent`
+* **ตัวหนังสือ (Typography):**
+  * ขนาดฟอนต์: **`text-[15px]`**
+  * สไตล์: **ตัวตรง ไม่เอียง** (Monochromatic Cinematic Clarity)
+  * ความหนา: **`font-normal`** (น้ำหนัก 400 คมชัด สบายตา)
+  * สีตัวอักษร: สีเงินแสงจันทร์ **`#D6D6DC`**
+  * การจัดวาง: **กึ่งกลางจอ (`text-center`)**
+  * ระยะบรรทัด: **`leading-[1.85] tracking-wide`** โปร่งและอ่านสบายตาอย่างยิ่ง
+* **ระยะและช่องไฟ (Breathing Rest):**
+  * ความกว้างสูงสุด: `max-w-[580px]`
+  * ระยะพักสายตาบน-ล่าง: **`my-12 sm:my-16`** (48px – 64px) ทิ้งระยะว่างอย่างมีระดับให้สายตาได้ซึมซับบรรยากาศ
+
+### 4.5 ระบบระยะห่างและจังหวะลมหายใจในห้องแชท (Chat Room Spacing Architecture)
+* **ระยะห่างระหว่างเทิร์นคู่สนทนา (Inter-turn Spacing):** ใช้ **`marginTop = 'mt-4'` (16px)** เมื่อเปลี่ยนผู้พูด เพื่อให้สายตาแยกแยะบทสนทนาได้ทันที
+* **ระยะห่างภายในกลุ่มข้อความเดียวกัน (Intra-group Spacing):** ใช้ **`gap-1.5` หรือ `mt-1.5` (6px)** เพื่อรวมข้อความที่พิมพ์ต่อเนื่องเป็นก้อนเดียวกัน
+* **แถบวันที่ (Date Divider Rest):** แคปซูลโปร่งแสงกึ่งกลางจอ `my-6 sm:my-8`, ขนาดตัวหนังสือ `text-[11px] font-medium text-white/40 tracking-widest uppercase`, บรรจุในแคปซูล `px-3.5 py-1 rounded-full bg-white/[0.03] border border-white/[0.05]`
+* **ระยะปลอดภัยขอบล่าง (Scroll Safe Bottom Padding):** กำหนดระยะ `pb-[88px] sm:pb-[96px]` ให้กับพื้นที่ข้อความ เพื่อป้องกันไม่ให้บับเบิ้ลข้อความสุดท้ายจมหายไปใต้แผงปุ่มพิมพ์ข้อความด้านล่าง
 
 ---
 
@@ -391,9 +436,29 @@ The Soul App สร้างขึ้นบนสมมติฐานที่�
     ```
 
 ### 9.5 กล่องพิมพ์ข้อความ (Chat Input Bar Pillow Recipe)
-* แคปซูลหมอนนุ่มมนเต็ม (`rounded-full`), สูง 46px–48px
-* กระจกฝ้าโปร่งแสง `bg-white/[0.06] backdrop-blur-2xl border border-white/[0.10]` พร้อมประกายสะท้อนบน `shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]`
-* แถบม่าน Dock ด้านล่างไล่จากสีแคนวาส `#151517` ไร้เงาดำหนาเตอะ (Zero-Glow) กลมกลืนกับพื้นหลังอย่างเป็นเนื้อเดียว
+* **รูปทรงและขนาดภายนอก:** ทรงแคปซูลหมอนนุ่มมนเต็ม (`rounded-full`), สูง 46px–48px (`min-h-[46px] sm:min-h-[48px]`), ช่องไฟด้านใน `px-2 sm:px-2.5 py-1.5`
+* **ผิวสัมผัสและกระจกฝ้า:**
+  ```tsx
+  bg-white/[0.06] hover:bg-white/[0.09] focus-within:bg-white/[0.10] backdrop-blur-2xl border border-white/[0.10] focus-within:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-all
+  ```
+* **ช่องพิมพ์ข้อความ (Input Field):**
+  * ฟอนต์: **`text-[14px] sm:text-[14.5px]`**, **`font-normal`**, **`tracking-tight`**
+  * สีข้อความ: สีขาวบริสุทธิ์ **`text-white`**
+  * สีข้อความจำลอง (Placeholder): สีขาวจางถนอมสายตา **`placeholder-white/40`**
+  * ช่องไฟภายใน: `px-2.5`
+* **ปุ่มบวกแอ็กชันเสริม (Plus Action Button):**
+  * ทรงกลม 32px–34px (`w-[32px] h-[32px] sm:w-[34px] sm:h-[34px] rounded-full`)
+  * กระจกฝ้า `bg-white/[0.08] hover:bg-white/[0.16] border-white/[0.12] text-white/75 hover:text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]`
+  * ป๊อปอัปเมนู: สีดำแคนวาส `bg-[#151517]/95 backdrop-blur-2xl border border-white/[0.14] rounded-2xl p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.6)]`
+* **ปุ่มส่งข้อความ (Carmine Send Button):**
+  * ทรงกลม 32px–34px (`w-[32px] h-[32px] sm:w-[34px] sm:h-[34px] rounded-full`)
+  * สีแดงคาร์ไมน์เรดเร้าใจ: `bg-[#EF264C] hover:bg-[#d91d40] text-white border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.30),0_2px_8px_rgba(239,38,76,0.35)]`
+  * ไอคอน: ลูกศรชี้ขึ้น `ArrowUp size={17} strokeWidth={2.4}`
+* **ปุ่มไมค์ส่งเสียง (Voice Input Waveform Button):**
+  * ทรงกลม 32px–34px `bg-white/[0.06] border border-white/[0.10] text-white/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]` พร้อมไอคอน `AudioLines size={16} strokeWidth={1.8}`
+* **แถบม่าน Dock ลอยติดขอบล่าง (Frameless Sticky Bottom Dock):**
+  * ไล่จากสีแคนวาสแท้จริง: `bg-gradient-to-t from-[#151517] from-75% via-[#151517]/95 to-transparent`
+  * ตัดเงาดำหนาเตอะทิ้ง 100% (Zero-Glow) กลมกลืนเป็นเนื้อเดียวกับ Canvas ไม่เกิดเส้นขอบกระด้างตัดสายตา
 
 ---
 

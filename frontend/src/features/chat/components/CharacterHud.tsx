@@ -204,24 +204,24 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
           <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-[#121214] shadow-xl group aspect-[2/3] w-full shrink-0 select-none">
             {/* Top Floating Controls on Image: สถานะสด (ซ้ายบน) + จุดไข่ปลา & ปุ่มปิดแถบ (ขวาบน) */}
             <div className="absolute top-2.5 inset-x-2.5 z-20 flex items-center justify-between pointer-events-none select-none">
-              {/* Left: LIVE Status Pill */}
-              <div className="flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-[#121214]/60 backdrop-blur-xl border border-white/[0.08] pointer-events-auto">
+              {/* Left: LIVE Status Pill (Apple visionOS White Frosted Glass) */}
+              <div className="flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-white/[0.12] hover:bg-white/[0.18] backdrop-blur-2xl border border-white/[0.18] shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_4px_12px_rgba(0,0,0,0.15)] pointer-events-auto transition-all">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                <span className="text-[11px] font-bold tracking-wider text-app-primary">
+                <span className="text-[11px] font-bold tracking-wider text-white">
                   LIVE
                 </span>
               </div>
 
-              {/* Right: จุดไข่ปลา (3-dots) + ปุ่มปิดแถบ (PanelRightClose) */}
+              {/* Right: จุดไข่ปลา (3-dots) + ปุ่มปิดแถบ (PanelRightClose) (White Frosted Glass) */}
               <div className="flex items-center gap-1.5 pointer-events-auto relative" ref={menuRef}>
                 <button
                   type="button"
                   onClick={() => setIsMenuOpen(prev => !prev)}
                   title="ตั้งค่าขนาดแถบสถานะ"
-                  className={`w-7 h-7 rounded-full backdrop-blur-xl border transition-all cursor-pointer active:scale-95 flex items-center justify-center select-none ${
+                  className={`w-7 h-7 rounded-full backdrop-blur-2xl border transition-all cursor-pointer active:scale-95 flex items-center justify-center select-none shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_4px_12px_rgba(0,0,0,0.15)] ${
                     isMenuOpen 
-                      ? 'bg-white/15 border-white/25 text-app-primary' 
-                      : 'bg-[#121214]/60 border-white/[0.08] hover:bg-white/[0.08] hover:border-white/15 text-app-primary'
+                      ? 'bg-white/30 border-white/40 text-white' 
+                      : 'bg-white/[0.12] hover:bg-white/[0.22] border-white/[0.18] hover:border-white/30 text-white'
                   }`}
                 >
                   <MoreVertical size={15} strokeWidth={1.8} />
@@ -231,7 +231,7 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
                   type="button"
                   onClick={onClose}
                   title="ซ่อนแถบสถานะตัวละคร"
-                  className="w-7 h-7 rounded-full bg-[#121214]/60 backdrop-blur-xl border border-white/[0.08] hover:bg-white/[0.08] hover:border-white/15 text-app-primary flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none"
+                  className="w-7 h-7 rounded-full bg-white/[0.12] hover:bg-white/[0.22] backdrop-blur-2xl border border-white/[0.18] hover:border-white/30 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_4px_12px_rgba(0,0,0,0.15)] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none"
                 >
                   <PanelRightClose size={15} strokeWidth={1.8} />
                 </button>

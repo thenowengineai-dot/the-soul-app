@@ -26,7 +26,7 @@ export default function HomeTopBar({
   onSignOut,
 }: HomeTopBarProps) {
   return (
-    <header className="w-full h-16 bg-[#121214]/95 backdrop-blur-xl border-b border-white/[0.06] z-30 transition-all duration-200 flex items-center justify-between px-6 shrink-0 select-none">
+    <header className="w-full h-16 bg-[#151517]/95 backdrop-blur-xl border-b border-white/[0.06] z-30 transition-all duration-200 flex items-center justify-between px-6 shrink-0 select-none">
       {/* 1. Far Left: Pure Brand Logo (Downbeat: Quiet & Confident) */}
       <div className="flex items-center shrink-0">
         <div 
@@ -53,7 +53,7 @@ export default function HomeTopBar({
 
       {/* 2. Center: Slim Pillow Search Capsule (Apple Safari/Spotlight: 40px height with 12px vertical breathing room) */}
       <div className="flex-1 flex justify-center max-w-[460px] md:max-w-[520px] mx-4 sm:mx-6">
-        <div className="group flex items-center w-full h-10 bg-[#18181D]/90 backdrop-blur-xl rounded-full px-3.5 border border-white/[0.08] hover:border-white/20 focus-within:border-white/30 shadow-[0_2px_10px_rgba(0,0,0,0.25)] transition-all duration-200">
+        <div className="group flex items-center w-full h-10 bg-[#18181A]/90 backdrop-blur-xl rounded-full px-3.5 border border-white/[0.08] hover:border-white/20 focus-within:border-white/30 shadow-[0_2px_10px_rgba(0,0,0,0.25)] transition-all duration-200">
           <Search className="text-[#86868B] group-focus-within:text-[#F5F5F7] transition-colors flex-shrink-0" size={15} strokeWidth={1.8} />
           <input 
             type="text" 

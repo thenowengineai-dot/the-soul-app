@@ -97,13 +97,13 @@ function HomeView({
   return (
     <div 
       style={{ overscrollBehavior: 'none' }}
-      className="flex-1 flex flex-col h-full overflow-y-auto overflow-x-hidden no-scrollbar relative z-10 bg-[#121214] overscroll-none"
+      className="flex-1 flex flex-col h-full overflow-y-auto overflow-x-hidden no-scrollbar relative z-10 bg-[#151517] overscroll-none"
     >
       {/* Featured Hero Showcase (Cinematic Billboard Carousel with Native Video Loop) */}
       <HeroShowcase onSelectCharacter={handleCardClick} />
 
       {/* Sticky Pill Bar: Frameless Floating Pebbles (ตัดเส้นขีดแนวนอนล่างออก ชิปลอยเหนือผืนผ้าใบมืด) */}
-      <div className="sticky top-0 z-20 h-12 bg-[#121214]/90 backdrop-blur-xl flex items-center gap-3 px-6 sm:px-12 lg:px-14 xl:px-16 w-full transition-all duration-300 select-none shrink-0">
+      <div className="sticky top-0 z-20 h-12 bg-[#151517]/90 backdrop-blur-xl flex items-center gap-3 px-6 sm:px-12 lg:px-14 xl:px-16 w-full transition-all duration-300 select-none shrink-0">
         
         {/* ฝั่งซ้าย: Controls & Sorting (เพศ, กำลังมาแรง, ยอดนิยม, ล่าสุด - 32px Frameless Droplets) */}
         <div className="flex-shrink-0 flex items-center gap-2">
@@ -128,7 +128,7 @@ function HomeView({
 
               {/* เมนู Dropdown ลอยลงมา (Glassmorphism Panel) */}
               {isGenderOpen && (
-                <div className="absolute left-0 top-full mt-1.5 w-48 bg-[#18181D]/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl p-1.5 z-50 flex flex-col gap-0.5 animate-fadeIn">
+                <div className="absolute left-0 top-full mt-1.5 w-48 bg-[#18181A]/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl p-1.5 z-50 flex flex-col gap-0.5 animate-fadeIn">
                   {GENDER_OPTIONS.map(option => {
                     const isSelected = selectedGender === option.id;
                     return (

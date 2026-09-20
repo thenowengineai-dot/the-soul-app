@@ -67,14 +67,14 @@ function CharacterSliderRow({
       <div className="relative group/slider w-full overflow-hidden">
         {/* Soft Edge Dissolve (Left): ปรากฏขึ้นเฉพาะตอนเริ่มเลื่อน เพื่อให้การ์ดค่อยๆ ละลายกลืนลงไปก่อนถึงเส้นแบ่ง */}
         <div 
-          className={`absolute left-0 top-0 bottom-0 w-12 sm:w-16 bg-gradient-to-r from-[#121214] via-[#121214]/80 to-transparent pointer-events-none z-20 transition-opacity duration-300 ${
+          className={`absolute left-0 top-0 bottom-0 w-12 sm:w-16 bg-gradient-to-r from-[#151517] via-[#151517]/80 to-transparent pointer-events-none z-20 transition-opacity duration-300 ${
             canScrollLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`} 
         />
 
         {/* Soft Edge Dissolve (Right): ละลายปลายขวาของการ์ดอย่างนุ่มนวลเพื่อส่งสายตา */}
         <div 
-          className={`absolute right-0 top-0 bottom-0 w-12 sm:w-16 bg-gradient-to-l from-[#121214] via-[#121214]/80 to-transparent pointer-events-none z-20 transition-opacity duration-300 ${
+          className={`absolute right-0 top-0 bottom-0 w-12 sm:w-16 bg-gradient-to-l from-[#151517] via-[#151517]/80 to-transparent pointer-events-none z-20 transition-opacity duration-300 ${
             canScrollRight ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`} 
         />

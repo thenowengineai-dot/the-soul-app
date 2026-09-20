@@ -6,6 +6,7 @@ import TheMuseChat from './components/TheMuseChat';
 import ResizableSplitter from './components/ResizableSplitter';
 import InspectorPanel from './components/InspectorPanel';
 import CelebrationPublishModal from './components/CelebrationPublishModal';
+import StudioCardCanvasModal from './components/StudioCardCanvasModal';
 import { INITIAL_MUSE_MESSAGES, DEMO_SHOWCASE_DRAFT } from './mockData';
 import {
   sendMuseMessage,
@@ -86,6 +87,7 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
   const [isPublishing, setIsPublishing] = useState<boolean>(false);
   const [isUploadingImages, setIsUploadingImages] = useState<boolean>(false);
   const [isCelebrationModalOpen, setIsCelebrationModalOpen] = useState<boolean>(false);
+  const [isCanvasModalOpen, setIsCanvasModalOpen] = useState<boolean>(false);
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Sidebar Expanded State (เริ่มต้นจะขยายแถบด้านซ้ายเสมอ ทุกครั้งที่เข้าหน้านี้มา)
@@ -836,6 +838,7 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
         activeMode={activeMode}
         activeDraftTitle={activeDraft?.title}
         isThinking={isThinking}
+        onOpenCanvasModal={() => setIsCanvasModalOpen(true)}
       />
 
       {/* 5. Right Resizable Splitter (ลากเมาส์เพื่อยืด/หดพื้นที่ฝั่งขวา) */}
@@ -866,6 +869,7 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
         onPublishCampaign={handlePublishCampaign}
         isSyncing={isSyncing}
         isPublishing={isPublishing}
+        onOpenCanvasModal={() => setIsCanvasModalOpen(true)}
       />
 
       {/* 7. Celebration Modal when campaign is published to Hot Cache */}
@@ -875,6 +879,19 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
           onClose={() => setIsCelebrationModalOpen(false)}
           onPlayNow={handlePlayNow}
           draft={activeDraft}
+        />
+      )}
+
+      {/* 8. Studio Card Canvas Modal (โหมดการ์ดเต็มจอ) */}
+      {activeDraft && (
+        <StudioCardCanvasModal
+          isOpen={isCanvasModalOpen}
+          onClose={() => setIsCanvasModalOpen(false)}
+          draft={activeDraft}
+          onUpdateDraft={handleUpdateDraft}
+          onTalkAboutCard={(prompt) => {
+            handleSendMessage(prompt);
+          }}
         />
       )}
     </div>

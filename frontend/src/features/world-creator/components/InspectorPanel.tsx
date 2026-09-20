@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   ChevronRight,
   MoreVertical,
+  Maximize2,
 } from 'lucide-react';
 import type { CreatorMode, VaultDraft, PassivePerk, WorldScenario } from '../types';
 import ScenarioEngineCard from './ScenarioEngineCard';
@@ -81,6 +82,7 @@ interface InspectorPanelProps {
   onPublishCampaign?: () => Promise<void>;
   isSyncing?: boolean;
   isPublishing?: boolean;
+  onOpenCanvasModal?: () => void;
 }
 
 type EditableCard =
@@ -113,6 +115,7 @@ export default function InspectorPanel({
   onPublishCampaign,
   isSyncing = false,
   isPublishing = false,
+  onOpenCanvasModal,
 }: InspectorPanelProps) {
   // สถานะการ์ดที่กำลังเปิดโหมดแก้ไข
   const [editingCard, setEditingCard] = useState<EditableCard>(null);
@@ -879,6 +882,18 @@ export default function InspectorPanel({
               }`}
             >
               <MoreVertical size={14} strokeWidth={1.8} />
+            </button>
+          )}
+
+          {/* ปุ่มเปิดโหมดการ์ดเต็มจอ (Full Canvas) */}
+          {onOpenCanvasModal && (
+            <button
+              type="button"
+              onClick={onOpenCanvasModal}
+              title="เปิดโหมดการ์ดเต็มจอ (Studio Canvas)"
+              className="w-7 h-7 rounded-full bg-transparent border border-[#2F3336] hover:border-white/30 text-[#BEBEC4] hover:text-[#EF264C] flex items-center justify-center transition-all cursor-pointer active:scale-95 select-none shrink-0"
+            >
+              <Maximize2 size={13} strokeWidth={2} />
             </button>
           )}
 

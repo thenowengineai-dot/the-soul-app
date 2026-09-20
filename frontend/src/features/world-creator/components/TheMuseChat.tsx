@@ -8,6 +8,7 @@ import {
   Mic,
   Sparkles,
   Brain,
+  Maximize2,
 } from 'lucide-react';
 import { TypingIndicator } from '../../../components/common';
 import type { CreatorMode, MuseIdeaItem, MuseMessage } from '../types';
@@ -149,6 +150,7 @@ interface TheMuseChatProps {
   activeDraftTitle?: string;
   isThinking?: boolean;
   onUploadImages?: (files: FileList | File[]) => void;
+  onOpenCanvasModal?: () => void;
 }
 
 export default function TheMuseChat({
@@ -160,6 +162,7 @@ export default function TheMuseChat({
   activeMode,
   isThinking = false,
   onUploadImages,
+  onOpenCanvasModal,
 }: TheMuseChatProps) {
   const [inputText, setInputText] = useState('');
   // บันทึกสถานะการยืด-หดของแต่ละข้อความผู้ใช้
@@ -229,17 +232,31 @@ export default function TheMuseChat({
 
   return (
     <div className="flex-1 h-full flex flex-col bg-[#090909] relative overflow-hidden">
-      {/* ปุ่มเปิดพาเนลขวา (ลอยมุมขวาบนเมื่อพาเนลขวาพับเก็บ ไร้แถบหัวข้อและไร้เส้นคั่นตามที่สั่ง) */}
-      {isRightPanelCollapsed && (
-        <button
-          type="button"
-          onClick={onToggleRightPanel}
-          title="เปิดหน้าต่างการ์ดข้อมูล (Inspector)"
-          className="absolute top-3.5 right-4 z-30 w-8 h-8 rounded-full bg-[#121212]/65 backdrop-blur-xl border border-white/[0.07] hover:border-white/20 hover:bg-white/10 text-app-secondary hover:text-app-primary flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 select-none"
-        >
-          <PanelRightOpen size={16} strokeWidth={1.8} />
-        </button>
-      )}
+      {/* Control Dock (มุมขวาบนของห้องแชท The Muse) */}
+      <div className="absolute top-3.5 right-4 z-30 flex items-center gap-2">
+        {onOpenCanvasModal && (
+          <button
+            type="button"
+            onClick={onOpenCanvasModal}
+            title="เปิดโหมดการ์ดเต็มจอ (Studio Canvas)"
+            className="h-8 px-3 rounded-full bg-[#141416]/80 hover:bg-[#1E1E22] backdrop-blur-xl border border-white/[0.08] hover:border-white/20 text-[#BEBEC4] hover:text-[#F1F1F1] flex items-center gap-1.5 transition-all cursor-pointer shadow-lg active:scale-95 text-[12px] font-medium select-none"
+          >
+            <Maximize2 size={13} strokeWidth={2} className="text-[#EF264C]" />
+            <span className="hidden sm:inline">การ์ดเต็มจอ</span>
+          </button>
+        )}
+
+        {isRightPanelCollapsed && (
+          <button
+            type="button"
+            onClick={onToggleRightPanel}
+            title="เปิดหน้าต่างการ์ดข้อมูล (Inspector)"
+            className="w-8 h-8 rounded-full bg-[#141416]/80 hover:bg-[#1E1E22] backdrop-blur-xl border border-white/[0.08] hover:border-white/20 text-[#BEBEC4] hover:text-[#F1F1F1] flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 select-none"
+          >
+            <PanelRightOpen size={16} strokeWidth={1.8} />
+          </button>
+        )}
+      </div>
 
       {/* 2. Central Conversation Stream: คอลัมน์เดียวตรงกลาง ไม่แบ่งซ้ายขวา */}
       <div 

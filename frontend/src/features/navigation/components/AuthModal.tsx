@@ -239,6 +239,22 @@ export function AuthModal({
             )}
           </button>
         </div>
+
+        {/* 8. Local Development Bypass Button */}
+        {typeof window !== 'undefined' &&
+          (window.location.hostname === 'localhost' ||
+            window.location.hostname === '127.0.0.1' ||
+            import.meta.env.DEV) && (
+            <div className="mt-4 pt-3 border-t border-white/10">
+              <button
+                type="button"
+                onClick={() => onEmailSubmit?.('dev@soul.local', 'login')}
+                className="w-full py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 hover:border-[#EF264C]/50 text-[12.5px] text-[#F1F1F1] font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer select-none"
+              >
+                <span>🛠️ เข้าสู่ระบบชั่วคราว (โหมดนักพัฒนา / Local Bypass)</span>
+              </button>
+            </div>
+          )}
       </div>
     </div>
   )

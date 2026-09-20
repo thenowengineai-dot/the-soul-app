@@ -85,8 +85,37 @@ function App() {
 
   // 🏛️ ทางเข้าสู่หน้า The Muse (ปุ่ม "สร้าง" บน Sidebar พร้อมระบบตรวจสอบสิทธิ์ Guest)
   const handleCreateClick = () => {
-    // 🛡️ หากเป็น Guest หรือยังไม่ได้ล็อกอิน ให้เด้ง Pop-up ล็อกอิน/สมัครสมาชิก ทันที
+    // 🛠️ ตรวจสอบโหมด Local Development เพื่อปลดล็อกให้เข้าพัฒนา The Muse ได้ทันที
+    const isLocalDev =
+      typeof window !== 'undefined' &&
+      (window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1' ||
+        import.meta.env.DEV);
+
     const isGuest = !isLoggedIn || !currentUser || currentUser.is_guest || currentUser.user_id.startsWith('gst_');
+    
+    // หากอยู่ใน Local Dev แล้วยังเป็น Guest ให้ Auto-Login เป็นบัญชีนักพัฒนาทันที
+    if (isGuest && isLocalDev) {
+      const devUser: UserIdentity = {
+        user_id: 'usr_dev_creator',
+        name: 'Creator (Dev Mode)',
+        email: 'creator@soul.local',
+        username: '@dev_creator',
+        is_guest: false,
+        pronouns: 'คุณ',
+        about_me: 'บัญชีนักพัฒนาสำหรับทดสอบในโหมด Local',
+      };
+      saveUserIdentity(devUser);
+      setCurrentUser(devUser);
+      setUserName(devUser.name);
+      setUserInitial('C');
+      setUserEmail(devUser.email || '');
+      setCurrentView('world-creator');
+      setIsSidebarExpanded(false);
+      return;
+    }
+
+    // 🛡️ หากเป็น Production และเป็น Guest ให้เด้ง Pop-up ล็อกอิน
     if (isGuest) {
       setAuthModalMode('login');
       setIsAuthModalOpen(true);

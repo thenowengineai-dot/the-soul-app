@@ -112,7 +112,7 @@ export function ChatInputBar({
   return (
     <div 
       data-no-advance 
-      className="sticky bottom-0 z-20 w-full pt-2 pb-4 sm:pb-5 mt-auto bg-gradient-to-t from-[#121214] via-[#121214]/95 to-transparent pointer-events-none"
+      className="sticky bottom-0 z-20 w-full pt-2 pb-4 sm:pb-5 mt-auto bg-gradient-to-t from-[#151517] via-[#151517]/95 to-transparent pointer-events-none"
     >
       <div className="w-full max-w-[740px] mx-auto px-4 sm:px-6 relative pointer-events-auto">
         

@@ -1028,6 +1028,37 @@ export default function InspectorPanel({
         }}
         className="flex-1 overflow-y-auto px-5 sm:px-6 pb-6 pt-0 space-y-4 no-scrollbar"
       >
+        {/* ✦ NEW BLUEPRINT FULL-SCREEN CANVAS PROMO BANNER */}
+        {onOpenCanvasModal && (
+          <button
+            type="button"
+            onClick={onOpenCanvasModal}
+            className="w-full mt-3 p-3.5 rounded-[20px] bg-gradient-to-r from-white/[0.06] to-white/[0.03] hover:from-[#EF264C]/15 hover:to-white/[0.06] border border-white/[0.10] hover:border-[#EF264C]/50 text-left transition-all duration-300 cursor-pointer shadow-[0_4px_16px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.10)] group flex items-center justify-between select-none"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#EF264C]/15 border border-[#EF264C]/30 flex items-center justify-center text-[#EF264C] group-hover:scale-105 transition-transform shrink-0">
+                <Maximize2 size={16} strokeWidth={2.2} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[13.5px] font-semibold text-[#F1F1F1] group-hover:text-white">
+                    เปิดโหมดการ์ดเต็มจอ (Full Canvas)
+                  </span>
+                  <span className="text-[9.5px] uppercase font-mono px-1.5 py-0.2 rounded-full bg-[#EF264C] text-white font-bold">
+                    NEW
+                  </span>
+                </div>
+                <p className="text-[11.5px] text-[#AAAAAA] mt-0.5">
+                  ตรวจและแก้ไข การ์ดที่ 1 • Identity & Visual ในผืนผ้าใบเต็มตา
+                </p>
+              </div>
+            </div>
+            <div className="w-7 h-7 rounded-full bg-white/[0.06] group-hover:bg-[#EF264C] text-white/60 group-hover:text-white flex items-center justify-center transition-colors shrink-0">
+              <ChevronRight size={14} strokeWidth={2.4} />
+            </div>
+          </button>
+        )}
+
         {activeMode === 'character' ? (
           /* ================= CHARACTER MODE CARDS (THE 5-CARD PILLAR) ================= */
           <>

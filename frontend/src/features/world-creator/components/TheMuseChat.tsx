@@ -232,6 +232,23 @@ export default function TheMuseChat({
 
   return (
     <div className="flex-1 h-full flex flex-col bg-[#090909] relative overflow-hidden">
+      {/* ✦ Apple Floating Dynamic Island Bar (กึ่งกลางบนสุดของห้องแชท The Muse) */}
+      {onOpenCanvasModal && (
+        <div className="absolute top-3.5 left-1/2 -translate-x-1/2 z-30 pointer-events-auto">
+          <button
+            type="button"
+            onClick={onOpenCanvasModal}
+            className="px-4 py-1.5 rounded-full bg-[#151518]/90 hover:bg-[#202026] backdrop-blur-2xl border border-white/[0.12] hover:border-[#EF264C]/60 text-[#F1F1F1] text-[12.5px] font-medium flex items-center gap-2 shadow-[0_8px_24px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.12)] transition-all cursor-pointer active:scale-95 group select-none"
+          >
+            <Sparkles size={13} className="text-[#EF264C] group-hover:rotate-12 transition-transform" />
+            <span>เข้าสู่โหมดการ์ดเต็มจอ (Full Canvas)</span>
+            <span className="text-[10px] uppercase font-mono px-1.5 py-0.2 rounded-full bg-[#EF264C]/20 text-[#EF264C] border border-[#EF264C]/35 font-semibold">
+              การ์ด 1
+            </span>
+          </button>
+        </div>
+      )}
+
       {/* Control Dock (มุมขวาบนของห้องแชท The Muse) */}
       <div className="absolute top-3.5 right-4 z-30 flex items-center gap-2">
         {onOpenCanvasModal && (

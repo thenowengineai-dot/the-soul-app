@@ -41,7 +41,7 @@ export function MessageBubble({
   }
 
   // 2. จัดการ VO (Voice Over): Cinematic Prologue (บทบรรยายฉากทรงพลังสไตล์ Harry Potter)
-  // ตัวตรง 15-16px น้ำหนัก 400 สีเงินแสงจันทร์ #D6D6DC ขนาบด้วยเส้นขอบฟ้าและ Space กว้างขวาง
+  // ตัวตรง 15px น้ำหนัก 400 สีเงินแสงจันทร์ #D6D6DC ขนาบด้วยเส้นขอบฟ้าและ Space กว้างขวาง
   if (message.type === 'vo') {
     return (
       <div className="w-full flex flex-col items-center justify-center px-6 select-text my-12 sm:my-16 animate-in fade-in duration-300">
@@ -49,7 +49,7 @@ export function MessageBubble({
         <div className="w-full max-w-[280px] sm:max-w-[420px] h-[1px] bg-gradient-to-r from-transparent via-white/[0.14] to-transparent mb-5 sm:mb-6 select-none" />
 
         {/* ข้อความบทบรรยายฉาก (Cinematic Monochromatic Typography: ตัวตรง ไม่เอียง คมชัดทรงพลัง) */}
-        <p className="max-w-[580px] text-[15px] sm:text-[16px] leading-[1.85] text-[#D6D6DC] font-normal text-center tracking-wide select-text">
+        <p className="max-w-[580px] text-[15px] leading-[1.85] text-[#D6D6DC] font-normal text-center tracking-wide select-text">
           {message.text}
         </p>
 

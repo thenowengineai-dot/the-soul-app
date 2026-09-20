@@ -44,10 +44,10 @@ export function MessageList({
           marginTop = 'mt-4 sm:mt-5'
         } else if (isSameSenderAsPrev) {
           // ถ้าคนเดียวกัน:
-          // - ข้อความสลับกับ Action (เช่น Dialogue -> Action หรือ Action -> Dialogue): เว้น 10px (mt-2.5) ให้มีพื้นที่ของภาษากาย
+          // - ข้อความสลับกับ Action (เช่น Dialogue -> Action หรือ Action -> Dialogue): เว้น 8px (mt-2) ให้ภาษากายแนบชิดกับคำพูดเสมือนเกิดขึ้นพร้อมกัน
           // - บับเบิ้ลคำพูดต่อกัน (Dialogue -> Dialogue): เว้นชิดกัน 4px (mt-1) ตามสไตล์ Clustered Stack
           if (isAction || prevMsg?.type === 'action') {
-            marginTop = 'mt-2.5'
+            marginTop = 'mt-2'
           } else {
             marginTop = 'mt-1'
           }

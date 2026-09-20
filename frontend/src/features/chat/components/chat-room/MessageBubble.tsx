@@ -40,22 +40,19 @@ export function MessageBubble({
     )
   }
 
-  // 2. จัดการ VO (Voice Over): เส้นขอบฟ้าแห่งการพักสายตา (Zenith Horizon of Rest)
-  // ลอยโปร่งกลางจอ เว้นระยะ space หายใจ my-8 sm:my-10 ตัวหนังสือเอียงบางเบา อ่านสบายตาดั่งพักบทสนทนา
+  // 2. จัดการ VO (Voice Over): แนวทาง A [Zen Horizon - เส้นขอบฟ้าเดี่ยว]
+  // ลอยโปร่งกลางจอ เว้นระยะ space หายใจ my-8 sm:my-10 เส้นขอบฟ้าเดี่ยว 1px ด้านบน จางหายหัว-ท้าย ไร้เส้นล่างประกบเป็นแบนเนอร์
   if (message.type === 'vo') {
     return (
-      <div className={`w-full flex justify-center px-4 select-text my-8 sm:my-10`}>
-        <div className="w-full max-w-[590px] flex flex-col items-center py-2.5">
-          {/* เส้นคั่นบางเฉียบด้านบนแบบไล่เฉดจางหายหัว-ท้าย */}
-          <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent mb-4" />
+      <div className="w-full flex justify-center px-4 select-text my-8 sm:my-10">
+        <div className="w-full max-w-[590px] flex flex-col items-center">
+          {/* เส้นขอบฟ้าเดี่ยว (Zen Horizon Hairline) บางเฉียบ 1px ไล่เฉดจางหายหัว-ท้าย */}
+          <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent mb-4 sm:mb-5" />
           
-          {/* ข้อความบรรยายฉาก ฟอนต์ 13.5px สีเงินนุ่มนวล อ่านสบายตา เว้นวรรคมีจังหวะ */}
-          <p className="text-[13.5px] sm:text-[14px] leading-relaxed text-[#9CA3AF] font-light text-center px-6 tracking-wide select-text italic">
+          {/* ข้อความบรรยายฉาก ฟอนต์ 13px-13.5px สีเงินนุ่มนวล พร้อม leading-[1.7] สำหรับวรรณยุกต์ไทย */}
+          <p className="text-[13px] sm:text-[13.5px] leading-[1.7] text-[#9CA3AF] font-light text-center px-6 tracking-wide select-text italic">
             {message.text}
           </p>
-
-          {/* เส้นคั่นบางเฉียบด้านล่างแบบไล่เฉดจางหายหัว-ท้าย */}
-          <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent mt-4" />
         </div>
       </div>
     )
@@ -70,8 +67,8 @@ export function MessageBubble({
       <div className={`w-full flex ${isMe ? 'justify-end' : 'justify-start'}`}>
         {isAction ? (
           // 🌟 Action (บทกวีกำกับฉาก / Whispered Stage Direction สไตล์ Apple):
-          // ไร้กล่องทึบ แนบขอบซ้ายอย่างสง่างาม มีดาวประกาย ✦ สีทองอำพันจิ๋ว
-          <div className={`flex items-start gap-2 py-0.5 select-text my-1.5 max-w-[92%] sm:max-w-[85%] ${isMe ? 'justify-end' : 'justify-start px-1'}`}>
+          // ไร้กล่องทึบ แนบขอบซ้ายอย่างสง่างาม มีดาวประกาย ✦ สีทองอำพันจิ๋ว เว้นช่องว่างควบคุมด้วย mt-2 (8px)
+          <div className={`flex items-start gap-2 py-0.5 select-text max-w-[92%] sm:max-w-[85%] ${isMe ? 'justify-end' : 'justify-start px-1'}`}>
             <span className="text-[11px] text-amber-400/80 shrink-0 select-none mt-1">✦</span>
             <p className="text-[13.5px] sm:text-[14px] leading-relaxed text-[#A1A1A8] italic font-normal tracking-wide">
               {message.text}

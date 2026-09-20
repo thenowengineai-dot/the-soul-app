@@ -13,6 +13,7 @@
 6. [แกลเลอรีภัณฑารักษ์และการมองเห็นทะลุ (Gallery & Visual Peek-Through)](#6-แกลเลอรีภัณฑารักษ์และการมองเห็นทะลุ-gallery--visual-peek-through)
 7. [ระบบสีและแสงเงา (Surface System & Zero-Glow Rules)](#7-ระบบสีและแสงเงา-surface-system--zero-glow-rules)
 8. [กฎเหล็กการพัฒนาสำหรับวิศวกร (Engineering Golden Rules)](#8-กฎเหล็กการพัฒนาสำหรับวิศวกร-engineering-golden-rules)
+9. [คลังสูตรส่วนประกอบหลักตามสไตล์พรีเมียม (The Master Component Recipe Book)](#9-คลังสูตรส่วนประกอบหลักตามสไตล์พรีเมียม-the-master-component-recipe-book)
 
 ---
 
@@ -244,6 +245,155 @@ The Soul App สร้างขึ้นบนสมมติฐานที่�
 2. **ห้ามใช้ตัวเลขสุ่ม (Respect the 8pt Grid):** ทุกค่า `padding`, `margin`, `width`, `height` ต้องสัมพันธ์กับพหุคูณของ 4 หรือ 8 (ห้ามใช้ 22px, 35px, 228px เด็ดขาด)
 3. **ห้ามใช้ Pure White `#FFFFFF` บนตัวหนังสือ:** ให้ใช้ `#F5F5F7` (Primary White) หรือ `#86868B` (Secondary Silver) เสมอ เพื่อถนอมสายตา
 4. **Content-First Always:** หน้าจอต้องออกแบบให้ภาพวาดของตัวละครและเนื้อหาการสนทนาโดดเด่นที่สุด UI มีหน้าที่เป็นฉากหลังที่คอยอำนวยความสะดวกอย่างเงียบสงบ
+
+---
+
+## 9. คลังสูตรส่วนประกอบหลักตามสไตล์พรีเมียม (The Master Component Recipe Book)
+
+เอกสารบันทึกสูตรสำเร็จระดับพิกเซลของส่วนประกอบสำคัญ (Buttons, Pills, Cards, Gauges) ที่ผ่านการทดสอบและกลั่นกรองตามสไตล์ที่เป็นอัตลักษณ์หลักของ The Soul App เพื่อให้นำไปหยิบใช้ซ้ำในทุกส่วนของระบบได้อย่างเป็นเอกภาพ 100%:
+
+### 9.1 สูตรกระจกฝ้าสีขาวละมุนตา (Apple Subtle White Frosted Glass Recipe)
+หัวใจของความหรูหรา นุ่มฟู และถนอมสายตาสำหรับพื้นผิวที่มีการเคลื่อนไหวหรืออ่านบ่อย:
+* **สูตรมาตรฐาน (Standard Glass Controls):** ใช้สำหรับปุ่มคอนโทรล, แคปซูลเหรียญ, กล่องค้นหา, และปุ่มเปิด-ปิดแถบต่างๆ
+  ```tsx
+  bg-white/[0.06] hover:bg-white/[0.12] backdrop-blur-2xl border border-white/[0.10] hover:border-white/20 text-white/85 hover:text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] active:scale-95 transition-all
+  ```
+* **สูตรถนอมสายตาพิเศษ (Smoked Crystal Glass - HUD Cards):** ดร็อปความขาวลงเหลือ 4% เพื่อลดแสงแยงตาในจุดที่สายตาต้องกวาดมองต่อเนื่อง เช่น การ์ดสถานะใน HUD
+  ```tsx
+  bg-white/[0.04] hover:bg-white/[0.07] backdrop-blur-2xl border border-white/[0.07] hover:border-white/14 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all
+  ```
+
+### 9.2 ระบบปุ่มและแคปซูลส่วนหัว (Header Controls & Pills System)
+* **ปุ่มเหรียญ (Coin Balance Pill & Trial Turns Pill):**
+  * รูปทรงแคปซูลมนเต็ม (`rounded-full`), สูง 32px (`h-8`), ช่องไฟ `px-2.5 sm:px-3`
+  * ฝั่งซ้ายมีไอคอนเหรียญทองเด่นคู่กับตัวเลขสีขาว Primary White
+  * แคปซูลบอกรอบทดลองเล่น: แสดงจุดสีแดงชีพจร `w-2 h-2 rounded-full bg-[#EF264C]` นำหน้าข้อความ "1 turns 10 เหรียญ · 5 turns"
+  * โค้ดต้นแบบ:
+    ```tsx
+    {/* ปุ่มแสดงยอดเหรียญคงเหลือ */}
+    <div className="flex items-center gap-1.5 px-2.5 sm:px-3 h-8 rounded-full bg-white/[0.06] backdrop-blur-2xl border border-white/[0.10] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] shrink-0 select-none">
+      <SingleCoinIcon className="w-4 h-4" />
+      <span className="text-[12px] sm:text-[12.5px] font-bold text-white/90">{coinBalance}</span>
+    </div>
+
+    {/* แคปซูลสถานะทดลองเล่นสำหรับผู้เล่นใหม่ */}
+    <div className="flex items-center gap-1.5 px-2.5 sm:px-3 h-8 rounded-full bg-white/[0.06] backdrop-blur-2xl border border-white/[0.10] select-none cursor-default shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] shrink-0">
+      <span className="w-2 h-2 rounded-full bg-[#EF264C] animate-pulse shrink-0" />
+      <span className="text-[12px] sm:text-[12.5px] font-normal text-white/80 whitespace-nowrap">
+        1 turns <strong className="font-semibold text-white/95">10 เหรียญ</strong>
+      </span>
+      <span className="text-[11px] sm:text-[11.5px] text-white/40 font-light">· 5 turns</span>
+    </div>
+    ```
+* **ปุ่มเปิด-ปิดแถบด้านข้างแบบสมดุลซ้าย-ขวา (Bilateral Symmetrical Panel Toggles):**
+  * ปุ่มเปิด-ปิด ChatList (ฝั่งซ้าย): ทรงกลม 32px (`w-8 h-8 rounded-full`) + ไอคอน `PanelLeftClose` / `PanelLeftOpen` (`size={16}`)
+  * ปุ่มเปิด-ปิด HUD (ฝั่งขวา): ทรงกลม 32px (`w-8 h-8 rounded-full`) + ไอคอน `PanelRightOpen` (`size={16}`)
+  * ปุ่มคอนโซล/Terminal: ทรงกลม 32px (`w-8 h-8 rounded-full`) + ไอคอน `Terminal` (`size={15}`)
+  * โค้ดต้นแบบ:
+    ```tsx
+    <button
+      type="button"
+      onClick={onToggleChatList}
+      title={isChatListOpen ? 'ซ่อนแถบแชท' : 'เปิดแถบแชท'}
+      className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] backdrop-blur-2xl border border-white/[0.10] hover:border-white/20 text-white/80 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] active:scale-95 select-none"
+    >
+      {isChatListOpen ? <PanelLeftClose size={16} strokeWidth={1.8} /> : <PanelLeftOpen size={16} strokeWidth={1.8} />}
+    </button>
+    ```
+* **ปุ่มเปิด-ปิด Nav / Sidebar ซ้ายสุด (Divider-Docked Hamburger Button):**
+  * ทรงกลมขนาด 28px (`w-7 h-7`), วางทับอยู่กึ่งกลางเส้นแบ่ง 1px ด้วย `-right-3.5` (-14px)
+  * พื้นหลังสีดำเข้ม `#18181A` ตัดขอบ `border-white/15`
+  * ไอคอน Hamburger Menu (`Menu size={14} strokeWidth={2}`) สากล ไม่ซ้ำซ้อนกับปุ่มเปิด-ปิดพาเนลอื่นๆ
+  * โค้ดต้นแบบ:
+    ```tsx
+    <button 
+      type="button"
+      onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
+      title={isSidebarExpanded ? "ย่อแถบเมนู" : "ขยายแถบเมนู"}
+      aria-label={isSidebarExpanded ? "ย่อแถบเมนู" : "ขยายแถบเมนู"}
+      className="absolute -right-3.5 top-[18px] sm:top-[20px] z-30 w-7 h-7 rounded-full bg-[#18181A] border border-white/15 flex items-center justify-center text-[#86868B] hover:text-[#F5F5F7] hover:bg-[#252528] hover:border-white/35 shadow-md cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95 select-none"
+    >
+      <Menu size={14} strokeWidth={2} />
+    </button>
+    ```
+* **แคปซูลโปรไฟล์ตัวละครทูอินวัน (Apple-LINE Integrated Glass Capsule):**
+  * แถวบน: รูปโปรไฟล์ HD ทรงกลมใหญ่ 48px–52px มีแหวนแก้ว `ring-1.5 ring-white/18` + จุดออนไลน์สีเขียวมรกต
+  * แถวล่าง: แคปซูลกระจกฝ้าเกยใต้รูป `-mt-2.5` บรรจุชื่อตัวละคร + สเตตัสคำพูดแบบ LINE/Facebook
+  * โค้ดต้นแบบ:
+    ```tsx
+    <div className="flex flex-col items-center px-3.5 sm:px-4 py-1 sm:py-1.5 -mt-2.5 rounded-[18px] sm:rounded-[20px] bg-white/[0.06] group-hover:bg-white/[0.12] backdrop-blur-2xl border border-white/[0.10] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-all z-0 max-w-[220px] sm:max-w-[320px]">
+      <div className="flex items-center justify-center gap-1 leading-none">
+        <span className="font-bold text-white/90 group-hover:text-white text-[13.5px] sm:text-[14.5px] tracking-tight">{name} 💕</span>
+        <ChevronRight size={13} className="text-white/50 group-hover:text-white/80 transition-colors shrink-0 -mr-0.5" strokeWidth={2.2} />
+      </div>
+      <span className="text-[11px] sm:text-[11.5px] text-white/60 group-hover:text-white/75 font-normal leading-tight mt-0.5 truncate max-w-[190px] sm:max-w-[280px]">“{statusMessage}”</span>
+    </div>
+    ```
+
+### 9.3 กล่องค้นหาทรงแคปซูลกระจกฝ้า (Search Capsule Recipe)
+* ทรงแคปซูลมนเต็ม (`rounded-full`), สูง 38px–40px, ขอบแก้วมนไม่มีเหลี่ยม
+* พื้นหลังกระจกฝ้า `bg-white/[0.06] backdrop-blur-2xl border border-white/[0.10]`
+* ฝั่งซ้าย: ไอคอนแว่นขยาย `Search size={14} strokeWidth={1.8}`
+* ช่องกรอก: โปร่งใส `bg-transparent outline-none text-[#F5F5F7] placeholder-white/40 text-[12.5px]`
+* ฝั่งขวา: ปุ่มล้างข้อความด่วน (Quick Clear X) ทรงกลม 20px โผล่ขึ้นมานุ่มนวลเมื่อมีการพิมพ์
+* โค้ดต้นแบบ:
+  ```tsx
+  <div className="flex items-center w-full h-[38px] sm:h-[40px] rounded-full bg-white/[0.06] hover:bg-white/[0.09] focus-within:bg-white/[0.10] backdrop-blur-2xl border border-white/[0.10] focus-within:border-white/25 px-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-all">
+    <Search size={14} className="text-white/40 shrink-0 mr-2" />
+    <input 
+      type="text" 
+      value={searchQuery}
+      onChange={(e) => onSearchChange(e.target.value)}
+      placeholder="ค้นหาบทสนทนา..." 
+      className="w-full bg-transparent outline-none text-[#F5F5F7] placeholder-white/40 text-[12.5px]" 
+    />
+    {searchQuery && (
+      <button 
+        type="button"
+        onClick={() => onSearchChange('')} 
+        className="w-5 h-5 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white flex items-center justify-center shrink-0 transition-colors"
+      >
+        <X size={11} strokeWidth={2.5} />
+      </button>
+    )}
+  </div>
+  ```
+
+### 9.4 การ์ดข้อมูลและหลอดเกจวัดอารมณ์ใน Character HUD (HUD Cards & Gauges System)
+* **การ์ดสิ่งแวดล้อม (สถานที่ & สภาพอากาศ/เวลา):**
+  * ขอบมน `rounded-xl`, กระจกฝ้า `bg-white/[0.04] border-white/[0.07]`
+  * ไอคอนพินสีคาร์ไมน์เรด `MapPin size={13} text-[#EF264C]` คู่กับไอคอนนาฬิกา `Clock size={12} text-white/50`
+* **การ์ดชุดและท่าทาง (Outfit, Actor Pose, Player Pose):**
+  * บล็อค 3 แถว ขอบมน `rounded-xl`, กระจกฝ้าถนอมสายตา `bg-white/[0.04] border-white/[0.07]`
+  * ไอคอนซ้ายมือทรงสี่เหลี่ยมมนมน `w-7 h-7 rounded-lg bg-white/[0.04] border border-white/[0.06]`
+  * ข้อความแบ่งระดับสองชั้น: หัวข้อสีเทา `text-white/40 text-[11px]` และข้อความสถานะสีขาว `text-white/85 text-[12px]`
+* **การ์ดหลอดเกจวัดอารมณ์ (ความสัมพันธ์ & ความปรารถนา):**
+  * จัดวาง 2 คอลัมน์เคียงข้างกัน (`grid grid-cols-2 gap-2`)
+  * ขอบมน `rounded-xl`, กระจกฝ้าถนอมสายตา `bg-white/[0.04] border-white/[0.07]`
+  * ร่องรางหลอดเกจวัด: ร่องรางสีดำโปร่งแสง `bg-white/[0.06] rounded-full h-1.5`
+  * หลอดความสัมพันธ์: สีชมพูกุหลาบไล่เฉด `bg-gradient-to-r from-pink-500 to-rose-400`
+  * หลอดความปรารถนา: สีส้มแดงเพลิงไล่เฉด `bg-gradient-to-r from-orange-500 to-rose-500`
+  * โค้ดต้นแบบ:
+    ```tsx
+    <div className="p-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.07] backdrop-blur-2xl border border-white/[0.07] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all">
+      <div className="flex items-center justify-between mb-1.5">
+        <div className="flex items-center gap-1 text-[11px] text-white/70">
+          <Heart size={11} className="text-pink-400" />
+          <span>ความสัมพันธ์</span>
+        </div>
+        <span className="text-[11px] font-bold text-pink-300">ระดับ 2</span>
+      </div>
+      <div className="w-full bg-white/[0.06] rounded-full h-1.5 overflow-hidden">
+        <div className="h-full rounded-full bg-gradient-to-r from-pink-500 to-rose-400 transition-all duration-500" style={{ width: '45%' }} />
+      </div>
+      <p className="text-[9.5px] text-white/40 truncate mt-1">“คุ้นเคยและสบายใจ”</p>
+    </div>
+    ```
+
+### 9.5 กล่องพิมพ์ข้อความ (Chat Input Bar Pillow Recipe)
+* แคปซูลหมอนนุ่มมนเต็ม (`rounded-full`), สูง 46px–48px
+* กระจกฝ้าโปร่งแสง `bg-white/[0.06] backdrop-blur-2xl border border-white/[0.10]` พร้อมประกายสะท้อนบน `shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]`
+* แถบม่าน Dock ด้านล่างไล่จากสีแคนวาส `#151517` ไร้เงาดำหนาเตอะ (Zero-Glow) กลมกลืนกับพื้นหลังอย่างเป็นเนื้อเดียว
 
 ---
 

@@ -79,12 +79,12 @@ export function MessageBubble({
             <div className={`
               px-4 py-2 text-[15px] leading-[22px] select-text transition-all min-h-[38px] flex items-center
               ${isMe 
-                ? `bg-gradient-to-br from-[#ff0030] to-[#ea0063] text-white font-medium shadow-[inset_0_1.5px_0_rgba(255,255,255,0.4),0_2px_8px_rgba(0,0,0,0.35)] ${
+                ? `bg-gradient-to-br from-[#ff0030] to-[#ea0063] text-white font-medium ${
                     isLastInGroup 
                       ? 'rounded-[18px] rounded-br-[4px]' 
                       : 'rounded-[18px]'
                   }` 
-                : `bg-[#1F1F23] text-[#F2F2F5] border border-white/[0.06] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_2px_8px_rgba(0,0,0,0.3)] ${
+                : `bg-[#1F1F23] text-[#F2F2F5] ${
                     isLastInGroup 
                       ? 'rounded-[18px] rounded-bl-[4px]' 
                       : 'rounded-[18px]'

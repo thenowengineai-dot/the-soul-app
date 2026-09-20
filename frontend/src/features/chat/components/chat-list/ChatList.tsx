@@ -25,7 +25,7 @@ export function ChatList({
 
   return (
     <div className={`
-      h-full flex-shrink-0 border-r border-white/[0.06] hidden md:flex flex-col bg-[#0F1012] backdrop-blur-xl z-10 overflow-hidden transition-all duration-300 ease-in-out
+      h-full flex-shrink-0 border-r border-white/[0.06] hidden md:flex flex-col bg-[#1F1F20] backdrop-blur-xl z-10 overflow-hidden transition-all duration-300 ease-in-out
       ${isOpen ? 'w-[300px] opacity-100' : 'w-0 border-r-0 opacity-0 pointer-events-none'}
     `}>
       {/* Inner Fixed Container (คงความกว้างไว้เพื่อไม่ให้เลย์เอาต์บีบตัวขณะสไลด์เปิด-ปิด) */}
@@ -36,7 +36,7 @@ export function ChatList({
         >
           
           {/* Sticky Header & Search Box (Apple Frosted Glass Style) */}
-          <div className="sticky top-0 z-20 px-3.5 sm:px-4 pt-3.5 sm:pt-4 pb-3 sm:pb-3.5 bg-[#0F1012]/80 backdrop-blur-md flex flex-col gap-2.5">
+          <div className="sticky top-0 z-20 px-3.5 sm:px-4 pt-3.5 sm:pt-4 pb-3 sm:pb-3.5 bg-[#1F1F20]/90 backdrop-blur-md flex flex-col gap-2.5">
             <ChatListHeader onBackToHome={onBackToHome} />
             <ChatSearchBox searchQuery={searchQuery} onSearchChange={setSearchQuery} />
           </div>

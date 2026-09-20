@@ -112,7 +112,7 @@ export function ChatInputBar({
   return (
     <div 
       data-no-advance 
-      className="sticky bottom-0 z-20 w-full pt-2 pb-4 sm:pb-5 mt-auto bg-gradient-to-t from-[#121214] via-[#121214]/95 to-transparent pointer-events-none"
+      className="sticky bottom-0 z-20 w-full pt-2 pb-4 sm:pb-5 mt-auto bg-gradient-to-t from-[#1F1F20] via-[#1F1F20]/95 to-transparent pointer-events-none"
     >
       <div className="w-full max-w-[740px] mx-auto px-4 sm:px-6 relative pointer-events-auto">
         
@@ -124,7 +124,7 @@ export function ChatInputBar({
         )}
 
         {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-            Input Bar with Standalone Front (+) Button (Apple iMessage Style)
+            Input Bar with Standalone Front (+) Button (Apple Music Dock Style: #333334)
             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
         <div className="w-full relative flex items-center gap-2 sm:gap-2.5">
           {/* ปุ่ม (+) แยกเดี่ยวอยู่ด้านหน้ากล่อง (Apple iMessage Standalone Circle) */}
@@ -136,7 +136,7 @@ export function ChatInputBar({
               className={`w-[44px] h-[44px] sm:w-[48px] sm:h-[48px] rounded-full flex items-center justify-center transition-all cursor-pointer active:scale-95 border ${
                 isPlusMenuOpen || isEmojiOpen
                   ? 'bg-white/20 text-white border-white/25 shadow-inner'
-                  : 'bg-white/[0.08] hover:bg-white/[0.12] text-[#A1A1A8] hover:text-white border-white/[0.08] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_4px_16px_rgba(0,0,0,0.3)]'
+                  : 'bg-[#333334] hover:bg-[#3E3E40] text-[#A1A1A8] hover:text-white border-white/[0.08] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_4px_16px_rgba(0,0,0,0.3)]'
               }`}
             >
               <Plus size={20} strokeWidth={2} className={`transition-transform duration-200 ${isPlusMenuOpen ? 'rotate-45' : ''}`} />
@@ -186,9 +186,9 @@ export function ChatInputBar({
             />
           </div>
 
-          {/* Unified Capsule Input Box (กล่องพิมพ์ข้อความทรงแคปซูลมน) */}
+          {/* Unified Capsule Input Box (Apple Music Bottom Control Dock: #333334) */}
           <div 
-            className={`flex-1 h-[52px] sm:h-[56px] bg-gradient-to-b from-white/[0.06] via-white/[0.035] to-white/[0.015] backdrop-blur-2xl rounded-full flex items-center pl-4 sm:pl-5 pr-1.5 sm:pr-2 border border-white/[0.07] hover:border-white/15 focus-within:border-white/25 focus-within:shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.6)] transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_6px_28px_rgba(0,0,0,0.55)] ${
+            className={`flex-1 h-[52px] sm:h-[56px] bg-[#333334] rounded-full flex items-center pl-4 sm:pl-5 pr-1.5 sm:pr-2 border border-white/[0.08] hover:border-white/15 focus-within:border-white/25 focus-within:shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.4)] transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_4px_20px_rgba(0,0,0,0.3)] ${
               isStreaming ? 'opacity-70' : ''
             }`}
           >
@@ -217,7 +217,7 @@ export function ChatInputBar({
                 onClick={onSendMessage}
                 disabled={isStreaming}
                 title="ส่งข้อความ"
-                className={`w-[40px] h-[40px] sm:w-[42px] sm:h-[42px] rounded-full bg-gradient-to-r from-[#EA4B56] to-[#DC384D] border border-white/20 text-white flex items-center justify-center hover:brightness-105 active:scale-95 transition-all shrink-0 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_2px_8px_rgba(0,0,0,0.3)] ${
+                className={`w-[40px] h-[40px] sm:w-[42px] sm:h-[42px] rounded-full bg-gradient-to-r from-[#F54426] to-[#F51830] border border-white/20 text-white flex items-center justify-center hover:brightness-105 active:scale-95 transition-all shrink-0 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_2px_8px_rgba(0,0,0,0.3)] ${
                   isStreaming ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >

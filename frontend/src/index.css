@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 @theme {
-  --color-app-bg: #121214;
+  --color-app-bg: #1F1F20;
   --color-app-border: rgba(255, 255, 255, 0.08);
   --color-app-primary: #F5F5F7;
   --color-app-secondary: #86868B;
   --color-app-muted: #6E6E73;
-  --color-app-surface: #1E1E22;
-  --color-app-brand: #EA4B56;
+  --color-app-surface: #26262A;
+  --color-app-brand: #F51830;
 }
 
 html, body, #root {

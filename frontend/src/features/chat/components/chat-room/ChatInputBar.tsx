@@ -112,7 +112,7 @@ export function ChatInputBar({
   return (
     <div 
       data-no-advance 
-      className="sticky bottom-0 z-20 w-full pt-2 pb-4 sm:pb-5 mt-auto bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none"
+      className="sticky bottom-0 z-20 w-full pt-2 pb-4 sm:pb-5 mt-auto bg-gradient-to-t from-[#151517] via-[#151517]/80 to-transparent pointer-events-none"
     >
       <div className="w-full max-w-[740px] mx-auto px-4 sm:px-6 relative pointer-events-auto">
         
@@ -148,7 +148,7 @@ export function ChatInputBar({
 
             {/* Plus Menu Action Popover */}
             {isPlusMenuOpen && (
-              <div className="absolute bottom-[calc(100%+12px)] left-0 z-50 w-[210px] bg-[#161618]/90 backdrop-blur-2xl border border-white/[0.14] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.6)] rounded-2xl p-1.5 animate-in fade-in zoom-in-95 duration-150">
+              <div className="absolute bottom-[calc(100%+12px)] left-0 z-50 w-[210px] bg-[#151517]/95 backdrop-blur-2xl border border-white/[0.14] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.6)] rounded-2xl p-1.5 animate-in fade-in zoom-in-95 duration-150">
                 <button
                   type="button"
                   onClick={() => {

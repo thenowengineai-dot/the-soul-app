@@ -40,22 +40,21 @@ export function MessageBubble({
     )
   }
 
-  // 2. จัดการ VO (Voice Over): Apple Editorial Poetry (Subtractive Frameless Sanctuary)
-  // ไร้กล่องทึบ ไร้เงาดำ ลอยตัวกลางจออย่างสง่างาม ดุจบทกวีคั่นฉากของบทละครเวที / Apple Books Interlude
+  // 2. จัดการ VO (Voice Over): Horizon Line Scene Interlude (เส้นขอบฟ้าคั่นฉาก สไตล์ Apple Minimalist)
+  // เพิ่ม Space บน-ล่างอย่างกว้างขวาง (my-14 sm:my-20) ขนาบด้วยเส้นขอบฟ้า Hairline Gradient Fade บางเบา ไร้สีทอง
   if (message.type === 'vo') {
     return (
-      <div className="w-full flex flex-col items-center justify-center px-4 select-text my-7 sm:my-9 animate-in fade-in duration-300">
-        {/* สัญลักษณ์คั่นฉากจิ๋ว (Atmosphere Asterism) ละมุนตา ไม่แย่งสายตา */}
-        <div className="flex items-center justify-center gap-2 mb-2.5 select-none opacity-60">
-          <span className="w-5 sm:w-8 h-[1px] bg-gradient-to-r from-transparent to-white/25" />
-          <span className="text-[10px] text-amber-400/80 tracking-widest">✦</span>
-          <span className="w-5 sm:w-8 h-[1px] bg-gradient-to-l from-transparent to-white/25" />
-        </div>
+      <div className="w-full flex flex-col items-center justify-center px-6 select-text my-14 sm:my-20 animate-in fade-in duration-300">
+        {/* เส้นขอบฟ้าเหนือบทบรรยาย (Horizon Line - Hairline Gradient Fade) */}
+        <div className="w-full max-w-[280px] sm:max-w-[400px] h-[1px] bg-gradient-to-r from-transparent via-white/[0.15] to-transparent mb-5 sm:mb-6 select-none" />
 
-        {/* ข้อความบทบรรยายฉาก ลอยโปร่งสบายตา ไร้กรอบ ไร้เงา */}
-        <p className="max-w-[560px] text-[13.5px] sm:text-[14px] leading-[1.8] text-[#BEBEC4] font-normal text-center tracking-wide select-text italic">
+        {/* ข้อความบทบรรยายฉาก (Minimalist Monochromatic Typography) */}
+        <p className="max-w-[560px] text-[13.5px] sm:text-[14px] leading-[1.85] text-[#BEBEC4] font-light text-center tracking-wide select-text italic">
           {message.text}
         </p>
+
+        {/* เส้นขอบฟ้าใต้บทบรรยาย (Horizon Line - Hairline Gradient Fade) */}
+        <div className="w-full max-w-[280px] sm:max-w-[400px] h-[1px] bg-gradient-to-r from-transparent via-white/[0.15] to-transparent mt-5 sm:mt-6 select-none" />
       </div>
     )
   }
@@ -69,9 +68,9 @@ export function MessageBubble({
       <div className={`w-full flex ${isMe ? 'justify-end' : 'justify-start'}`}>
         {isAction ? (
           // 🌟 Action (บทกวีกำกับฉาก / Whispered Stage Direction สไตล์ Apple):
-          // ไร้กล่องทึบ แนบขอบซ้ายอย่างสง่างาม มีดาวประกาย ✦ สีทองอำพันจิ๋ว เว้นช่องว่างควบคุมด้วย mt-2 (8px)
+          // ไร้กล่องทึบ แนบขอบซ้ายอย่างสง่างาม ใช้จุดประกายสีเงินมินิมอล ✦ คุมโทนขาวดำ ไม่ใช้สีทอง
           <div className={`flex items-start gap-2 py-0.5 select-text max-w-[92%] sm:max-w-[85%] ${isMe ? 'justify-end' : 'justify-start px-1'}`}>
-            <span className="text-[11px] text-amber-400/80 shrink-0 select-none mt-1">✦</span>
+            <span className="text-[10px] text-white/35 shrink-0 select-none mt-1">✦</span>
             <p className="text-[13.5px] sm:text-[14px] leading-relaxed text-[#A1A1A8] italic font-normal tracking-wide">
               {message.text}
             </p>

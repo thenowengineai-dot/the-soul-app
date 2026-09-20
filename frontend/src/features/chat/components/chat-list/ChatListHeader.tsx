@@ -19,10 +19,10 @@ export function ChatListHeader({ onBackToHome }: ChatListHeaderProps) {
       </div>
       <button 
         type="button"
-        className="h-8 px-2.5 sm:px-3 rounded-full bg-[#121212]/65 backdrop-blur-xl border border-white/[0.07] hover:border-white/20 text-app-primary flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-sm select-none text-[12px] sm:text-[12.5px] font-medium tracking-tight"
+        className="h-8 px-2.5 sm:px-3 rounded-full bg-white/[0.10] hover:bg-white/[0.16] backdrop-blur-2xl border border-white/[0.14] hover:border-white/25 text-white flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] select-none text-[12px] sm:text-[12.5px] font-medium tracking-tight"
       >
         <span>ทั้งหมด</span>
-        <ChevronDown size={13} className="opacity-80" />
+        <ChevronDown size={13} className="text-white/70" />
       </button>
     </div>
   )

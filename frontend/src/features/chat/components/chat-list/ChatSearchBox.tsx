@@ -1,19 +1,33 @@
-import { Search } from 'lucide-react'
+import { Search, X } from 'lucide-react'
 import type { ChatSearchBoxProps } from '../../types'
 
 export type { ChatSearchBoxProps }
 
 export function ChatSearchBox({ searchQuery, onSearchChange }: ChatSearchBoxProps) {
   return (
-    <div className="group flex items-center w-full h-[38px] sm:h-[40px] bg-transparent rounded-full px-3.5 border border-app-border hover:border-white/20 focus-within:border-[#EF264C] focus-within:hover:border-[#EF264C] transition-all duration-200">
-      <Search className="text-app-muted transition-colors flex-shrink-0" size={16} strokeWidth={2} />
+    <div className="group flex items-center w-full h-[38px] sm:h-[40px] bg-white/[0.10] hover:bg-white/[0.14] focus-within:bg-white/[0.14] backdrop-blur-2xl rounded-full px-3 sm:px-3.5 border border-white/[0.14] hover:border-white/[0.22] focus-within:border-white/[0.32] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-200">
+      <Search 
+        size={15} 
+        strokeWidth={2} 
+        className="text-white/55 group-focus-within:text-white group-hover:text-white/80 transition-colors flex-shrink-0" 
+      />
       <input 
         type="text" 
         value={searchQuery}
         onChange={(e) => onSearchChange(e.target.value)}
-        placeholder="ค้นหา..." 
-        className="w-full bg-transparent text-app-primary placeholder-app-muted pl-2.5 outline-none text-xs sm:text-[13px]" 
+        placeholder="ค้นหาบทสนทนา..." 
+        className="w-full bg-transparent text-white placeholder-white/40 pl-2.5 pr-1 outline-none text-[13px] sm:text-[13.5px] font-normal tracking-tight" 
       />
+      {searchQuery && (
+        <button
+          type="button"
+          onClick={() => onSearchChange('')}
+          title="ล้างการค้นหา"
+          className="p-1 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+        >
+          <X size={13} strokeWidth={2.2} />
+        </button>
+      )}
     </div>
   )
 }

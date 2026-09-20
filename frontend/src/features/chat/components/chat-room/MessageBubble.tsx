@@ -84,7 +84,7 @@ export function MessageBubble({
                       ? 'rounded-[18px] rounded-br-[4px]' 
                       : 'rounded-[18px]'
                   }` 
-                : `bg-[#242428] text-[#F2F2F5] ${
+                : `bg-[#2f2f35] text-white ${
                     isLastInGroup 
                       ? 'rounded-[18px] rounded-bl-[4px]' 
                       : 'rounded-[18px]'
@@ -109,7 +109,7 @@ export function MessageBubble({
               <svg 
                 className="absolute bottom-0 -left-[6px] w-[10px] h-[15px] pointer-events-none" 
                 viewBox="0 0 10 15"
-                fill="#242428"
+                fill="#2f2f35"
               >
                 <path d="M10,0 C10,5 7,11 0,15 L10,15 Z" />
               </svg>

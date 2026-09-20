@@ -5,11 +5,11 @@ export type { ChatSearchBoxProps }
 
 export function ChatSearchBox({ searchQuery, onSearchChange }: ChatSearchBoxProps) {
   return (
-    <div className="group flex items-center w-full h-[38px] sm:h-[40px] bg-white/[0.10] hover:bg-white/[0.14] focus-within:bg-white/[0.14] backdrop-blur-2xl rounded-full px-3 sm:px-3.5 border border-white/[0.14] hover:border-white/[0.22] focus-within:border-white/[0.32] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-200">
+    <div className="group flex items-center w-full h-[38px] sm:h-[40px] bg-white/[0.06] hover:bg-white/[0.10] focus-within:bg-white/[0.10] backdrop-blur-2xl rounded-full px-3 sm:px-3.5 border border-white/[0.10] hover:border-white/[0.18] focus-within:border-white/[0.26] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-all duration-200">
       <Search 
         size={15} 
         strokeWidth={2} 
-        className="text-white/55 group-focus-within:text-white group-hover:text-white/80 transition-colors flex-shrink-0" 
+        className="text-white/50 group-focus-within:text-white/90 group-hover:text-white/80 transition-colors flex-shrink-0" 
       />
       <input 
         type="text" 

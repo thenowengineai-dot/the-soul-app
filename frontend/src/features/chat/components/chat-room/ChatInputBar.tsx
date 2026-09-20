@@ -112,7 +112,7 @@ export function ChatInputBar({
   return (
     <div 
       data-no-advance 
-      className="sticky bottom-0 z-20 w-full pt-2 pb-4 sm:pb-5 mt-auto bg-gradient-to-t from-[#151517] via-[#151517]/80 to-transparent pointer-events-none"
+      className="sticky bottom-0 z-20 w-full pt-2 pb-4 sm:pb-5 mt-auto bg-gradient-to-t from-[#151517] via-[#151517]/65 to-transparent pointer-events-none"
     >
       <div className="w-full max-w-[740px] mx-auto px-4 sm:px-6 relative pointer-events-auto">
         
@@ -127,7 +127,7 @@ export function ChatInputBar({
             Unified Capsule Input Dock (Apple White Frosted Glass: h-[44px] sm:h-[46px])
             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
         <div 
-          className={`w-full h-[44px] sm:h-[46px] bg-white/[0.10] hover:bg-white/[0.14] focus-within:bg-white/[0.14] backdrop-blur-2xl rounded-full flex items-center pl-1.5 sm:pl-2 pr-1.5 sm:pr-2 border border-white/[0.16] hover:border-white/[0.25] focus-within:border-white/[0.35] transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.20),0_4px_20px_rgba(0,0,0,0.35)] relative ${
+          className={`w-full h-[44px] sm:h-[46px] bg-white/[0.10] hover:bg-white/[0.14] focus-within:bg-white/[0.14] backdrop-blur-2xl rounded-full flex items-center pl-1.5 sm:pl-2 pr-1.5 sm:pr-2 border border-white/[0.16] hover:border-white/[0.25] focus-within:border-white/[0.35] transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] relative ${
             isStreaming ? 'opacity-70' : ''
           }`}
         >

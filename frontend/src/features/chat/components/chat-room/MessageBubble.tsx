@@ -84,12 +84,12 @@ export function MessageBubble({
             <div className={`
               px-4 py-2 text-[15px] leading-[22px] select-text transition-all min-h-[38px] flex items-center font-normal
               ${isMe 
-                ? `bg-gradient-to-br from-[#ff0030] to-[#ea0063] text-[#F2F2F5] ${
+                ? `bg-gradient-to-br from-[#ff0030] to-[#ea0063] text-white ${
                     isLastInGroup 
                       ? 'rounded-[18px] rounded-br-[4px]' 
                       : 'rounded-[18px]'
                   }` 
-                : `bg-[#2f2f35] text-[#E5E5EA] ${
+                : `bg-[#2f2f35] text-white ${
                     isLastInGroup 
                       ? 'rounded-[18px] rounded-bl-[4px]' 
                       : 'rounded-[18px]'

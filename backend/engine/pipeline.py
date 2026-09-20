@@ -960,7 +960,19 @@ class GamePipeline:
                     return ("director", None, dt)
 
             if user_message.startswith("[SYSTEM]"):
-                actor_history = chat_history[-12:] + [{"role": "user", "content": "เริ่มต้นฉากที่หนึ่ง: คุณอยู่ในบทบาทของตัวละครหลัก กำลังเริ่มเปิดฉากแรกของเรื่องราว จงแสดงกิริยาท่าทางเปิดตัวและกล่าวทักทายผู้มาเยือนอย่างเป็นธรรมชาติและสุภาพตามบทบาท"}]
+                # 🌟 [RAW INTIMACY & PHYSICAL PRESENCE]
+                # ปลดล็อกคำสั่งแข็งทื่อ และคำว่า "สุภาพ/ผู้มาเยือน" ออกทั้งหมด
+                # สะท้อนการมีตัวตนจริงของผู้เล่น (Physical Presence) ในฉากเปิดตาม initial_p_pos
+                # เพื่อให้ตัวละครโต้ตอบอย่างมีชีวิตตามบุคลิกแท้จริง (ซึนเดเระ, ปากร้าย, ดุดัน หรือออดอ้อน) และรัน STAGE BLOCKING ได้อย่างสมจริง 100%
+                player_desc = player_posture if player_posture and str(player_posture).strip() not in ["ยืน/นั่งอิสระตามบริบท", "คงท่าเดิม", "null", "None"] else f"[PLAYER] ปรากฏตัวอยู่ตรงหน้าของคุณ ณ {current_loc} ในความเงียบ"
+                if not player_desc.startswith("*"):
+                    player_desc = f"*({player_desc})*"
+
+                actor_initial_directive = (
+                    f"{player_desc}\n"
+                    f"[เข้าสู่ฉากเปิดเรื่อง]: เริ่มแสดงท่าทางและบทสนทนาเปิดตัวของคุณตาม STAGE BLOCKING และสวมบทบาทตามธรรมชาติทันที"
+                )
+                actor_history = chat_history[-12:] + [{"role": "user", "content": actor_initial_directive}]
             else:
                 actor_history = chat_history[-12:] + [{"role": "user", "content": user_message}]
 

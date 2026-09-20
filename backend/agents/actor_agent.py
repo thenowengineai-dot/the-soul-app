@@ -222,7 +222,7 @@ class ActorAgent:
         if not contents:
             contents.append({
                 "role": "user",
-                "parts": [{"text": "[SYSTEM]: เริ่มต้นฉากเปิดตัว (Prologue) ให้แสดงท่าทางเปิดตัวและทักทายผู้เล่นเป็นคนแรกตามบทบาท"}]
+                "parts": [{"text": "[เข้าสู่ฉากเปิดเรื่อง]: เริ่มแสดงท่าทางและบทสนทนาเปิดตัวของคุณตาม STAGE BLOCKING และสวมบทบาทตามธรรมชาติทันที"}]
             })
         return contents
 

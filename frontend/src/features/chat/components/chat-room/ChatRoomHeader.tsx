@@ -18,9 +18,9 @@ export function ChatRoomHeader({
   if (!chat) return null
 
   return (
-    <div data-no-advance className="sticky top-0 z-30 w-full pl-2 sm:pl-3 pr-2 sm:pr-4 pt-2 pb-2 flex items-center justify-between pointer-events-none select-none relative min-h-[56px]">
+    <div data-no-advance className="sticky top-0 z-30 w-full pl-2 sm:pl-3 pr-2 sm:pr-4 pt-2 sm:pt-2.5 pb-2 flex items-start justify-between pointer-events-none select-none relative min-h-[78px] sm:min-h-[86px]">
       {/* Left: [Toggle ChatList Button - White Frosted Glass] */}
-      <div className="flex items-center gap-1.5 pointer-events-auto">
+      <div className="flex items-center gap-1.5 pointer-events-auto mt-0.5 sm:mt-1">
         <button
           type="button"
           onClick={onToggleChatList}
@@ -35,37 +35,45 @@ export function ChatRoomHeader({
         </button>
       </div>
 
-      {/* Center: Apple iMessage Vertical Stack (Avatar บน + แคปซูลชื่อล่าง White Frosted Glass) */}
+      {/* Center: Apple-LINE Integrated Glass Capsule (Avatar ใหญ่ 48-52px + แคปซูลชื่อและสเตตัส White Frosted Glass) */}
       <div className="absolute left-1/2 -translate-x-1/2 top-1 sm:top-1.5 pointer-events-auto flex flex-col items-center">
         <div 
           onClick={onToggleHud}
           title="ดูโปรไฟล์และแถบสถานะตัวละคร"
           className="flex flex-col items-center cursor-pointer group select-none active:scale-95 transition-all"
         >
-          {/* แถวบน: รูปโปรไฟล์ตัวละครทรงกลม 36px/38px */}
-          <div className="relative w-[36px] h-[36px] sm:w-[38px] sm:h-[38px] rounded-full overflow-hidden flex-shrink-0 ring-1 ring-white/25 shadow-md group-hover:ring-white/45 transition-all z-10">
+          {/* แถวบน: รูปโปรไฟล์ตัวละครทรงกลมขนาดใหญ่ 48px/52px คมชัดระดับ HD */}
+          <div className="relative w-[48px] h-[48px] sm:w-[52px] sm:h-[52px] rounded-full overflow-hidden flex-shrink-0 ring-2 ring-white/25 shadow-xl group-hover:ring-white/45 transition-all z-10">
             <img 
               src={chat.avatar} 
               alt={chat.name} 
               referrerPolicy="no-referrer" 
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
             />
-            {/* จุดสถานะออนไลน์สีเขียว */}
-            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-1.5 ring-[#151517]" />
+            {/* จุดสถานะออนไลน์สีเขียวมรกต */}
+            <span className="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-[#151517]" />
           </div>
 
-          {/* แถวล่าง: แคปซูลชื่อตัวละครเกยใต้รูป (White Frosted Glass Pill) */}
-          <div className="flex items-center gap-1 pl-2.5 pr-2 py-0.5 -mt-1.5 rounded-full bg-white/[0.10] group-hover:bg-white/[0.16] backdrop-blur-2xl border border-white/[0.14] group-hover:border-white/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] transition-all z-0">
-            <span className="font-bold text-white text-[11.5px] sm:text-[12px] leading-tight tracking-tight">
-              {chat.name} 💕
+          {/* แถวล่าง: แคปซูลกระจกฝ้าทูอินวัน (ชื่อ + สเตตัสแบบ LINE/Facebook) เกยใต้รูป */}
+          <div className="flex flex-col items-center px-3.5 sm:px-4 py-1 sm:py-1.5 -mt-2.5 rounded-[18px] sm:rounded-[20px] bg-white/[0.10] group-hover:bg-white/[0.16] backdrop-blur-2xl border border-white/[0.14] group-hover:border-white/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] transition-all z-0 max-w-[220px] sm:max-w-[320px]">
+            {/* ชื่อตัวละคร + ไอคอนลูกศร */}
+            <div className="flex items-center justify-center gap-1 leading-none">
+              <span className="font-bold text-white text-[13.5px] sm:text-[14.5px] tracking-tight">
+                {chat.name} 💕
+              </span>
+              <ChevronRight size={13} className="text-white/60 group-hover:text-white transition-colors shrink-0 -mr-0.5" strokeWidth={2.2} />
+            </div>
+
+            {/* สเตตัสประจำวัน/อารมณ์ สไตล์ LINE & Facebook */}
+            <span className="text-[11px] sm:text-[11.5px] text-white/70 tracking-tight font-normal leading-tight mt-0.5 truncate max-w-[190px] sm:max-w-[280px]">
+              “{chat.statusMessage || "วันนี้เหนื่อยจังเลย 🌙"}”
             </span>
-            <ChevronRight size={11} className="text-white/60 group-hover:text-white transition-colors shrink-0" strokeWidth={2.2} />
           </div>
         </div>
       </div>
 
       {/* Right: [Trial Status Pill] + [Coin Balance Pill] + [Toggle HUD Button] (White Frosted Glass) */}
-      <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto ml-auto">
+      <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto ml-auto mt-0.5 sm:mt-1">
         {/* แถบสถานะเหรียญสำหรับผู้เล่นใหม่ (White Frosted Glass) */}
         <div
           title="สถานะทดลองเล่น: 1 turns 10 เหรียญ · 5 turns"

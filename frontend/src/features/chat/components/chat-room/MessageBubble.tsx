@@ -123,12 +123,12 @@ export function MessageBubble({
         )}
       </div>
 
-      {/* ⏱️ สถานะ "ส่งแล้ว" / "อ่านแล้ว" ของผู้เล่น */}
+      {/* ⏱️ สถานะ "ส่งแล้ว" / "อ่านแล้ว" ของผู้เล่น (Apple Minimalist Silver: 11.5-12px คมชัดสบายตา) */}
       {isMe && (isLastInGroup || isRead) && (
         <span 
-          className={`text-[11px] mt-1 mr-1 select-none font-normal transition-all duration-300 ${
+          className={`text-[11.5px] sm:text-[12px] mt-1 mr-1 select-none font-normal transition-all duration-300 ${
             isDelivered ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-0.5 pointer-events-none'
-          } ${isRead ? 'text-app-secondary' : 'text-app-secondary/60'}`}
+          } ${isRead ? 'text-white/60' : 'text-white/35'}`}
         >
           {isRead ? 'อ่านแล้ว' : 'ส่งแล้ว'}
         </span>

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-app-bg: #161618;
+  --color-app-bg: #121214;
   --color-app-border: rgba(255, 255, 255, 0.08);
   --color-app-primary: #F5F5F7;
   --color-app-secondary: #86868B;

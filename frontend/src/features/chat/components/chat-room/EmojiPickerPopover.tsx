@@ -266,7 +266,7 @@ export function EmojiPickerPopover({
   return (
     <div
       ref={popoverRef}
-      className="absolute bottom-full mb-3 left-0 z-50 w-[290px] sm:w-[330px] bg-[#161618]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-3 flex flex-col gap-2.5 animate-in fade-in zoom-in-95 duration-150 select-none pointer-events-auto"
+      className="absolute bottom-full mb-3 left-0 z-50 w-[290px] sm:w-[330px] bg-[#121214]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-3 flex flex-col gap-2.5 animate-in fade-in zoom-in-95 duration-150 select-none pointer-events-auto"
       style={{
         boxShadow: '0 20px 40px -10px rgba(0,0,0,0.7), 0 0 1px 1px rgba(255,255,255,0.08)',
       }}

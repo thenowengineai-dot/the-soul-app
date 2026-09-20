@@ -217,11 +217,11 @@ export function ChatInputBar({
                 onClick={onSendMessage}
                 disabled={isStreaming}
                 title="ส่งข้อความ"
-                className={`w-[40px] h-[40px] sm:w-[42px] sm:h-[42px] rounded-full bg-gradient-to-br from-[#F24455] via-[#E5203A] to-[#560F24] border border-[#FF94B2]/30 text-white flex items-center justify-center hover:brightness-110 active:scale-95 transition-all shrink-0 cursor-pointer shadow-[inset_0_1px_0_rgba(255,148,178,0.5),0_2px_12px_rgba(229,32,58,0.35)] ${
+                className={`w-[40px] h-[40px] sm:w-[42px] sm:h-[42px] rounded-full bg-gradient-to-br from-[#E81C3D] via-[#D01432] to-[#480A18] border border-[#E5E5EA]/20 text-[#E5E5EA] flex items-center justify-center hover:brightness-110 active:scale-95 transition-all shrink-0 cursor-pointer shadow-[inset_0_1px_0_rgba(229,229,234,0.35),0_2px_12px_rgba(208,20,50,0.35)] ${
                   isStreaming ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
-                <ArrowUp size={19} strokeWidth={2.2} />
+                <ArrowUp size={19} strokeWidth={2.0} />
               </button>
             ) : (
               <button 

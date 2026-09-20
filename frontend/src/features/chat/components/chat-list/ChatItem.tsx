@@ -24,14 +24,14 @@ export function ChatItem({
   return (
     <div 
       onClick={onClick} 
-      className={`group relative mx-2 sm:mx-2.5 my-0.5 flex items-center gap-3 sm:gap-3.5 px-3 sm:px-3.5 py-2.5 sm:py-3 rounded-2xl cursor-pointer transition-all duration-200 select-none ${
+      className={`group relative mx-2 my-0.5 flex items-center gap-3 px-3 py-2.5 rounded-2xl cursor-pointer transition-all duration-200 select-none ${
         isActive 
           ? 'bg-white/[0.08] shadow-sm ring-1 ring-white/[0.06]' 
           : 'hover:bg-white/[0.04] active:scale-[0.98]'
       }`}
     >
-      {/* 1. รูปโปรไฟล์ตัวละคร */}
-      <div className={`w-[44px] sm:w-[46px] h-[44px] sm:h-[46px] rounded-full flex-shrink-0 overflow-hidden flex items-center justify-center text-lg font-medium ring-1 ring-white/10 shadow-sm ${!isImage ? color : 'bg-gray-700'}`}>
+      {/* 1. รูปโปรไฟล์ตัวละคร: ขยายสู่ 50px Apple Tactile Sweet Spot คมชัดเต็มอิ่ม */}
+      <div className={`w-[50px] h-[50px] rounded-full flex-shrink-0 overflow-hidden flex items-center justify-center text-lg font-medium ring-1 ring-white/10 shadow-sm ${!isImage ? color : 'bg-gray-700'}`}>
         {isImage ? (
           <img src={avatar} alt={name} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
         ) : (
@@ -42,20 +42,20 @@ export function ChatItem({
       {/* 2. ฝั่งเนื้อหา: 2 แถวแบบ Balance (Apple Messages / Telegram Style) */}
       <div className="flex-1 min-w-0 flex flex-col justify-center">
         {/* แถวที่ 1: ชื่อตัวละคร, ป้ายแท็กตัวอย่าง & ตัวเลขเวลา */}
-        <div className="flex items-center justify-between gap-2 mb-1 min-w-0">
+        <div className="flex items-center justify-between gap-1.5 mb-1 min-w-0">
           <div className="flex items-center gap-1.5 min-w-0">
-            <span className="font-semibold text-[#F5F5F7] truncate text-[14px] sm:text-[14.5px] leading-tight">
+            <span className="font-semibold text-[#F5F5F7] truncate text-[14px] leading-tight">
               {name}
             </span>
             {badge && (
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#EF264C]/15 border border-[#EF264C]/35 text-[#EF264C] shrink-0 select-none">
+              <span className="px-1.5 py-0.5 rounded-full text-[9.5px] font-semibold bg-[#EF264C]/15 border border-[#EF264C]/35 text-[#EF264C] shrink-0 select-none">
                 {badge}
               </span>
             )}
             {verified && <BadgeCheck size={14} className="text-[#EF264C] flex-shrink-0 fill-current text-black" />}
             {locked && <Lock size={12} className="text-[#6E6E73] flex-shrink-0" />}
           </div>
-          <span className="text-[11.5px] leading-tight text-[#6E6E73] font-normal shrink-0">
+          <span className="text-[11px] leading-tight text-[#8E8E93] font-normal shrink-0">
             {time}
           </span>
         </div>
@@ -75,12 +75,12 @@ export function ChatItem({
               </div>
             </div>
           ) : (
-            <p className="flex-1 min-w-0 text-[13px] sm:text-[13.5px] text-[#86868B] group-hover:text-[#A1A1A6] truncate leading-snug font-normal">
+            <p className="flex-1 min-w-0 text-[13px] text-[#8E8E93] group-hover:text-[#BEBEC4] truncate leading-snug font-normal">
               {message}
             </p>
           )}
           {unread && !isTyping && (
-            <span className="w-1.5 h-1.5 rounded-full bg-[#EF264C] shrink-0" />
+            <span className="w-2 h-2 rounded-full bg-[#EF264C] shrink-0" />
           )}
         </div>
       </div>

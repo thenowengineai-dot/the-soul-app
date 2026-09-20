@@ -66,3 +66,17 @@ body {
   animation-delay: 0.36s;
 }
 
+/* 🌟 Apple Intelligence Shimmer Animation (คลื่นแสงไหลผ่านตัวหนังสืออย่างสง่างาม) */
+@keyframes shimmer-fast {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.animate-shimmer-fast {
+  animation: shimmer-fast 2.8s linear infinite;
+}
+

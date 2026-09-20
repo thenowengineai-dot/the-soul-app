@@ -13,6 +13,7 @@ export const SAMPLE_SHOWCASE_CHAT: ChatConversation = {
   statusMessage: "ในห้องชมรมคนเดียว... 🤫",
   defaultWorld: "lacquered_glasses_black_lace_secret_01",
   isTyping: true,
+  typingVariant: 'action',
   isSample: true,
 }
 

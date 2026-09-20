@@ -32,6 +32,7 @@ function ChatView({
   const [prevActive, setPrevActive] = useState<ChatConversation | null | undefined>(activeCharacter);
   const [selectedChat, setSelectedChat] = useState<ChatConversation>(() => activeCharacter || MOCK_CHATS[0]);
   const [isCurrentStreaming, setIsCurrentStreaming] = useState<boolean>(false);
+  const [currentTypingVariant, setCurrentTypingVariant] = useState<'bubble' | 'action' | 'hybrid'>('action');
   const [allChats, setAllChats] = useState<ChatConversation[]>(() => {
     const initial = activeCharacter || MOCK_CHATS[0];
     const others = MOCK_CHATS.filter(c => String(c.id) !== String(initial.id));
@@ -144,9 +145,15 @@ function ChatView({
     })
   }
 
+  const handleStreamingChange = (isStreaming: boolean, variant?: 'bubble' | 'action' | 'hybrid') => {
+    setIsCurrentStreaming(isStreaming);
+    if (variant) setCurrentTypingVariant(variant);
+  };
+
   const chatsForList = allChats.map(c => ({
     ...c,
     isTyping: String(c.id) === String(selectedChat.id) ? (c.isTyping || isCurrentStreaming) : (c.isTyping ?? false),
+    typingVariant: String(c.id) === String(selectedChat.id) ? currentTypingVariant : (c.typingVariant || 'action'),
   }));
 
   return (
@@ -187,7 +194,7 @@ function ChatView({
         onSignOut={onSignOut}
         onCoinBalanceUpdate={onCoinBalanceUpdate}
         onHudUpdate={handleHudUpdate}
-        onStreamingChange={setIsCurrentStreaming}
+        onStreamingChange={handleStreamingChange}
         onLatestMessageChange={handleLatestMessageChange}
       />
       <CharacterHud 

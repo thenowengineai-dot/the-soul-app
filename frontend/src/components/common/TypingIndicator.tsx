@@ -54,68 +54,77 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
         />
       )}
 
-      {/* 2. บับเบิ้ลแสดงสถานะ: รองรับทั้ง Hybrid (✦ • • •), Action (✦ กำลังเคลื่อนไหว...), และ Typing (3 จุด) */}
-      {variant === 'hybrid' ? (
-        // 🌟 Hybrid Living Presence Indicator: ดาวประกายคู่จุดไข่ปลา (✦ • • •)
-        // สัญลักษณ์สากล: ตัวละครมีชีวิต กำลังรับรู้ และกำลังตอบสนอง (ครอบคลุมทั้งกิริยาท่าทางและบทพูด)
-        <div className="inline-flex items-center gap-2 px-[13px] py-1.5 min-h-[34.5px] h-[34.5px] bg-app-surface rounded-[18px] rounded-bl-none animate-in fade-in zoom-in-95 duration-200">
-          {/* ดาวประกาย 4 แฉก (Four-point Starlight Sparkle) กะพริบจังหวะนุ่มนวล */}
-          <svg 
-            viewBox="0 0 24 24" 
-            className="w-3.5 h-3.5 text-white/90 animate-pulse shrink-0" 
-            fill="currentColor"
-          >
-            <path d="M12 0 Q12 12 0 12 Q12 12 12 24 Q12 12 24 12 Q12 12 12 0 Z" />
-          </svg>
-
-          {/* จุดไข่ปลา 3 จุด คลื่นความคิดกำลังประมวลผล */}
-          <div className="inline-flex items-center gap-1.5">
-            <span
-              className="w-1.5 h-1.5 rounded-full animate-typing-dot-1 shrink-0"
-              style={{ backgroundColor: dotColor || '#BEBEC4' }}
-            />
-            <span
-              className="w-1.5 h-1.5 rounded-full animate-typing-dot-2 shrink-0"
-              style={{ backgroundColor: dotColor || '#BEBEC4' }}
-            />
-            <span
-              className="w-1.5 h-1.5 rounded-full animate-typing-dot-3 shrink-0"
-              style={{ backgroundColor: dotColor || '#BEBEC4' }}
-            />
+      {/* 2. บับเบิ้ลแสดงสถานะ: ดีไซน์ 1:1 กับ MessageBubble ของบ็อต (#2f2f35, min-h-[38px], Speech Tail) */}
+      {variant === 'action' ? (
+        // 🌟 Action Presence Indicator: บับเบิ้ลสไตล์เดียวกับ Dialogue ของบ็อต 1:1 เป๊ะๆ
+        // พื้นหลัง #2f2f35, ความสูง min-h-[38px] px-4 py-2, ขอบมน rounded-[18px] rounded-bl-[4px] พร้อม Apple Speech Tail
+        <div className="relative inline-block select-none animate-in fade-in zoom-in-95 duration-200">
+          <div className="px-4 py-2 min-h-[38px] bg-[#2f2f35] text-white rounded-[18px] rounded-bl-[4px] flex items-center gap-2 text-[14px] leading-[22px] font-normal shadow-sm">
+            {/* สัญลักษณ์ประกายดาว ✦ ลอยเบาๆ กะพริบจังหวะนุ่มนวล */}
+            <span className="text-[11px] text-white/70 animate-pulse shrink-0 select-none">✦</span>
+            
+            {/* ข้อความ Apple Intelligence Shimmer (คลื่นแสงสีขาวไหลผ่านตัวหนังสืออย่างสง่างาม) */}
+            <span className="bg-gradient-to-r from-white/45 via-white to-white/45 bg-[length:200%_100%] bg-clip-text text-transparent animate-shimmer-fast font-normal tracking-wide select-none">
+              กำลังเคลื่อนไหว...
+            </span>
           </div>
-        </div>
-      ) : variant === 'action' ? (
-        // 🌟 Action Presence Indicator (The Starlight Pulse: ✦ กำลังเคลื่อนไหว...)
-        <div className="inline-flex items-center gap-2 px-[14px] py-1.5 min-h-[34.5px] h-[34.5px] bg-app-surface rounded-[18px] rounded-bl-none animate-in fade-in zoom-in-95 duration-200">
-          {/* ดาวประกาย 4 แฉก (Four-point Starlight Sparkle) กะพริบจังหวะลมหายใจ */}
+
+          {/* 📍 Apple Speech Tail (หัวแหลมคำพูด) แนบมุมล่างซ้าย 1:1 กับ MessageBubble */}
           <svg 
-            viewBox="0 0 24 24" 
-            className="w-3 h-3 text-white/90 animate-pulse shrink-0" 
-            fill="currentColor"
+            className="absolute bottom-0 -left-[6px] w-[10px] h-[15px] pointer-events-none" 
+            viewBox="0 0 10 15"
+            fill="#2f2f35"
           >
-            <path d="M12 0 Q12 12 0 12 Q12 12 12 24 Q12 12 24 12 Q12 12 12 0 Z" />
+            <path d="M10,0 C10,5 7,11 0,15 L10,15 Z" />
           </svg>
-          <span className="text-[12.5px] text-app-secondary font-normal tracking-wide">
-            กำลังเคลื่อนไหว...
-          </span>
+        </div>
+      ) : variant === 'hybrid' ? (
+        // 🌟 Hybrid Living Presence Indicator (ดาว + 3 จุด ในบับเบิ้ลบ็อต #2f2f35 พร้อมหาง)
+        <div className="relative inline-block select-none animate-in fade-in zoom-in-95 duration-200">
+          <div className="px-4 py-2 min-h-[38px] bg-[#2f2f35] text-white rounded-[18px] rounded-bl-[4px] flex items-center gap-2.5 shadow-sm">
+            <span className="text-[11px] text-white/70 animate-pulse shrink-0 select-none">✦</span>
+            <div className="inline-flex items-center gap-1.5 h-[22px]">
+              <span className="w-1.5 h-1.5 rounded-full animate-typing-dot-1 shrink-0 bg-white/75" />
+              <span className="w-1.5 h-1.5 rounded-full animate-typing-dot-2 shrink-0 bg-white/75" />
+              <span className="w-1.5 h-1.5 rounded-full animate-typing-dot-3 shrink-0 bg-white/75" />
+            </div>
+          </div>
+          {/* Apple Speech Tail */}
+          <svg 
+            className="absolute bottom-0 -left-[6px] w-[10px] h-[15px] pointer-events-none" 
+            viewBox="0 0 10 15"
+            fill="#2f2f35"
+          >
+            <path d="M10,0 C10,5 7,11 0,15 L10,15 Z" />
+          </svg>
         </div>
       ) : (
-        // บับเบิ้ล 3 จุด สไตล์ Apple iMessage & X Lights Out (สเปกเดียวกับ AI MessageBubble 1:1 เป๊ะๆ)
-        <div className="inline-flex items-center justify-center px-[15px] py-1.5 min-h-[34.5px] h-[34.5px] bg-app-surface rounded-[18px] rounded-bl-none">
-          <div className="inline-flex items-center gap-1.5">
-            <span
-              className="w-1.5 h-1.5 rounded-full animate-typing-dot-1 shrink-0"
-              style={{ backgroundColor: dotColor || '#BEBEC4' }}
-            />
-            <span
-              className="w-1.5 h-1.5 rounded-full animate-typing-dot-2 shrink-0"
-              style={{ backgroundColor: dotColor || '#BEBEC4' }}
-            />
-            <span
-              className="w-1.5 h-1.5 rounded-full animate-typing-dot-3 shrink-0"
-              style={{ backgroundColor: dotColor || '#BEBEC4' }}
-            />
+        // 💬 Dialogue Typing Indicator (จุด 3 จุด ในบับเบิ้ลบ็อต #2f2f35 พร้อมหางคำพูด 1:1)
+        <div className="relative inline-block select-none animate-in fade-in zoom-in-95 duration-200">
+          <div className="px-4 py-2 min-h-[38px] bg-[#2f2f35] rounded-[18px] rounded-bl-[4px] flex items-center justify-center shadow-sm">
+            <div className="inline-flex items-center gap-1.5 h-[22px]">
+              <span
+                className="w-1.5 h-1.5 rounded-full animate-typing-dot-1 shrink-0 bg-white/75"
+                style={dotColor ? { backgroundColor: dotColor } : undefined}
+              />
+              <span
+                className="w-1.5 h-1.5 rounded-full animate-typing-dot-2 shrink-0 bg-white/75"
+                style={dotColor ? { backgroundColor: dotColor } : undefined}
+              />
+              <span
+                className="w-1.5 h-1.5 rounded-full animate-typing-dot-3 shrink-0 bg-white/75"
+                style={dotColor ? { backgroundColor: dotColor } : undefined}
+              />
+            </div>
           </div>
+          {/* Apple Speech Tail */}
+          <svg 
+            className="absolute bottom-0 -left-[6px] w-[10px] h-[15px] pointer-events-none" 
+            viewBox="0 0 10 15"
+            fill="#2f2f35"
+          >
+            <path d="M10,0 C10,5 7,11 0,15 L10,15 Z" />
+          </svg>
         </div>
       )}
     </div>

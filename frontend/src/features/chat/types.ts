@@ -36,6 +36,7 @@ export interface ChatConversation {
   sessionTriggerKey?: number
   isCreator?: boolean
   isTyping?: boolean
+  typingVariant?: 'bubble' | 'action' | 'hybrid'
   badge?: string
   isSample?: boolean
 }
@@ -58,6 +59,7 @@ export interface ChatItemProps {
   unreadCount?: number
   isActive?: boolean
   isTyping?: boolean
+  typingVariant?: 'bubble' | 'action' | 'hybrid'
   showDivider?: boolean
   dividerVariant?: 'symmetric' | 'indented'
   onClick?: () => void
@@ -187,7 +189,7 @@ export interface ChatRoomProps {
       weather: string
     }
   }) => void
-  onStreamingChange?: (isStreaming: boolean) => void
+  onStreamingChange?: (isStreaming: boolean, variant?: 'bubble' | 'action' | 'hybrid') => void
   onLatestMessageChange?: (lastMessageText: string) => void
 }
 

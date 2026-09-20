@@ -688,8 +688,8 @@ export function ChatRoom({
 
   // แจ้งสถานะกำลังพิมพ์และข้อความล่าสุดให้ ChatList ทราบ
   useEffect(() => {
-    onStreamingChange?.(isStreaming || cadence.isCadenceActive)
-  }, [isStreaming, cadence.isCadenceActive, onStreamingChange])
+    onStreamingChange?.(isStreaming || cadence.isCadenceActive, cadence.indicatorVariant)
+  }, [isStreaming, cadence.isCadenceActive, cadence.indicatorVariant, onStreamingChange])
 
   useEffect(() => {
     if (chatMessages.length > 0) {

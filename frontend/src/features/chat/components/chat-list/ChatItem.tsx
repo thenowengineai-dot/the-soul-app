@@ -15,6 +15,7 @@ export function ChatItem({
   unread, 
   isActive, 
   isTyping = false, 
+  typingVariant = 'action',
   showDivider: _showDivider = false,
   dividerVariant: _dividerVariant = 'symmetric',
   onClick 
@@ -60,19 +61,31 @@ export function ChatItem({
           </span>
         </div>
         
-        {/* แถวที่ 2: ข้อความล่าสุด หรือ 1:1 Mini Replica Bubble */}
+        {/* แถวที่ 2: ข้อความล่าสุด หรือ สถานะสด (กำลังเคลื่อนไหว... / กำลังพิมพ์...) */}
         <div className="flex items-center justify-between gap-2 min-w-0 h-[20px]">
           {isTyping ? (
             <div className="flex-1 min-w-0 flex items-center animate-in fade-in duration-200 select-none">
-              <div 
-                className="inline-flex items-center justify-center gap-1 px-2.5 h-[20px] rounded-full bg-white/[0.08] border border-white/[0.06] shadow-sm"
-                role="status"
-                aria-label={`${name} กำลังพิมพ์...`}
-              >
-                <span className="w-[3px] h-[3px] rounded-full bg-[#BEBEC4] animate-typing-dot-1 shrink-0" />
-                <span className="w-[3px] h-[3px] rounded-full bg-[#BEBEC4] animate-typing-dot-2 shrink-0" />
-                <span className="w-[3px] h-[3px] rounded-full bg-[#BEBEC4] animate-typing-dot-3 shrink-0" />
-              </div>
+              {typingVariant === 'action' || typingVariant === 'hybrid' ? (
+                // 🌟 Action Presence: สัญลักษณ์ ✦ สีคาร์ไมน์เรด + Apple Intelligence Shimmer
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="text-[10px] text-[#EF264C] shrink-0 animate-pulse select-none">✦</span>
+                  <span className="text-[12.5px] sm:text-[13px] font-medium bg-gradient-to-r from-[#EF264C] via-[#ff708d] to-[#EF264C] bg-[length:200%_100%] bg-clip-text text-transparent animate-shimmer-fast truncate tracking-wide">
+                    กำลังเคลื่อนไหว...
+                  </span>
+                </div>
+              ) : (
+                // 💬 Typing Presence: กำลังพิมพ์ + 3 จุดเด้งดุ๊กดิ๊ก สีคาร์ไมน์เรด
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="text-[12.5px] sm:text-[13px] font-medium text-[#EF264C] shrink-0">
+                    กำลังพิมพ์
+                  </span>
+                  <div className="inline-flex items-center gap-0.5 ml-0.5">
+                    <span className="w-1 h-1 rounded-full bg-[#EF264C] animate-typing-dot-1 shrink-0" />
+                    <span className="w-1 h-1 rounded-full bg-[#EF264C] animate-typing-dot-2 shrink-0" />
+                    <span className="w-1 h-1 rounded-full bg-[#EF264C] animate-typing-dot-3 shrink-0" />
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <p className="flex-1 min-w-0 text-[13px] text-[#8E8E93] group-hover:text-[#BEBEC4] truncate leading-snug font-normal">

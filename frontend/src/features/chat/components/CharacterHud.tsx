@@ -190,7 +190,7 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
       />
 
       <aside 
-        className={`h-full flex-shrink-0 flex flex-col bg-[#1E1E22]/95 backdrop-blur-2xl select-none overflow-hidden transition-all duration-300 fixed inset-y-0 right-0 z-50 shadow-2xl lg:relative lg:z-10 lg:shadow-none max-w-[92vw] ${
+        className={`h-full flex-shrink-0 flex flex-col bg-[#18181A]/90 backdrop-blur-2xl select-none overflow-hidden transition-all duration-300 fixed inset-y-0 right-0 z-50 shadow-2xl lg:relative lg:z-10 lg:shadow-none max-w-[92vw] ${
           hudWidth === 'extra' ? 'w-[360px]' : hudWidth === 'wide' ? 'w-[320px]' : 'w-[280px]'
         }`}
       >
@@ -326,74 +326,74 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
             </div>
           </div>
 
-          {/* Zone 2: Environment & World State (หยดน้ำกระจกแก้วขาวนวล Liquid Glass) */}
-          <div className="relative overflow-hidden p-2.5 sm:p-3 rounded-2xl bg-gradient-to-b from-white/[0.12] to-white/[0.05] backdrop-blur-2xl border border-white/[0.14] shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] space-y-2 select-none hover:from-white/[0.16] hover:to-white/[0.08] hover:border-white/25 transition-all duration-200">
+          {/* Zone 2: Environment & World State (แผ่นข้อมูลโปร่งใส สบายตา มืดและกลืนลงตัว) */}
+          <div className="relative overflow-hidden p-2.5 sm:p-3 rounded-2xl bg-gradient-to-b from-white/[0.045] to-white/[0.015] backdrop-blur-md border border-white/[0.06] space-y-2 select-none hover:bg-white/[0.04] hover:border-white/10 transition-all duration-200">
             {/* สถานที่ปัจจุบัน */}
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-white/[0.10] border border-white/[0.12] flex items-center justify-center shrink-0">
+              <div className="w-6 h-6 rounded-lg bg-white/[0.03] border border-white/[0.05] flex items-center justify-center shrink-0">
                 <MapPin size={13} className="text-[#EF264C]" />
               </div>
-              <p className="text-[12.5px] text-white font-medium truncate">
+              <p className="text-[12.5px] text-[#E1E1E6] font-medium truncate">
                 {data.environment.location}
               </p>
             </div>
 
             {/* เวลาและสภาพอากาศ */}
-            <div className="flex items-center gap-3 text-[11px] text-white/70 pt-1.5 border-t border-white/[0.08]">
+            <div className="flex items-center gap-3 text-[11px] text-[#8E8E93] pt-1.5 border-t border-white/[0.05]">
               <div className="flex items-center gap-1.5 truncate">
-                <Clock size={12} className="text-sky-300 shrink-0" />
-                <span className="truncate text-white/90">{data.environment.time}</span>
+                <Clock size={12} className="text-sky-400 shrink-0" />
+                <span className="truncate text-white/65">{data.environment.time}</span>
               </div>
-              <span className="text-white/30">•</span>
+              <span className="text-white/20">•</span>
               <div className="flex items-center gap-1.5 truncate">
-                <CloudRain size={12} className="text-indigo-300 shrink-0" />
-                <span className="truncate text-white/90">{data.environment.weather}</span>
+                <CloudRain size={12} className="text-indigo-400 shrink-0" />
+                <span className="truncate text-white/65">{data.environment.weather}</span>
               </div>
             </div>
           </div>
 
-          {/* Zone 3: Live Badges: Outfit & Poses (หยดน้ำกระจกแก้วขาวนวล Liquid Glass Drops) */}
+          {/* Zone 3: Live Badges: Outfit & Poses (กระจกฝ้าใสบางเบา มืดละมุน ไม่แย่งสายตา) */}
           <div className="space-y-1.5 select-none">
             {/* 1. ชุดปัจจุบัน (Current Outfit) */}
-            <div className="relative overflow-hidden flex items-start gap-2.5 p-2.5 rounded-2xl bg-gradient-to-b from-white/[0.12] to-white/[0.05] backdrop-blur-2xl border border-white/[0.14] shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] hover:from-white/[0.16] hover:to-white/[0.08] hover:border-white/25 transition-all duration-200">
-              <div className="w-6 h-6 rounded-lg bg-white/[0.10] border border-white/[0.12] flex items-center justify-center shrink-0 mt-0.5">
+            <div className="relative overflow-hidden flex items-start gap-2.5 p-2.5 rounded-2xl bg-gradient-to-b from-white/[0.045] to-white/[0.015] backdrop-blur-md border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/10 transition-all duration-200">
+              <div className="w-6 h-6 rounded-lg bg-white/[0.03] border border-white/[0.05] flex items-center justify-center shrink-0 mt-0.5">
                 <Shirt size={13} className="text-[#EF264C]" />
               </div>
               <div className="min-w-0 flex-1">
-                <span className="block text-[10px] uppercase tracking-wider text-white/60 font-semibold leading-none mb-1">
+                <span className="block text-[10px] uppercase tracking-wider text-white/40 font-semibold leading-none mb-1">
                   ชุดปัจจุบัน
                 </span>
-                <p className="text-[12px] sm:text-[12.5px] text-white font-normal leading-snug line-clamp-2">
+                <p className="text-[12px] sm:text-[12.5px] text-[#D1D1D6] font-normal leading-snug line-clamp-2">
                   {data.outfit}
                 </p>
               </div>
             </div>
 
             {/* 2. ท่าทางตัวละคร (Character Pose) */}
-            <div className="relative overflow-hidden flex items-start gap-2.5 p-2.5 rounded-2xl bg-gradient-to-b from-white/[0.12] to-white/[0.05] backdrop-blur-2xl border border-white/[0.14] shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] hover:from-white/[0.16] hover:to-white/[0.08] hover:border-white/25 transition-all duration-200">
-              <div className="w-6 h-6 rounded-lg bg-white/[0.10] border border-white/[0.12] flex items-center justify-center shrink-0 mt-0.5">
-                <Smile size={13} className="text-amber-300" />
+            <div className="relative overflow-hidden flex items-start gap-2.5 p-2.5 rounded-2xl bg-gradient-to-b from-white/[0.045] to-white/[0.015] backdrop-blur-md border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/10 transition-all duration-200">
+              <div className="w-6 h-6 rounded-lg bg-white/[0.03] border border-white/[0.05] flex items-center justify-center shrink-0 mt-0.5">
+                <Smile size={13} className="text-amber-400" />
               </div>
               <div className="min-w-0 flex-1">
-                <span className="block text-[10px] uppercase tracking-wider text-white/60 font-semibold leading-none mb-1">
+                <span className="block text-[10px] uppercase tracking-wider text-white/40 font-semibold leading-none mb-1">
                   ท่าทางตัวละคร
                 </span>
-                <p className="text-[12px] sm:text-[12.5px] text-white font-normal leading-snug line-clamp-2">
+                <p className="text-[12px] sm:text-[12.5px] text-[#D1D1D6] font-normal leading-snug line-clamp-2">
                   {data.pose}
                 </p>
               </div>
             </div>
 
             {/* 3. ท่าทางผู้เล่น (Player Pose) */}
-            <div className="relative overflow-hidden flex items-start gap-2.5 p-2.5 rounded-2xl bg-gradient-to-b from-white/[0.12] to-white/[0.05] backdrop-blur-2xl border border-white/[0.14] shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] hover:from-white/[0.16] hover:to-white/[0.08] hover:border-white/25 transition-all duration-200">
-              <div className="w-6 h-6 rounded-lg bg-white/[0.10] border border-white/[0.12] flex items-center justify-center shrink-0 mt-0.5">
-                <User size={13} className="text-sky-300" />
+            <div className="relative overflow-hidden flex items-start gap-2.5 p-2.5 rounded-2xl bg-gradient-to-b from-white/[0.045] to-white/[0.015] backdrop-blur-md border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/10 transition-all duration-200">
+              <div className="w-6 h-6 rounded-lg bg-white/[0.03] border border-white/[0.05] flex items-center justify-center shrink-0 mt-0.5">
+                <User size={13} className="text-sky-400" />
               </div>
               <div className="min-w-0 flex-1">
-                <span className="block text-[10px] uppercase tracking-wider text-white/60 font-semibold leading-none mb-1">
+                <span className="block text-[10px] uppercase tracking-wider text-white/40 font-semibold leading-none mb-1">
                   ท่าทางผู้เล่น
                 </span>
-                <p className="text-[12px] sm:text-[12.5px] text-white font-normal leading-snug line-clamp-2">
+                <p className="text-[12px] sm:text-[12.5px] text-[#D1D1D6] font-normal leading-snug line-clamp-2">
                   {data.playerPose || 'ยืนสบตานิ่งๆ รอคำตอบ'}
                 </p>
               </div>
@@ -433,10 +433,10 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
               <div 
                 onClick={() => handleTriggerMilestone('relationship')}
                 title="คลิกเพื่อสดับฟังความรู้สึก (แง้มดูความคืบหน้าเมื่อบรรลุเป้าหมาย)"
-                className="relative overflow-hidden p-2.5 sm:p-3 rounded-2xl bg-gradient-to-b from-white/[0.12] to-white/[0.05] backdrop-blur-2xl border border-white/[0.14] shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] space-y-1.5 flex flex-col justify-between group cursor-pointer hover:from-white/[0.16] hover:to-white/[0.08] hover:border-white/25 transition-all duration-200 active:scale-[0.98]"
+                className="relative overflow-hidden p-2.5 sm:p-3 rounded-2xl bg-gradient-to-b from-white/[0.045] to-white/[0.015] backdrop-blur-md border border-white/[0.06] space-y-1.5 flex flex-col justify-between group cursor-pointer hover:bg-white/[0.04] hover:border-white/10 transition-all duration-200 active:scale-[0.98]"
               >
                 <div className="flex items-center justify-between text-[11.5px]">
-                  <span className="text-white font-semibold truncate">ความสัมพันธ์</span>
+                  <span className="text-[#D1D1D6] font-medium truncate">ความสัมพันธ์</span>
                   
                   {/* Mystery Value: หมอกเบลอสไตล์ Apple Privacy */}
                   <div className="flex items-center gap-1 shrink-0 ml-1">
@@ -449,7 +449,7 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
                         <span className="font-mono text-pink-400/80 font-bold text-[11px] filter blur-[3.5px] select-none">
                           {data.relationship.current}%
                         </span>
-                        <Lock size={9} className="text-pink-400/70 shrink-0" />
+                        <Lock size={9} className="text-pink-400/60 shrink-0" />
                       </div>
                     )}
                   </div>
@@ -457,13 +457,13 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
 
                 {/* ไอคอนอยู่หน้าหลอด */}
                 <div className="flex items-center gap-1.5">
-                  <Heart size={12} className="text-pink-400 fill-pink-400/40 shrink-0" />
-                  <div className="flex-1 h-[5px] rounded-full bg-white/[0.10] overflow-hidden relative">
+                  <Heart size={12} className="text-pink-400 fill-pink-400/30 shrink-0" />
+                  <div className="flex-1 h-[5px] rounded-full bg-white/[0.06] overflow-hidden relative">
                     <div 
                       className={`h-full rounded-full bg-gradient-to-r from-pink-500 to-[#EF264C] transition-all duration-700 ${
                         revealedGauge === 'relationship'
                           ? 'filter-none shadow-sm'
-                          : 'filter blur-[2.5px] opacity-90 scale-y-125'
+                          : 'filter blur-[2.5px] opacity-85 scale-y-125'
                       }`}
                       style={{ width: `${Math.min(100, Math.max(0, data.relationship.current))}%` }}
                     />
@@ -471,7 +471,7 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
                 </div>
 
                 {/* Gut Feeling / Intuition Quote */}
-                <p className="text-[10px] text-white/70 truncate leading-tight italic">
+                <p className="text-[10px] text-white/50 truncate leading-tight italic">
                   {revealedGauge === 'relationship' 
                     ? (data.relationship.status || 'หวั่นไหวและเริ่มเปิดใจ')
                     : `"${getIntuitionQuote(data.relationship.current, 'relationship')}"`}
@@ -485,11 +485,11 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
                 className={`relative overflow-hidden p-2.5 sm:p-3 rounded-2xl space-y-1.5 flex flex-col justify-between group cursor-pointer transition-all duration-200 active:scale-[0.98] ${
                   isFlashing 
                     ? 'bg-gradient-to-b from-[#EF264C]/25 via-[#EF264C]/15 to-white/[0.05] backdrop-blur-2xl border border-[#EF264C]/50 shadow-[0_0_15px_rgba(239,38,76,0.25)]' 
-                    : 'bg-gradient-to-b from-white/[0.12] to-white/[0.05] backdrop-blur-2xl border border-white/[0.14] shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] hover:from-white/[0.16] hover:to-white/[0.08] hover:border-white/25'
+                    : 'bg-gradient-to-b from-white/[0.045] to-white/[0.015] backdrop-blur-md border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/10'
                 }`}
               >
                 <div className="flex items-center justify-between text-[11.5px]">
-                  <span className="text-white font-semibold truncate">ความปรารถนา</span>
+                  <span className="text-[#D1D1D6] font-medium truncate">ความปรารถนา</span>
 
                   <div className="flex items-center gap-1 shrink-0 ml-1">
                     {/* Live Spark on Flash */}
@@ -506,10 +506,10 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
                     className={`shrink-0 transition-all duration-300 ${
                       isFlashing 
                         ? 'text-[#FF3366] fill-[#FF3366] scale-125 animate-pulse' 
-                        : 'text-[#EF264C] fill-[#EF264C]/40'
+                        : 'text-[#EF264C] fill-[#EF264C]/30'
                     }`} 
                   />
-                  <div className="flex-1 h-[5px] rounded-full bg-white/[0.10] overflow-hidden relative">
+                  <div className="flex-1 h-[5px] rounded-full bg-white/[0.06] overflow-hidden relative">
                     <div 
                       className={`h-full rounded-full transition-all ${
                         isFlashing 
@@ -524,7 +524,7 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
                 </div>
 
                 {/* Intuition Quote */}
-                <p className="text-[10px] text-white/70 truncate leading-tight italic">
+                <p className="text-[10px] text-white/50 truncate leading-tight italic">
                   "{getIntuitionQuote(desireLevel, 'desire')}"
                 </p>
               </div>

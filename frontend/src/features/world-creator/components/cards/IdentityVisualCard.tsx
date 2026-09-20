@@ -16,6 +16,7 @@ import {
   CloudRain,
   Compass,
   User,
+  Eye,
 } from 'lucide-react';
 import type { VaultDraft } from '../../types';
 
@@ -45,8 +46,8 @@ export default function IdentityVisualCard({
 }: IdentityVisualCardProps) {
   const [isEditing, setIsEditing] = useState(false);
 
-  // 1. Identity State: Name, Archetype, Quote, Hashtags
-  const [name, setName] = useState(draft.title || 'มาฮิโระ (Mahiro) 990');
+  // 1. Identity State: Real Mock Data
+  const [name, setName] = useState(draft.title || 'มาฮิโระ (Mahiro)990');
   const [archetype, setArchetype] = useState(draft.archetype || 'The Cloaked Predator');
   const [quote, setQuote] = useState(
     draft.quote ||
@@ -59,39 +60,49 @@ export default function IdentityVisualCard({
   });
   const [newTagInput, setNewTagInput] = useState('');
 
-  // 2. Anatomy Complications (4 Visual Hallmarks in 1x1 Apple Widget style)
+  // 2. Anatomy & Visual DNA (Unified Card: ตา, ทรงผม, สัดส่วน, ผิว, ไอน้ำ)
   const [anatomyItems, setAnatomyItems] = useState<AnatomyComplication[]>(() => {
     const raw = draft.appearance?.anatomy_features || [];
     return [
       {
         iconType: 'glasses',
-        title: 'สายตา & แว่น',
-        detail: raw[0] || 'แว่นกรอบหนาเตอะ ปิดบังดวงตาสีดำขลับปลาบเยิ้มที่ซ่อนความหิวกระหาย',
+        title: 'ดวงตา & แว่นตา',
+        detail:
+          raw[0] ||
+          'แว่นตากรอบโลหะหนาเตอะที่ปิดบังดวงตาสีดำขลับปลาบเยิ้มที่ซ่อนความต้องการทางเพศเอาไว้ข้างใน',
       },
       {
         iconType: 'hourglass',
-        title: 'ทรงนาฬิกาทราย',
-        detail: raw[2] || 'อกอวบใหญ่สะบึม สะโพกผึ่งผาย ซ่อนรูปใต้ชุดตัวโคร่ง',
+        title: 'ทรงผม & สรีระนาฬิกาทราย',
+        detail:
+          raw[2] ||
+          'รูปร่างนาฬิกาทรายสุดสะบึม (อกอวบใหญ่สะบึม สะโพกผึ่งผาย) ที่ซ่อนอยู่ภายใต้เสื้อผ้าตัวโคร่ง',
       },
       {
         iconType: 'flame',
-        title: 'ผิวขาวน้ำนม',
-        detail: raw[1] || 'เนียนละเอียด ขึ้นสีชมพูระเรื่อทันทีเมื่อสัมผัสความร้อน',
+        title: 'ผิวขาวน้ำนมไวต่อความร้อน',
+        detail:
+          raw[1] ||
+          'ผิวขาวเนียนละเอียดดุจน้ำนมที่ขึ้นสีชมพูระเรื่ออย่างรวดเร็วเมื่อสัมผัสกับความร้อน',
       },
       {
         iconType: 'droplets',
-        title: 'ไอน้ำซอกคอ',
-        detail: raw[3] || 'ซอกคอและกระดูกไหปลาร้ามีเหงื่อและไอน้ำระเหยฟุ้งออกมา',
+        title: 'กลิ่นอาย & ไอน้ำซอกคอ',
+        detail:
+          raw[3] ||
+          'ซอกคอและกระดูกไหปลาร้าที่มักมีเหงื่อและไอน้ำระเหยฟุ้งออกมา',
       },
     ];
   });
 
-  // 3. Wardrobe State (2x2 Tangible Closet)
+  // 3. Wardrobe State (2x2 Closet: outfit_1 & outfit_2)
   const [outfits, setOutfits] = useState<OutfitItem[]>(() => {
     const w = (draft.appearance?.wardrobe || {}) as Record<string, string[] | undefined>;
     const list: OutfitItem[] = [];
 
-    const o1 = w.outfit_1?.[0] || 'ชุดยูกาตะผ้าฝ้ายเนื้อหนาสีเข้มตัวโคร่งที่ดูแบนราบไร้ส่วนเว้าโค้ง พร้อมแว่นตากรอบหนาเตอะปิดบังใบหน้า';
+    const o1 =
+      w.outfit_1?.[0] ||
+      'ชุดยูกาตะผ้าฝ้ายเนื้อหนาสีเข้มตัวโคร่งที่ดูแบนราบไร้ส่วนเว้าโค้ง พร้อมแว่นตากรอบหนาเตอะปิดบังใบหน้า';
     list.push({
       key: 'outfit_1',
       label: 'ยูกาตะตัวโคร่ง',
@@ -99,7 +110,9 @@ export default function IdentityVisualCard({
       description: o1,
     });
 
-    const o2 = w.outfit_2?.[0] || 'เสื้อเชิ้ตสีขาวและกระโปรงยาวสีทึบเรียบร้อย ทว่ายามเปียกฝนจะแนบเนื้อจนโปร่งแสง เผยให้เห็นบราเซียลูกไม้สีดำสนิทขัดกับผิวขาวจัด';
+    const o2 =
+      w.outfit_2?.[0] ||
+      'เสื้อเชิ้ตสีขาวและกระโปรงยาวสีทึบเรียบร้อย ทว่ายามเปียกฝนจะแนบเนื้อจนโปร่งแสง เผยให้เห็นบราเซียลูกไม้สีดำสนิทขัดกับผิวขาวจัด';
     list.push({
       key: 'outfit_2',
       label: 'เชิ้ตขาวเปียกฝน',
@@ -128,14 +141,14 @@ export default function IdentityVisualCard({
     draft.starting_state?.initial_outfit_key || 'outfit_1'
   );
 
-  // 4. Signature Poses State (2x1 Dynamic Island Dock)
+  // 4. Signature Postures (3 Poses)
   const [postures, setPostures] = useState<string[]>(() => {
     const p = draft.appearance?.signature_postures || [];
     return p.length > 0
       ? p
       : [
-          'การใช้นิ้วชี้ดันดั้งแว่นตาขึ้น เพื่อเก็บซ่อนสายตาหิวกระหายยามปั้นหน้าสุภาพเหนียมอาย',
-          'ทิ้งตัวซบแผงอกหรือเกาะบ่าเหยื่อแน่น ด้วยร่างกายท่อนล่างที่อ่อนแรงและสั่นเทาจากการเกร็งสะท้าน',
+          'การใช้นิ้วชี้ดันดั้งแว่นตาขึ้นเพื่อเก็บซ่อนสายตาหิวกระหายยามปั้นหน้าสุภาพเหนียมอาย',
+          'ทิ้งตัวซบแผงอกหรือเกาะบ่าเหยื่อแน่นด้วยร่างกายท่อนล่างที่อ่อนแรงและสั่นเทาจากการเกร็งสะท้าน',
           'ท่านั่งพับเพียบเรียบร้อย แต่แอบจงใจขยับสะโพกบดเบียดพื้นหรือเกร็งหน้าขาหนีบเข้าหากัน',
         ];
   });
@@ -144,7 +157,7 @@ export default function IdentityVisualCard({
     draft.starting_state?.initial_a_pos || postures[0] || ''
   );
 
-  // 5. Environment & Scene Atmosphere (From draft starting state)
+  // 5. Environment & Starting Atmosphere
   const [sceneTime, setSceneTime] = useState(draft.starting_state?.time || 'ยามค่ำคืน');
   const [sceneWeather, setSceneWeather] = useState(draft.starting_state?.weather || 'แอร์เย็นสบาย');
   const [sceneLocation, setSceneLocation] = useState(draft.starting_state?.location || 'ห้อง VIP บาร์หรู');
@@ -233,13 +246,13 @@ export default function IdentityVisualCard({
   const renderComplicationIcon = (type: AnatomyComplication['iconType']) => {
     switch (type) {
       case 'glasses':
-        return <Glasses size={18} className="text-[#EF264C]" strokeWidth={2.2} />;
+        return <Glasses size={15} className="text-[#EF264C]" strokeWidth={2.2} />;
       case 'hourglass':
-        return <Hourglass size={18} className="text-amber-400" strokeWidth={2.2} />;
+        return <Hourglass size={15} className="text-amber-400" strokeWidth={2.2} />;
       case 'flame':
-        return <Flame size={18} className="text-rose-400" strokeWidth={2.2} />;
+        return <Flame size={15} className="text-rose-400" strokeWidth={2.2} />;
       case 'droplets':
-        return <Droplets size={18} className="text-sky-400" strokeWidth={2.2} />;
+        return <Droplets size={15} className="text-sky-400" strokeWidth={2.2} />;
     }
   };
 
@@ -250,12 +263,12 @@ export default function IdentityVisualCard({
       {/* ========================================================================= */}
       {/* ✦ APPLE WIDGETKIT DESK CANVAS (1x1, 2x1, 2x2 MODULAR TILES)               */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 sm:gap-5 auto-rows-[minmax(180px,auto)]">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-4 sm:gap-5 auto-rows-[minmax(180px,auto)]">
 
         {/* ======================================================================= */}
         {/* 🪪 WIDGET 1: PROFILE HERO TILE (2x2 Large Square)                       */}
         {/* ======================================================================= */}
-        <div className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 xl:col-span-2 xl:row-span-2 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
+        <div className="col-span-1 md:col-span-1 xl:col-span-2 xl:row-span-2 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
           {/* Header Row: Archetype Pill & Edit Button */}
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
@@ -323,10 +336,10 @@ export default function IdentityVisualCard({
               </div>
             ) : (
               <div>
-                <h1 className="text-[26px] sm:text-[30px] font-bold text-[#F1F1F1] tracking-tight leading-tight">
+                <h1 className="text-[26px] sm:text-[29px] font-bold text-[#F1F1F1] tracking-tight leading-tight">
                   {name}
                 </h1>
-                <p className="text-[13px] text-[#A1A1A8] mt-2 leading-relaxed font-normal italic line-clamp-3">
+                <p className="text-[12.5px] text-[#A1A1A8] mt-2 leading-relaxed font-normal italic line-clamp-3">
                   {quote}
                 </p>
               </div>
@@ -384,7 +397,7 @@ export default function IdentityVisualCard({
         {/* ======================================================================= */}
         {/* 👗 WIDGET 2: WARDROBE CLOSET (2x2 Large Square)                         */}
         {/* ======================================================================= */}
-        <div className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 xl:col-span-2 xl:row-span-2 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
+        <div className="col-span-1 md:col-span-1 xl:col-span-2 xl:row-span-2 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
           {/* Header Row: Hanger Tabs */}
           <div className="flex items-center justify-between gap-2 pb-2">
             <div className="flex items-center gap-2">
@@ -434,7 +447,7 @@ export default function IdentityVisualCard({
           {/* Garment Swatch Box */}
           <div className="my-auto py-3 px-4 rounded-[20px] bg-black/25 border border-white/[0.06] flex flex-col justify-between gap-2">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[13.5px] font-bold text-[#F1F1F1] tracking-tight">
+              <span className="text-[13px] font-bold text-[#F1F1F1] tracking-tight">
                 {activeOutfit.name}
               </span>
 
@@ -479,7 +492,7 @@ export default function IdentityVisualCard({
                 />
               </div>
             ) : (
-              <p className="text-[12.5px] text-[#AAAAAA] leading-relaxed font-normal line-clamp-4">
+              <p className="text-[12px] text-[#AAAAAA] leading-relaxed font-normal line-clamp-4">
                 {activeOutfit.description}
               </p>
             )}
@@ -501,9 +514,152 @@ export default function IdentityVisualCard({
         </div>
 
         {/* ======================================================================= */}
-        {/* 🌙 WIDGET 3: ENVIRONMENT & ATMOSPHERE (2x1 Medium Horizontal)          */}
+        {/* 👓 WIDGET 3: ANATOMY & VISUAL DNA (2x2 Large Square - UNIFIED CARD)     */}
         {/* ======================================================================= */}
-        <div className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 xl:col-span-2 xl:row-span-1 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
+        <div className="col-span-1 md:col-span-2 xl:col-span-2 xl:row-span-2 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
+          {/* Header Row */}
+          <div className="flex items-center justify-between pb-2">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full bg-white/[0.08] flex items-center justify-center">
+                <Eye size={12} className="text-[#EF264C]" />
+              </div>
+              <span className="text-[12.5px] font-semibold text-[#F1F1F1]">
+                Anatomy & Visual DNA
+              </span>
+            </div>
+            <span className="text-[10.5px] text-white/40 font-mono">4 จุดเด่น</span>
+          </div>
+
+          {/* Unified 4 Visual Hallmarks: ตา, ทรงผม/สรีระ, ผิว, ไอน้ำ */}
+          <div className="my-auto py-1 space-y-2">
+            {anatomyItems.map((item, idx) => (
+              <div
+                key={idx}
+                className="p-2.5 rounded-[16px] bg-black/25 border border-white/[0.05] flex items-start gap-2.5 transition-all"
+              >
+                <div className="w-5.5 h-5.5 rounded-lg bg-white/[0.06] flex items-center justify-center shrink-0 mt-0.5">
+                  {renderComplicationIcon(item.iconType)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[11.5px] font-bold text-[#F1F1F1] tracking-tight">
+                    {item.title}
+                  </div>
+                  {isEditing ? (
+                    <textarea
+                      rows={2}
+                      value={item.detail}
+                      onChange={(e) => {
+                        const updated = [...anatomyItems];
+                        updated[idx].detail = e.target.value;
+                        setAnatomyItems(updated);
+                      }}
+                      className="w-full bg-white/[0.04] border border-white/10 rounded p-1 text-[11px] text-[#AAAAAA] outline-none resize-none mt-1"
+                    />
+                  ) : (
+                    <p className="text-[11px] text-[#AAAAAA] leading-snug line-clamp-2 mt-0.5">
+                      {item.detail}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="pt-1 flex items-center justify-between text-[11px] text-white/35">
+            <span>ตา • ทรงผม • สัดส่วน • สัมผัส</span>
+          </div>
+        </div>
+
+        {/* ======================================================================= */}
+        {/* 🎭 WIDGET 4: SIGNATURE POSES DOCK (4 Cols Wide on Desktop, 1 Row)       */}
+        {/* ======================================================================= */}
+        <div className="col-span-1 md:col-span-2 xl:col-span-4 xl:row-span-1 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
+          <div className="flex items-center justify-between pb-1">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full bg-rose-500/15 flex items-center justify-center">
+                <Sparkles size={12} className="text-rose-400" />
+              </div>
+              <span className="text-[12.5px] font-semibold text-[#F1F1F1]">
+                Signature Poses
+              </span>
+            </div>
+            {isEditing ? (
+              <button
+                type="button"
+                onClick={handleAddPosture}
+                className="text-[11px] text-[#EF264C] hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                <Plus size={10} /> เพิ่มท่า
+              </button>
+            ) : (
+              <span className="text-[10.5px] text-white/40 font-mono">
+                {postures.length} ภาษากาย
+              </span>
+            )}
+          </div>
+
+          {/* Compact Pill Rows */}
+          <div className="py-1 space-y-1.5">
+            {postures.map((poseText, idx) => {
+              const isInitial = poseText === initialPose;
+              return (
+                <div
+                  key={idx}
+                  onClick={() => !isEditing && setInitialPose(poseText)}
+                  className={`px-3 py-1.5 rounded-xl flex items-center gap-2.5 transition-all cursor-pointer ${
+                    isInitial
+                      ? 'bg-white/[0.10] border border-white/20'
+                      : 'bg-white/[0.03] hover:bg-white/[0.06] border border-transparent'
+                  }`}
+                >
+                  <span
+                    className={`text-[9.5px] font-mono font-bold w-5 h-5 rounded-md flex items-center justify-center shrink-0 ${
+                      isInitial ? 'bg-[#EF264C] text-white' : 'bg-white/10 text-white/50'
+                    }`}
+                  >
+                    0{idx + 1}
+                  </span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={poseText}
+                      onChange={(e) => {
+                        const updated = [...postures];
+                        updated[idx] = e.target.value;
+                        setPostures(updated);
+                      }}
+                      className="bg-white/[0.04] border border-white/10 rounded px-1.5 py-0.5 text-[11px] text-[#F1F1F1] outline-none flex-1"
+                    />
+                  ) : (
+                    <span className="text-[11.5px] text-[#E0E0E4] truncate flex-1">
+                      {poseText}
+                    </span>
+                  )}
+                  {isInitial && !isEditing && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                  )}
+                  {isEditing && postures.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemovePosture(idx);
+                      }}
+                      className="text-white/40 hover:text-red-400 p-0.5"
+                    >
+                      <Trash2 size={10} />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ======================================================================= */}
+        {/* 🌙 WIDGET 5: ENVIRONMENT & ATMOSPHERE (2 Cols on Desktop, 1 Row)        */}
+        {/* ======================================================================= */}
+        <div className="col-span-1 md:col-span-2 xl:col-span-2 xl:row-span-1 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-full bg-indigo-500/15 flex items-center justify-center">
@@ -559,7 +715,7 @@ export default function IdentityVisualCard({
                 </div>
               ) : (
                 <>
-                  <div className="text-[20px] font-bold text-[#F1F1F1] tracking-tight">
+                  <div className="text-[19px] font-bold text-[#F1F1F1] tracking-tight">
                     {sceneWeather}
                   </div>
                   <div className="text-[11.5px] text-[#AAAAAA] flex items-center gap-1.5">
@@ -574,228 +730,6 @@ export default function IdentityVisualCard({
               <div className="w-10 h-10 rounded-2xl bg-white/[0.05] border border-white/[0.08] flex items-center justify-center shrink-0">
                 <CloudRain size={20} className="text-sky-400" />
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* ======================================================================= */}
-        {/* 👓 WIDGET 4: GAZE & GLASSES (1x1 Small Square Complication)            */}
-        {/* ======================================================================= */}
-        <div className="col-span-1 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-4.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
-          <div className="flex items-center justify-between">
-            <div className="w-7 h-7 rounded-xl bg-white/[0.06] flex items-center justify-center">
-              {renderComplicationIcon(anatomyItems[0].iconType)}
-            </div>
-            <span className="text-[10px] font-mono text-white/40">01</span>
-          </div>
-
-          <div className="py-1">
-            <h4 className="text-[13px] font-semibold text-[#F1F1F1] tracking-tight">
-              {anatomyItems[0].title}
-            </h4>
-            {isEditing ? (
-              <textarea
-                rows={2}
-                value={anatomyItems[0].detail}
-                onChange={(e) => {
-                  const updated = [...anatomyItems];
-                  updated[0].detail = e.target.value;
-                  setAnatomyItems(updated);
-                }}
-                className="w-full bg-white/[0.04] border border-white/10 rounded p-1 text-[11px] text-[#AAAAAA] outline-none resize-none mt-1"
-              />
-            ) : (
-              <p className="text-[11px] text-[#AAAAAA] mt-1 leading-snug line-clamp-3">
-                {anatomyItems[0].detail}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* ======================================================================= */}
-        {/* ⏳ WIDGET 5: SILHOUETTE (1x1 Small Square Complication)                 */}
-        {/* ======================================================================= */}
-        <div className="col-span-1 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-4.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
-          <div className="flex items-center justify-between">
-            <div className="w-7 h-7 rounded-xl bg-white/[0.06] flex items-center justify-center">
-              {renderComplicationIcon(anatomyItems[1].iconType)}
-            </div>
-            <span className="text-[10px] font-mono text-white/40">02</span>
-          </div>
-
-          <div className="py-1">
-            <h4 className="text-[13px] font-semibold text-[#F1F1F1] tracking-tight">
-              {anatomyItems[1].title}
-            </h4>
-            {isEditing ? (
-              <textarea
-                rows={2}
-                value={anatomyItems[1].detail}
-                onChange={(e) => {
-                  const updated = [...anatomyItems];
-                  updated[1].detail = e.target.value;
-                  setAnatomyItems(updated);
-                }}
-                className="w-full bg-white/[0.04] border border-white/10 rounded p-1 text-[11px] text-[#AAAAAA] outline-none resize-none mt-1"
-              />
-            ) : (
-              <p className="text-[11px] text-[#AAAAAA] mt-1 leading-snug line-clamp-3">
-                {anatomyItems[1].detail}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* ======================================================================= */}
-        {/* 🎭 WIDGET 6: SIGNATURE POSES DOCK (2x1 Medium Horizontal)               */}
-        {/* ======================================================================= */}
-        <div className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 xl:col-span-2 xl:row-span-1 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
-          <div className="flex items-center justify-between pb-1">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-rose-500/15 flex items-center justify-center">
-                <Sparkles size={12} className="text-rose-400" />
-              </div>
-              <span className="text-[12.5px] font-semibold text-[#F1F1F1]">
-                Signature Poses
-              </span>
-            </div>
-            {isEditing ? (
-              <button
-                type="button"
-                onClick={handleAddPosture}
-                className="text-[11px] text-[#EF264C] hover:underline flex items-center gap-1 cursor-pointer"
-              >
-                <Plus size={10} /> เพิ่มท่า
-              </button>
-            ) : (
-              <span className="text-[10.5px] text-white/40 font-mono">
-                {postures.length} ภาษากาย
-              </span>
-            )}
-          </div>
-
-          {/* Compact Pill Rows */}
-          <div className="py-1 space-y-1.5">
-            {postures.map((poseText, idx) => {
-              const isInitial = poseText === initialPose;
-              return (
-                <div
-                  key={idx}
-                  onClick={() => !isEditing && setInitialPose(poseText)}
-                  className={`px-2.5 py-1 rounded-xl flex items-center gap-2 transition-all cursor-pointer ${
-                    isInitial
-                      ? 'bg-white/[0.10] border border-white/20'
-                      : 'bg-white/[0.03] hover:bg-white/[0.06] border border-transparent'
-                  }`}
-                >
-                  <span
-                    className={`text-[9.5px] font-mono font-bold w-4.5 h-4.5 rounded flex items-center justify-center shrink-0 ${
-                      isInitial ? 'bg-[#EF264C] text-white' : 'bg-white/10 text-white/50'
-                    }`}
-                  >
-                    0{idx + 1}
-                  </span>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={poseText}
-                      onChange={(e) => {
-                        const updated = [...postures];
-                        updated[idx] = e.target.value;
-                        setPostures(updated);
-                      }}
-                      className="bg-white/[0.04] border border-white/10 rounded px-1.5 py-0.5 text-[11px] text-[#F1F1F1] outline-none flex-1"
-                    />
-                  ) : (
-                    <span className="text-[11.5px] text-[#E0E0E4] truncate flex-1">
-                      {poseText}
-                    </span>
-                  )}
-                  {isInitial && !isEditing && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                  )}
-                  {isEditing && postures.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRemovePosture(idx);
-                      }}
-                      className="text-white/40 hover:text-red-400 p-0.5"
-                    >
-                      <Trash2 size={10} />
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ======================================================================= */}
-        {/* 🌸 WIDGET 7: COMPLEXION (1x1 Small Square Complication)                 */}
-        {/* ======================================================================= */}
-        <div className="col-span-1 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-4.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
-          <div className="flex items-center justify-between">
-            <div className="w-7 h-7 rounded-xl bg-white/[0.06] flex items-center justify-center">
-              {renderComplicationIcon(anatomyItems[2].iconType)}
-            </div>
-            <span className="text-[10px] font-mono text-white/40">03</span>
-          </div>
-
-          <div className="py-1">
-            <h4 className="text-[13px] font-semibold text-[#F1F1F1] tracking-tight">
-              {anatomyItems[2].title}
-            </h4>
-            {isEditing ? (
-              <textarea
-                rows={2}
-                value={anatomyItems[2].detail}
-                onChange={(e) => {
-                  const updated = [...anatomyItems];
-                  updated[2].detail = e.target.value;
-                  setAnatomyItems(updated);
-                }}
-                className="w-full bg-white/[0.04] border border-white/10 rounded p-1 text-[11px] text-[#AAAAAA] outline-none resize-none mt-1"
-              />
-            ) : (
-              <p className="text-[11px] text-[#AAAAAA] mt-1 leading-snug line-clamp-3">
-                {anatomyItems[2].detail}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* ======================================================================= */}
-        {/* 💧 WIDGET 8: SENSORY & STEAM (1x1 Small Square Complication)            */}
-        {/* ======================================================================= */}
-        <div className="col-span-1 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-4.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
-          <div className="flex items-center justify-between">
-            <div className="w-7 h-7 rounded-xl bg-white/[0.06] flex items-center justify-center">
-              {renderComplicationIcon(anatomyItems[3].iconType)}
-            </div>
-            <span className="text-[10px] font-mono text-white/40">04</span>
-          </div>
-
-          <div className="py-1">
-            <h4 className="text-[13px] font-semibold text-[#F1F1F1] tracking-tight">
-              {anatomyItems[3].title}
-            </h4>
-            {isEditing ? (
-              <textarea
-                rows={2}
-                value={anatomyItems[3].detail}
-                onChange={(e) => {
-                  const updated = [...anatomyItems];
-                  updated[3].detail = e.target.value;
-                  setAnatomyItems(updated);
-                }}
-                className="w-full bg-white/[0.04] border border-white/10 rounded p-1 text-[11px] text-[#AAAAAA] outline-none resize-none mt-1"
-              />
-            ) : (
-              <p className="text-[11px] text-[#AAAAAA] mt-1 leading-snug line-clamp-3">
-                {anatomyItems[3].detail}
-              </p>
             )}
           </div>
         </div>

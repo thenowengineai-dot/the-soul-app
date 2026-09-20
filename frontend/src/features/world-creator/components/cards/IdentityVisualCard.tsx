@@ -3,7 +3,6 @@ import {
   Pencil,
   Check,
   Shirt,
-  Sparkles,
   Plus,
   Trash2,
   BookmarkCheck,
@@ -12,7 +11,11 @@ import {
   Droplets,
   Hourglass,
   Hash,
-  Eye,
+  Sparkles,
+  Moon,
+  CloudRain,
+  Compass,
+  User,
 } from 'lucide-react';
 import type { VaultDraft } from '../../types';
 
@@ -56,19 +59,19 @@ export default function IdentityVisualCard({
   });
   const [newTagInput, setNewTagInput] = useState('');
 
-  // 2. Anatomy Complications (4 Visual Hallmarks in Apple Watch style)
+  // 2. Anatomy Complications (4 Visual Hallmarks in 1x1 Apple Widget style)
   const [anatomyItems, setAnatomyItems] = useState<AnatomyComplication[]>(() => {
     const raw = draft.appearance?.anatomy_features || [];
     return [
       {
         iconType: 'glasses',
-        title: 'แว่นตา & ดวงตา',
+        title: 'สายตา & แว่น',
         detail: raw[0] || 'แว่นกรอบหนาเตอะ ปิดบังดวงตาสีดำขลับปลาบเยิ้มที่ซ่อนความหิวกระหาย',
       },
       {
         iconType: 'hourglass',
-        title: 'สัดส่วนนาฬิกาทราย',
-        detail: raw[2] || 'อกอวบใหญ่สะบึม สะโพกผึ่งผาย ซ่อนรูปอยู่ใต้เสื้อผ้าตัวโคร่ง',
+        title: 'ทรงนาฬิกาทราย',
+        detail: raw[2] || 'อกอวบใหญ่สะบึม สะโพกผึ่งผาย ซ่อนรูปใต้ชุดตัวโคร่ง',
       },
       {
         iconType: 'flame',
@@ -77,13 +80,13 @@ export default function IdentityVisualCard({
       },
       {
         iconType: 'droplets',
-        title: 'สัมผัส & กลิ่นอาย',
+        title: 'ไอน้ำซอกคอ',
         detail: raw[3] || 'ซอกคอและกระดูกไหปลาร้ามีเหงื่อและไอน้ำระเหยฟุ้งออกมา',
       },
     ];
   });
 
-  // 3. Wardrobe State (Tangible Closet Deck)
+  // 3. Wardrobe State (2x2 Tangible Closet)
   const [outfits, setOutfits] = useState<OutfitItem[]>(() => {
     const w = (draft.appearance?.wardrobe || {}) as Record<string, string[] | undefined>;
     const list: OutfitItem[] = [];
@@ -104,13 +107,13 @@ export default function IdentityVisualCard({
       description: o2,
     });
 
-    // Additional outfits if present
+    // Additional outfits
     Object.keys(w).forEach((k) => {
       if (k !== 'outfit_1' && k !== 'outfit_2' && Array.isArray(w[k]) && w[k]!.length > 0) {
         const idx = list.length + 1;
         list.push({
           key: k,
-          label: `ชุดคอนเซปต์ ${idx}`,
+          label: `ชุดที่ ${idx}`,
           name: w[k]![0].slice(0, 35),
           description: w[k]![0],
         });
@@ -125,7 +128,7 @@ export default function IdentityVisualCard({
     draft.starting_state?.initial_outfit_key || 'outfit_1'
   );
 
-  // 4. Signature Poses State (Dynamic Island Horizontal Dock)
+  // 4. Signature Poses State (2x1 Dynamic Island Dock)
   const [postures, setPostures] = useState<string[]>(() => {
     const p = draft.appearance?.signature_postures || [];
     return p.length > 0
@@ -141,14 +144,16 @@ export default function IdentityVisualCard({
     draft.starting_state?.initial_a_pos || postures[0] || ''
   );
 
+  // 5. Environment & Scene Atmosphere (From draft starting state)
+  const [sceneTime, setSceneTime] = useState(draft.starting_state?.time || 'ยามค่ำคืน');
+  const [sceneWeather, setSceneWeather] = useState(draft.starting_state?.weather || 'แอร์เย็นสบาย');
+  const [sceneLocation, setSceneLocation] = useState(draft.starting_state?.location || 'ห้อง VIP บาร์หรู');
+  const [playerStance, setPlayerStance] = useState(draft.starting_state?.initial_p_pos || 'นั่งเอนตัวจิบเครื่องดื่ม');
+
   // Sync when draft changes externally
   useEffect(() => {
-    if (draft.title && draft.title !== name) {
-      setName(draft.title);
-    }
-    if (draft.quote && draft.quote !== quote) {
-      setQuote(draft.quote);
-    }
+    if (draft.title && draft.title !== name) setName(draft.title);
+    if (draft.quote && draft.quote !== quote) setQuote(draft.quote);
   }, [draft.title, draft.quote]);
 
   const handleSave = () => {
@@ -162,10 +167,10 @@ export default function IdentityVisualCard({
       const anatomyFlat = anatomyItems.map((item) => item.detail);
 
       const updatedStartingState = {
-        time: draft.starting_state?.time || 'ยามค่ำคืน',
-        weather: draft.starting_state?.weather || 'แอร์เย็นสบาย',
-        location: draft.starting_state?.location || 'ห้อง VIP บาร์หรู',
-        initial_p_pos: draft.starting_state?.initial_p_pos || 'นั่งเอนตัวจิบเครื่องดื่ม',
+        time: sceneTime,
+        weather: sceneWeather,
+        location: sceneLocation,
+        initial_p_pos: playerStance,
         initial_a_pos: initialPose || postures[0] || '',
         initial_outfit_key: initialOutfitKey || outfits[0]?.key || 'outfit_1',
       };
@@ -201,9 +206,9 @@ export default function IdentityVisualCard({
     const newKey = `outfit_${nextIdx}`;
     const newOutfit: OutfitItem = {
       key: newKey,
-      label: `ชุดที่ ${nextIdx}`,
+      label: `ชุดใหม่ ${nextIdx}`,
       name: `ชุดคอลเลกชันใหม่ ${nextIdx}`,
-      description: 'ระบุรายละเอียดเนื้อผ้า สไตล์ และลูกเล่นของชุดนี้...',
+      description: 'ระบุรายละเอียดเนื้อผ้า คัตติ้ง และวัสดุ...',
     };
     setOutfits([...outfits, newOutfit]);
     setActiveOutfitIndex(outfits.length);
@@ -228,13 +233,13 @@ export default function IdentityVisualCard({
   const renderComplicationIcon = (type: AnatomyComplication['iconType']) => {
     switch (type) {
       case 'glasses':
-        return <Glasses size={16} className="text-[#EF264C]" strokeWidth={2.2} />;
+        return <Glasses size={18} className="text-[#EF264C]" strokeWidth={2.2} />;
       case 'hourglass':
-        return <Hourglass size={16} className="text-amber-400" strokeWidth={2.2} />;
+        return <Hourglass size={18} className="text-amber-400" strokeWidth={2.2} />;
       case 'flame':
-        return <Flame size={16} className="text-rose-400" strokeWidth={2.2} />;
+        return <Flame size={18} className="text-rose-400" strokeWidth={2.2} />;
       case 'droplets':
-        return <Droplets size={16} className="text-sky-400" strokeWidth={2.2} />;
+        return <Droplets size={18} className="text-sky-400" strokeWidth={2.2} />;
     }
   };
 
@@ -243,31 +248,30 @@ export default function IdentityVisualCard({
   return (
     <div className="w-full">
       {/* ========================================================================= */}
-      {/* ✦ ASYMMETRICAL APPLE BENTO GRID (12-COL SPATIAL CANVAS)                   */}
+      {/* ✦ APPLE WIDGETKIT DESK CANVAS (1x1, 2x1, 2x2 MODULAR TILES)               */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-5 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 sm:gap-5 auto-rows-[minmax(180px,auto)]">
 
         {/* ======================================================================= */}
-        {/* 🏛️ WIDGET 1: CHARACTER IDENTITY (Top-Left, 7 Cols on Desktop)          */}
+        {/* 🪪 WIDGET 1: PROFILE HERO TILE (2x2 Large Square)                       */}
         {/* ======================================================================= */}
-        <div className="col-span-1 md:col-span-2 xl:col-span-7 rounded-[28px] bg-[#141416]/90 hover:bg-[#18181b]/95 backdrop-blur-3xl border border-white/[0.12] hover:border-white/20 p-6 sm:p-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_16px_36px_rgba(0,0,0,0.5)] transition-all duration-300 relative group overflow-hidden flex flex-col justify-between min-h-[280px]">
-          {/* Top Specular Hairline */}
-          <div className="absolute top-0 left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" />
-
-          {/* Top Row: Archetype Pill & Edit Button */}
-          <div className="flex items-center justify-between gap-3 pb-3">
+        <div className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 xl:col-span-2 xl:row-span-2 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
+          {/* Header Row: Archetype Pill & Edit Button */}
+          <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#EF264C]" />
+              <div className="w-6 h-6 rounded-full bg-[#EF264C]/15 border border-[#EF264C]/30 flex items-center justify-center">
+                <User size={12} className="text-[#EF264C]" />
+              </div>
               {isEditing ? (
                 <input
                   type="text"
                   value={archetype}
                   onChange={(e) => setArchetype(e.target.value)}
-                  placeholder="บทบาทแก่นแท้ (Archetype)"
-                  className="bg-white/[0.06] border border-white/15 focus:border-[#EF264C]/60 rounded-full px-3 py-0.5 text-[12px] text-[#F1F1F1] outline-none"
+                  placeholder="Archetype"
+                  className="bg-white/[0.06] border border-white/15 focus:border-[#EF264C]/60 rounded-full px-2.5 py-0.5 text-[11px] text-[#F1F1F1] outline-none"
                 />
               ) : (
-                <span className="px-3 py-1 rounded-full bg-white/[0.06] border border-white/10 text-[12px] font-medium text-[#BEBEC4]">
+                <span className="text-[12px] font-medium text-[#BEBEC4]">
                   {archetype}
                 </span>
               )}
@@ -279,27 +283,27 @@ export default function IdentityVisualCard({
                   <button
                     type="button"
                     onClick={handleSave}
-                    className="px-3.5 py-1.5 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white text-[12px] font-semibold flex items-center gap-1.5 shadow-[0_2px_8px_rgba(239,38,76,0.35)] transition-all active:scale-95 cursor-pointer"
+                    className="px-3 py-1 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white text-[11px] font-semibold flex items-center gap-1 shadow-sm transition-all cursor-pointer"
                   >
-                    <Check size={13} strokeWidth={2.4} />
+                    <Check size={12} strokeWidth={2.4} />
                     <span>บันทึก</span>
                   </button>
                 ) : (
                   <button
                     type="button"
                     onClick={() => setIsEditing(true)}
-                    className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 text-white/80 hover:text-white flex items-center justify-center transition-all active:scale-95 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                    className="w-7 h-7 rounded-full bg-white/[0.06] hover:bg-white/[0.14] text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer"
                     title="แก้ไขข้อมูล"
                   >
-                    <Pencil size={13} strokeWidth={2} />
+                    <Pencil size={12} strokeWidth={2} />
                   </button>
                 )}
               </div>
             )}
           </div>
 
-          {/* Core Body: Big Name & Quote */}
-          <div className="py-2 space-y-2">
+          {/* Center: Large Name & Persona Quote */}
+          <div className="my-auto py-3 space-y-2">
             {isEditing ? (
               <div className="space-y-2">
                 <input
@@ -307,34 +311,34 @@ export default function IdentityVisualCard({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="ชื่อตัวละคร"
-                  className="w-full bg-white/[0.06] border border-white/20 focus:border-[#EF264C]/60 rounded-xl px-3 py-1.5 text-[24px] font-bold text-[#F1F1F1] outline-none"
+                  className="w-full bg-white/[0.06] border border-white/20 focus:border-[#EF264C]/60 rounded-xl px-3 py-1.5 text-[22px] font-bold text-[#F1F1F1] outline-none"
                 />
                 <textarea
-                  rows={2}
+                  rows={3}
                   value={quote}
                   onChange={(e) => setQuote(e.target.value)}
-                  placeholder="คำพูดตัวละคร / ประโยคแก่นแท้..."
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-2.5 py-1 text-[13px] text-[#AAAAAA] outline-none leading-relaxed resize-none"
+                  placeholder="ประโยคคำพูดประจำตัว..."
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-2.5 py-1 text-[12px] text-[#AAAAAA] outline-none leading-relaxed resize-none"
                 />
               </div>
             ) : (
               <div>
-                <h1 className="text-[28px] sm:text-[34px] font-bold text-[#F1F1F1] tracking-tight leading-tight">
+                <h1 className="text-[26px] sm:text-[30px] font-bold text-[#F1F1F1] tracking-tight leading-tight">
                   {name}
                 </h1>
-                <p className="text-[13.5px] text-[#A1A1A8] mt-1.5 leading-relaxed font-normal italic line-clamp-2">
+                <p className="text-[13px] text-[#A1A1A8] mt-2 leading-relaxed font-normal italic line-clamp-3">
                   {quote}
                 </p>
               </div>
             )}
           </div>
 
-          {/* Bottom: Hashtag Capsules */}
-          <div className="pt-3 border-t border-white/[0.06] flex flex-wrap items-center gap-1.5">
+          {/* Bottom: Hashtags Pills */}
+          <div className="pt-2 flex flex-wrap items-center gap-1.5">
             {hashtags.map((tag, idx) => (
               <span
                 key={idx}
-                className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] text-[11.5px] text-white/80 font-normal shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/[0.06] hover:bg-white/[0.09] text-[11px] text-white/75 font-normal"
               >
                 <Hash size={10} className="text-[#EF264C]" />
                 <span>{tag.replace(/^#/, '')}</span>
@@ -342,7 +346,7 @@ export default function IdentityVisualCard({
                   <button
                     type="button"
                     onClick={() => handleRemoveHashtag(idx)}
-                    className="hover:text-red-400 text-white/40 ml-0.5 transition-colors cursor-pointer"
+                    className="hover:text-red-400 text-white/40 ml-0.5 cursor-pointer"
                   >
                     ×
                   </button>
@@ -362,13 +366,13 @@ export default function IdentityVisualCard({
                       handleAddHashtag();
                     }
                   }}
-                  placeholder="+ แท็ก..."
-                  className="bg-white/[0.04] border border-white/10 rounded-full px-2.5 py-0.5 text-[11px] text-[#F1F1F1] outline-none w-20"
+                  placeholder="+ แท็ก"
+                  className="bg-white/[0.04] border border-white/10 rounded-full px-2 py-0.5 text-[11px] text-[#F1F1F1] outline-none w-16"
                 />
                 <button
                   type="button"
                   onClick={handleAddHashtag}
-                  className="w-5 h-5 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-[11px] cursor-pointer"
+                  className="w-5 h-5 rounded-full bg-white/10 text-white flex items-center justify-center text-[10px] cursor-pointer"
                 >
                   +
                 </button>
@@ -378,25 +382,22 @@ export default function IdentityVisualCard({
         </div>
 
         {/* ======================================================================= */}
-        {/* 👗 WIDGET 2: THE WARDROBE CLOSET (Top-Right, 5 Cols - Tangible Square)  */}
+        {/* 👗 WIDGET 2: WARDROBE CLOSET (2x2 Large Square)                         */}
         {/* ======================================================================= */}
-        <div className="col-span-1 md:col-span-2 xl:col-span-5 rounded-[28px] bg-[#141416]/90 hover:bg-[#18181b]/95 backdrop-blur-3xl border border-white/[0.12] hover:border-white/20 p-6 sm:p-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_16px_36px_rgba(0,0,0,0.5)] transition-all duration-300 relative group overflow-hidden flex flex-col justify-between min-h-[280px]">
-          {/* Top Specular Hairline */}
-          <div className="absolute top-0 left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" />
-
-          {/* Header: Closet Icon & Hanger Switcher Tabs */}
-          <div className="flex items-center justify-between gap-2 pb-3 border-b border-white/[0.06]">
+        <div className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 xl:col-span-2 xl:row-span-2 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
+          {/* Header Row: Hanger Tabs */}
+          <div className="flex items-center justify-between gap-2 pb-2">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center shrink-0">
-                <Shirt size={14} className="text-[#EF264C]" />
+              <div className="w-6 h-6 rounded-full bg-white/[0.08] flex items-center justify-center">
+                <Shirt size={12} className="text-[#EF264C]" />
               </div>
-              <span className="text-[14px] font-semibold text-[#F1F1F1] tracking-tight">
+              <span className="text-[12.5px] font-semibold text-[#F1F1F1]">
                 Wardrobe
               </span>
             </div>
 
-            {/* Closet Hanger Tabs */}
-            <div className="flex flex-wrap items-center gap-1.5">
+            {/* Switcher Pills */}
+            <div className="flex flex-wrap items-center gap-1">
               {outfits.map((outfit, idx) => {
                 const isActive = idx === activeOutfitIndex;
                 const isInitial = outfit.key === initialOutfitKey;
@@ -406,13 +407,13 @@ export default function IdentityVisualCard({
                     key={outfit.key}
                     type="button"
                     onClick={() => setActiveOutfitIndex(idx)}
-                    className={`px-3 py-1 rounded-full text-[11px] font-medium flex items-center gap-1 transition-all cursor-pointer ${
+                    className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-medium flex items-center gap-1 transition-all cursor-pointer ${
                       isActive
-                        ? 'bg-white/15 text-white border border-white/25 shadow-sm'
-                        : 'bg-white/[0.04] text-[#BEBEC4] hover:text-white border border-white/[0.06]'
+                        ? 'bg-white/20 text-white shadow-sm'
+                        : 'bg-white/[0.04] text-white/50 hover:text-white'
                     }`}
                   >
-                    {isInitial && <span className="text-[#EF264C] text-[9px]">✦</span>}
+                    {isInitial && <span className="text-[#EF264C] text-[8px]">✦</span>}
                     <span>{outfit.label}</span>
                   </button>
                 );
@@ -422,32 +423,30 @@ export default function IdentityVisualCard({
                 <button
                   type="button"
                   onClick={handleAddNewOutfit}
-                  className="w-6 h-6 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-dashed border-white/20 text-white flex items-center justify-center text-[12px] cursor-pointer"
+                  className="w-5 h-5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-white flex items-center justify-center text-[10px] cursor-pointer"
                 >
-                  <Plus size={11} />
+                  <Plus size={10} />
                 </button>
               )}
             </div>
           </div>
 
-          {/* Tangible Garment Card Swatch */}
-          <div className="my-3 rounded-[20px] bg-white/[0.025] border border-white/[0.06] p-4 flex-1 flex flex-col justify-between gap-2">
+          {/* Garment Swatch Box */}
+          <div className="my-auto py-3 px-4 rounded-[20px] bg-black/25 border border-white/[0.06] flex flex-col justify-between gap-2">
             <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <span className="text-[12px] font-bold text-[#F1F1F1] tracking-tight">
-                  {activeOutfit.name}
-                </span>
-              </div>
+              <span className="text-[13.5px] font-bold text-[#F1F1F1] tracking-tight">
+                {activeOutfit.name}
+              </span>
 
               {activeOutfit.key === initialOutfitKey ? (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10.5px] font-medium">
-                  <BookmarkCheck size={11} /> ชุดเริ่มต้น
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-[10px] font-medium">
+                  <BookmarkCheck size={10} /> Default
                 </span>
               ) : (
                 <button
                   type="button"
                   onClick={() => setInitialOutfitKey(activeOutfit.key)}
-                  className="text-[10.5px] text-white/40 hover:text-white underline cursor-pointer transition-colors"
+                  className="text-[10px] text-white/40 hover:text-white underline cursor-pointer transition-colors"
                 >
                   ตั้งเป็นชุดเริ่มต้น
                 </button>
@@ -465,10 +464,10 @@ export default function IdentityVisualCard({
                     setOutfits(updated);
                   }}
                   placeholder="ชื่อสไตล์ชุด"
-                  className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-2.5 py-1 text-[13px] font-medium text-[#F1F1F1] outline-none"
+                  className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-2 py-1 text-[12px] text-[#F1F1F1] outline-none"
                 />
                 <textarea
-                  rows={2}
+                  rows={3}
                   value={activeOutfit.description}
                   onChange={(e) => {
                     const updated = [...outfits];
@@ -476,11 +475,11 @@ export default function IdentityVisualCard({
                     setOutfits(updated);
                   }}
                   placeholder="รายละเอียดเนื้อผ้า คัตติ้ง..."
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-2.5 py-1 text-[12px] text-[#AAAAAA] outline-none leading-relaxed resize-none"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-2 py-1 text-[11.5px] text-[#AAAAAA] outline-none leading-relaxed resize-none"
                 />
               </div>
             ) : (
-              <p className="text-[12.5px] text-[#AAAAAA] leading-relaxed font-normal line-clamp-3">
+              <p className="text-[12.5px] text-[#AAAAAA] leading-relaxed font-normal line-clamp-4">
                 {activeOutfit.description}
               </p>
             )}
@@ -489,196 +488,315 @@ export default function IdentityVisualCard({
               <button
                 type="button"
                 onClick={() => handleRemoveOutfit(activeOutfitIndex)}
-                className="self-end text-[11px] text-red-400/70 hover:text-red-300 flex items-center gap-1 cursor-pointer transition-colors pt-1"
+                className="self-end text-[10.5px] text-red-400/70 hover:text-red-300 flex items-center gap-1 cursor-pointer transition-colors pt-1"
               >
-                <Trash2 size={11} /> ลบชุดนี้
+                <Trash2 size={10} /> ลบชุดนี้
               </button>
             )}
           </div>
 
-          {/* Subtractive Micro Footnote */}
-          <div className="pt-2 border-t border-white/[0.04] flex items-center justify-between text-[11px] text-white/35 font-light">
-            <span>{outfits.length} ชุดในตู้</span>
-            <span className="text-white/20">✦ Spatial Closet</span>
+          <div className="pt-1 flex items-center justify-between text-[11px] text-white/35">
+            <span>{outfits.length} ชุดสลับใส่</span>
           </div>
         </div>
 
         {/* ======================================================================= */}
-        {/* ⏳ WIDGET 3: ANATOMY COMPLICATIONS (Bottom-Left, 5 Cols - 2x2 Comps)   */}
+        {/* 🌙 WIDGET 3: ENVIRONMENT & ATMOSPHERE (2x1 Medium Horizontal)          */}
         {/* ======================================================================= */}
-        <div className="col-span-1 md:col-span-2 xl:col-span-5 rounded-[28px] bg-[#141416]/90 hover:bg-[#18181b]/95 backdrop-blur-3xl border border-white/[0.12] hover:border-white/20 p-6 sm:p-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_16px_36px_rgba(0,0,0,0.5)] transition-all duration-300 relative group overflow-hidden flex flex-col justify-between min-h-[280px]">
-          {/* Top Specular Hairline */}
-          <div className="absolute top-0 left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" />
-
-          {/* Header */}
-          <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
+        <div className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 xl:col-span-2 xl:row-span-1 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center shrink-0">
-                <Eye size={14} className="text-[#EF264C]" />
+              <div className="w-6 h-6 rounded-full bg-indigo-500/15 flex items-center justify-center">
+                <Moon size={12} className="text-indigo-400" />
               </div>
-              <span className="text-[14px] font-semibold text-[#F1F1F1] tracking-tight">
-                Anatomy
-              </span>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={sceneLocation}
+                  onChange={(e) => setSceneLocation(e.target.value)}
+                  placeholder="สถานที่"
+                  className="bg-white/[0.06] border border-white/10 rounded px-2 py-0.5 text-[11.5px] text-[#F1F1F1] outline-none w-32"
+                />
+              ) : (
+                <span className="text-[12.5px] font-semibold text-[#F1F1F1]">
+                  {sceneLocation}
+                </span>
+              )}
             </div>
-            <span className="text-[11px] text-white/35 font-mono">4 จุดเด่น</span>
+            {isEditing ? (
+              <input
+                type="text"
+                value={sceneTime}
+                onChange={(e) => setSceneTime(e.target.value)}
+                placeholder="เวลา"
+                className="bg-white/[0.06] border border-white/10 rounded px-2 py-0.5 text-[11px] text-[#F1F1F1] outline-none w-20 text-right"
+              />
+            ) : (
+              <span className="text-[11px] text-white/40 font-medium">
+                {sceneTime}
+              </span>
+            )}
           </div>
 
-          {/* 2x2 Grid of Complications */}
-          <div className="my-3 grid grid-cols-1 sm:grid-cols-2 gap-2.5 flex-1">
-            {anatomyItems.map((item, idx) => (
-              <div
-                key={idx}
-                className="rounded-[18px] bg-white/[0.03] hover:bg-white/[0.05] border border-white/[0.06] p-3 flex flex-col justify-between gap-1.5 transition-all"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-white/[0.06] flex items-center justify-center shrink-0">
-                    {renderComplicationIcon(item.iconType)}
-                  </div>
-                  <span className="text-[12px] font-semibold text-[#F1F1F1] tracking-tight truncate">
-                    {item.title}
-                  </span>
-                </div>
-
-                {isEditing ? (
-                  <textarea
-                    rows={2}
-                    value={item.detail}
-                    onChange={(e) => {
-                      const updated = [...anatomyItems];
-                      updated[idx].detail = e.target.value;
-                      setAnatomyItems(updated);
-                    }}
-                    className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-2 py-1 text-[11px] text-[#AAAAAA] outline-none leading-relaxed resize-none"
+          <div className="py-1 flex items-center justify-between gap-4">
+            <div className="space-y-1 w-full">
+              {isEditing ? (
+                <div className="space-y-1.5">
+                  <input
+                    type="text"
+                    value={sceneWeather}
+                    onChange={(e) => setSceneWeather(e.target.value)}
+                    placeholder="สภาพอากาศ"
+                    className="w-full bg-white/[0.06] border border-white/10 rounded px-2 py-0.5 text-[14px] font-bold text-[#F1F1F1] outline-none"
                   />
-                ) : (
-                  <p className="text-[11.5px] text-[#AAAAAA] leading-relaxed font-normal line-clamp-2">
-                    {item.detail}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
+                  <input
+                    type="text"
+                    value={playerStance}
+                    onChange={(e) => setPlayerStance(e.target.value)}
+                    placeholder="ท่าทางเริ่มต้นของผู้เล่น"
+                    className="w-full bg-white/[0.04] border border-white/10 rounded px-2 py-0.5 text-[11px] text-[#AAAAAA] outline-none"
+                  />
+                </div>
+              ) : (
+                <>
+                  <div className="text-[20px] font-bold text-[#F1F1F1] tracking-tight">
+                    {sceneWeather}
+                  </div>
+                  <div className="text-[11.5px] text-[#AAAAAA] flex items-center gap-1.5">
+                    <Compass size={11} className="text-white/40" />
+                    <span>{playerStance}</span>
+                  </div>
+                </>
+              )}
+            </div>
 
-          {/* Subtractive Micro Footnote */}
-          <div className="pt-2 border-t border-white/[0.04] flex items-center justify-between text-[11px] text-white/35 font-light">
-            <span>Visual Complications</span>
-            <span className="text-white/20">✦ Apple Watch Style</span>
+            {!isEditing && (
+              <div className="w-10 h-10 rounded-2xl bg-white/[0.05] border border-white/[0.08] flex items-center justify-center shrink-0">
+                <CloudRain size={20} className="text-sky-400" />
+              </div>
+            )}
           </div>
         </div>
 
         {/* ======================================================================= */}
-        {/* 🎭 WIDGET 4: SIGNATURE POSES (Bottom-Right, 7 Cols - Dynamic Island)   */}
+        {/* 👓 WIDGET 4: GAZE & GLASSES (1x1 Small Square Complication)            */}
         {/* ======================================================================= */}
-        <div className="col-span-1 md:col-span-2 xl:col-span-7 rounded-[28px] bg-[#141416]/90 hover:bg-[#18181b]/95 backdrop-blur-3xl border border-white/[0.12] hover:border-white/20 p-6 sm:p-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_16px_36px_rgba(0,0,0,0.5)] transition-all duration-300 relative group overflow-hidden flex flex-col justify-between min-h-[280px]">
-          {/* Top Specular Hairline */}
-          <div className="absolute top-0 left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" />
+        <div className="col-span-1 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-4.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
+          <div className="flex items-center justify-between">
+            <div className="w-7 h-7 rounded-xl bg-white/[0.06] flex items-center justify-center">
+              {renderComplicationIcon(anatomyItems[0].iconType)}
+            </div>
+            <span className="text-[10px] font-mono text-white/40">01</span>
+          </div>
 
-          {/* Header */}
-          <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
+          <div className="py-1">
+            <h4 className="text-[13px] font-semibold text-[#F1F1F1] tracking-tight">
+              {anatomyItems[0].title}
+            </h4>
+            {isEditing ? (
+              <textarea
+                rows={2}
+                value={anatomyItems[0].detail}
+                onChange={(e) => {
+                  const updated = [...anatomyItems];
+                  updated[0].detail = e.target.value;
+                  setAnatomyItems(updated);
+                }}
+                className="w-full bg-white/[0.04] border border-white/10 rounded p-1 text-[11px] text-[#AAAAAA] outline-none resize-none mt-1"
+              />
+            ) : (
+              <p className="text-[11px] text-[#AAAAAA] mt-1 leading-snug line-clamp-3">
+                {anatomyItems[0].detail}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* ======================================================================= */}
+        {/* ⏳ WIDGET 5: SILHOUETTE (1x1 Small Square Complication)                 */}
+        {/* ======================================================================= */}
+        <div className="col-span-1 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-4.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
+          <div className="flex items-center justify-between">
+            <div className="w-7 h-7 rounded-xl bg-white/[0.06] flex items-center justify-center">
+              {renderComplicationIcon(anatomyItems[1].iconType)}
+            </div>
+            <span className="text-[10px] font-mono text-white/40">02</span>
+          </div>
+
+          <div className="py-1">
+            <h4 className="text-[13px] font-semibold text-[#F1F1F1] tracking-tight">
+              {anatomyItems[1].title}
+            </h4>
+            {isEditing ? (
+              <textarea
+                rows={2}
+                value={anatomyItems[1].detail}
+                onChange={(e) => {
+                  const updated = [...anatomyItems];
+                  updated[1].detail = e.target.value;
+                  setAnatomyItems(updated);
+                }}
+                className="w-full bg-white/[0.04] border border-white/10 rounded p-1 text-[11px] text-[#AAAAAA] outline-none resize-none mt-1"
+              />
+            ) : (
+              <p className="text-[11px] text-[#AAAAAA] mt-1 leading-snug line-clamp-3">
+                {anatomyItems[1].detail}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* ======================================================================= */}
+        {/* 🎭 WIDGET 6: SIGNATURE POSES DOCK (2x1 Medium Horizontal)               */}
+        {/* ======================================================================= */}
+        <div className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-2 xl:col-span-2 xl:row-span-1 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
+          <div className="flex items-center justify-between pb-1">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center shrink-0">
-                <Sparkles size={14} className="text-[#EF264C]" />
+              <div className="w-6 h-6 rounded-full bg-rose-500/15 flex items-center justify-center">
+                <Sparkles size={12} className="text-rose-400" />
               </div>
-              <span className="text-[14px] font-semibold text-[#F1F1F1] tracking-tight">
+              <span className="text-[12.5px] font-semibold text-[#F1F1F1]">
                 Signature Poses
               </span>
             </div>
-
-            <span className="text-[11px] text-white/35 font-mono">
-              {postures.length} ภาษากาย
-            </span>
+            {isEditing ? (
+              <button
+                type="button"
+                onClick={handleAddPosture}
+                className="text-[11px] text-[#EF264C] hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                <Plus size={10} /> เพิ่มท่า
+              </button>
+            ) : (
+              <span className="text-[10.5px] text-white/40 font-mono">
+                {postures.length} ภาษากาย
+              </span>
+            )}
           </div>
 
-          {/* Stacked Dynamic Island Capsule Rows */}
-          <div className="my-2.5 space-y-2 flex-1 flex flex-col justify-center">
+          {/* Compact Pill Rows */}
+          <div className="py-1 space-y-1.5">
             {postures.map((poseText, idx) => {
               const isInitial = poseText === initialPose;
-
               return (
                 <div
                   key={idx}
                   onClick={() => !isEditing && setInitialPose(poseText)}
-                  className={`rounded-[18px] p-3 flex items-center gap-3 transition-all cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-xl flex items-center gap-2 transition-all cursor-pointer ${
                     isInitial
-                      ? 'bg-white/[0.08] border border-white/20 shadow-sm'
-                      : 'bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.05]'
+                      ? 'bg-white/[0.10] border border-white/20'
+                      : 'bg-white/[0.03] hover:bg-white/[0.06] border border-transparent'
                   }`}
                 >
-                  {/* Number Badge */}
                   <span
-                    className={`text-[11px] font-mono font-bold w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
-                      isInitial
-                        ? 'bg-[#EF264C] text-white'
-                        : 'bg-white/10 text-white/60'
+                    className={`text-[9.5px] font-mono font-bold w-4.5 h-4.5 rounded flex items-center justify-center shrink-0 ${
+                      isInitial ? 'bg-[#EF264C] text-white' : 'bg-white/10 text-white/50'
                     }`}
                   >
                     0{idx + 1}
                   </span>
-
-                  {/* Pose Text */}
-                  <div className="flex-1 min-w-0">
-                    {isEditing ? (
-                      <textarea
-                        rows={1}
-                        value={poseText}
-                        onChange={(e) => {
-                          const updated = [...postures];
-                          updated[idx] = e.target.value;
-                          setPostures(updated);
-                        }}
-                        className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-2 py-0.5 text-[12px] text-[#F1F1F1] outline-none resize-none"
-                      />
-                    ) : (
-                      <p className="text-[12.5px] text-[#E0E0E4] leading-relaxed font-normal line-clamp-1">
-                        {poseText}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Status Indicator */}
-                  <div className="shrink-0 flex items-center gap-2">
-                    {isInitial ? (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10.5px] font-medium">
-                        <BookmarkCheck size={11} /> HUD Active
-                      </span>
-                    ) : (
-                      <span className="text-[10.5px] text-white/30 group-hover:text-white/60 transition-colors">
-                        แตะเพื่อเลือก
-                      </span>
-                    )}
-
-                    {isEditing && postures.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemovePosture(idx);
-                        }}
-                        className="text-[11px] text-red-400/70 hover:text-red-300 p-1 cursor-pointer"
-                      >
-                        <Trash2 size={11} />
-                      </button>
-                    )}
-                  </div>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={poseText}
+                      onChange={(e) => {
+                        const updated = [...postures];
+                        updated[idx] = e.target.value;
+                        setPostures(updated);
+                      }}
+                      className="bg-white/[0.04] border border-white/10 rounded px-1.5 py-0.5 text-[11px] text-[#F1F1F1] outline-none flex-1"
+                    />
+                  ) : (
+                    <span className="text-[11.5px] text-[#E0E0E4] truncate flex-1">
+                      {poseText}
+                    </span>
+                  )}
+                  {isInitial && !isEditing && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                  )}
+                  {isEditing && postures.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemovePosture(idx);
+                      }}
+                      className="text-white/40 hover:text-red-400 p-0.5"
+                    >
+                      <Trash2 size={10} />
+                    </button>
+                  )}
                 </div>
               );
             })}
+          </div>
+        </div>
 
-            {isEditing && (
-              <button
-                type="button"
-                onClick={handleAddPosture}
-                className="w-full py-2 rounded-[14px] bg-white/[0.02] hover:bg-white/[0.05] border border-dashed border-white/15 text-[11.5px] text-white/70 hover:text-white flex items-center justify-center gap-1 transition-all cursor-pointer"
-              >
-                <Plus size={11} /> เพิ่มท่าทางใหม่
-              </button>
-            )}
+        {/* ======================================================================= */}
+        {/* 🌸 WIDGET 7: COMPLEXION (1x1 Small Square Complication)                 */}
+        {/* ======================================================================= */}
+        <div className="col-span-1 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-4.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
+          <div className="flex items-center justify-between">
+            <div className="w-7 h-7 rounded-xl bg-white/[0.06] flex items-center justify-center">
+              {renderComplicationIcon(anatomyItems[2].iconType)}
+            </div>
+            <span className="text-[10px] font-mono text-white/40">03</span>
           </div>
 
-          {/* Subtractive Micro Footnote */}
-          <div className="pt-2 border-t border-white/[0.04] flex items-center justify-between text-[11px] text-white/35 font-light">
-            <span>Dynamic Kinematics</span>
-            <span className="text-white/20">✦ Dynamic Island Rows</span>
+          <div className="py-1">
+            <h4 className="text-[13px] font-semibold text-[#F1F1F1] tracking-tight">
+              {anatomyItems[2].title}
+            </h4>
+            {isEditing ? (
+              <textarea
+                rows={2}
+                value={anatomyItems[2].detail}
+                onChange={(e) => {
+                  const updated = [...anatomyItems];
+                  updated[2].detail = e.target.value;
+                  setAnatomyItems(updated);
+                }}
+                className="w-full bg-white/[0.04] border border-white/10 rounded p-1 text-[11px] text-[#AAAAAA] outline-none resize-none mt-1"
+              />
+            ) : (
+              <p className="text-[11px] text-[#AAAAAA] mt-1 leading-snug line-clamp-3">
+                {anatomyItems[2].detail}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* ======================================================================= */}
+        {/* 💧 WIDGET 8: SENSORY & STEAM (1x1 Small Square Complication)            */}
+        {/* ======================================================================= */}
+        <div className="col-span-1 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-4.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
+          <div className="flex items-center justify-between">
+            <div className="w-7 h-7 rounded-xl bg-white/[0.06] flex items-center justify-center">
+              {renderComplicationIcon(anatomyItems[3].iconType)}
+            </div>
+            <span className="text-[10px] font-mono text-white/40">04</span>
+          </div>
+
+          <div className="py-1">
+            <h4 className="text-[13px] font-semibold text-[#F1F1F1] tracking-tight">
+              {anatomyItems[3].title}
+            </h4>
+            {isEditing ? (
+              <textarea
+                rows={2}
+                value={anatomyItems[3].detail}
+                onChange={(e) => {
+                  const updated = [...anatomyItems];
+                  updated[3].detail = e.target.value;
+                  setAnatomyItems(updated);
+                }}
+                className="w-full bg-white/[0.04] border border-white/10 rounded p-1 text-[11px] text-[#AAAAAA] outline-none resize-none mt-1"
+              />
+            ) : (
+              <p className="text-[11px] text-[#AAAAAA] mt-1 leading-snug line-clamp-3">
+                {anatomyItems[3].detail}
+              </p>
+            )}
           </div>
         </div>
 

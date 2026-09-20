@@ -66,23 +66,23 @@ export function ChatItem({
           {isTyping ? (
             <div className="flex-1 min-w-0 flex items-center animate-in fade-in duration-200 select-none">
               {typingVariant === 'action' || typingVariant === 'hybrid' ? (
-                // 🌟 Action Presence: สัญลักษณ์ ✦ สีคาร์ไมน์เรด + Apple Intelligence Shimmer
+                // 🌟 Action Presence (Apple Minimalist): สัญลักษณ์ ✦ สีขาวนวล + Apple Intelligence Shimmer
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="text-[10px] text-[#EF264C] shrink-0 animate-pulse select-none">✦</span>
-                  <span className="text-[12.5px] sm:text-[13px] font-medium bg-gradient-to-r from-[#EF264C] via-[#ff708d] to-[#EF264C] bg-[length:200%_100%] bg-clip-text text-transparent animate-shimmer-fast truncate tracking-wide">
+                  <span className="text-[10px] text-white/60 shrink-0 animate-pulse select-none">✦</span>
+                  <span className="text-[12.5px] sm:text-[13px] font-normal bg-gradient-to-r from-white/50 via-[#F5F5F7] to-white/50 bg-[length:200%_100%] bg-clip-text text-transparent animate-shimmer-fast truncate tracking-wide">
                     กำลังเคลื่อนไหว...
                   </span>
                 </div>
               ) : (
-                // 💬 Typing Presence: กำลังพิมพ์ + 3 จุดเด้งดุ๊กดิ๊ก สีคาร์ไมน์เรด
+                // 💬 Typing Presence (Apple Minimalist): กำลังพิมพ์ + 3 จุดเด้งดุ๊กดิ๊ก สีขาวนวล #F5F5F7
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="text-[12.5px] sm:text-[13px] font-medium text-[#EF264C] shrink-0">
+                  <span className="text-[12.5px] sm:text-[13px] font-normal text-[#F5F5F7] shrink-0">
                     กำลังพิมพ์
                   </span>
                   <div className="inline-flex items-center gap-0.5 ml-0.5">
-                    <span className="w-1 h-1 rounded-full bg-[#EF264C] animate-typing-dot-1 shrink-0" />
-                    <span className="w-1 h-1 rounded-full bg-[#EF264C] animate-typing-dot-2 shrink-0" />
-                    <span className="w-1 h-1 rounded-full bg-[#EF264C] animate-typing-dot-3 shrink-0" />
+                    <span className="w-1 h-1 rounded-full bg-[#F5F5F7]/80 animate-typing-dot-1 shrink-0" />
+                    <span className="w-1 h-1 rounded-full bg-[#F5F5F7]/80 animate-typing-dot-2 shrink-0" />
+                    <span className="w-1 h-1 rounded-full bg-[#F5F5F7]/80 animate-typing-dot-3 shrink-0" />
                   </div>
                 </div>
               )}

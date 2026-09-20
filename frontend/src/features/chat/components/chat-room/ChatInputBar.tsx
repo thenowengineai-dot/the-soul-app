@@ -133,10 +133,10 @@ export function ChatInputBar({
               type="button"
               onClick={() => setIsPlusMenuOpen(prev => !prev)}
               title="ตัวเลือกเพิ่มเติม"
-              className={`w-[44px] h-[44px] sm:w-[48px] sm:h-[48px] rounded-full flex items-center justify-center transition-all cursor-pointer active:scale-95 border ${
+              className={`w-[44px] h-[44px] sm:w-[48px] sm:h-[48px] rounded-full flex items-center justify-center transition-all cursor-pointer active:scale-95 border backdrop-blur-2xl ${
                 isPlusMenuOpen || isEmojiOpen
-                  ? 'bg-white/20 text-white border-white/25 shadow-inner'
-                  : 'bg-[#252528] hover:bg-[#2F2F34] text-[#A1A1A8] hover:text-white border-white/[0.08] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_16px_rgba(0,0,0,0.35)]'
+                  ? 'bg-white/25 text-white border-white/30 shadow-inner'
+                  : 'bg-white/[0.12] hover:bg-white/[0.18] text-white/80 hover:text-white border-white/15 hover:border-white/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]'
               }`}
             >
               <Plus size={20} strokeWidth={2} className={`transition-transform duration-200 ${isPlusMenuOpen ? 'rotate-45' : ''}`} />
@@ -186,9 +186,9 @@ export function ChatInputBar({
             />
           </div>
 
-          {/* Unified Capsule Input Box (Balanced Dark Dock: #252528) */}
+          {/* Unified Capsule Input Box (Luminous White Frosted Glass Dock สไตล์ Apple Music) */}
           <div 
-            className={`flex-1 h-[52px] sm:h-[56px] bg-[#252528] rounded-full flex items-center pl-4 sm:pl-5 pr-1.5 sm:pr-2 border border-white/[0.08] hover:border-white/15 focus-within:border-white/25 focus-within:shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_8px_32px_rgba(0,0,0,0.5)] transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_20px_rgba(0,0,0,0.35)] ${
+            className={`flex-1 h-[52px] sm:h-[56px] bg-white/[0.12] hover:bg-white/[0.16] focus-within:bg-white/[0.16] backdrop-blur-2xl rounded-full flex items-center pl-4 sm:pl-5 pr-1.5 sm:pr-2 border border-white/15 hover:border-white/25 focus-within:border-white/35 transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] ${
               isStreaming ? 'opacity-70' : ''
             }`}
           >
@@ -205,7 +205,7 @@ export function ChatInputBar({
                   ? "กำลังตอบกลับ..." 
                   : `กำลังส่งข้อความไปหา ${chatName || 'ตัวละคร'}...`
               } 
-              className={`flex-1 bg-transparent outline-none text-[#F2F2F5] placeholder-white/35 text-[15px] pr-2 font-normal ${
+              className={`flex-1 bg-transparent outline-none text-white placeholder-white/45 text-[15px] pr-2 font-normal ${
                 isStreaming ? 'cursor-not-allowed' : ''
               }`} 
             />
@@ -228,7 +228,7 @@ export function ChatInputBar({
                 type="button"
                 disabled
                 title="การส่งเสียง (Voice Input)"
-                className="w-[40px] h-[40px] sm:w-[42px] sm:h-[42px] rounded-full flex items-center justify-center text-white/35 transition-all shrink-0 cursor-default"
+                className="w-[40px] h-[40px] sm:w-[42px] sm:h-[42px] rounded-full flex items-center justify-center text-white/45 transition-all shrink-0 cursor-default"
               >
                 <AudioLines size={18} strokeWidth={1.75} />
               </button>

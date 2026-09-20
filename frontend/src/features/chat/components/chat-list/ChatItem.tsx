@@ -24,7 +24,7 @@ export function ChatItem({
   return (
     <div 
       onClick={onClick} 
-      className={`group relative mx-2 my-0.5 flex items-center gap-3 px-3 py-2.5 rounded-2xl cursor-pointer transition-all duration-200 select-none ${
+      className={`group relative mx-2 my-1 flex items-center gap-3.5 px-3.5 py-3 rounded-2xl cursor-pointer transition-all duration-200 select-none ${
         isActive 
           ? 'bg-white/[0.08] shadow-sm ring-1 ring-white/[0.06]' 
           : 'hover:bg-white/[0.04] active:scale-[0.98]'
@@ -42,7 +42,7 @@ export function ChatItem({
       {/* 2. ฝั่งเนื้อหา: 2 แถวแบบ Balance (Apple Messages / Telegram Style) */}
       <div className="flex-1 min-w-0 flex flex-col justify-center">
         {/* แถวที่ 1: ชื่อตัวละคร, ป้ายแท็กตัวอย่าง & ตัวเลขเวลา */}
-        <div className="flex items-center justify-between gap-1.5 mb-1 min-w-0">
+        <div className="flex items-center justify-between gap-1.5 mb-1.5 min-w-0">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="font-semibold text-[#F5F5F7] truncate text-[14px] leading-tight">
               {name}

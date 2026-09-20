@@ -40,21 +40,21 @@ export function MessageBubble({
     )
   }
 
-  // 2. จัดการ VO (Voice Over): Horizon Line Scene Interlude (เส้นขอบฟ้าคั่นฉาก สไตล์ Apple Minimalist)
-  // เพิ่ม Space บน-ล่างอย่างกว้างขวาง (my-14 sm:my-20) ขนาบด้วยเส้นขอบฟ้า Hairline Gradient Fade บางเบา ไร้สีทอง
+  // 2. จัดการ VO (Voice Over): Cinematic Prologue (บทบรรยายฉากทรงพลังสไตล์ Harry Potter)
+  // ตัวตรง 15-16px น้ำหนัก 400 สีเงินแสงจันทร์ #D6D6DC ขนาบด้วยเส้นขอบฟ้าและ Space กว้างขวาง
   if (message.type === 'vo') {
     return (
-      <div className="w-full flex flex-col items-center justify-center px-6 select-text my-14 sm:my-20 animate-in fade-in duration-300">
+      <div className="w-full flex flex-col items-center justify-center px-6 select-text my-12 sm:my-16 animate-in fade-in duration-300">
         {/* เส้นขอบฟ้าเหนือบทบรรยาย (Horizon Line - Hairline Gradient Fade) */}
-        <div className="w-full max-w-[280px] sm:max-w-[400px] h-[1px] bg-gradient-to-r from-transparent via-white/[0.15] to-transparent mb-5 sm:mb-6 select-none" />
+        <div className="w-full max-w-[280px] sm:max-w-[420px] h-[1px] bg-gradient-to-r from-transparent via-white/[0.14] to-transparent mb-5 sm:mb-6 select-none" />
 
-        {/* ข้อความบทบรรยายฉาก (Minimalist Monochromatic Typography) */}
-        <p className="max-w-[560px] text-[13.5px] sm:text-[14px] leading-[1.85] text-[#BEBEC4] font-light text-center tracking-wide select-text italic">
+        {/* ข้อความบทบรรยายฉาก (Cinematic Monochromatic Typography: ตัวตรง ไม่เอียง คมชัดทรงพลัง) */}
+        <p className="max-w-[580px] text-[15px] sm:text-[16px] leading-[1.85] text-[#D6D6DC] font-normal text-center tracking-wide select-text">
           {message.text}
         </p>
 
         {/* เส้นขอบฟ้าใต้บทบรรยาย (Horizon Line - Hairline Gradient Fade) */}
-        <div className="w-full max-w-[280px] sm:max-w-[400px] h-[1px] bg-gradient-to-r from-transparent via-white/[0.15] to-transparent mt-5 sm:mt-6 select-none" />
+        <div className="w-full max-w-[280px] sm:max-w-[420px] h-[1px] bg-gradient-to-r from-transparent via-white/[0.14] to-transparent mt-5 sm:mt-6 select-none" />
       </div>
     )
   }
@@ -82,14 +82,14 @@ export function MessageBubble({
           // - บับเบิ้ลสุดท้าย (isLastInGroup): มีหัวแหลม/หางคำพูด (Speech Tail) เชื่อมโยงหาผู้ส่ง
           <div className="relative inline-block max-w-[85%] sm:max-w-[75%]">
             <div className={`
-              px-4 py-2 text-[15px] leading-[22px] select-text transition-all min-h-[38px] flex items-center
+              px-4 py-2 text-[15px] leading-[22px] select-text transition-all min-h-[38px] flex items-center font-normal
               ${isMe 
-                ? `bg-gradient-to-br from-[#ff0030] to-[#ea0063] text-white font-medium ${
+                ? `bg-gradient-to-br from-[#ff0030] to-[#ea0063] text-[#F2F2F5] ${
                     isLastInGroup 
                       ? 'rounded-[18px] rounded-br-[4px]' 
                       : 'rounded-[18px]'
                   }` 
-                : `bg-[#2f2f35] text-white ${
+                : `bg-[#2f2f35] text-[#E5E5EA] ${
                     isLastInGroup 
                       ? 'rounded-[18px] rounded-bl-[4px]' 
                       : 'rounded-[18px]'

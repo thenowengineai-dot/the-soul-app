@@ -40,17 +40,13 @@ export function MessageBubble({
     )
   }
 
-  // 2. จัดการ VO (Voice Over): แนวทาง A [Zen Horizon - เส้นขอบฟ้าเดี่ยว]
-  // ลอยโปร่งกลางจอ เว้นระยะ space หายใจ my-8 sm:my-10 เส้นขอบฟ้าเดี่ยว 1px ด้านบน จางหายหัว-ท้าย ไร้เส้นล่างประกบเป็นแบนเนอร์
+  // 2. จัดการ VO (Voice Over): แนวทาง B [Whispered Glass Pill - แคปซูลหมอนแก้วลอยตัว สไตล์ X Date Stamp]
+  // ลอยโปร่งกลางจอในแคปซูลกระจกฝ้าเนื้อแมตต์ เว้นระยะ space หายใจ my-8 sm:my-10 ทำหน้าที่เป็นจุดพักสายตาอย่างแนบเนียน
   if (message.type === 'vo') {
     return (
       <div className="w-full flex justify-center px-4 select-text my-8 sm:my-10">
-        <div className="w-full max-w-[590px] flex flex-col items-center">
-          {/* เส้นขอบฟ้าเดี่ยว (Zen Horizon Hairline) บางเฉียบ 1px ไล่เฉดจางหายหัว-ท้าย */}
-          <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent mb-4 sm:mb-5" />
-          
-          {/* ข้อความบรรยายฉาก ฟอนต์ 13px-13.5px สีเงินนุ่มนวล พร้อม leading-[1.7] สำหรับวรรณยุกต์ไทย */}
-          <p className="text-[13px] sm:text-[13.5px] leading-[1.7] text-[#9CA3AF] font-light text-center px-6 tracking-wide select-text italic">
+        <div className="max-w-[580px] px-5 py-2.5 sm:px-6 sm:py-3 rounded-[20px] sm:rounded-full bg-gradient-to-b from-white/[0.045] to-white/[0.02] backdrop-blur-xl border border-white/[0.07] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_24px_rgba(0,0,0,0.35)] flex items-center justify-center">
+          <p className="text-[13px] sm:text-[13.5px] leading-[1.7] text-[#A1A1A8] font-light text-center tracking-wide select-text italic">
             {message.text}
           </p>
         </div>

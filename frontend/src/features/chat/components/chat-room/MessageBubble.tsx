@@ -70,8 +70,8 @@ export function MessageBubble({
           // 🌟 Action (บทกวีกำกับฉาก / Whispered Stage Direction สไตล์ Apple):
           // ไร้กล่องทึบ แนบขอบซ้ายอย่างสง่างาม ใช้จุดประกายสีเงินมินิมอล ✦ คุมโทนขาวดำ ไม่ใช้สีทอง
           <div className={`flex items-start gap-2 py-0.5 select-text max-w-[92%] sm:max-w-[85%] ${isMe ? 'justify-end' : 'justify-start px-1'}`}>
-            <span className="text-[10px] text-white/45 shrink-0 select-none mt-1">✦</span>
-            <p className="text-[13.5px] sm:text-[14px] leading-relaxed text-[#CCCCD2] italic font-normal tracking-wide">
+            <span className="text-[10px] text-white/35 shrink-0 select-none mt-1">✦</span>
+            <p className="text-[13.5px] sm:text-[14px] leading-relaxed text-[#A1A1A8] italic font-normal tracking-wide">
               {message.text}
             </p>
           </div>

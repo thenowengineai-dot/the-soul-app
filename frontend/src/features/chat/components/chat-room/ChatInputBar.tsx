@@ -112,7 +112,7 @@ export function ChatInputBar({
   return (
     <div 
       data-no-advance 
-      className="sticky bottom-0 z-20 w-full pt-2 pb-4 sm:pb-5 mt-auto bg-gradient-to-t from-[#151517] via-[#151517]/95 to-transparent pointer-events-none"
+      className="sticky bottom-0 z-20 w-full pt-2 pb-4 sm:pb-5 mt-auto bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none"
     >
       <div className="w-full max-w-[740px] mx-auto px-4 sm:px-6 relative pointer-events-auto">
         
@@ -124,31 +124,31 @@ export function ChatInputBar({
         )}
 
         {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-            Unified Capsule Input Dock (Apple Music Style: h-[42px] sm:h-[44px])
+            Unified Capsule Input Dock (Apple White Frosted Glass: h-[44px] sm:h-[46px])
             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
         <div 
-          className={`w-full h-[42px] sm:h-[44px] bg-white/[0.10] hover:bg-white/[0.14] focus-within:bg-white/[0.14] backdrop-blur-2xl rounded-full flex items-center pl-1 sm:pl-1.5 pr-1 sm:pr-1.5 border border-white/[0.12] hover:border-white/[0.20] focus-within:border-white/[0.28] transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] relative ${
+          className={`w-full h-[44px] sm:h-[46px] bg-white/[0.10] hover:bg-white/[0.14] focus-within:bg-white/[0.14] backdrop-blur-2xl rounded-full flex items-center pl-1.5 sm:pl-2 pr-1.5 sm:pr-2 border border-white/[0.16] hover:border-white/[0.25] focus-within:border-white/[0.35] transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.20),0_4px_20px_rgba(0,0,0,0.35)] relative ${
             isStreaming ? 'opacity-70' : ''
           }`}
         >
-          {/* ปุ่ม (+) ภายในกล่องพิมพ์ฝั่งซ้าย (Apple Music Unified Left Action) */}
+          {/* ปุ่ม (+) ภายในกล่องพิมพ์ฝั่งซ้าย (Apple White Frosted Glass Pill) */}
           <div className="relative shrink-0 flex items-center" ref={plusMenuRef}>
             <button 
               type="button"
               onClick={() => setIsPlusMenuOpen(prev => !prev)}
               title="ตัวเลือกเพิ่มเติม"
-              className={`w-[32px] h-[32px] sm:w-[34px] sm:h-[34px] rounded-full flex items-center justify-center transition-all cursor-pointer active:scale-95 ${
+              className={`w-[32px] h-[32px] sm:w-[34px] sm:h-[34px] rounded-full flex items-center justify-center transition-all cursor-pointer active:scale-95 border ${
                 isPlusMenuOpen || isEmojiOpen
-                  ? 'bg-white/20 text-white shadow-inner'
-                  : 'text-white/60 hover:text-white hover:bg-white/10'
+                  ? 'bg-white/25 text-white border-white/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]'
+                  : 'bg-white/[0.08] hover:bg-white/[0.16] border-white/[0.12] hover:border-white/25 text-white/75 hover:text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]'
               }`}
             >
-              <Plus size={18} strokeWidth={2.2} className={`transition-transform duration-200 ${isPlusMenuOpen ? 'rotate-45' : ''}`} />
+              <Plus size={17} strokeWidth={2.2} className={`transition-transform duration-200 ${isPlusMenuOpen ? 'rotate-45' : ''}`} />
             </button>
 
             {/* Plus Menu Action Popover */}
             {isPlusMenuOpen && (
-              <div className="absolute bottom-[calc(100%+12px)] left-0 z-50 w-[200px] bg-[#161618]/95 backdrop-blur-2xl border border-white/[0.10] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_12px_32px_rgba(0,0,0,0.6)] rounded-2xl p-1.5 animate-in fade-in zoom-in-95 duration-150">
+              <div className="absolute bottom-[calc(100%+12px)] left-0 z-50 w-[210px] bg-[#161618]/90 backdrop-blur-2xl border border-white/[0.14] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.6)] rounded-2xl p-1.5 animate-in fade-in zoom-in-95 duration-150">
                 <button
                   type="button"
                   onClick={() => {
@@ -203,32 +203,32 @@ export function ChatInputBar({
                 ? "กำลังตอบกลับ..." 
                 : `กำลังส่งข้อความไปหา ${chatName || 'ตัวละคร'}...`
             } 
-            className={`flex-1 bg-transparent outline-none text-white placeholder-white/40 text-[14.5px] sm:text-[15px] px-2 font-normal ${
+            className={`flex-1 bg-transparent outline-none text-white placeholder-white/40 text-[14px] sm:text-[14.5px] px-2.5 font-normal tracking-tight ${
               isStreaming ? 'cursor-not-allowed' : ''
             }`} 
           />
 
-          {/* ปุ่มด้านขวามือในกล่องพิมพ์: Waveform ตอนว่างเปล่า vs. Send Arrow ตอนมีข้อความ */}
+          {/* ปุ่มด้านขวามือในกล่องพิมพ์: Waveform ตอนว่างเปล่า vs. Carmine Send Arrow ตอนมีข้อความ */}
           {hasText ? (
             <button 
               type="button"
               onClick={onSendMessage}
               disabled={isStreaming}
               title="ส่งข้อความ"
-              className={`w-[32px] h-[32px] sm:w-[34px] sm:h-[34px] rounded-full bg-gradient-to-br from-[#ff0030] to-[#ea0063] text-white flex items-center justify-center hover:brightness-105 active:scale-95 transition-all shrink-0 cursor-pointer ${
+              className={`w-[32px] h-[32px] sm:w-[34px] sm:h-[34px] rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white flex items-center justify-center border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.30),0_2px_8px_rgba(239,38,76,0.35)] active:scale-95 transition-all shrink-0 cursor-pointer ${
                 isStreaming ? 'opacity-50 cursor-not-allowed' : ''
               }`}
             >
-              <ArrowUp size={17} strokeWidth={2.2} />
+              <ArrowUp size={17} strokeWidth={2.4} />
             </button>
           ) : (
             <button 
               type="button"
               disabled
               title="การส่งเสียง (Voice Input)"
-              className="w-[32px] h-[32px] sm:w-[34px] sm:h-[34px] rounded-full flex items-center justify-center text-white/40 transition-all shrink-0 cursor-default"
+              className="w-[32px] h-[32px] sm:w-[34px] sm:h-[34px] rounded-full flex items-center justify-center bg-white/[0.06] border border-white/[0.10] text-white/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-all shrink-0 cursor-default"
             >
-              <AudioLines size={17} strokeWidth={1.75} />
+              <AudioLines size={16} strokeWidth={1.8} />
             </button>
           )}
         </div>

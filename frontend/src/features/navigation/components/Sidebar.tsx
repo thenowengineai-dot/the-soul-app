@@ -89,16 +89,18 @@ function Sidebar({
       ${isHomeMode ? 'h-full pt-2 sm:pt-2.5' : 'h-screen pt-2 sm:pt-2.5'} 
       flex-shrink-0 border-r border-white/[0.06] flex flex-col pb-3 bg-[#151517] relative transition-all duration-300 ease-in-out z-20 select-none overscroll-none touch-pan-y
     `}>
-      {/* Sleek Apple Panel Toggle Button sitting on the vertical divider line */}
-      <button 
-        type="button"
-        onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
-        title={isSidebarExpanded ? "ย่อแถบเมนู" : "ขยายแถบเมนู"}
-        aria-label={isSidebarExpanded ? "ย่อแถบเมนู" : "ขยายแถบเมนู"}
-        className="absolute -right-3 top-[18px] sm:top-[20px] z-30 w-6 h-6 rounded-full bg-[#18181A] border border-white/15 flex items-center justify-center text-[#86868B] hover:text-[#F5F5F7] hover:bg-[#252528] hover:border-white/35 shadow-md cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95 select-none"
-      >
-        <PanelLeft size={12} strokeWidth={1.8} className={`transition-transform duration-200 ${isSidebarExpanded ? '' : 'rotate-180'}`} />
-      </button>
+      {/* Sleek Apple Panel Toggle Button sitting on the vertical divider line (Home Mode only) */}
+      {isHomeMode && (
+        <button 
+          type="button"
+          onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
+          title={isSidebarExpanded ? "ย่อแถบเมนู" : "ขยายแถบเมนู"}
+          aria-label={isSidebarExpanded ? "ย่อแถบเมนู" : "ขยายแถบเมนู"}
+          className="absolute -right-3 top-[18px] sm:top-[20px] z-30 w-6 h-6 rounded-full bg-[#18181A] border border-white/15 flex items-center justify-center text-[#86868B] hover:text-[#F5F5F7] hover:bg-[#252528] hover:border-white/35 shadow-md cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95 select-none"
+        >
+          <PanelLeft size={12} strokeWidth={1.8} className={`transition-transform duration-200 ${isSidebarExpanded ? '' : 'rotate-180'}`} />
+        </button>
+      )}
 
       {/* Top Logo (Rendered only when NOT in home mode; on home mode, it is displayed in HomeTopBar) */}
       {!isHomeMode && (

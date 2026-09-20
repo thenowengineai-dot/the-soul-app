@@ -1,4 +1,4 @@
-import { ChevronRight, PanelLeftOpen, PanelLeftClose, PanelRightOpen, Terminal } from 'lucide-react'
+import { ChevronRight, Menu, PanelRightOpen, Terminal } from 'lucide-react'
 import SingleCoinIcon from '../../../home/components/SingleCoinIcon'
 import type { ChatRoomHeaderProps } from '../../types'
 
@@ -19,20 +19,19 @@ export function ChatRoomHeader({
 
   return (
     <div data-no-advance className="sticky top-0 z-30 w-full pl-2 sm:pl-3 pr-2 sm:pr-4 pt-2 sm:pt-2.5 pb-2 flex items-start justify-between pointer-events-none select-none relative min-h-[78px] sm:min-h-[86px]">
-      {/* Left: [Toggle ChatList Button - Subtle White Frosted Glass] */}
-      <div className="flex items-center gap-1.5 pointer-events-auto mt-0.5 sm:mt-1">
-        <button
-          type="button"
-          onClick={onToggleChatList}
-          title={isChatListOpen ? 'ซ่อนแถบแชท' : 'เปิดแถบแชท'}
-          className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] backdrop-blur-2xl border border-white/[0.10] hover:border-white/20 text-white/80 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] active:scale-95 select-none"
-        >
-          {isChatListOpen ? (
-            <PanelLeftClose size={16} strokeWidth={1.8} />
-          ) : (
-            <PanelLeftOpen size={16} strokeWidth={1.8} />
-          )}
-        </button>
+      {/* Left: [Toggle ChatList Hamburger Button - Subtle White Frosted Glass, shown when ChatList is collapsed] */}
+      <div className="flex items-center gap-1.5 pointer-events-auto mt-0.5 sm:mt-1 min-w-[38px]">
+        {!isChatListOpen && onToggleChatList && (
+          <button
+            type="button"
+            onClick={onToggleChatList}
+            title="เปิดแถบแชท"
+            aria-label="เปิดแถบแชท"
+            className="w-9 h-9 sm:w-[38px] sm:h-[38px] rounded-full bg-white/[0.06] hover:bg-white/[0.12] backdrop-blur-2xl border border-white/[0.10] hover:border-white/20 text-white/85 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] active:scale-95 select-none shrink-0"
+          >
+            <Menu size={18} strokeWidth={2} />
+          </button>
+        )}
       </div>
 
       {/* Center: Apple-LINE Integrated Glass Capsule (Avatar ใหญ่ 48-52px + แคปซูลชื่อและสเตตัส White Frosted Glass) */}

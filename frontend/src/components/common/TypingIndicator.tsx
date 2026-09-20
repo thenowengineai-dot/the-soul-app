@@ -58,7 +58,7 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
       {variant === 'hybrid' ? (
         // 🌟 Hybrid Living Presence Indicator: ดาวประกายคู่จุดไข่ปลา (✦ • • •)
         // สัญลักษณ์สากล: ตัวละครมีชีวิต กำลังรับรู้ และกำลังตอบสนอง (ครอบคลุมทั้งกิริยาท่าทางและบทพูด)
-        <div className="inline-flex items-center gap-2 px-[13px] py-1.5 min-h-[34.5px] h-[34.5px] bg-app-surface border border-white/10 rounded-[18px] rounded-bl-none shadow-sm animate-in fade-in zoom-in-95 duration-200">
+        <div className="inline-flex items-center gap-2 px-[13px] py-1.5 min-h-[34.5px] h-[34.5px] bg-app-surface rounded-[18px] rounded-bl-none animate-in fade-in zoom-in-95 duration-200">
           {/* ดาวประกาย 4 แฉก (Four-point Starlight Sparkle) กะพริบจังหวะนุ่มนวล */}
           <svg 
             viewBox="0 0 24 24" 
@@ -86,7 +86,7 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
         </div>
       ) : variant === 'action' ? (
         // 🌟 Action Presence Indicator (The Starlight Pulse: ✦ กำลังเคลื่อนไหว...)
-        <div className="inline-flex items-center gap-2 px-[14px] py-1.5 min-h-[34.5px] h-[34.5px] bg-app-surface border border-white/10 rounded-[18px] rounded-bl-none shadow-sm animate-in fade-in zoom-in-95 duration-200">
+        <div className="inline-flex items-center gap-2 px-[14px] py-1.5 min-h-[34.5px] h-[34.5px] bg-app-surface rounded-[18px] rounded-bl-none animate-in fade-in zoom-in-95 duration-200">
           {/* ดาวประกาย 4 แฉก (Four-point Starlight Sparkle) กะพริบจังหวะลมหายใจ */}
           <svg 
             viewBox="0 0 24 24" 
@@ -101,7 +101,7 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
         </div>
       ) : (
         // บับเบิ้ล 3 จุด สไตล์ Apple iMessage & X Lights Out (สเปกเดียวกับ AI MessageBubble 1:1 เป๊ะๆ)
-        <div className="inline-flex items-center justify-center px-[15px] py-1.5 min-h-[34.5px] h-[34.5px] bg-app-surface rounded-[18px] rounded-bl-none shadow-sm">
+        <div className="inline-flex items-center justify-center px-[15px] py-1.5 min-h-[34.5px] h-[34.5px] bg-app-surface rounded-[18px] rounded-bl-none">
           <div className="inline-flex items-center gap-1.5">
             <span
               className="w-1.5 h-1.5 rounded-full animate-typing-dot-1 shrink-0"

@@ -25,8 +25,8 @@ export function ChatList({
 
   return (
     <div className={`
-      h-full flex-shrink-0 border-r border-white/[0.06] hidden md:flex flex-col bg-[#131315] backdrop-blur-xl z-10 overflow-hidden transition-all duration-300 ease-in-out
-      ${isOpen ? 'w-[300px] opacity-100' : 'w-0 border-r-0 opacity-0 pointer-events-none'}
+      h-full flex-shrink-0 hidden md:flex flex-col bg-[#131315]/95 backdrop-blur-2xl z-10 overflow-hidden transition-all duration-300 ease-in-out
+      ${isOpen ? 'w-[300px] opacity-100' : 'w-0 opacity-0 pointer-events-none'}
     `}>
       {/* Inner Fixed Container (คงความกว้างไว้เพื่อไม่ให้เลย์เอาต์บีบตัวขณะสไลด์เปิด-ปิด) */}
       <div className="w-[300px] h-full flex flex-col flex-shrink-0">

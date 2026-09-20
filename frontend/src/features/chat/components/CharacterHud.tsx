@@ -190,7 +190,7 @@ function CharacterHud({ data, isOpen, onClose }: CharacterHudProps) {
       />
 
       <aside 
-        className={`h-full flex-shrink-0 flex flex-col bg-[#161618]/90 backdrop-blur-2xl border-l border-white/[0.08] select-none overflow-hidden transition-all duration-300 fixed inset-y-0 right-0 z-50 shadow-2xl lg:relative lg:z-10 lg:shadow-none max-w-[92vw] ${
+        className={`h-full flex-shrink-0 flex flex-col bg-[#1E1E22]/95 backdrop-blur-2xl select-none overflow-hidden transition-all duration-300 fixed inset-y-0 right-0 z-50 shadow-2xl lg:relative lg:z-10 lg:shadow-none max-w-[92vw] ${
           hudWidth === 'extra' ? 'w-[360px]' : hudWidth === 'wide' ? 'w-[320px]' : 'w-[280px]'
         }`}
       >

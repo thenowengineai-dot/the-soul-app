@@ -124,22 +124,26 @@ export function ChatInputBar({
         )}
 
         {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-            Input Bar with Standalone Front (+) Button (Frosted Glass Dock: bg-white/[0.10])
+            Unified Capsule Input Dock (Apple Music Style: h-[42px] sm:h-[44px])
             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-        <div className="w-full relative flex items-center gap-2 sm:gap-2.5">
-          {/* ปุ่ม (+) แยกเดี่ยวอยู่ด้านหน้ากล่อง (Apple iMessage Standalone Circle) */}
+        <div 
+          className={`w-full h-[42px] sm:h-[44px] bg-white/[0.10] hover:bg-white/[0.14] focus-within:bg-white/[0.14] backdrop-blur-2xl rounded-full flex items-center pl-1 sm:pl-1.5 pr-1 sm:pr-1.5 border border-white/[0.12] hover:border-white/[0.20] focus-within:border-white/[0.28] transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] relative ${
+            isStreaming ? 'opacity-70' : ''
+          }`}
+        >
+          {/* ปุ่ม (+) ภายในกล่องพิมพ์ฝั่งซ้าย (Apple Music Unified Left Action) */}
           <div className="relative shrink-0 flex items-center" ref={plusMenuRef}>
             <button 
               type="button"
               onClick={() => setIsPlusMenuOpen(prev => !prev)}
               title="ตัวเลือกเพิ่มเติม"
-              className={`w-[44px] h-[44px] sm:w-[48px] sm:h-[48px] rounded-full flex items-center justify-center transition-all cursor-pointer active:scale-95 border backdrop-blur-2xl ${
+              className={`w-[32px] h-[32px] sm:w-[34px] sm:h-[34px] rounded-full flex items-center justify-center transition-all cursor-pointer active:scale-95 ${
                 isPlusMenuOpen || isEmojiOpen
-                  ? 'bg-white/22 text-white border-white/28 shadow-inner'
-                  : 'bg-white/[0.10] hover:bg-white/[0.15] text-white/80 hover:text-white border-white/[0.12] hover:border-white/[0.20] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]'
+                  ? 'bg-white/20 text-white shadow-inner'
+                  : 'text-white/60 hover:text-white hover:bg-white/10'
               }`}
             >
-              <Plus size={20} strokeWidth={2} className={`transition-transform duration-200 ${isPlusMenuOpen ? 'rotate-45' : ''}`} />
+              <Plus size={18} strokeWidth={2.2} className={`transition-transform duration-200 ${isPlusMenuOpen ? 'rotate-45' : ''}`} />
             </button>
 
             {/* Plus Menu Action Popover */}
@@ -186,54 +190,47 @@ export function ChatInputBar({
             />
           </div>
 
-          {/* Unified Capsule Input Box (Frosted Glass Dock: bg-white/[0.10]) */}
-          <div 
-            className={`flex-1 h-[52px] sm:h-[56px] bg-white/[0.10] hover:bg-white/[0.14] focus-within:bg-white/[0.14] backdrop-blur-2xl rounded-full flex items-center pl-4 sm:pl-5 pr-1.5 sm:pr-2 border border-white/[0.12] hover:border-white/[0.20] focus-within:border-white/[0.28] transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] ${
-              isStreaming ? 'opacity-70' : ''
-            }`}
-          >
-            {/* ช่องกรอกข้อความ (Personalized Placeholder พร้อมระยะ Breathing Room) */}
-            <input 
-              ref={inputRef}
-              type="text" 
-              value={inputMessage}
-              onChange={(e) => onInputChange?.(e.target.value)}
-              onKeyDown={handleKeyDown}
-              disabled={isStreaming}
-              placeholder={
-                isStreaming 
-                  ? "กำลังตอบกลับ..." 
-                  : `กำลังส่งข้อความไปหา ${chatName || 'ตัวละคร'}...`
-              } 
-              className={`flex-1 bg-transparent outline-none text-white placeholder-white/40 text-[15px] pr-2 font-normal ${
-                isStreaming ? 'cursor-not-allowed' : ''
-              }`} 
-            />
+          {/* ช่องกรอกข้อความ (Personalized Placeholder พร้อมระยะ Breathing Room) */}
+          <input 
+            ref={inputRef}
+            type="text" 
+            value={inputMessage}
+            onChange={(e) => onInputChange?.(e.target.value)}
+            onKeyDown={handleKeyDown}
+            disabled={isStreaming}
+            placeholder={
+              isStreaming 
+                ? "กำลังตอบกลับ..." 
+                : `กำลังส่งข้อความไปหา ${chatName || 'ตัวละคร'}...`
+            } 
+            className={`flex-1 bg-transparent outline-none text-white placeholder-white/40 text-[14.5px] sm:text-[15px] px-2 font-normal ${
+              isStreaming ? 'cursor-not-allowed' : ''
+            }`} 
+          />
 
-            {/* ปุ่มด้านขวามือในกล่องพิมพ์: Waveform ตอนว่างเปล่า vs. Send Arrow ตอนมีข้อความ */}
-            {hasText ? (
-              <button 
-                type="button"
-                onClick={onSendMessage}
-                disabled={isStreaming}
-                title="ส่งข้อความ"
-                className={`w-[40px] h-[40px] sm:w-[42px] sm:h-[42px] rounded-full bg-gradient-to-br from-[#ff0030] to-[#ea0063] text-white flex items-center justify-center hover:brightness-105 active:scale-95 transition-all shrink-0 cursor-pointer ${
-                  isStreaming ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-              >
-                <ArrowUp size={19} strokeWidth={2.0} />
-              </button>
-            ) : (
-              <button 
-                type="button"
-                disabled
-                title="การส่งเสียง (Voice Input)"
-                className="w-[40px] h-[40px] sm:w-[42px] sm:h-[42px] rounded-full flex items-center justify-center text-white/40 transition-all shrink-0 cursor-default"
-              >
-                <AudioLines size={18} strokeWidth={1.75} />
-              </button>
-            )}
-          </div>
+          {/* ปุ่มด้านขวามือในกล่องพิมพ์: Waveform ตอนว่างเปล่า vs. Send Arrow ตอนมีข้อความ */}
+          {hasText ? (
+            <button 
+              type="button"
+              onClick={onSendMessage}
+              disabled={isStreaming}
+              title="ส่งข้อความ"
+              className={`w-[32px] h-[32px] sm:w-[34px] sm:h-[34px] rounded-full bg-gradient-to-br from-[#ff0030] to-[#ea0063] text-white flex items-center justify-center hover:brightness-105 active:scale-95 transition-all shrink-0 cursor-pointer ${
+                isStreaming ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            >
+              <ArrowUp size={17} strokeWidth={2.2} />
+            </button>
+          ) : (
+            <button 
+              type="button"
+              disabled
+              title="การส่งเสียง (Voice Input)"
+              className="w-[32px] h-[32px] sm:w-[34px] sm:h-[34px] rounded-full flex items-center justify-center text-white/40 transition-all shrink-0 cursor-default"
+            >
+              <AudioLines size={17} strokeWidth={1.75} />
+            </button>
+          )}
         </div>
 
       </div>

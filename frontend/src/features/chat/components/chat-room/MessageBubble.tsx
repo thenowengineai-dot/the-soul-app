@@ -79,7 +79,7 @@ export function MessageBubble({
             <div className={`
               px-4 py-2 text-[15px] leading-[22px] select-text transition-all min-h-[38px] flex items-center
               ${isMe 
-                ? `bg-gradient-to-br from-[#B81630] via-[#9E1228] to-[#3A0713] text-[#E5E5EA] font-normal tracking-[0.012em] shadow-[inset_0_1px_0_rgba(229,229,234,0.16),0_2px_8px_rgba(0,0,0,0.4)] ${
+                ? `bg-gradient-to-b from-[#FB5971] to-[#FA233B] text-white font-medium shadow-[inset_0_1px_0_rgba(255,255,255,0.32),0_2px_10px_rgba(250,35,59,0.25)] ${
                     isLastInGroup 
                       ? 'rounded-[18px] rounded-br-[4px]' 
                       : 'rounded-[18px]'
@@ -99,7 +99,7 @@ export function MessageBubble({
               <svg 
                 className="absolute bottom-0 -right-[6px] w-[10px] h-[15px] pointer-events-none" 
                 viewBox="0 0 10 15"
-                fill="#3A0713"
+                fill="#FA233B"
               >
                 <path d="M0,0 C0,5 3,11 10,15 L0,15 Z" />
               </svg>

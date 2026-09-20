@@ -79,12 +79,12 @@ export function MessageBubble({
             <div className={`
               px-4 py-2 text-[15px] leading-[22px] select-text transition-all min-h-[38px] flex items-center
               ${isMe 
-                ? `bg-gradient-to-br from-[#EA1D52] via-[#D11142] to-[#9C0C30] text-[#FFEBF0] shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_3px_12px_rgba(209,17,66,0.25)] ${
+                ? `bg-gradient-to-br from-[#D22147] via-[#B8163A] to-[#8E0D29] text-[#FFEBF0] shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_3px_12px_rgba(184,22,58,0.25)] ${
                     isLastInGroup 
                       ? 'rounded-[18px] rounded-br-[4px]' 
                       : 'rounded-[18px]'
                   }` 
-                : `bg-[#26262A] text-[#F2F2F5] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_2px_8px_rgba(0,0,0,0.3)] ${
+                : `bg-[#26262A] text-[#F2F2F5] border border-white/[0.06] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_2px_8px_rgba(0,0,0,0.3)] ${
                     isLastInGroup 
                       ? 'rounded-[18px] rounded-bl-[4px]' 
                       : 'rounded-[18px]'
@@ -99,7 +99,7 @@ export function MessageBubble({
               <svg 
                 className="absolute bottom-0 -right-[6px] w-[10px] h-[15px] pointer-events-none" 
                 viewBox="0 0 10 15"
-                fill="#9C0C30"
+                fill="#8E0D29"
               >
                 <path d="M0,0 C0,5 3,11 10,15 L0,15 Z" />
               </svg>

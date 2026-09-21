@@ -438,17 +438,17 @@ flowchart LR
 
 ---
 
-#### 📜 Card W2: ปฐมบทภาพยนตร์ & แก่นเรื่องย่อ (Cinematic Prologue Plaque) — 2x2 (`346px × 346px`)
-- **Distance Silhouette:** **"The Cinematic Narrative Scroll" (แผ่นจารึกบทนำภาพยนตร์ ขนาบด้วยเส้นขอบฟ้าคู่ Double Horizon Hairline)**
-  - ถอดแบบฟีลลิ่งวรรณกรรมมาจาก Card 4 (Lore & Background Story) ของฝั่งตัวละคร
+#### 📜 Card W2: บทนำ (Cinematic Prologue) — 2x1 (`346px × 165px`)
+- **Distance Silhouette:** **"The Cinematic Narrative Strip" (แถบจารึกบทนำภาพยนตร์สไตล์แผ่นสคริปต์ฮอลลีวูด)**
+  - ใช้ขนาด **2x1 (`346px × 165px`)** ตามหลัก Lego Symmetrical Math ประกบข้าง Card W1 และซ้อนคู่กับการ์ด 2x1 ใบถัดไปได้สนิท 100%
 - **Layout & Visual Hierarchy:**
-  - **Header Row:** ป้ายหัวข้อ `ปฐมบทภาพยนตร์` พร้อมจุดสถานะสีแดงคาร์ไมน์ `#EF264C` และปุ่ม In-Place Edit ชิดขวา
-  - **Double Horizon Hairline Gradient:** เส้นขอบฟ้าโปร่งแสงคู่ 1px ขนาบหัวและท้ายข้อความบทบรรยาย
-  - **Cinematic Narrative Prose (แก่นเรื่องย่อภาพยนตร์):**
-    - จัดวางกึ่งกลางจออย่างสง่างาม:
-      > *"ทริปเก็บกู้สมุนไพรของชมรมพฤกษศาสตร์ ณ เรียวกังออนเซ็นกลางหุบเขาที่ดูสงบเงียบ ควรจะเป็นช่วงเวลาแห่งการพักผ่อน แต่เมื่อเมฆฝนดำทะมึนเริ่มปิดล้อมป่า ละอองเกสรพิษกำเริบ และสติของรุ่นพี่สาวแว่นเริ่มหลุดลอย [PLAYER] กำลังจะถูกเหวี่ยงเข้าไปอยู่ในสถานการณ์ที่ไม่มีทางถอยกลับ..."*
-    - ขนาด `text-[13px] sm:text-[13.5px]`, สีเงินแสงจันทร์ `#D6D6DC`, จัดกึ่งกลาง `text-center`, ระยะบรรทัดกว้างขวาง `leading-[23px]`, สโครลอ่านได้อย่างลื่นไหล
-  - **Subtle Footer Meta:** ไอคอน `Clapperboard` นำทางบทนำจำลองสถานการณ์ พร้อมรหัส `SCENE 01 SETUP` แบบ Monospace
+  - **Header Row:** หัวข้อคลีนชิดซ้าย **`บทนำ`** (`text-[16px] sm:text-[17px] font-semibold text-[#F1F1F1]`) ไร้ไอคอน ไร้จุดสี ไร้วงเล็บย่อย พร้อมปุ่ม In-Place Edit ทรงกลมชิดขวา
+  - **Zero-Hairline Subtractive Design:** ไร้เส้นคั่นบน-ล่างเด็ดขาด ปล่อยให้ระยะ Whitespace และขนาดตัวอักษรกำหนดขอบเขตอย่างนุ่มนวล
+  - **Ambient Literary Watermark:** เครื่องหมายคำพูด `“` สไตล์วรรณกรรมชั้นสูงโปร่งแสงนำสายตา ช่วยให้สมองมนุษย์จำแนกได้ทันทีจากระยะไกลว่าเป็นบทความเล่าเรื่อง
+  - **Cinematic Narrative Prose:**
+    - ข้อความจัดเรียงเต็มความกว้าง 346px สบายตา: `text-[12.5px] sm:text-[13px] text-[#EDEDED] leading-[22px] tracking-tight`
+    - สโครลเลื่อนอ่านได้อย่างลื่นไหล (`overflow-y-auto custom-scrollbar`) พร้อม Affordance บรรทัดถัดไปแบบ Peeking
+  - **Zero Fake Meta:** ตัดแถบสถานะหลอกตา `SCENE 01 SETUP` ออกทั้งหมดตามปรัชญา Apple
 - **Direct Manipulation / In-Place Edit Mode:**
   - ปุ่มดินสอขวาบน แตะเพื่อเปิดฟอร์ม Textarea แก้ไขบทบรรยายเปิดโลก แล้วกดบันทึกอัปเดตลง `draft.prologue.premise` ทันที
 

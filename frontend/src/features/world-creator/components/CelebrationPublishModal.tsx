@@ -29,7 +29,7 @@ export default function CelebrationPublishModal({
   if (!isOpen) return null;
 
   const characterName = draft.title || 'ตัวละครใหม่';
-  const worldName = draft.worldTitle || 'โลกใบใหม่';
+  const worldName = draft.thai_name || draft.worldTitle || 'โลกและสถานการณ์';
   const avatar = draft.image || draft.images?.[0] || 'https://images.unsplash.com/photo-1578632767115-351597cf2477';
 
   return (

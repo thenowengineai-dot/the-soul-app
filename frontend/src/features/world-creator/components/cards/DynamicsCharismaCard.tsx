@@ -15,18 +15,19 @@ interface PrimaryStatDef {
   labelEn: string;
   angleDeg: number;
   anchor: 'start' | 'middle' | 'end';
+  rLabel: number;
   dx?: number;
   dy?: number;
 }
 
 const PRIMARY_STATS_CONFIG: PrimaryStatDef[] = [
-  { key: 'initiative', labelTh: 'การริเริ่ม', labelEn: 'Initiative', angleDeg: -90, anchor: 'middle', dy: -7 },
-  { key: 'dominance', labelTh: 'การคุมเกม', labelEn: 'Dominance', angleDeg: -38.57, anchor: 'start', dx: 4, dy: -2 },
-  { key: 'physicality', labelTh: 'เข้าหาทางกาย', labelEn: 'Physicality', angleDeg: 12.86, anchor: 'start', dx: 3, dy: 3 },
-  { key: 'playfulness', labelTh: 'ความขี้เล่น', labelEn: 'Playfulness', angleDeg: 64.29, anchor: 'middle', dx: 14, dy: 8 },
-  { key: 'formality', labelTh: 'ความเป็นทางการ', labelEn: 'Formality', angleDeg: 115.71, anchor: 'middle', dx: -14, dy: 8 },
-  { key: 'expressiveness', labelTh: 'การแสดงออก', labelEn: 'Expressiveness', angleDeg: 167.14, anchor: 'end', dx: -3, dy: 3 },
-  { key: 'honesty', labelTh: 'ความซื่อตรง', labelEn: 'Honesty', angleDeg: 218.57, anchor: 'end', dx: -4, dy: -2 },
+  { key: 'initiative', labelTh: 'การริเริ่ม', labelEn: 'Initiative', angleDeg: -90, anchor: 'middle', rLabel: 95, dy: -6 },
+  { key: 'dominance', labelTh: 'การคุมเกม', labelEn: 'Dominance', angleDeg: -38.57, anchor: 'start', rLabel: 91, dx: 3, dy: -2 },
+  { key: 'physicality', labelTh: 'เข้าหาทางกาย', labelEn: 'Physicality', angleDeg: 12.86, anchor: 'start', rLabel: 84, dx: -2, dy: 3 },
+  { key: 'playfulness', labelTh: 'ความขี้เล่น', labelEn: 'Playfulness', angleDeg: 64.29, anchor: 'middle', rLabel: 94, dx: 14, dy: 6 },
+  { key: 'formality', labelTh: 'ความเป็นทางการ', labelEn: 'Formality', angleDeg: 115.71, anchor: 'middle', rLabel: 94, dx: -14, dy: 6 },
+  { key: 'expressiveness', labelTh: 'การแสดงออก', labelEn: 'Expressiveness', angleDeg: 167.14, anchor: 'end', rLabel: 84, dx: 2, dy: 3 },
+  { key: 'honesty', labelTh: 'ความซื่อตรง', labelEn: 'Honesty', angleDeg: 218.57, anchor: 'end', rLabel: 91, dx: -3, dy: -2 },
 ];
 
 // 5 Secondary Linear Gauges Config
@@ -267,12 +268,11 @@ export default function DynamicsCharismaCard({
   // =========================================================================
   // ✦ RADAR WEB GEOMETRY ENGINE (HEPTAGON 7-AXIS)
   // =========================================================================
-  const svgWidth = 314;
+  const svgWidth = 326;
   const svgHeight = 238;
-  const cx = 157;
+  const cx = 163;
   const cy = 117;
-  const rMax = 85;
-  const labelDist = 99;
+  const rMax = 78;
 
   // Degrees to Radians helper
   const degToRad = (deg: number) => (deg * Math.PI) / 180;
@@ -321,8 +321,8 @@ export default function DynamicsCharismaCard({
   const axisLabels = PRIMARY_STATS_CONFIG.map((stat) => {
     const val = primaryStats[stat.key] ?? 5;
     const rad = degToRad(stat.angleDeg);
-    const x = cx + labelDist * Math.cos(rad) + (stat.dx || 0);
-    const y = cy + labelDist * Math.sin(rad) + (stat.dy || 0);
+    const x = cx + stat.rLabel * Math.cos(rad) + (stat.dx || 0);
+    const y = cy + stat.rLabel * Math.sin(rad) + (stat.dy || 0);
     return {
       ...stat,
       x,
@@ -337,11 +337,11 @@ export default function DynamicsCharismaCard({
         {/* ✦ CARD 3.1: THE 7-AXIS DYNAMICS RADAR (2x2 — 346px × 346px)            */}
         {/* ======================================================================= */}
         <div
-          className={`col-span-2 row-span-2 rounded-[28px] p-4 ${frostedCardClass}`}
+          className={`col-span-2 row-span-2 rounded-[28px] px-2.5 py-3.5 ${frostedCardClass}`}
           style={{ width: '346px', height: '346px' }}
         >
           {/* Header Row: Pure Title (NO icon in front) + Edit / Save Pill */}
-          <div className="flex items-center justify-between shrink-0 mb-1">
+          <div className="flex items-center justify-between shrink-0 mb-1 px-1.5">
             <div className="flex items-baseline gap-1.5">
               <span className="text-[17.5px] sm:text-[18.5px] font-bold text-[#F1F1F1] tracking-tight">
                 สเตตัส
@@ -478,7 +478,7 @@ export default function DynamicsCharismaCard({
               </div>
 
               {/* Bottom Quick Persona Capsule */}
-              <div className="w-full flex items-center justify-center">
+              <div className="w-full flex items-center justify-center px-1">
                 <div className="w-full px-3.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.07] flex items-center justify-between text-[11.5px] text-white/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
                   <span className="text-white/45">บุคลิกภาพเด่น:</span>
                   <span className="text-[#F1F1F1] font-semibold truncate ml-1">

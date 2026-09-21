@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Pencil, Check } from 'lucide-react';
+import { Pencil, Check, CloudSun, Wind, Palette } from 'lucide-react';
 import type { VaultDraft } from '../../types';
 
 interface WorldAtmosphereCardProps {
@@ -10,9 +10,9 @@ interface WorldAtmosphereCardProps {
 
 const DEFAULT_THAI_NAME = 'พฤกษศาสตร์ถอดหน้ากาก: พิษร้อนและน้ำมังกร';
 const DEFAULT_EN_NAME = 'The Botanical Poison & Dragon Water Ritual';
-const DEFAULT_WEATHER = 'แดดยามบ่ายเงียบสงัด ก่อนเมฆดำทะมึนจะกลืนทิวเขา';
-const DEFAULT_SENSORY = 'ไอหมอกกำมะถันออนเซ็น ปะทะ ลมหนาวชื้นกลางป่าสน';
-const DEFAULT_COLOR_VIBE = 'เขียวมรกตพฤกษศาสตร์ตัดแดงคาร์ไมน์พิษร้อน';
+const DEFAULT_WEATHER = 'แดดยามบ่ายเงียบสงัด • เมฆดำทะมึนจะกลืนทิวเขา';
+const DEFAULT_SENSORY = 'ไอหมอกกำมะถันออนเซ็น • ลมหนาวชื้นป่าสน';
+const DEFAULT_COLOR_VIBE = 'เขียวมรกตพฤกษศาสตร์ × แดงคาร์ไมน์พิษร้อน';
 
 export default function WorldAtmosphereCard({
   draft,
@@ -104,7 +104,7 @@ export default function WorldAtmosphereCard({
       className={`col-span-2 row-span-2 rounded-[28px] p-5 ${frostedCardClass}`}
       style={{ width: '346px', height: '346px' }}
     >
-      {/* 1. Top Bar: Apple Tactile Circular Action (No Category Badge) */}
+      {/* 1. Top Bar: Apple Tactile Circular Action (No Category Badge - Hero Plaque) */}
       <div className="flex items-center justify-end shrink-0 h-8">
         {isEditable && (
           <div>
@@ -136,48 +136,72 @@ export default function WorldAtmosphereCard({
         {!isEditing ? (
           <div className="flex-1 flex flex-col justify-between min-h-0">
             {/* Masthead Hero: Large World Title & English Subtitle (Hero Style like Card 1) */}
-            <div className="shrink-0">
-              <h1 className="text-[23px] sm:text-[25px] font-bold text-[#F1F1F1] tracking-tight leading-[1.25] line-clamp-2">
+            <div className="shrink-0 pt-0.5">
+              <h1 className="text-[22px] sm:text-[24px] font-bold text-[#F1F1F1] tracking-tight leading-[1.25] line-clamp-2">
                 {thaiName}
               </h1>
-              <div className="text-[12.5px] sm:text-[13px] text-[#A1A1A8] mt-1 font-normal leading-normal truncate">
+              <div className="text-[12px] sm:text-[12.5px] text-[#A1A1A8] mt-1 font-normal leading-normal truncate">
                 {enName}
               </div>
             </div>
 
             {/* Horizon Hairline Gradient (Under Title) */}
-            <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/[0.16] to-transparent my-3 shrink-0" />
+            <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/[0.14] to-transparent my-3 shrink-0" />
 
-            {/* Ambient Atmosphere Sanctuary (ถาดผัสสะบรรยากาศ 3 มิติเต็มรูปแบบ) */}
-            <div className="flex-1 flex flex-col justify-center space-y-2 py-0.5">
-              <div className="rounded-2xl bg-white/[0.035] border border-white/[0.07] p-3 space-y-2.5">
-                <div className="flex items-start gap-2.5 text-[12px] leading-snug">
-                  <span className="w-2 h-2 rounded-full bg-[#EF264C] shrink-0 mt-1" />
-                  <div className="min-w-0 flex-1">
-                    <span className="text-white/40 block text-[10px] font-medium uppercase tracking-wider mb-0.5">
-                      สภาพอากาศและกาลเวลา
+            {/* 💡 Concept 1: The Apple Weather / Biome Micro-Dock (3 คอลัมน์แนวนอน ไม่ตกขอบ) */}
+            <div className="rounded-[20px] bg-white/[0.035] border border-white/[0.08] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] shrink-0">
+              <div className="grid grid-cols-3 gap-2 divide-x divide-white/[0.08]">
+                {/* Column 1: Time & Weather */}
+                <div className="flex flex-col justify-between pr-1.5 min-w-0">
+                  <div className="flex items-center gap-1.5 text-white/40">
+                    <CloudSun size={12} className="shrink-0 text-amber-300/80" />
+                    <span className="text-[9.5px] uppercase font-medium tracking-wider truncate">
+                      กาลเวลา/อากาศ
                     </span>
-                    <span className="text-[#F1F1F1] font-normal leading-relaxed">{weather}</span>
+                  </div>
+                  <div
+                    className="mt-1.5 text-[11.5px] text-[#EDEDED] font-normal leading-snug line-clamp-2"
+                    title={weather}
+                  >
+                    {weather}
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2.5 text-[12px] leading-snug">
-                  <span className="w-2 h-2 rounded-full bg-amber-400/80 shrink-0 mt-1" />
-                  <div className="min-w-0 flex-1">
-                    <span className="text-white/40 block text-[10px] font-medium uppercase tracking-wider mb-0.5">
-                      ผัสสะและสิ่งแวดล้อม
+                {/* Column 2: Sensory & Biome */}
+                <div className="flex flex-col justify-between px-2 min-w-0">
+                  <div className="flex items-center gap-1.5 text-white/40">
+                    <Wind size={12} className="shrink-0 text-sky-300/80" />
+                    <span className="text-[9.5px] uppercase font-medium tracking-wider truncate">
+                      ผัสสะฉาก
                     </span>
-                    <span className="text-[#F1F1F1] font-normal leading-relaxed">{sensory}</span>
+                  </div>
+                  <div
+                    className="mt-1.5 text-[11.5px] text-[#EDEDED] font-normal leading-snug line-clamp-2"
+                    title={sensory}
+                  >
+                    {sensory}
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2.5 text-[12px] leading-snug">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400/80 shrink-0 mt-1" />
-                  <div className="min-w-0 flex-1">
-                    <span className="text-white/40 block text-[10px] font-medium uppercase tracking-wider mb-0.5">
-                      โทนสีหลัก & ไวบ์ของภาพ
+                {/* Column 3: Color Tone & Vibe */}
+                <div className="flex flex-col justify-between pl-2 min-w-0">
+                  <div className="flex items-center gap-1.5 text-white/40">
+                    <Palette size={12} className="shrink-0 text-rose-400/80" />
+                    <span className="text-[9.5px] uppercase font-medium tracking-wider truncate">
+                      โทนสีภาพ
                     </span>
-                    <span className="text-[#F1F1F1] font-normal leading-relaxed">{colorVibe}</span>
+                  </div>
+                  <div className="mt-1.5 flex flex-col gap-1 min-w-0">
+                    <div className="flex items-center gap-1 shrink-0">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_5px_rgba(52,211,153,0.35)]" />
+                      <span className="w-2 h-2 rounded-full bg-[#EF264C] shrink-0 shadow-[0_0_5px_rgba(239,38,76,0.35)]" />
+                    </div>
+                    <div
+                      className="text-[11px] text-[#EDEDED] font-normal leading-tight line-clamp-2"
+                      title={colorVibe}
+                    >
+                      {colorVibe}
+                    </div>
                   </div>
                 </div>
               </div>

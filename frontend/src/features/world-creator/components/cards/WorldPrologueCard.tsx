@@ -52,12 +52,14 @@ export default function WorldPrologueCard({
       className={`col-span-2 row-span-2 rounded-[28px] p-5 ${frostedCardClass}`}
       style={{ width: '346px', height: '346px' }}
     >
-      {/* 1. Header Row: Category Badge + In-Place Edit Control */}
-      <div className="flex items-center justify-between shrink-0 mb-1 px-0.5">
-        <div className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#EF264C]" />
-          <span className="text-[11px] font-semibold tracking-wider text-white/50 uppercase">
-            ปฐมบทภาพยนตร์
+      {/* 1. Header Row: Standard Widget Title + Meta (Strict Consistency with Character Studio) */}
+      <div className="flex items-center justify-between shrink-0 mb-2 px-0.5">
+        <div className="flex items-baseline gap-1.5 min-w-0 pr-2">
+          <span className="text-[16px] sm:text-[17px] font-semibold text-[#F1F1F1] tracking-tight whitespace-nowrap">
+            ฉากเปิดเรื่อง
+          </span>
+          <span className="text-[11.5px] font-normal text-white/45 whitespace-nowrap">
+            (บทนำ)
           </span>
         </div>
 
@@ -67,19 +69,19 @@ export default function WorldPrologueCard({
               <button
                 type="button"
                 onClick={handleSave}
-                className="w-7 h-7 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white flex items-center justify-center shadow-[0_2px_8px_rgba(239,38,76,0.4)] transition-all cursor-pointer active:scale-95"
-                title="บันทึกปฐมบท"
+                className="w-8 h-8 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white flex items-center justify-center shadow-[0_2px_8px_rgba(239,38,76,0.4)] transition-all cursor-pointer active:scale-95"
+                title="บันทึกฉากเปิดเรื่อง"
               >
-                <Check size={13} strokeWidth={2.4} />
+                <Check size={14} strokeWidth={2.4} />
               </button>
             ) : (
               <button
                 type="button"
                 onClick={() => setIsEditing(true)}
-                className="w-7 h-7 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 hover:border-white/20 text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] active:scale-95"
-                title="แก้ไขปฐมบท"
+                className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 hover:border-white/20 text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] active:scale-95"
+                title="แก้ไขฉากเปิดเรื่อง"
               >
-                <Pencil size={12} strokeWidth={2} />
+                <Pencil size={13} strokeWidth={2} />
               </button>
             )}
           </div>

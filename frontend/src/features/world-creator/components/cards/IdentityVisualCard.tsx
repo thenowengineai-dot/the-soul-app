@@ -11,6 +11,8 @@ import {
   Flame,
   Feather,
   Sparkles,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import type { VaultDraft } from '../../types';
 
@@ -199,21 +201,18 @@ export default function IdentityVisualCard({
 
   const [activeOutfitIndex, setActiveOutfitIndex] = useState(0);
 
-  // 4. Signature Postures (3 Poses)
+  // 4. Signature Postures (Unlimited Kinematic Slide Reel)
   const [postures, setPostures] = useState<string[]>(() => {
     const p = draft.appearance?.signature_postures || [];
     return p.length > 0
       ? p
       : [
-          'ปลายนิ้วเรียวดันสันแว่นตาขึ้นเล็กน้อยขณะก้มมองด้วยสายตาเย็นชาดุจวิเคราะห์ตัวอย่างทดลอง',
-          'สองแขนโอบรัดรอบคออีกฝ่ายอย่างแนบแน่นจากด้านหลัง ลมหายใจร้อนผ่าวรดรินข้างใบหู',
-          'ยืนนิ่งหลังหมอกควันจาง กัดริมฝีปากล่างเบาๆ ขณะปลดกระดุมเสื้อเชิ้ตเปียกชื้นทีละเม็ด',
+          'การใช้นิ้วชี้ดันดั้งแว่นตาขึ้นเพื่อเก็บซ่อนสายตาหิวกระหายยามปั้นหน้าสุภาพเหนียมอาย',
+          'ทิ้งตัวซบแผงอกหรือเกาะบ่าเหยื่อแน่นด้วยร่างกายท่อนล่างที่อ่อนแรงและสั่นเทาจากการเกร็งสะท้าน',
+          'ท่านั่งพับเพียบเรียบร้อย แต่แอบจงใจขยับสะโพกบดเบียดพื้นหรือเกร็งหน้าขาหนีบเข้าหากัน',
         ];
   });
-
-  const [initialPose, setInitialPose] = useState(
-    draft.starting_state?.initial_a_pos || postures[0] || ''
-  );
+  const [activePostureIndex, setActivePostureIndex] = useState(0);
 
   // 5. Environment & Starting Atmosphere
   const [sceneTime, setSceneTime] = useState(draft.starting_state?.time || 'ยามค่ำคืน');
@@ -261,7 +260,7 @@ export default function IdentityVisualCard({
         weather: sceneWeather,
         location: sceneLocation,
         initial_p_pos: playerStance,
-        initial_a_pos: initialPose || postures[0] || '',
+        initial_a_pos: postures[0] || '',
         initial_outfit_key: outfits[0]?.key || 'outfit_1',
       };
 
@@ -322,12 +321,19 @@ export default function IdentityVisualCard({
   };
 
   const handleAddPosture = () => {
-    setPostures([...postures, 'ระบุภาษากายหรือท่าทางประจำตัวใหม่...']);
+    const nextIdx = postures.length + 1;
+    const newPosture = `ระบุท่วงท่าหรือภาษากายที่ ${nextIdx}...`;
+    setPostures((prev) => [...prev, newPosture]);
+    setActivePostureIndex(postures.length);
   };
 
   const handleRemovePosture = (idx: number) => {
     if (postures.length <= 1) return;
-    setPostures(postures.filter((_, i) => i !== idx));
+    const filtered = postures.filter((_, i) => i !== idx);
+    setPostures(filtered);
+    setActivePostureIndex((prev) =>
+      Math.max(0, Math.min(filtered.length - 1, prev >= idx ? prev - 1 : prev))
+    );
   };
 
   const activeOutfit = outfits[activeOutfitIndex] || outfits[0];
@@ -1032,89 +1038,134 @@ export default function IdentityVisualCard({
         </div>
 
         {/* ======================================================================= */}
-        {/* 🎭 WIDGET 4: SIGNATURE POSTURES (2x1 -> 346px × 165px - PURE THAI)        */}
+        {/* 🎭 WIDGET 4: SIGNATURE POSTURES (2x1 -> 346px × 165px - SLIDE REEL)       */}
         {/* ======================================================================= */}
         <div
           className={`col-span-2 row-span-1 rounded-[28px] p-3.5 ${frostedCardClass}`}
           style={{ width: '346px', height: '165px' }}
         >
-          {/* Header Row */}
+          {/* Header Row: Title + Posture Count + Slide Controls */}
           <div className="flex items-center justify-between gap-1 shrink-0">
-            <span className="text-[15px] sm:text-[16px] font-semibold text-[#F1F1F1] tracking-tight">
-              ท่วงท่าประจำตัว
-            </span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-[15px] sm:text-[16px] font-semibold text-[#F1F1F1] tracking-tight">
+                ท่วงท่าประจำตัว
+              </span>
+              <span className="text-[11px] font-normal text-white/45">
+                ({postures.length} ท่า)
+              </span>
+            </div>
 
-            {isEditing && (
+            {/* Slide Navigation Controls (< 01 / 03 >) */}
+            <div className="flex items-center gap-1 bg-black/40 backdrop-blur-xl border border-white/[0.08] px-1.5 py-0.5 rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
               <button
                 type="button"
-                onClick={handleAddPosture}
-                className="text-[10.5px] text-[#EF264C] hover:underline flex items-center gap-0.5 cursor-pointer font-semibold"
+                onClick={() =>
+                  setActivePostureIndex((prev) =>
+                    prev > 0 ? prev - 1 : postures.length - 1
+                  )
+                }
+                className="w-5 h-5 rounded-full flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 active:scale-95 transition-all cursor-pointer"
+                title="ท่าก่อนหน้า"
               >
-                <Plus size={10} /> เพิ่มท่า
+                <ChevronLeft size={12} strokeWidth={2.4} />
               </button>
+
+              <span className="text-[10.5px] font-mono font-medium text-white/80 tracking-wider px-1 select-none">
+                {String(activePostureIndex + 1).padStart(2, '0')}
+                <span className="text-white/30 mx-0.5">/</span>
+                {String(postures.length).padStart(2, '0')}
+              </span>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setActivePostureIndex((prev) =>
+                    prev < postures.length - 1 ? prev + 1 : 0
+                  )
+                }
+                className="w-5 h-5 rounded-full flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 active:scale-95 transition-all cursor-pointer"
+                title="ท่าถัดไป"
+              >
+                <ChevronRight size={12} strokeWidth={2.4} />
+              </button>
+            </div>
+          </div>
+
+          {/* Center Stage: The Kinematic Full-Prose Tray */}
+          <div className="flex-1 p-2.5 sm:p-3 rounded-[18px] bg-black/40 backdrop-blur-xl border border-white/[0.06] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)] flex flex-col justify-center overflow-hidden my-1">
+            {isEditing ? (
+              <textarea
+                rows={3}
+                value={postures[activePostureIndex] || ''}
+                onChange={(e) => {
+                  const updated = [...postures];
+                  updated[activePostureIndex] = e.target.value;
+                  setPostures(updated);
+                }}
+                placeholder="ระบุคำบรรยายท่วงท่าหรือภาษากายแบบเต็ม..."
+                className="w-full h-full bg-transparent border-none text-[12px] text-white outline-none leading-relaxed resize-none no-scrollbar p-0"
+              />
+            ) : (
+              <div
+                key={activePostureIndex}
+                className="flex items-start gap-1.5 animate-fade-in-scale select-text overflow-hidden"
+              >
+                <span className="text-[#EF264C] text-[11px] font-serif select-none shrink-0 mt-0.5">
+                  “
+                </span>
+                <p className="text-[12px] sm:text-[12.5px] text-[#EDEDED] leading-relaxed font-normal line-clamp-3 overflow-y-auto no-scrollbar pr-0.5">
+                  {postures[activePostureIndex]}
+                </p>
+              </div>
             )}
           </div>
 
-          {/* 3 Dynamic Posture Capsules */}
-          <div className="space-y-1.5 py-0.5 overflow-hidden">
-            {postures.map((poseText, idx) => {
-              const isInitial = poseText === initialPose;
-              return (
-                <div
-                  key={idx}
-                  onClick={() => !isEditing && setInitialPose(poseText)}
-                  className={`px-3 py-1.5 rounded-[14px] flex items-center gap-2.5 transition-all cursor-pointer ${
-                    isInitial
-                      ? 'bg-white/[0.12] border border-white/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]'
-                      : 'bg-black/40 hover:bg-black/50 backdrop-blur-xl border border-white/[0.06] hover:border-white/12 shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)]'
-                  }`}
-                >
-                  <span
-                    className={`text-[9.5px] font-mono font-semibold w-5 h-5 rounded-md flex items-center justify-center shrink-0 ${
-                      isInitial ? 'bg-[#EF264C] text-white' : 'bg-white/15 text-white/70'
+          {/* Bottom Row: Quick-Jump Cue Number Track & Actions */}
+          <div className="flex items-center justify-between gap-1.5 shrink-0 select-none">
+            {/* Quick-Jump Monospace Number Pills */}
+            <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
+              {postures.map((_, idx) => {
+                const isActive = idx === activePostureIndex;
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setActivePostureIndex(idx)}
+                    className={`h-5 px-2 rounded-full text-[10px] font-mono flex items-center justify-center transition-all cursor-pointer ${
+                      isActive
+                        ? 'bg-white/20 text-white border border-white/30 font-semibold shadow-sm'
+                        : 'bg-white/[0.04] hover:bg-white/[0.10] border border-white/[0.06] text-white/50 hover:text-white font-normal'
                     }`}
                   >
                     0{idx + 1}
-                  </span>
+                  </button>
+                );
+              })}
+            </div>
 
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={poseText}
-                      onChange={(e) => {
-                        const updated = [...postures];
-                        updated[idx] = e.target.value;
-                        setPostures(updated);
-                      }}
-                      className="bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-0.5 text-[11px] text-[#F1F1F1] outline-none flex-1 font-normal"
-                    />
-                  ) : (
-                    <span className="text-[12.5px] text-[#EDEDED] truncate flex-1 font-normal">
-                      {poseText}
-                    </span>
-                  )}
+            {/* Actions: Delete (when editing) or Quick Add Pill */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              {isEditing && postures.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => handleRemovePosture(activePostureIndex)}
+                  className="text-[10px] text-red-400/80 hover:text-red-300 flex items-center gap-0.5 cursor-pointer transition-colors mr-1"
+                  title="ลบท่านี้"
+                >
+                  <Trash2 size={10} /> ลบท่านี้
+                </button>
+              )}
 
-                  {isInitial && !isEditing && (
-                    <span className="text-[9.5px] font-semibold text-[#EF264C] bg-[#EF264C]/20 border border-[#EF264C]/40 px-2 py-0.5 rounded-full shrink-0">
-                      ✦ เริ่มต้น
-                    </span>
-                  )}
-
-                  {isEditing && postures.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRemovePosture(idx);
-                      }}
-                      className="text-white/40 hover:text-red-400 p-0.5 cursor-pointer"
-                    >
-                      <Trash2 size={10} />
-                    </button>
-                  )}
-                </div>
-              );
-            })}
+              <button
+                type="button"
+                onClick={handleAddPosture}
+                className="px-2 py-0.5 rounded-full border border-dashed border-white/20 hover:border-white/40 bg-white/[0.02] hover:bg-white/[0.08] text-white/60 hover:text-white flex items-center gap-1 text-[10px] font-medium transition-all cursor-pointer active:scale-95"
+                title="เพิ่มท่าทางใหม่"
+              >
+                <Plus size={9} strokeWidth={2.4} />
+                <span>เพิ่มท่า</span>
+              </button>
+            </div>
           </div>
         </div>
 

@@ -36,12 +36,12 @@ export default function StudioCardCanvasModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#090909] text-[#F1F1F1] flex flex-col overflow-hidden animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 bg-app-bg text-[#F1F1F1] flex flex-col overflow-hidden animate-in fade-in duration-200">
       {/* ✦ AMBIENT BACKDROP LIGHT */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-gradient-to-b from-[#EF264C]/[0.07] via-white/[0.02] to-transparent pointer-events-none blur-3xl -z-10" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-gradient-to-b from-[#EF264C]/[0.06] via-white/[0.02] to-transparent pointer-events-none blur-3xl -z-10" />
 
       {/* 1. TOP CONTROL BAR (APPLE EDITORIAL LUXURY) */}
-      <header className="h-[64px] shrink-0 border-b border-white/[0.08] px-6 sm:px-8 flex items-center justify-between bg-[#090909]/80 backdrop-blur-2xl z-20">
+      <header className="h-[64px] shrink-0 border-b border-white/[0.08] px-6 sm:px-8 flex items-center justify-between bg-app-bg/85 backdrop-blur-2xl z-20">
         {/* Left: Brand + Breadcrumb */}
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-[#EF264C] flex items-center justify-center shadow-[0_2px_10px_rgba(239,38,76,0.35)]">

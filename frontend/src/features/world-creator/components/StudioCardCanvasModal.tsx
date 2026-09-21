@@ -4,6 +4,7 @@ import {
   Sparkles,
   User,
   Globe,
+  Layers,
 } from 'lucide-react';
 import type { VaultDraft } from '../types';
 import IdentityVisualCard from './cards/IdentityVisualCard';
@@ -13,6 +14,7 @@ import LoreBackgroundCard from './cards/LoreBackgroundCard';
 import WorldAtmosphereCard from './cards/WorldAtmosphereCard';
 import WorldPrologueCard from './cards/WorldPrologueCard';
 import WorldDeepDiveStageCard from './cards/WorldDeepDiveStageCard';
+import RailroadCanvas from './railroad/RailroadCanvas';
 
 interface StudioCardCanvasModalProps {
   isOpen: boolean;
@@ -29,7 +31,7 @@ export default function StudioCardCanvasModal({
   onUpdateDraft,
   onTalkAboutCard: _onTalkAboutCard,
 }: StudioCardCanvasModalProps) {
-  const [activeStudioTab, setActiveStudioTab] = useState<'character' | 'world'>('character');
+  const [activeStudioTab, setActiveStudioTab] = useState<'character' | 'world' | 'railroad'>('character');
   const [activeLocationKey, setActiveLocationKey] = useState<string>(() => {
     if (draft.real_locations && Object.keys(draft.real_locations).length > 0) {
       return Object.keys(draft.real_locations)[0];
@@ -79,7 +81,11 @@ export default function StudioCardCanvasModal({
             </span>
             <span className="text-white/20 text-[12px]">/</span>
             <span className="text-[13px] text-[#AAAAAA]">
-              {activeStudioTab === 'character' ? 'ตัวละคร' : 'โลกและสถานการณ์'}
+              {activeStudioTab === 'character'
+                ? 'ตัวละคร'
+                : activeStudioTab === 'world'
+                ? 'โลกและบรรยากาศ'
+                : 'แผงรางรถไฟเหตุการณ์'}
             </span>
             <span className="text-white/20 text-[12px]">/</span>
             <span className="text-[13px] text-[#F1F1F1] font-medium truncate max-w-[200px]">
@@ -114,7 +120,19 @@ export default function StudioCardCanvasModal({
             }`}
           >
             <Globe size={13} strokeWidth={2.2} />
-            <span>โลกและสถานการณ์ (World)</span>
+            <span>โลกและบรรยากาศ (World)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveStudioTab('railroad')}
+            className={`px-3.5 sm:px-4 py-1.5 rounded-full text-[12px] font-medium transition-all cursor-pointer flex items-center gap-1.5 select-none ${
+              activeStudioTab === 'railroad'
+                ? 'bg-white/10 text-[#F1F1F1] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] border border-white/10'
+                : 'text-white/45 hover:text-white/80 border border-transparent'
+            }`}
+          >
+            <Layers size={13} strokeWidth={2.2} />
+            <span>แผงรางรถไฟ (Railroad)</span>
           </button>
         </div>
 
@@ -135,73 +153,83 @@ export default function StudioCardCanvasModal({
       </header>
 
       {/* 2. MAIN SCROLLABLE CANVAS STAGE */}
-      <main className="flex-1 overflow-y-auto px-4 sm:px-8 py-8 flex justify-center items-start">
-        <div className="w-full max-w-[1440px] pb-24 flex justify-center">
-          {/* =============================================================== */}
-          {/* ✦ UNIFIED MASTER BENTO GRID (165px BASE UNIT, 16px GAP)          */}
-          {/* All cards merged seamlessly into one continuous Bento Canvas     */}
-          {/* =============================================================== */}
-          <div
-            className="grid gap-4 justify-center"
-            style={{
-              gridTemplateColumns: 'repeat(auto-fill, 165px)',
-              gridAutoRows: '165px',
-              width: '100%',
-              maxWidth: '1440px',
-            }}
-          >
-            {activeStudioTab === 'character' ? (
-              /* Character Studio Bento Suite (8 Cards in 4 Components) */
-              <>
-                <IdentityVisualCard
-                  draft={draft}
-                  onUpdateDraft={onUpdateDraft}
-                  isEditable={true}
-                />
-                <MindShadowCard
-                  draft={draft}
-                  onUpdateDraft={onUpdateDraft}
-                  isEditable={true}
-                />
-                <DynamicsCharismaCard
-                  draft={draft}
-                  onUpdateDraft={onUpdateDraft}
-                  isEditable={true}
-                />
-                <LoreBackgroundCard
-                  draft={draft}
-                  onUpdateDraft={onUpdateDraft}
-                  isEditable={true}
-                />
-              </>
-            ) : (
-              /* World & Scenario Bento Suite (Cards W1, W2, W3, W4) */
-              <>
-                {/* Card W1: World Title & Macro-Atmosphere Sanctuary (2x2) */}
-                <WorldAtmosphereCard
-                  draft={draft}
-                  onUpdateDraft={onUpdateDraft}
-                  isEditable={true}
-                />
-                {/* Card W2: Prologue Narrative (2x2) */}
-                <WorldPrologueCard
-                  draft={draft}
-                  onUpdateDraft={onUpdateDraft}
-                  isEditable={true}
-                />
-                {/* Card W3: Deep-Dive Stage Card (2x2, with Master Scene Selector & 5 Dimensions) */}
-                <WorldDeepDiveStageCard
-                  draft={draft}
-                  activeLocationKey={activeLocationKey}
-                  onSelectLocation={setActiveLocationKey}
-                  onUpdateDraft={onUpdateDraft}
-                  isEditable={true}
-                />
-              </>
-            )}
-          </div>
+      {activeStudioTab === 'railroad' ? (
+        <div className="flex-1 w-full h-full flex flex-col relative overflow-hidden">
+          <RailroadCanvas
+            draft={draft}
+            onUpdateDraft={onUpdateDraft}
+            isEditable={true}
+          />
         </div>
-      </main>
+      ) : (
+        <main className="flex-1 overflow-y-auto px-4 sm:px-8 py-8 flex justify-center items-start">
+          <div className="w-full max-w-[1440px] pb-24 flex justify-center">
+            {/* =============================================================== */}
+            {/* ✦ UNIFIED MASTER BENTO GRID (165px BASE UNIT, 16px GAP)          */}
+            {/* All cards merged seamlessly into one continuous Bento Canvas     */}
+            {/* =============================================================== */}
+            <div
+              className="grid gap-4 justify-center"
+              style={{
+                gridTemplateColumns: 'repeat(auto-fill, 165px)',
+                gridAutoRows: '165px',
+                width: '100%',
+                maxWidth: '1440px',
+              }}
+            >
+              {activeStudioTab === 'character' ? (
+                /* Character Studio Bento Suite (8 Cards in 4 Components) */
+                <>
+                  <IdentityVisualCard
+                    draft={draft}
+                    onUpdateDraft={onUpdateDraft}
+                    isEditable={true}
+                  />
+                  <MindShadowCard
+                    draft={draft}
+                    onUpdateDraft={onUpdateDraft}
+                    isEditable={true}
+                  />
+                  <DynamicsCharismaCard
+                    draft={draft}
+                    onUpdateDraft={onUpdateDraft}
+                    isEditable={true}
+                  />
+                  <LoreBackgroundCard
+                    draft={draft}
+                    onUpdateDraft={onUpdateDraft}
+                    isEditable={true}
+                  />
+                </>
+              ) : (
+                /* World & Scenario Bento Suite (Cards W1, W2, W3) */
+                <>
+                  {/* Card W1: World Title & Macro-Atmosphere Sanctuary (2x2) */}
+                  <WorldAtmosphereCard
+                    draft={draft}
+                    onUpdateDraft={onUpdateDraft}
+                    isEditable={true}
+                  />
+                  {/* Card W2: Prologue Narrative (2x2) */}
+                  <WorldPrologueCard
+                    draft={draft}
+                    onUpdateDraft={onUpdateDraft}
+                    isEditable={true}
+                  />
+                  {/* Card W3: Deep-Dive Stage Card (2x2, with Master Scene Selector & 5 Dimensions) */}
+                  <WorldDeepDiveStageCard
+                    draft={draft}
+                    activeLocationKey={activeLocationKey}
+                    onSelectLocation={setActiveLocationKey}
+                    onUpdateDraft={onUpdateDraft}
+                    isEditable={true}
+                  />
+                </>
+              )}
+            </div>
+          </div>
+        </main>
+      )}
     </div>
   );
 }

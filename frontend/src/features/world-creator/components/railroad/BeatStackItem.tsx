@@ -8,7 +8,7 @@ import {
   Trash2,
   Clock,
   Sparkles,
-  Volume2,
+  Target,
 } from 'lucide-react';
 import type { WorldBeat, PlayerTriggerAction } from '../../types';
 
@@ -35,8 +35,15 @@ export default function BeatStackItem({
   const [isEditing, setIsEditing] = useState(false);
 
   // Edit form states
-  const [setupText, setSetupText] = useState(beat.director_setup || '');
   const [actorStateText, setActorStateText] = useState(beat.actor_state || '');
+  const [triggerKey, setTriggerKey] = useState(() => {
+    const keys = Object.keys(beat.hidden_evaluation_criteria || {});
+    return keys[0] || 'เข้าใกล้';
+  });
+  const [triggerFeedback, setTriggerFeedback] = useState(() => {
+    const keys = Object.keys(beat.hidden_evaluation_criteria || {});
+    return keys[0] ? beat.hidden_evaluation_criteria[keys[0]]?.feedback || '' : '';
+  });
   const [maxTurns, setMaxTurns] = useState(beat.pacing_control?.max_turns || 3);
   const [consequence, setConsequence] = useState(
     beat.pacing_control?.inevitable_consequence || ''
@@ -44,10 +51,18 @@ export default function BeatStackItem({
 
   const handleSave = () => {
     setIsEditing(false);
+    const triggerObj: Record<string, { action_result: PlayerTriggerAction; feedback?: string }> = {};
+    if (triggerKey.trim()) {
+      triggerObj[triggerKey.trim()] = {
+        action_result: 'progress',
+        feedback: triggerFeedback.trim() || undefined,
+      };
+    }
+
     onUpdateBeat({
       ...beat,
-      director_setup: setupText.trim(),
       actor_state: actorStateText.trim(),
+      hidden_evaluation_criteria: triggerObj,
       pacing_control: {
         max_turns: maxTurns,
         action_result: (beat.pacing_control?.action_result || 'progress') as PlayerTriggerAction,
@@ -127,81 +142,103 @@ export default function BeatStackItem({
 
         {/* Expanded View */}
         {isExpanded && (
-          <div className="px-3.5 pb-3.5 pt-1 space-y-2.5 border-t border-white/[0.06] text-[12px] animate-in fade-in duration-150">
+          <div className="px-3.5 pb-3.5 pt-1 space-y-2 border-t border-white/[0.06] text-[12px] animate-in fade-in duration-150">
             {!isEditing ? (
               <>
-                {/* 1. Director VO / Setup */}
-                {beat.director_setup && (
-                  <div>
-                    <div className="flex items-center gap-1.5 text-[10px] uppercase font-medium text-white/40 mb-0.5 tracking-wider">
-                      <Volume2 size={11} className="text-amber-400/80" />
-                      <span>บทบรรยายนำ / VO Camera Brief</span>
-                    </div>
-                    <p className="text-[12px] text-[#EDEDED] leading-[18px] tracking-tight bg-black/25 p-2 rounded-[10px] border border-white/[0.04]">
-                      {beat.director_setup}
-                    </p>
+                {/* 1. ตัวละครกำลังทำอะไร */}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-[10px] font-semibold text-[#F1F1F1] tracking-tight">
+                    <Sparkles size={11} className="text-[#EF264C]" />
+                    <span>1. ตัวละครกำลังทำอะไร</span>
                   </div>
-                )}
+                  <p className="text-[11.5px] text-[#EDEDED] leading-relaxed bg-black/25 p-2 rounded-[10px] border border-white/[0.04]">
+                    {beat.actor_state || 'ยังไม่ได้ระบุท่าทางตัวละคร...'}
+                  </p>
+                </div>
 
-                {/* 2. Physical Actor State */}
-                {beat.actor_state && (
-                  <div>
-                    <div className="flex items-center gap-1.5 text-[10px] uppercase font-medium text-white/40 mb-0.5 tracking-wider">
-                      <Sparkles size={11} className="text-[#EF264C]/80" />
-                      <span>ภาษากาย 4 มิติ (Actor Physical State)</span>
+                {/* 2. ถ้าผู้เล่นทำแบบนี้ (เรื่องจะไปต่อทันที) */}
+                <div className="space-y-1 bg-white/[0.02] p-2 rounded-[10px] border border-white/[0.04]">
+                  <div className="flex items-center justify-between text-[10px]">
+                    <div className="flex items-center gap-1 font-semibold text-emerald-400">
+                      <Target size={11} />
+                      <span>2. ถ้าผู้เล่นทำแบบนี้ (เรื่องจะไปต่อทันที)</span>
                     </div>
-                    <p className="text-[12px] text-[#D6D6DC] leading-[18px] tracking-tight bg-black/25 p-2 rounded-[10px] border border-white/[0.04]">
-                      {beat.actor_state}
-                    </p>
-                  </div>
-                )}
-
-                {/* 3. Pacing Control */}
-                <div className="flex items-center justify-between text-[11px] text-white/50 pt-1">
-                  <div className="flex items-center gap-1">
-                    <Clock size={11} className="text-cyan-400" />
-                    <span>คุมจังหวะ: สูงสุด {beat.pacing_control?.max_turns || 3} เทิร์น</span>
-                  </div>
-                  {beat.pacing_control?.inevitable_consequence && (
-                    <span className="truncate max-w-[180px] text-white/40 italic">
-                      ผล: {beat.pacing_control.inevitable_consequence}
+                    <span className="text-[9px] font-mono text-[#EF264C] bg-[#EF264C]/15 border border-[#EF264C]/30 px-1.5 py-0.5 rounded-full">
+                      → ไปต่อ
                     </span>
-                  )}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[11px]">
+                    <span className="px-2 py-0.5 rounded-full bg-white/[0.06] border border-white/10 text-white font-medium">
+                      {Object.keys(beat.hidden_evaluation_criteria || {})[0] || 'การกระทำ'}
+                    </span>
+                    {Object.values(beat.hidden_evaluation_criteria || {})[0]?.feedback && (
+                      <span className="text-white/60 italic truncate">
+                        ➔ {Object.values(beat.hidden_evaluation_criteria || {})[0]?.feedback}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* 3. ถ้าผู้เล่นไม่ทำอะไร */}
+                <div className="space-y-1 bg-amber-500/[0.03] p-2 rounded-[10px] border border-amber-500/20">
+                  <div className="flex items-center gap-1 text-[10px] font-semibold text-amber-300">
+                    <Clock size={11} />
+                    <span>
+                      3. ถ้าผู้เล่นไม่ทำอะไร (คุยครบ {beat.pacing_control?.max_turns || 3} รอบ เรื่องจะเดินต่อเองว่า)
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-[#EDEDED] leading-relaxed">
+                    {beat.pacing_control?.inevitable_consequence || 'เรื่องราวดำเนินสู่ขั้นถัดไป'}
+                  </p>
                 </div>
               </>
             ) : (
               /* Edit Mode */
               <div className="space-y-2 pt-1">
+                {/* 1. ตัวละครกำลังทำอะไร */}
                 <div>
-                  <label className="text-[10px] text-white/40 uppercase block mb-1">
-                    บทบรรยายเปิดฉาก (VO / Camera Brief)
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={setupText}
-                    onChange={(e) => setSetupText(e.target.value)}
-                    placeholder="เสียงฝนกระหน่ำ สายลมกวาดเอา..."
-                    className="w-full bg-black/40 border border-white/15 focus:border-amber-400/60 rounded-[10px] p-2 text-[11.5px] text-[#EDEDED] outline-none resize-none leading-relaxed"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[10px] text-white/40 uppercase block mb-1">
-                    ภาษากาย 4 มิติของตัวละคร (Actor State)
+                  <label className="text-[10px] font-semibold text-[#F1F1F1] flex items-center gap-1 mb-1">
+                    <Sparkles size={10} className="text-[#EF264C]" />
+                    1. ตัวละครกำลังทำอะไร
                   </label>
                   <textarea
                     rows={2}
                     value={actorStateText}
                     onChange={(e) => setActorStateText(e.target.value)}
-                    placeholder="นั่งกอดอกชิดผนัง แววตาสั่นไหวใต้กรอบแว่น..."
+                    placeholder="นั่งก้มหน้านิ่ง ใช้นิ้วดันแว่น เสื้อบางเปียกชื้น..."
                     className="w-full bg-black/40 border border-white/15 focus:border-[#EF264C]/60 rounded-[10px] p-2 text-[11.5px] text-[#EDEDED] outline-none resize-none leading-relaxed"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-[10px] text-white/40 uppercase block mb-1">
-                      จำนวนเทิร์นสูงสุด
+                {/* 2. ถ้าผู้เล่นทำแบบนี้ */}
+                <div>
+                  <label className="text-[10px] font-semibold text-emerald-400 flex items-center gap-1 mb-1">
+                    <Target size={10} />
+                    2. ถ้าผู้เล่นทำแบบนี้ (เรื่องจะไปต่อทันที)
+                  </label>
+                  <div className="flex gap-1.5">
+                    <input
+                      type="text"
+                      value={triggerKey}
+                      onChange={(e) => setTriggerKey(e.target.value)}
+                      placeholder="การกระทำของผู้เล่น (เช่น เข้าใกล้)"
+                      className="w-[120px] bg-black/40 border border-white/15 focus:border-emerald-400/60 rounded-[8px] px-2 py-1 text-[11px] text-[#EDEDED] outline-none"
+                    />
+                    <input
+                      type="text"
+                      value={triggerFeedback}
+                      onChange={(e) => setTriggerFeedback(e.target.value)}
+                      placeholder="ผลลัพธ์ย่อย (เช่น เธอสะดุ้งแต่ไม่หนี)"
+                      className="flex-1 bg-black/40 border border-white/15 focus:border-emerald-400/60 rounded-[8px] px-2 py-1 text-[11px] text-[#EDEDED] outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* 3. ถ้าผู้เล่นไม่ทำอะไร & โควตารอบ */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="col-span-1">
+                    <label className="text-[10px] font-semibold text-white/50 block mb-1">
+                      โควตาคุยเล่น (รอบ)
                     </label>
                     <input
                       type="number"
@@ -209,19 +246,19 @@ export default function BeatStackItem({
                       max={10}
                       value={maxTurns}
                       onChange={(e) => setMaxTurns(Number(e.target.value))}
-                      className="w-full h-[30px] bg-black/40 border border-white/15 focus:border-cyan-400/60 rounded-[8px] px-2 text-[11.5px] text-[#EDEDED] outline-none"
+                      className="w-full h-[30px] bg-black/40 border border-white/15 focus:border-amber-400/60 rounded-[8px] px-2 text-[11.5px] text-[#EDEDED] outline-none"
                     />
                   </div>
-                  <div>
-                    <label className="text-[10px] text-white/40 uppercase block mb-1">
-                      ผลลัพธ์เมื่อเวลาหมด
+                  <div className="col-span-2">
+                    <label className="text-[10px] font-semibold text-amber-300 block mb-1">
+                      3. ถ้าผู้เล่นไม่ทำอะไร (ครบเวลา)
                     </label>
                     <input
                       type="text"
                       value={consequence}
                       onChange={(e) => setConsequence(e.target.value)}
-                      placeholder="เกสรพิษกำเริบทันที"
-                      className="w-full h-[30px] bg-black/40 border border-white/15 focus:border-cyan-400/60 rounded-[8px] px-2 text-[11.5px] text-[#EDEDED] outline-none"
+                      placeholder="เรื่องราวดำเนินต่อเองว่า..."
+                      className="w-full h-[30px] bg-black/40 border border-amber-500/30 focus:border-amber-400/60 rounded-[8px] px-2 text-[11.5px] text-[#EDEDED] outline-none"
                     />
                   </div>
                 </div>

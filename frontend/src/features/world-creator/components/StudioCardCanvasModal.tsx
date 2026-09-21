@@ -14,6 +14,7 @@ import LoreBackgroundCard from './cards/LoreBackgroundCard';
 import WorldAtmosphereCard from './cards/WorldAtmosphereCard';
 import WorldPrologueCard from './cards/WorldPrologueCard';
 import WorldDeepDiveStageCard from './cards/WorldDeepDiveStageCard';
+import WorldBeatCard from './cards/WorldBeatCard';
 import RailroadCanvas from './railroad/RailroadCanvas';
 
 interface StudioCardCanvasModalProps {
@@ -202,7 +203,7 @@ export default function StudioCardCanvasModal({
                   />
                 </>
               ) : (
-                /* World & Scenario Bento Suite (Cards W1, W2, W3) */
+                /* World & Scenario Bento Suite (Cards W1, W2, W3, W4) */
                 <>
                   {/* Card W1: World Title & Macro-Atmosphere Sanctuary (2x2) */}
                   <WorldAtmosphereCard
@@ -221,6 +222,12 @@ export default function StudioCardCanvasModal({
                     draft={draft}
                     activeLocationKey={activeLocationKey}
                     onSelectLocation={setActiveLocationKey}
+                    onUpdateDraft={onUpdateDraft}
+                    isEditable={true}
+                  />
+                  {/* Card W4: The Cinematic Beat Widget (2x2, with Beat Selector & Approach 1 Wording) */}
+                  <WorldBeatCard
+                    draft={draft}
                     onUpdateDraft={onUpdateDraft}
                     isEditable={true}
                   />

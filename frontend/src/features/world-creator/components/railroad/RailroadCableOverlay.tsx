@@ -175,7 +175,7 @@ export default function RailroadCableOverlay({
           <path d="M 1 1.5 L 7 5 L 1 8.5 z" fill="#EF264C" />
         </marker>
 
-        {/* Subtle marker for emerald location line */}
+        {/* Subtle marker for Nordic Sage location line */}
         <marker
           id="loc-cable-arrow"
           viewBox="0 0 10 10"
@@ -185,7 +185,7 @@ export default function RailroadCableOverlay({
           markerHeight="5"
           orient="auto"
         >
-          <path d="M 1 1.5 L 7 5 L 1 8.5 z" fill="#10B981" />
+          <path d="M 1 1.5 L 7 5 L 1 8.5 z" fill="#528A7A" />
         </marker>
       </defs>
 
@@ -310,7 +310,7 @@ export default function RailroadCableOverlay({
       })}
 
       {/* =================================================================== */}
-      {/* 2. EMERALD GREEN VERTICAL LOCATION CABLES                           */}
+      {/* 2. NORDIC SAGE VERTICAL LOCATION CABLES (SPATIAL ORTHOGONAL)         */}
       {/* =================================================================== */}
       {scenes.map((scene, idx) => {
         if (!scene.location_key) return null;
@@ -319,18 +319,18 @@ export default function RailroadCableOverlay({
         const sceneX = scene.position?.x ?? 80 + idx * SCENE_STEP_X;
         const sceneY = scene.position?.y ?? 170;
 
-        // Start from Location Pill bottom center port
-        const x1 = locPos ? locPos.x + LOC_PILL_WIDTH / 2 : sceneX + SCENE_WIDTH / 2;
+        // Start from Location Pill bottom center port (locPos.x is already centered via -translate-x-1/2)
+        const x1 = locPos ? locPos.x : sceneX + SCENE_WIDTH / 2;
         const y1 = locPos ? locPos.y + LOC_PILL_HEIGHT : 40 + LOC_PILL_HEIGHT;
 
         // End at Scene Card top center socket
         const x2 = sceneX + SCENE_WIDTH / 2;
         const y2 = sceneY;
 
-        // Vertical Bezier Calculation
+        // Vertical Bezier Calculation (Plumb line when x1 === x2)
         const dy = Math.abs(y2 - y1);
         const curvature = Math.max(dy * 0.5, 25);
-        const greenPathData = `M ${x1} ${y1} C ${x1} ${y1 + curvature}, ${x2} ${y2 - curvature}, ${x2} ${y2}`;
+        const sagePathData = `M ${x1} ${y1} C ${x1} ${y1 + curvature}, ${x2} ${y2 - curvature}, ${x2} ${y2}`;
 
         const midX = (x1 + x2) / 2;
         const midY = (y1 + y2) / 2;
@@ -342,31 +342,31 @@ export default function RailroadCableOverlay({
           >
             {/* ✦ 1. WIDE TRANSPARENT HOVER CAPTURE PATH */}
             <path
-              d={greenPathData}
+              d={sagePathData}
               fill="none"
               stroke="transparent"
               strokeWidth="28"
               className="pointer-events-auto cursor-pointer"
             />
 
-            {/* ✦ 2. EMERALD AMBIENT HALO */}
+            {/* ✦ 2. SUBTLE NORDIC SAGE AMBIENT HALO (Zero-Glow Philosophy) */}
             <path
-              d={greenPathData}
+              d={sagePathData}
               fill="none"
-              stroke="#10B981"
-              strokeOpacity="0.18"
-              strokeWidth="6"
-              className="transition-opacity group-hover/loccable:stroke-opacity-40"
+              stroke="#528A7A"
+              strokeOpacity="0.12"
+              strokeWidth="5"
+              className="transition-opacity group-hover/loccable:stroke-opacity-30"
             />
 
-            {/* ✦ 3. PRIMARY EMERALD GREEN CABLE (#10B981) */}
+            {/* ✦ 3. PRIMARY NORDIC SAGE CABLE (#528A7A - HAIRLINE 1.8PX) */}
             <path
-              d={greenPathData}
+              d={sagePathData}
               fill="none"
-              stroke="#10B981"
-              strokeWidth="2.5"
+              stroke="#528A7A"
+              strokeWidth="1.8"
               markerEnd="url(#loc-cable-arrow)"
-              className="transition-all group-hover/loccable:stroke-width-[3px]"
+              className="transition-all group-hover/loccable:stroke-width-[2.2px]"
             />
 
             {/* ✦ 4. MIDPOINT FLOATING ACTION DOCK (Apple Frosted Quick Cut Pill) */}
@@ -379,9 +379,9 @@ export default function RailroadCableOverlay({
                 className="overflow-visible pointer-events-auto"
               >
                 <div className="w-full h-full flex items-center justify-center">
-                  {/* RESTING STATE: Subtle Apple Frosted Emerald Micro-Node */}
+                  {/* RESTING STATE: Subtle Apple Frosted Sage Micro-Node */}
                   <div
-                    className="group-hover/loccable:hidden flex items-center justify-center w-[18px] h-[18px] rounded-full bg-[#14141E]/90 border border-emerald-500/35 shadow-md backdrop-blur-md text-emerald-400/60 hover:text-emerald-300 transition-all cursor-pointer"
+                    className="group-hover/loccable:hidden flex items-center justify-center w-[18px] h-[18px] rounded-full bg-[#14141E]/90 border border-[#528A7A]/40 shadow-md backdrop-blur-md text-[#6BB8A2] hover:text-white transition-all cursor-pointer"
                     title="ชี้เพื่อตัดการเชื่อมต่อสถานที่"
                   >
                     <MapPin size={9} strokeWidth={2.4} />
@@ -476,7 +476,7 @@ export default function RailroadCableOverlay({
       )}
 
       {/* =================================================================== */}
-      {/* 4. ACTIVE LIVE DRAGGING LOCATION WIRE (EMERALD GREEN)                */}
+      {/* 4. ACTIVE LIVE DRAGGING LOCATION WIRE (NORDIC SAGE)                 */}
       {/* =================================================================== */}
       {draggingLocationWire && (
         <g className="pointer-events-none">
@@ -502,18 +502,18 @@ export default function RailroadCableOverlay({
                 <path
                   d={dragPathData}
                   fill="none"
-                  stroke="#10B981"
-                  strokeOpacity="0.25"
-                  strokeWidth="7"
+                  stroke="#528A7A"
+                  strokeOpacity="0.16"
+                  strokeWidth="5"
                 />
 
                 {/* Dragging Location Wire Active Pulsing Dashed Line */}
                 <path
                   d={dragPathData}
                   fill="none"
-                  stroke="#10B981"
-                  strokeWidth="2.5"
-                  strokeDasharray="6 4"
+                  stroke="#528A7A"
+                  strokeWidth="1.8"
+                  strokeDasharray="5 3"
                   markerEnd="url(#loc-cable-arrow)"
                 />
 
@@ -522,16 +522,16 @@ export default function RailroadCableOverlay({
                   cx={x2}
                   cy={y2}
                   r={snappedTargetSceneForLoc ? 8 : 5}
-                  fill="#10B981"
+                  fill="#528A7A"
                   stroke="#FFFFFF"
-                  strokeWidth={snappedTargetSceneForLoc ? 2.5 : 2}
+                  strokeWidth={snappedTargetSceneForLoc ? 2 : 1.5}
                   className={snappedTargetSceneForLoc ? 'animate-ping' : ''}
                 />
                 <circle
                   cx={x2}
                   cy={y2}
                   r={snappedTargetSceneForLoc ? 7 : 4}
-                  fill="#10B981"
+                  fill="#528A7A"
                   stroke="#FFFFFF"
                   strokeWidth={1.5}
                 />

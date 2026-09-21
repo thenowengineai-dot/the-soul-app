@@ -22,7 +22,6 @@ import RailroadCableOverlay, {
   SCENE_WIDTH,
   SCENE_STEP_X,
   PORT_Y_OFFSET,
-  LOC_PILL_WIDTH,
 } from './RailroadCableOverlay';
 
 interface RailroadCanvasProps {
@@ -333,7 +332,7 @@ export default function RailroadCanvas({
         const sceneIdx = scenes.findIndex((s) => s.scene_id === boundScene.scene_id);
         const sx = boundScene.position?.x ?? (80 + sceneIdx * SCENE_STEP_X);
         return {
-          x: sx + SCENE_WIDTH / 2 - LOC_PILL_WIDTH / 2,
+          x: sx + SCENE_WIDTH / 2,
           y: 40,
         };
       }
@@ -345,7 +344,7 @@ export default function RailroadCanvas({
         return Math.max(max, sx);
       }, 0);
       return {
-        x: (scenes.length > 0 ? maxX + SCENE_WIDTH + 60 : 80) + Math.max(0, uIdx) * 220,
+        x: (scenes.length > 0 ? maxX + SCENE_WIDTH + 80 : 80) + Math.max(0, uIdx) * 200,
         y: 40,
       };
     },
@@ -481,7 +480,7 @@ export default function RailroadCanvas({
   const handleStartDragLocationWire = (e: React.MouseEvent, locationKey: string) => {
     e.stopPropagation();
     const curPos = getLocationPosition(locationKey);
-    const startX = curPos.x + LOC_PILL_WIDTH / 2;
+    const startX = curPos.x;
     const startY = curPos.y + LOC_PILL_HEIGHT;
     const coords = getCanvasCoords(e.clientX, e.clientY);
     setDraggingLocationWire({
@@ -930,8 +929,6 @@ export default function RailroadCanvas({
         {/* ✦ 1.5 LOCATION PILL NODES (ROW 1 - MODULAR SPATIAL PILLS) */}
         {allLocationKeys.map((locKey) => {
           const locPos = resolvedLocationPositions[locKey] || { x: 80, y: 40 };
-          const boundScene = scenes.find((s) => s.location_key === locKey);
-          const boundSceneOrder = boundScene ? sceneOrderMap.get(boundScene.scene_id) : null;
           const isDraggingThisWire = draggingLocationWire?.fromLocationKey === locKey;
 
           return (
@@ -940,9 +937,6 @@ export default function RailroadCanvas({
               locationKey={locKey}
               locationData={availableLocations[locKey]}
               position={locPos}
-              assignedSceneId={boundScene?.scene_id || null}
-              assignedSceneOrder={boundSceneOrder ?? null}
-              assignedSceneTitle={boundScene?.title || null}
               isDraggingWire={isDraggingThisWire}
               isEditable={isEditable}
               onStartDragPill={handleStartDragPill}
@@ -1015,13 +1009,13 @@ export default function RailroadCanvas({
           </div>
         )}
 
-        {/* Add Location Pill Button (Apple Iconic Emerald Pill) */}
+        {/* Add Location Pill Button (Apple Iconic Sage Pill) */}
         {isEditable && (
           <div className="relative group/dock flex items-center justify-center">
             <button
               type="button"
               onClick={handleAddNewLocation}
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-500/15 hover:bg-emerald-500/30 border border-emerald-500/40 hover:border-emerald-500/70 text-emerald-300 flex items-center justify-center shadow-[0_2px_8px_rgba(16,185,129,0.25)] active:scale-95 transition-all cursor-pointer select-none"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#528A7A]/15 hover:bg-[#528A7A]/30 border border-[#528A7A]/40 hover:border-[#528A7A]/70 text-[#6BB8A2] flex items-center justify-center shadow-[0_2px_8px_rgba(82,138,122,0.25)] active:scale-95 transition-all cursor-pointer select-none"
               aria-label="เพิ่มสถานที่ใหม่"
             >
               <MapPin size={14} strokeWidth={2.4} />

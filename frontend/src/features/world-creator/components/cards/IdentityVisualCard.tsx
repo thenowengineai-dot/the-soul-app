@@ -118,7 +118,7 @@ export default function IdentityVisualCard({
     list.push({
       key: 'outfit_1',
       badgeLabel: 'ยูกาตะตัวโคร่ง',
-      name: 'ชุดยูกาตะผ้าฝ้ายเนื้อหนาตัวโคร่ง',
+      name: 'ชุดยูกาตะผ้าฝ้ายเนื้อหนาสีเข้มตัวโคร่ง',
       description: o1,
     });
 
@@ -289,11 +289,16 @@ export default function IdentityVisualCard({
 
   const activeOutfit = outfits[activeOutfitIndex] || outfits[0];
 
+  // ✦ APPLE SUBTLE WHITE FROSTED GLASS RECIPE (SAME AS COIN, HUD & CHATLIST BUTTONS)
+  // Zero harsh drop-shadow! Clean 1px translucent border + top inner highlight.
+  const frostedCardClass =
+    'bg-white/[0.06] hover:bg-white/[0.09] backdrop-blur-2xl border border-white/[0.10] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-all flex flex-col justify-between relative overflow-hidden';
+
   return (
     <div className="w-full flex justify-center py-2">
       {/* ========================================================================= */}
       {/* ✦ MATHEMATICAL GAME GRID: 160px BASE UNIT, 16px GAP (OPTION 2)             */}
-      {/* 1x1: 160x160 | 2x1: 336x160 | 2x2: 336x336 (CLEAR TYPOGRAPHY & EASY EDIT) */}
+      {/* 1x1: 160x160 | 2x1: 336x160 | 2x2: 336x336 (FROSTED GLASS, ZERO SHADOW)    */}
       {/* ========================================================================= */}
       <div
         className="grid gap-4 justify-center"
@@ -309,7 +314,7 @@ export default function IdentityVisualCard({
         {/* 🪪 WIDGET 1: IDENTITY & ARCHETYPE (2x2 -> 336px × 336px)                 */}
         {/* ======================================================================= */}
         <div
-          className="col-span-2 row-span-2 rounded-[28px] bg-[#161618]/95 hover:bg-[#1b1b1e]/95 border border-white/[0.08] hover:border-white/14 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_26px_rgba(0,0,0,0.4)] transition-all flex flex-col justify-between relative overflow-hidden"
+          className={`col-span-2 row-span-2 rounded-[28px] p-5 ${frostedCardClass}`}
           style={{ width: '336px', height: '336px' }}
         >
           {/* Top Bar: Label Badge + Obvious Tactile Edit/Save Action */}
@@ -318,7 +323,7 @@ export default function IdentityVisualCard({
               <div className="w-6 h-6 rounded-full bg-[#EF264C]/15 border border-[#EF264C]/30 flex items-center justify-center">
                 <User size={12} className="text-[#EF264C]" />
               </div>
-              <span className="text-[11px] font-mono tracking-wider text-white/60 uppercase font-bold">
+              <span className="text-[11px] font-mono tracking-wider text-white/70 uppercase font-bold">
                 IDENTITY
               </span>
             </div>
@@ -353,62 +358,62 @@ export default function IdentityVisualCard({
             {isEditing ? (
               <div className="space-y-1.5">
                 <div>
-                  <label className="text-[10px] font-mono text-white/40 uppercase">ชื่อตัวละคร</label>
+                  <label className="text-[10px] font-mono text-white/50 uppercase">ชื่อตัวละคร</label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="ชื่อตัวละคร"
-                    className="w-full bg-white/[0.06] border border-white/20 focus:border-[#EF264C] rounded-lg px-2.5 py-1 text-[19px] font-bold text-white outline-none"
+                    className="w-full bg-black/30 border border-white/20 focus:border-[#EF264C] rounded-lg px-2.5 py-1 text-[19px] font-bold text-white outline-none"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
                   <div>
-                    <label className="text-[9.5px] font-mono text-white/40 uppercase">Archetype (EN)</label>
+                    <label className="text-[9.5px] font-mono text-white/50 uppercase">Archetype (EN)</label>
                     <input
                       type="text"
                       value={archetype}
                       onChange={(e) => setArchetype(e.target.value)}
                       placeholder="Archetype"
-                      className="w-full bg-white/[0.05] border border-white/15 focus:border-[#EF264C] rounded-md px-2 py-1 text-[11.5px] text-white outline-none"
+                      className="w-full bg-black/25 border border-white/15 focus:border-[#EF264C] rounded-md px-2 py-1 text-[11.5px] text-white outline-none"
                     />
                   </div>
                   <div>
-                    <label className="text-[9.5px] font-mono text-white/40 uppercase">คำอธิบายไทย</label>
+                    <label className="text-[9.5px] font-mono text-white/50 uppercase">คำอธิบายไทย</label>
                     <input
                       type="text"
                       value={archetypeTh}
                       onChange={(e) => setArchetypeTh(e.target.value)}
                       placeholder="คำอธิบายไทย"
-                      className="w-full bg-white/[0.05] border border-white/15 focus:border-[#EF264C] rounded-md px-2 py-1 text-[11.5px] text-white/80 outline-none"
+                      className="w-full bg-black/25 border border-white/15 focus:border-[#EF264C] rounded-md px-2 py-1 text-[11.5px] text-white/80 outline-none"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="text-[9.5px] font-mono text-white/40 uppercase">ประโยคคำพูดประจำตัว</label>
+                  <label className="text-[9.5px] font-mono text-white/50 uppercase">ประโยคคำพูดประจำตัว</label>
                   <textarea
                     rows={2}
                     value={quote}
                     onChange={(e) => setQuote(e.target.value)}
                     placeholder="ประโยคคำพูดประจำตัว..."
-                    className="w-full bg-white/[0.05] border border-white/15 focus:border-[#EF264C] rounded-md px-2 py-1 text-[11.5px] text-[#D0D0D5] outline-none leading-normal resize-none"
+                    className="w-full bg-black/25 border border-white/15 focus:border-[#EF264C] rounded-md px-2 py-1 text-[11.5px] text-[#EDEDED] outline-none leading-normal resize-none"
                   />
                 </div>
               </div>
             ) : (
               <div>
-                <h1 className="text-[25px] sm:text-[27px] font-bold text-[#F1F1F1] tracking-tight leading-tight">
+                <h1 className="text-[25px] sm:text-[27px] font-bold text-white tracking-tight leading-tight">
                   {name}
                 </h1>
                 <div className="text-[13px] text-white/90 mt-0.5 leading-normal">
                   <span className="font-bold text-white">{archetype}</span>
                   {archetypeTh && (
-                    <span className="text-white/50 font-normal ml-1.5">
+                    <span className="text-white/60 font-normal ml-1.5">
                       ( {archetypeTh} )
                     </span>
                   )}
                 </div>
-                <p className="text-[12.5px] text-[#B8B8C0] mt-2 leading-relaxed font-normal italic line-clamp-3">
+                <p className="text-[12.5px] text-[#EDEDED] mt-2 leading-relaxed font-normal italic line-clamp-3">
                   {quote}
                 </p>
               </div>
@@ -420,7 +425,7 @@ export default function IdentityVisualCard({
             {hashtags.map((tag, idx) => (
               <span
                 key={idx}
-                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/[0.07] hover:bg-white/[0.12] border border-white/10 text-[11px] text-white/85 font-medium"
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/[0.08] hover:bg-white/[0.14] border border-white/10 text-[11px] text-white/90 font-medium shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
               >
                 <Hash size={10} className="text-[#EF264C]" />
                 <span>{tag.replace(/^#/, '')}</span>
@@ -449,7 +454,7 @@ export default function IdentityVisualCard({
                     }
                   }}
                   placeholder="+ แท็ก"
-                  className="bg-white/[0.06] border border-white/20 focus:border-[#EF264C] rounded-full px-2.5 py-0.5 text-[11px] text-[#F1F1F1] outline-none w-16"
+                  className="bg-black/30 border border-white/20 focus:border-[#EF264C] rounded-full px-2.5 py-0.5 text-[11px] text-[#F1F1F1] outline-none w-16"
                 />
                 <button
                   type="button"
@@ -475,7 +480,7 @@ export default function IdentityVisualCard({
         {/* 👗 WIDGET 2: WARDROBE CLOSET (2x2 -> 336px × 336px)                      */}
         {/* ======================================================================= */}
         <div
-          className="col-span-2 row-span-2 rounded-[28px] bg-[#161618]/95 hover:bg-[#1b1b1e]/95 border border-white/[0.08] hover:border-white/14 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_26px_rgba(0,0,0,0.4)] transition-all flex flex-col justify-between relative overflow-hidden"
+          className={`col-span-2 row-span-2 rounded-[28px] p-5 ${frostedCardClass}`}
           style={{ width: '336px', height: '336px' }}
         >
           {/* Header Row: Closet Badge + Hangers Switcher */}
@@ -485,7 +490,7 @@ export default function IdentityVisualCard({
                 <div className="w-6 h-6 rounded-full bg-white/[0.08] flex items-center justify-center">
                   <Shirt size={12} className="text-[#EF264C]" />
                 </div>
-                <span className="text-[11px] font-mono tracking-wider text-white/60 uppercase font-bold">
+                <span className="text-[11px] font-mono tracking-wider text-white/70 uppercase font-bold">
                   WARDROBE (ตู้เสื้อผ้า)
                 </span>
               </div>
@@ -503,7 +508,7 @@ export default function IdentityVisualCard({
                       onClick={() => setActiveOutfitIndex(idx)}
                       className={`px-2.5 py-1 rounded-full text-[11px] font-medium flex items-center gap-1 transition-all cursor-pointer ${
                         isActive
-                          ? 'bg-white/20 text-white shadow-sm border border-white/25'
+                          ? 'bg-white/20 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] border border-white/25'
                           : 'bg-white/[0.04] text-white/60 hover:text-white border border-transparent'
                       }`}
                     >
@@ -527,11 +532,11 @@ export default function IdentityVisualCard({
             </div>
 
             {/* Tactile Garment Swatch Card */}
-            <div className="my-auto py-3 px-3.5 rounded-[20px] bg-black/40 border border-white/[0.08] flex flex-col justify-between gap-2">
+            <div className="my-auto py-3 px-3.5 rounded-[20px] bg-black/25 backdrop-blur-xl border border-white/[0.06] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] flex flex-col justify-between gap-2">
               <div className="flex items-center justify-between gap-1.5">
                 {isEditing ? (
                   <div className="flex-1">
-                    <label className="text-[9.5px] font-mono text-white/40 uppercase">ชื่อสไตล์ชุด</label>
+                    <label className="text-[9.5px] font-mono text-white/50 uppercase">ชื่อสไตล์ชุด</label>
                     <input
                       type="text"
                       value={activeOutfit.name}
@@ -540,11 +545,11 @@ export default function IdentityVisualCard({
                         updated[activeOutfitIndex].name = e.target.value;
                         setOutfits(updated);
                       }}
-                      className="w-full bg-white/[0.06] border border-white/15 focus:border-[#EF264C] rounded px-2 py-0.5 text-[12.5px] font-bold text-white outline-none"
+                      className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-0.5 text-[12.5px] font-bold text-white outline-none"
                     />
                   </div>
                 ) : (
-                  <span className="text-[13.5px] font-bold text-[#F1F1F1] tracking-tight truncate">
+                  <span className="text-[13.5px] font-bold text-white tracking-tight truncate">
                     {activeOutfit.name}
                   </span>
                 )}
@@ -566,7 +571,7 @@ export default function IdentityVisualCard({
 
               {isEditing ? (
                 <div className="space-y-1">
-                  <label className="text-[9.5px] font-mono text-white/40 uppercase">รายละเอียดเนื้อผ้า & สัมผัส</label>
+                  <label className="text-[9.5px] font-mono text-white/50 uppercase">รายละเอียดเนื้อผ้า & สัมผัส</label>
                   <textarea
                     rows={3}
                     value={activeOutfit.description}
@@ -576,7 +581,7 @@ export default function IdentityVisualCard({
                       setOutfits(updated);
                     }}
                     placeholder="รายละเอียดเนื้อผ้า คัตติ้ง..."
-                    className="w-full bg-white/[0.05] border border-white/15 focus:border-[#EF264C] rounded-md p-2 text-[12px] text-[#D0D0D5] outline-none leading-normal resize-none"
+                    className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded-md p-2 text-[12px] text-[#EDEDED] outline-none leading-normal resize-none"
                   />
                   {outfits.length > 1 && (
                     <button
@@ -589,7 +594,7 @@ export default function IdentityVisualCard({
                   )}
                 </div>
               ) : (
-                <p className="text-[12px] text-[#BEBEC8] leading-relaxed font-normal line-clamp-4">
+                <p className="text-[12px] text-[#EDEDED] leading-relaxed font-normal line-clamp-4">
                   {activeOutfit.description}
                 </p>
               )}
@@ -607,7 +612,7 @@ export default function IdentityVisualCard({
         {/* 👓 WIDGET 3: ANATOMY & PHYSIQUE (2x2 -> 336px × 336px - 4 QUADRANTS)   */}
         {/* ======================================================================= */}
         <div
-          className="col-span-2 row-span-2 rounded-[28px] bg-[#161618]/95 hover:bg-[#1b1b1e]/95 border border-white/[0.08] hover:border-white/14 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_26px_rgba(0,0,0,0.4)] transition-all flex flex-col justify-between relative overflow-hidden"
+          className={`col-span-2 row-span-2 rounded-[28px] p-5 ${frostedCardClass}`}
           style={{ width: '336px', height: '336px' }}
         >
           {/* Header Row */}
@@ -617,7 +622,7 @@ export default function IdentityVisualCard({
                 <div className="w-6 h-6 rounded-full bg-white/[0.08] flex items-center justify-center">
                   <Eye size={12} className="text-[#EF264C]" />
                 </div>
-                <span className="text-[11px] font-mono tracking-wider text-white/60 uppercase font-bold">
+                <span className="text-[11px] font-mono tracking-wider text-white/70 uppercase font-bold">
                   ANATOMY (สรีระ 4 มิติ)
                 </span>
               </div>
@@ -626,19 +631,19 @@ export default function IdentityVisualCard({
               </span>
             </div>
 
-            {/* 4-Quadrant Tactile Mini-Tiles (Larger Typography) */}
+            {/* 4-Quadrant Tactile Mini-Tiles */}
             <div className="grid grid-cols-2 gap-2 my-auto py-0.5">
               {anatomyTraits.map((trait, idx) => (
                 <div
                   key={trait.id}
-                  className="p-2.5 rounded-[18px] bg-black/40 border border-white/[0.06] hover:border-white/14 flex flex-col justify-between transition-all h-[100px] overflow-hidden"
+                  className="p-2.5 rounded-[18px] bg-black/25 hover:bg-black/35 backdrop-blur-xl border border-white/[0.06] hover:border-white/14 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] flex flex-col justify-between transition-all h-[100px] overflow-hidden"
                 >
                   <div className="flex items-center justify-between gap-1 mb-1 shrink-0">
                     <div className="flex items-center gap-1.5">
                       <div className="w-5 h-5 rounded-md bg-white/[0.06] flex items-center justify-center shrink-0">
                         {renderTraitIcon(trait.iconType)}
                       </div>
-                      <span className="text-[11px] font-bold text-[#F1F1F1] tracking-tight truncate">
+                      <span className="text-[11px] font-bold text-white tracking-tight truncate">
                         {trait.title}
                       </span>
                     </div>
@@ -663,10 +668,10 @@ export default function IdentityVisualCard({
                         updated[idx].detail = e.target.value;
                         setAnatomyTraits(updated);
                       }}
-                      className="w-full bg-white/[0.06] border border-white/15 focus:border-[#EF264C] rounded p-1 text-[10.5px] text-[#D0D0D5] outline-none leading-normal resize-none flex-1"
+                      className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded p-1 text-[10.5px] text-[#EDEDED] outline-none leading-normal resize-none flex-1"
                     />
                   ) : (
-                    <p className="text-[10.5px] text-[#BEBEC8] leading-normal line-clamp-3">
+                    <p className="text-[10.5px] text-[#EDEDED] leading-normal line-clamp-3">
                       {trait.detail}
                     </p>
                   )}
@@ -694,7 +699,7 @@ export default function IdentityVisualCard({
         {/* 🎭 WIDGET 4: SIGNATURE POSTURES (2x1 -> 336px × 160px - HORIZONTAL WIDE)  */}
         {/* ======================================================================= */}
         <div
-          className="col-span-2 row-span-1 rounded-[28px] bg-[#161618]/95 hover:bg-[#1b1b1e]/95 border border-white/[0.08] hover:border-white/14 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_26px_rgba(0,0,0,0.4)] transition-all flex flex-col justify-between relative overflow-hidden"
+          className={`col-span-2 row-span-1 rounded-[28px] p-4 ${frostedCardClass}`}
           style={{ width: '336px', height: '160px' }}
         >
           {/* Header Row */}
@@ -703,7 +708,7 @@ export default function IdentityVisualCard({
               <div className="w-5 h-5 rounded-full bg-rose-500/15 flex items-center justify-center">
                 <Sparkles size={12} className="text-rose-400" />
               </div>
-              <span className="text-[11px] font-mono tracking-wider text-white/60 uppercase font-bold">
+              <span className="text-[11px] font-mono tracking-wider text-white/70 uppercase font-bold">
                 POSTURES (ภาษากาย 3 จังหวะ)
               </span>
             </div>
@@ -723,7 +728,7 @@ export default function IdentityVisualCard({
             </div>
           </div>
 
-          {/* 3 Dynamic Island Horizontal Capsules (Larger, readable text) */}
+          {/* 3 Dynamic Island Horizontal Capsules */}
           <div className="space-y-1.5 py-0.5 overflow-hidden">
             {postures.map((poseText, idx) => {
               const isInitial = poseText === initialPose;
@@ -733,13 +738,13 @@ export default function IdentityVisualCard({
                   onClick={() => !isEditing && setInitialPose(poseText)}
                   className={`px-2.5 py-1 rounded-[14px] flex items-center gap-2.5 transition-all cursor-pointer ${
                     isInitial
-                      ? 'bg-white/[0.10] border border-white/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]'
-                      : 'bg-black/35 hover:bg-black/50 border border-white/[0.05] hover:border-white/12'
+                      ? 'bg-white/[0.12] border border-white/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]'
+                      : 'bg-black/25 hover:bg-black/35 backdrop-blur-xl border border-white/[0.06] hover:border-white/14 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]'
                   }`}
                 >
                   <span
                     className={`text-[9.5px] font-mono font-bold w-5 h-5 rounded-md flex items-center justify-center shrink-0 ${
-                      isInitial ? 'bg-[#EF264C] text-white' : 'bg-white/10 text-white/60'
+                      isInitial ? 'bg-[#EF264C] text-white' : 'bg-white/15 text-white/70'
                     }`}
                   >
                     0{idx + 1}
@@ -754,16 +759,16 @@ export default function IdentityVisualCard({
                         updated[idx] = e.target.value;
                         setPostures(updated);
                       }}
-                      className="bg-white/[0.06] border border-white/15 focus:border-[#EF264C] rounded px-2 py-0.5 text-[11px] text-[#F1F1F1] outline-none flex-1"
+                      className="bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-0.5 text-[11px] text-[#F1F1F1] outline-none flex-1"
                     />
                   ) : (
-                    <span className="text-[11.5px] text-[#E0E0E6] truncate flex-1 font-normal">
+                    <span className="text-[11.5px] text-[#EDEDED] truncate flex-1 font-normal">
                       {poseText}
                     </span>
                   )}
 
                   {isInitial && !isEditing && (
-                    <span className="text-[9.5px] font-bold text-[#EF264C] bg-[#EF264C]/15 px-2 py-0.5 rounded-full shrink-0">
+                    <span className="text-[9.5px] font-bold text-[#EF264C] bg-[#EF264C]/20 border border-[#EF264C]/40 px-2 py-0.5 rounded-full shrink-0">
                       ✦ HUD
                     </span>
                   )}
@@ -790,7 +795,7 @@ export default function IdentityVisualCard({
         {/* 🌙 WIDGET 5: STARTING ATMOSPHERE (1x1 -> 160px × 160px - APPLE WEATHER)   */}
         {/* ======================================================================= */}
         <div
-          className="col-span-1 row-span-1 rounded-[24px] bg-[#161618]/95 hover:bg-[#1b1b1e]/95 border border-white/[0.08] hover:border-white/14 p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_26px_rgba(0,0,0,0.4)] transition-all flex flex-col justify-between relative overflow-hidden"
+          className={`col-span-1 row-span-1 rounded-[24px] p-3.5 ${frostedCardClass}`}
           style={{ width: '160px', height: '160px' }}
         >
           {/* Header: Venue & Time */}
@@ -803,10 +808,10 @@ export default function IdentityVisualCard({
                   value={sceneTime}
                   onChange={(e) => setSceneTime(e.target.value)}
                   placeholder="เวลา"
-                  className="bg-white/[0.06] border border-white/15 focus:border-[#EF264C] rounded px-1.5 py-0.5 text-[10px] text-white outline-none w-14"
+                  className="bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-1.5 py-0.5 text-[10px] text-white outline-none w-14"
                 />
               ) : (
-                <span className="text-[11px] text-white/60 font-medium truncate">
+                <span className="text-[11px] text-white/70 font-medium truncate">
                   {sceneTime}
                 </span>
               )}
@@ -826,22 +831,22 @@ export default function IdentityVisualCard({
                   value={sceneWeather}
                   onChange={(e) => setSceneWeather(e.target.value)}
                   placeholder="สภาพอากาศ"
-                  className="w-full bg-white/[0.06] border border-white/15 focus:border-[#EF264C] rounded px-1.5 py-0.5 text-[12px] font-bold text-white outline-none"
+                  className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-1.5 py-0.5 text-[12px] font-bold text-white outline-none"
                 />
                 <input
                   type="text"
                   value={sceneLocation}
                   onChange={(e) => setSceneLocation(e.target.value)}
                   placeholder="สถานที่"
-                  className="w-full bg-white/[0.05] border border-white/10 focus:border-[#EF264C] rounded px-1.5 py-0.5 text-[10.5px] text-white/80 outline-none"
+                  className="w-full bg-black/25 border border-white/10 focus:border-[#EF264C] rounded px-1.5 py-0.5 text-[10.5px] text-white/80 outline-none"
                 />
               </div>
             ) : (
               <div>
-                <div className="text-[15px] font-bold text-[#F1F1F1] tracking-tight truncate leading-tight">
+                <div className="text-[15px] font-bold text-white tracking-tight truncate leading-tight">
                   {sceneWeather}
                 </div>
-                <div className="text-[11px] text-[#A1A1A8] truncate mt-1">
+                <div className="text-[11px] text-[#EDEDED] truncate mt-1">
                   {sceneLocation}
                 </div>
               </div>
@@ -858,21 +863,21 @@ export default function IdentityVisualCard({
         {/* 🧭 WIDGET 6: PLAYER STANCE (1x1 -> 160px × 160px - COMPASS TILE)         */}
         {/* ======================================================================= */}
         <div
-          className="col-span-1 row-span-1 rounded-[24px] bg-[#161618]/95 hover:bg-[#1b1b1e]/95 border border-white/[0.08] hover:border-white/14 p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_26px_rgba(0,0,0,0.4)] transition-all flex flex-col justify-between relative overflow-hidden"
+          className={`col-span-1 row-span-1 rounded-[24px] p-3.5 ${frostedCardClass}`}
           style={{ width: '160px', height: '160px' }}
         >
           {/* Header */}
           <div className="flex items-center justify-between shrink-0">
             <div className="flex items-center gap-1.5">
               <Compass size={12} className="text-[#EF264C]" />
-              <span className="text-[10px] font-mono tracking-wider text-white/60 uppercase font-bold">
+              <span className="text-[10px] font-mono tracking-wider text-white/70 uppercase font-bold">
                 STANCE
               </span>
             </div>
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           </div>
 
-          {/* Stance Content (Comfortable Reading & Direct Edit) */}
+          {/* Stance Content */}
           <div className="my-auto py-0.5 overflow-hidden">
             {isEditing ? (
               <input
@@ -880,14 +885,14 @@ export default function IdentityVisualCard({
                 value={playerStance}
                 onChange={(e) => setPlayerStance(e.target.value)}
                 placeholder="ท่าทางเริ่มต้นของผู้เล่น"
-                className="w-full bg-white/[0.06] border border-white/15 focus:border-[#EF264C] rounded px-2 py-1 text-[11px] text-white outline-none"
+                className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-1 text-[11px] text-white outline-none"
               />
             ) : (
               <div>
-                <div className="text-[12.5px] font-bold text-[#F1F1F1] tracking-tight leading-normal line-clamp-2">
+                <div className="text-[12.5px] font-bold text-white tracking-tight leading-normal line-clamp-2">
                   {playerStance}
                 </div>
-                <div className="text-[10.5px] text-white/50 mt-1 truncate">
+                <div className="text-[10.5px] text-[#EDEDED] mt-1 truncate">
                   พร้อมรับมือ / สังเกตการณ์
                 </div>
               </div>

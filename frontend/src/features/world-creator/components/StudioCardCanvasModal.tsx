@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import {
   X,
-  Sparkles,
   User,
   Globe,
-  Layers,
+  Workflow,
 } from 'lucide-react';
 import type { VaultDraft } from '../types';
 import IdentityVisualCard from './cards/IdentityVisualCard';
@@ -70,34 +69,8 @@ export default function StudioCardCanvasModal({
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-gradient-to-b from-[#EF264C]/[0.06] via-white/[0.02] to-transparent pointer-events-none blur-3xl -z-10" />
 
       {/* 1. TOP CONTROL BAR (APPLE EDITORIAL LUXURY) */}
-      <header className="h-[64px] shrink-0 border-b border-white/[0.08] px-6 sm:px-8 flex items-center justify-between bg-app-bg/85 backdrop-blur-2xl z-20">
-        {/* Left: Brand + Breadcrumb */}
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-[#EF264C] flex items-center justify-center shadow-[0_2px_10px_rgba(239,38,76,0.35)]">
-            <Sparkles size={15} className="text-white" strokeWidth={2.4} />
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[14px] font-semibold text-[#F1F1F1] tracking-tight">
-              The Soul Studio
-            </span>
-            <span className="text-white/20 text-[12px]">/</span>
-            <span className="text-[13px] text-[#AAAAAA]">
-              {activeStudioTab === 'character'
-                ? 'ตัวละคร'
-                : activeStudioTab === 'world'
-                ? 'โลกและบรรยากาศ'
-                : 'แผงรางรถไฟเหตุการณ์'}
-            </span>
-            <span className="text-white/20 text-[12px]">/</span>
-            <span className="text-[13px] text-[#F1F1F1] font-medium truncate max-w-[200px]">
-              {activeStudioTab === 'character'
-                ? draft.title || 'ตัวละคร'
-                : draft.thai_name || draft.worldTitle || 'โลกและสถานการณ์'}
-            </span>
-          </div>
-        </div>
-
-        {/* Center: Apple Tactile Segmented Studio Switcher */}
+      <header className="h-[60px] sm:h-[64px] shrink-0 border-b border-white/[0.08] px-6 sm:px-8 flex items-center justify-between bg-app-bg/85 backdrop-blur-2xl z-20">
+        {/* Left: Apple Tactile Segmented Studio Switcher */}
         <div className="flex items-center p-1 rounded-full bg-white/[0.04] border border-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
           <button
             type="button"
@@ -109,7 +82,7 @@ export default function StudioCardCanvasModal({
             }`}
           >
             <User size={13} strokeWidth={2.2} />
-            <span>ตัวละคร (Character)</span>
+            <span>ตัวละคร</span>
           </button>
           <button
             type="button"
@@ -121,7 +94,7 @@ export default function StudioCardCanvasModal({
             }`}
           >
             <Globe size={13} strokeWidth={2.2} />
-            <span>โลกและบรรยากาศ (World)</span>
+            <span>โลก</span>
           </button>
           <button
             type="button"
@@ -132,8 +105,8 @@ export default function StudioCardCanvasModal({
                 : 'text-white/45 hover:text-white/80 border border-transparent'
             }`}
           >
-            <Layers size={13} strokeWidth={2.2} />
-            <span>แผงรางรถไฟ (Railroad)</span>
+            <Workflow size={13} strokeWidth={2.2} />
+            <span>เส้นเรื่อง</span>
           </button>
         </div>
 

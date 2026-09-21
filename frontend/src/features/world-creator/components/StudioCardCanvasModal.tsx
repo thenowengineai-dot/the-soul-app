@@ -12,8 +12,7 @@ import DynamicsCharismaCard from './cards/DynamicsCharismaCard';
 import LoreBackgroundCard from './cards/LoreBackgroundCard';
 import WorldAtmosphereCard from './cards/WorldAtmosphereCard';
 import WorldPrologueCard from './cards/WorldPrologueCard';
-import WorldSpatialAnchorsCard from './cards/WorldSpatialAnchorsCard';
-import WorldStagePropsCard from './cards/WorldStagePropsCard';
+import WorldDeepDiveStageCard from './cards/WorldDeepDiveStageCard';
 
 interface StudioCardCanvasModalProps {
   isOpen: boolean;
@@ -184,21 +183,14 @@ export default function StudioCardCanvasModal({
                   onUpdateDraft={onUpdateDraft}
                   isEditable={true}
                 />
-                {/* Card W2: Prologue Narrative (2x1) */}
+                {/* Card W2: Prologue Narrative (2x2) */}
                 <WorldPrologueCard
                   draft={draft}
                   onUpdateDraft={onUpdateDraft}
                   isEditable={true}
                 />
-                {/* Card W3: Spatial Enclosure & Anchor Points (2x1, stacked vertically under Card W2) */}
-                <WorldSpatialAnchorsCard
-                  draft={draft}
-                  activeLocationKey={activeLocationKey}
-                  onUpdateDraft={onUpdateDraft}
-                  isEditable={true}
-                />
-                {/* Card W4: The Master Stage & Props Ensemble (2x2, with Master Scene Selector) */}
-                <WorldStagePropsCard
+                {/* Card W3: Deep-Dive Stage Card (2x2, with Master Scene Selector & 5 Dimensions) */}
+                <WorldDeepDiveStageCard
                   draft={draft}
                   activeLocationKey={activeLocationKey}
                   onSelectLocation={setActiveLocationKey}

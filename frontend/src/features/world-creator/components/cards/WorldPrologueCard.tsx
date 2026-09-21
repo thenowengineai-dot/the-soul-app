@@ -49,8 +49,8 @@ export default function WorldPrologueCard({
 
   return (
     <div
-      className={`col-span-2 row-span-1 rounded-[28px] p-4 ${frostedCardClass}`}
-      style={{ width: '346px', height: '165px' }}
+      className={`col-span-2 row-span-2 rounded-[28px] p-4 sm:p-5 ${frostedCardClass}`}
+      style={{ width: '346px', height: '346px' }}
     >
       {/* 1. Header Row: Clean "บทนำ" Title + Circular Edit Button (Strict Apple Consistency) */}
       <div className="flex items-center justify-between shrink-0 mb-1.5 px-0.5">

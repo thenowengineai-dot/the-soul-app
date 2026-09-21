@@ -19,7 +19,7 @@ interface RailroadCableOverlayProps {
 }
 
 export const SCENE_WIDTH = 346;
-export const SCENE_STEP_X = 420;
+export const SCENE_STEP_X = 460;
 export const PORT_Y_OFFSET = 24;
 
 /**
@@ -215,17 +215,26 @@ export default function RailroadCableOverlay({
               className="transition-all group-hover/cable:stroke-width-[3px]"
             />
 
-            {/* ✦ 4. MIDPOINT FLOATING ACTION DOCK (APPLE FROSTED GLASS CAPSULE - SHOWN ONLY ON HOVER) */}
+            {/* ✦ 4. MIDPOINT FLOATING ACTION DOCK (APPLE FROSTED MICRO-NODE -> EXPANDS TO CUT/INSERT ON HOVER) */}
             {isEditable && (
               <foreignObject
-                x={midX - 30}
-                y={midY - 12}
-                width={60}
-                height={24}
-                className="overflow-visible pointer-events-none group-hover/cable:pointer-events-auto"
+                x={midX - 65}
+                y={midY - 14}
+                width={130}
+                height={28}
+                className="overflow-visible pointer-events-auto"
               >
                 <div className="w-full h-full flex items-center justify-center">
-                  <div className="opacity-0 group-hover/cable:opacity-100 transition-all duration-150 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-[#16161E]/95 hover:bg-[#1C1C26] border border-white/20 backdrop-blur-xl shadow-[0_4px_14px_rgba(0,0,0,0.65)] select-none">
+                  {/* RESTING STATE: Subtle Apple Frosted Micro-Node (เล็กๆ ไม่กวนสายตา) */}
+                  <div
+                    className="group-hover/cable:hidden flex items-center justify-center w-[20px] h-[20px] rounded-full bg-[#181822]/90 border border-white/20 shadow-md backdrop-blur-md text-white/50 hover:text-white transition-all cursor-pointer"
+                    title="ชี้เพื่อตัดเส้นหรือแทรกฉาก"
+                  >
+                    <Plus size={10} strokeWidth={2.4} />
+                  </div>
+
+                  {/* HOVER / ACTIVE STATE: Expanded Full Action Dock (✂ ตัดเส้น | + แทรก) */}
+                  <div className="hidden group-hover/cable:flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#16161E]/95 hover:bg-[#1C1C26] border border-white/25 backdrop-blur-xl shadow-[0_4px_16px_rgba(0,0,0,0.7)] select-none">
                     {/* Disconnect Button (Scissors) */}
                     <button
                       type="button"
@@ -233,10 +242,11 @@ export default function RailroadCableOverlay({
                         e.stopPropagation();
                         onDisconnectScene?.(scene.scene_id);
                       }}
-                      className="w-5 h-5 rounded-full flex items-center justify-center text-white/70 hover:text-[#EF264C] hover:bg-[#EF264C]/15 transition-all cursor-pointer active:scale-90"
+                      className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium text-white/80 hover:text-[#EF264C] hover:bg-[#EF264C]/15 transition-all cursor-pointer active:scale-95"
                       title="ตัดเส้นเชื่อมต่อ แยกโหนดนี้ออกอิสระ"
                     >
-                      <Scissors size={10} strokeWidth={2.4} />
+                      <Scissors size={11} strokeWidth={2.4} />
+                      <span>ตัดเส้น</span>
                     </button>
 
                     {/* Vertical Divider */}
@@ -249,10 +259,11 @@ export default function RailroadCableOverlay({
                         e.stopPropagation();
                         onInsertSceneBetween(scene.scene_id);
                       }}
-                      className="w-5 h-5 rounded-full flex items-center justify-center text-white/70 hover:text-emerald-400 hover:bg-emerald-500/15 transition-all cursor-pointer active:scale-90"
+                      className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium text-white/80 hover:text-emerald-400 hover:bg-emerald-500/15 transition-all cursor-pointer active:scale-95"
                       title="แทรกฉากใหม่คั่นกลางตรงนี้"
                     >
-                      <Plus size={10} strokeWidth={2.4} />
+                      <Plus size={11} strokeWidth={2.4} />
+                      <span>แทรก</span>
                     </button>
                   </div>
                 </div>

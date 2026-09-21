@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Pencil, Check, Plus, Trash2, BookOpen } from 'lucide-react';
+import { Pencil, Check, Plus, Trash2 } from 'lucide-react';
 import type { VaultDraft } from '../../types';
 
 interface LoreBackgroundCardProps {
@@ -123,27 +123,27 @@ export default function LoreBackgroundCard({
         )}
       </div>
 
-      {/* Body: Vertical Prose Flow with [ 01 ], [ 02 ], [ 03 ] Badges */}
-      <div className="flex-1 flex flex-col justify-between overflow-hidden">
+      {/* Body: Vertical Prose Flow with [ 01 ], [ 02 ], [ 03 ] Badges and Content Peeking */}
+      <div className="flex-1 overflow-hidden flex flex-col min-h-0">
         {!isEditing ? (
-          /* Display Mode: Scrollable Vertical Stack of Frosted Trays */
-          <div className="flex-1 overflow-y-auto pr-1 space-y-2.5 custom-scrollbar">
+          /* Display Mode: Scrollable Vertical Stack of Frosted Trays with Content Peeking */
+          <div className="flex-1 overflow-y-auto pr-1 space-y-2 custom-scrollbar">
             {stories.map((story, index) => {
               const tagNumber = String(index + 1).padStart(2, '0');
               return (
                 <div
                   key={index}
-                  className="p-3 rounded-[18px] bg-white/[0.04] hover:bg-white/[0.07] border border-white/[0.07] hover:border-white/15 transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] group"
+                  className="px-3 py-2.5 rounded-[18px] bg-white/[0.04] hover:bg-white/[0.07] border border-white/[0.07] hover:border-white/15 transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] group"
                 >
                   {/* Badge Row */}
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[10.5px] font-mono font-semibold text-[#EF264C] bg-white/[0.06] border border-white/[0.10] px-2 py-0.5 rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-mono font-semibold text-[#EF264C] bg-white/[0.06] border border-white/[0.10] px-2 py-0.5 rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
                       [ {tagNumber} ]
                     </span>
                   </div>
 
                   {/* Story Prose Paragraph */}
-                  <p className="text-[12.5px] sm:text-[13px] text-[#EDEDED] font-normal leading-[21px] tracking-tight">
+                  <p className="text-[12.5px] sm:text-[13px] text-[#EDEDED] font-normal leading-[20px] tracking-tight">
                     {story}
                   </p>
                 </div>
@@ -152,16 +152,16 @@ export default function LoreBackgroundCard({
           </div>
         ) : (
           /* Edit Mode: Editable Textareas with Chapter Badges & Delete Buttons */
-          <div className="flex-1 overflow-y-auto pr-1 space-y-2.5 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto pr-1 space-y-2 custom-scrollbar">
             {stories.map((story, index) => {
               const tagNumber = String(index + 1).padStart(2, '0');
               return (
                 <div
                   key={index}
-                  className="p-3 rounded-[18px] bg-white/[0.04] border border-white/[0.10] space-y-2 transition-all"
+                  className="p-2.5 rounded-[18px] bg-white/[0.04] border border-white/[0.10] space-y-1.5 transition-all"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-[10.5px] font-mono font-semibold text-[#EF264C] bg-white/[0.06] border border-white/[0.10] px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-mono font-semibold text-[#EF264C] bg-white/[0.06] border border-white/[0.10] px-2 py-0.5 rounded-full">
                       [ {tagNumber} ]
                     </span>
                     {stories.length > 1 && (
@@ -180,22 +180,13 @@ export default function LoreBackgroundCard({
                     onChange={(e) => handleStoryChange(index, e.target.value)}
                     placeholder="พิมพ์เนื้อหาปูมหลัง..."
                     rows={3}
-                    className="w-full p-2.5 rounded-xl bg-white/[0.06] border border-white/10 text-[12.5px] text-white placeholder-white/30 focus:outline-none focus:border-white/30 resize-none leading-relaxed"
+                    className="w-full p-2 rounded-xl bg-white/[0.06] border border-white/10 text-[12.5px] text-white placeholder-white/30 focus:outline-none focus:border-white/30 resize-none leading-relaxed"
                   />
                 </div>
               );
             })}
           </div>
         )}
-
-        {/* Bottom subtle status hairline */}
-        <div className="pt-2 shrink-0 flex items-center justify-between text-[10.5px] text-white/35 px-1 border-t border-white/[0.06] mt-1">
-          <span className="flex items-center gap-1">
-            <BookOpen size={11} className="text-white/40" />
-            <span>เรื่องราวในอดีตและปูมหลังชีวิต</span>
-          </span>
-          <span>{stories.length} เรื่องเล่า</span>
-        </div>
       </div>
     </div>
   );

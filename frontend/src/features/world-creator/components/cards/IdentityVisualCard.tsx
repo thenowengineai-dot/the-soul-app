@@ -2,20 +2,11 @@ import { useState, useEffect } from 'react';
 import {
   Pencil,
   Check,
-  Shirt,
   Plus,
   Trash2,
   BookmarkCheck,
-  Glasses,
-  Flame,
-  Droplets,
-  Hourglass,
-  Sparkles,
   Moon,
   CloudRain,
-  Compass,
-  User,
-  Eye,
 } from 'lucide-react';
 import type { VaultDraft } from '../../types';
 
@@ -27,7 +18,6 @@ interface IdentityVisualCardProps {
 
 interface AnatomyTrait {
   id: string;
-  iconType: 'glasses' | 'hourglass' | 'flame' | 'droplets';
   title: string;
   detail: string;
 }
@@ -46,8 +36,12 @@ export default function IdentityVisualCard({
 }: IdentityVisualCardProps) {
   const [isEditing, setIsEditing] = useState(false);
 
-  // 1. Identity State: Real Mock Data (Mahiro 990)
-  const [name, setName] = useState(draft.title || 'มาฮิโระ (Mahiro)990');
+  // 1. Identity State: Real Mock Data (Mahiro)
+  const initialTitle =
+    !draft.title || draft.title.includes('ตัวละครใหม่')
+      ? 'มาฮิโระ (Mahiro)'
+      : draft.title;
+  const [name, setName] = useState(initialTitle);
   const [archetype, setArchetype] = useState(draft.archetype || 'The Cloaked Predator');
   const [archetypeTh, setArchetypeTh] = useState('นักล่าซ่อนรูปใต้หน้ากากพฤกษศาสตร์');
   const [quote, setQuote] = useState(
@@ -66,41 +60,37 @@ export default function IdentityVisualCard({
         ];
   });
 
-  // 2. Anatomy Traits (Unified 1 Card: 4 Biometric Rows)
+  // 2. Anatomy Traits (Direct Substance Editorial Rows)
   const [anatomyTraits, setAnatomyTraits] = useState<AnatomyTrait[]>(() => {
     const raw = draft.appearance?.anatomy_features || [];
     return [
       {
         id: 'trait-1',
-        iconType: 'glasses',
-        title: 'ดวงตา & แว่นตา',
+        title: 'สายตาใต้กรอบแว่น',
         detail:
           raw[0] ||
-          'ดวงตาเรียวคมเฉียบขาดดุจตาเหยี่ยว ซ่อนอยู่หลังแว่นตากรอบหนาเตอะ',
+          'เรียวคมเฉียบขาดดุจตาเหยี่ยว ซ่อนอยู่หลังแว่นตากรอบหนาเตอะ',
       },
       {
         id: 'trait-2',
-        iconType: 'hourglass',
-        title: 'ทรงผม & สรีระ',
+        title: 'ทรวดทรงนาฬิกาทราย',
         detail:
           raw[1] ||
-          'ผมยาวสีดำขลับรวบต่ำ ซิลูเอตนาฬิกาทรายอกสะบึมเอวคอดสะโพกผาย ที่ซ่อนอยู่ภายใต้เสื้อผ้าตัวโคร่ง',
+          'ผมยาวสีดำขลับรวบต่ำ อกสะบึมเอวคอดสะโพกผาย ซ่อนรูปภายใต้เสื้อผ้าตัวโคร่ง',
       },
       {
         id: 'trait-3',
-        iconType: 'flame',
-        title: 'สีผิว & ความร้อน',
+        title: 'ผิวขาวจัดขึ้นสีระเรื่อ',
         detail:
           raw[2] ||
-          'ผิวขาวจัดราวกับน้ำนมที่เริ่มขึ้นสีระเรื่อจากไอร้อนและกำหนัดเมื่อสัมผัสกับความร้อน',
+          'ไอร้อนจากกำหนัดเมื่อสัมผัสกับความร้อน',
       },
       {
         id: 'trait-4',
-        iconType: 'droplets',
-        title: 'กลิ่นอาย & ไอน้ำ',
+        title: 'กลิ่นอายสมุนไพรสด',
         detail:
           raw[3] ||
-          'กลิ่นอายสมุนไพรสดและไอน้ำร้อนกรุ่นระเหยออกจากซอกคอและกระดูกไหปลาร้า',
+          'และไอน้ำร้อนกรุ่นระเหยออกจากซอกคอและกระดูกไหปลาร้า',
       },
     ];
   });
@@ -175,7 +165,13 @@ export default function IdentityVisualCard({
 
   // External draft sync
   useEffect(() => {
-    if (draft.title && draft.title !== name) setName(draft.title);
+    if (
+      draft.title &&
+      !draft.title.includes('ตัวละครใหม่') &&
+      draft.title !== name
+    ) {
+      setName(draft.title);
+    }
     if (draft.quote && draft.quote !== quote) setQuote(draft.quote);
   }, [draft.title, draft.quote]);
 
@@ -188,7 +184,7 @@ export default function IdentityVisualCard({
         wardrobeObj[item.key] = [item.description];
       });
 
-      const anatomyFlat = anatomyTraits.map((t) => t.detail);
+      const anatomyFlat = anatomyTraits.map((t) => `${t.title} — ${t.detail}`);
 
       const updatedStartingState = {
         time: sceneTime,
@@ -240,7 +236,6 @@ export default function IdentityVisualCard({
   const handleAddAnatomyTrait = () => {
     const newTrait: AnatomyTrait = {
       id: `trait-${Date.now()}`,
-      iconType: 'droplets',
       title: 'จุดเด่นใหม่',
       detail: 'ระบุลักษณะเฉพาะทางกายภาพ...',
     };
@@ -259,19 +254,6 @@ export default function IdentityVisualCard({
   const handleRemovePosture = (idx: number) => {
     if (postures.length <= 1) return;
     setPostures(postures.filter((_, i) => i !== idx));
-  };
-
-  const renderTraitIcon = (type: AnatomyTrait['iconType']) => {
-    switch (type) {
-      case 'glasses':
-        return <Glasses size={13} className="text-[#EF264C]" strokeWidth={2.2} />;
-      case 'hourglass':
-        return <Hourglass size={13} className="text-amber-400" strokeWidth={2.2} />;
-      case 'flame':
-        return <Flame size={13} className="text-rose-400" strokeWidth={2.2} />;
-      case 'droplets':
-        return <Droplets size={13} className="text-sky-400" strokeWidth={2.2} />;
-    }
   };
 
   const activeOutfit = outfits[activeOutfitIndex] || outfits[0];
@@ -298,52 +280,43 @@ export default function IdentityVisualCard({
       >
 
         {/* ======================================================================= */}
-        {/* 🪪 WIDGET 1: IDENTITY & ARCHETYPE (2x2 -> 346px × 346px)                 */}
+        {/* 👑 WIDGET 1: IDENTITY & SOUL (2x2 -> 346px × 346px - HERO TITLE)          */}
         {/* ======================================================================= */}
         <div
-          className={`col-span-2 row-span-2 rounded-[28px] p-4 ${frostedCardClass}`}
+          className={`col-span-2 row-span-2 rounded-[28px] p-5 ${frostedCardClass}`}
           style={{ width: '346px', height: '346px' }}
         >
-          {/* Top Bar: Label Badge + Obvious Tactile Edit/Save Action */}
-          <div className="flex items-center justify-between gap-2 shrink-0">
-            <div className="flex items-center gap-1.5">
-              <div className="w-6 h-6 rounded-full bg-[#EF264C]/15 border border-[#EF264C]/30 flex items-center justify-center">
-                <User size={12} className="text-[#EF264C]" />
-              </div>
-              <span className="text-[11px] font-mono tracking-wider text-white/70 uppercase font-bold">
-                IDENTITY
-              </span>
-            </div>
-
+          {/* Top Bar: Apple Tactile Circular Action */}
+          <div className="flex items-center justify-end shrink-0 h-8">
             {isEditable && (
               <div>
                 {isEditing ? (
                   <button
                     type="button"
                     onClick={handleSave}
-                    className="px-3.5 py-1 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white text-[11.5px] font-bold flex items-center gap-1.5 shadow-[0_2px_8px_rgba(239,38,76,0.4)] transition-all cursor-pointer"
+                    className="w-8 h-8 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white flex items-center justify-center shadow-[0_2px_8px_rgba(239,38,76,0.4)] transition-all cursor-pointer active:scale-95"
+                    title="บันทึก"
                   >
-                    <Check size={12} strokeWidth={2.4} />
-                    <span>บันทึก</span>
+                    <Check size={14} strokeWidth={2.4} />
                   </button>
                 ) : (
                   <button
                     type="button"
                     onClick={() => setIsEditing(true)}
-                    className="px-3 py-1 rounded-full bg-white/[0.08] hover:bg-white/[0.15] border border-white/15 text-white/90 hover:text-white text-[11.5px] font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]"
+                    className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 hover:border-white/20 text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] active:scale-95"
+                    title="แก้ไข"
                   >
-                    <Pencil size={11} strokeWidth={2} />
-                    <span>แก้ไข</span>
+                    <Pencil size={13} strokeWidth={2} />
                   </button>
                 )}
               </div>
             )}
           </div>
 
-          {/* Middle: Name, Archetype, Persona Voice */}
-          <div className="my-auto py-1 space-y-2 overflow-hidden">
+          {/* Middle: Name Hero, Archetype, Persona Voice */}
+          <div className="my-auto py-2 flex flex-col justify-center">
             {isEditing ? (
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <div>
                   <label className="text-[10px] font-mono text-white/50 uppercase">ชื่อตัวละคร</label>
                   <input
@@ -351,7 +324,7 @@ export default function IdentityVisualCard({
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="ชื่อตัวละคร"
-                    className="w-full bg-black/30 border border-white/20 focus:border-[#EF264C] rounded-lg px-2.5 py-1 text-[19px] font-bold text-white outline-none"
+                    className="w-full bg-black/30 border border-white/20 focus:border-[#EF264C] rounded-lg px-2.5 py-1 text-[20px] font-bold text-white outline-none"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
@@ -389,18 +362,19 @@ export default function IdentityVisualCard({
               </div>
             ) : (
               <div>
-                <h1 className="text-[26px] sm:text-[28px] font-bold text-white tracking-tight leading-tight">
+                <h1 className="text-[28px] sm:text-[30px] font-bold text-[#F1F1F1] tracking-tight leading-tight">
                   {name}
                 </h1>
-                <div className="text-[13px] sm:text-[13.5px] text-white/90 mt-0.5 leading-normal">
-                  <span className="font-bold text-white">{archetype}</span>
+                <div className="text-[13px] sm:text-[13.5px] text-[#A1A1A8] mt-1.5 font-medium leading-normal">
+                  <span>{archetype}</span>
                   {archetypeTh && (
-                    <span className="text-white/60 font-normal ml-1.5">
-                      ( {archetypeTh} )
+                    <span className="text-white/45 font-normal ml-1.5">
+                      • {archetypeTh}
                     </span>
                   )}
                 </div>
-                <p className="text-[13px] sm:text-[13.5px] text-[#EDEDED] mt-2 leading-relaxed font-normal italic line-clamp-4">
+                <div className="w-10 h-[1px] bg-white/15 my-4" />
+                <p className="text-[13.5px] sm:text-[14px] text-[#EDEDED] leading-relaxed font-normal italic line-clamp-4">
                   {quote}
                 </p>
               </div>
@@ -415,16 +389,11 @@ export default function IdentityVisualCard({
           className={`col-span-2 row-span-2 rounded-[28px] p-4 ${frostedCardClass}`}
           style={{ width: '346px', height: '346px' }}
         >
-          {/* Header Row: Closet Badge + Hangers Switcher */}
+          {/* Header Row: Pure Thai Label + Hangers Switcher */}
           <div className="flex items-center justify-between gap-1 mb-2 shrink-0">
-            <div className="flex items-center gap-1.5">
-              <div className="w-6 h-6 rounded-full bg-white/[0.08] flex items-center justify-center">
-                <Shirt size={12} className="text-[#EF264C]" />
-              </div>
-              <span className="text-[11px] font-mono tracking-wider text-white/70 uppercase font-bold">
-                WARDROBE (ตู้เสื้อผ้า)
-              </span>
-            </div>
+            <span className="text-[12px] font-bold tracking-wider text-white/80 font-mono">
+              ตู้เสื้อผ้า
+            </span>
 
             {/* Hanger Pills Switcher */}
             <div className="flex flex-wrap items-center gap-1">
@@ -462,9 +431,9 @@ export default function IdentityVisualCard({
             </div>
           </div>
 
-          {/* Tactile Garment Swatch Card */}
-          <div className="flex-1 p-3.5 rounded-[18px] bg-black/40 backdrop-blur-xl border border-white/[0.06] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)] flex flex-col justify-between gap-2 overflow-hidden">
-            <div className="flex items-center justify-between gap-1.5">
+          {/* Tactile Garment Swatch Card - Cohesive Grouping (No Void) */}
+          <div className="flex-1 p-4 rounded-[20px] bg-black/40 backdrop-blur-xl border border-white/[0.06] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)] flex flex-col gap-3 overflow-hidden">
+            <div className="flex items-center justify-between gap-1.5 shrink-0">
               {isEditing ? (
                 <div className="flex-1">
                   <label className="text-[9.5px] font-mono text-white/50 uppercase">ชื่อสไตล์ชุด</label>
@@ -480,14 +449,14 @@ export default function IdentityVisualCard({
                   />
                 </div>
               ) : (
-                <span className="text-[13.5px] font-bold text-white tracking-tight truncate">
+                <span className="text-[14px] font-bold text-white tracking-tight truncate">
                   {activeOutfit.name}
                 </span>
               )}
 
               {activeOutfit.key === initialOutfitKey ? (
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-semibold shrink-0">
-                  <BookmarkCheck size={10} /> DEFAULT
+                  <BookmarkCheck size={10} /> ชุดเริ่มต้น
                 </span>
               ) : (
                 <button
@@ -525,7 +494,7 @@ export default function IdentityVisualCard({
                 )}
               </div>
             ) : (
-              <p className="text-[12.5px] text-[#EDEDED] leading-relaxed font-normal line-clamp-6">
+              <p className="text-[13px] text-[#EDEDED] leading-relaxed font-normal line-clamp-6">
                 {activeOutfit.description}
               </p>
             )}
@@ -533,24 +502,19 @@ export default function IdentityVisualCard({
         </div>
 
         {/* ======================================================================= */}
-        {/* 👓 WIDGET 3: ANATOMY & PHYSIQUE (2x2 -> 346px × 346px - FULL-WIDTH ROWS) */}
+        {/* 👓 WIDGET 3: ANATOMY & PHYSIQUE (2x2 -> 346px × 346px - EDITORIAL CLARITY) */}
         {/* ======================================================================= */}
         <div
           className={`col-span-2 row-span-2 rounded-[28px] p-4 ${frostedCardClass}`}
           style={{ width: '346px', height: '346px' }}
         >
-          {/* Header Row */}
+          {/* Header Row: Pure Thai Label */}
           <div className="flex items-center justify-between gap-1 mb-2 shrink-0">
-            <div className="flex items-center gap-1.5">
-              <div className="w-6 h-6 rounded-full bg-white/[0.08] flex items-center justify-center">
-                <Eye size={12} className="text-[#EF264C]" />
-              </div>
-              <span className="text-[11px] font-mono tracking-wider text-white/70 uppercase font-bold">
-                ANATOMY (สรีระ 4 มิติ)
-              </span>
-            </div>
+            <span className="text-[12px] font-bold tracking-wider text-white/80 font-mono">
+              สรีระและจุดเด่น
+            </span>
 
-            {isEditing ? (
+            {isEditing && (
               <button
                 type="button"
                 onClick={handleAddAnatomyTrait}
@@ -558,48 +522,29 @@ export default function IdentityVisualCard({
               >
                 <Plus size={10} /> เพิ่มจุดเด่น
               </button>
-            ) : (
-              <span className="text-[10px] text-white/50 font-mono">
-                {anatomyTraits.length} BIOMETRICS
-              </span>
             )}
           </div>
 
-          {/* Full-width Stacked Rows (4 แถวยาวเต็มความกว้าง) */}
+          {/* Full-width Stacked Rows - Direct Substance / Literary Flow */}
           <div className="flex flex-col gap-2 flex-1 justify-between py-0.5 overflow-hidden">
             {anatomyTraits.map((trait, idx) => (
               <div
                 key={trait.id}
-                className="p-2.5 rounded-[16px] bg-black/40 hover:bg-black/50 backdrop-blur-xl border border-white/[0.06] hover:border-white/12 shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)] flex items-start gap-2.5 transition-all"
+                className="px-3.5 py-2.5 rounded-[16px] bg-black/40 hover:bg-black/50 backdrop-blur-xl border border-white/[0.06] hover:border-white/12 shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)] flex items-center transition-all"
               >
-                <div className="w-7 h-7 rounded-[10px] bg-white/[0.06] border border-white/[0.08] flex items-center justify-center shrink-0 mt-0.5">
-                  {renderTraitIcon(trait.iconType)}
-                </div>
-
                 {isEditing ? (
-                  <div className="flex flex-col gap-1 w-full min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <input
-                        type="text"
-                        value={trait.title}
-                        onChange={(e) => {
-                          const updated = [...anatomyTraits];
-                          updated[idx].title = e.target.value;
-                          setAnatomyTraits(updated);
-                        }}
-                        className="bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-1.5 py-0.5 text-[11.5px] font-bold text-white outline-none w-32"
-                        placeholder="หัวข้อสรีระ..."
-                      />
-                      {anatomyTraits.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveAnatomyTrait(idx)}
-                          className="text-white/40 hover:text-red-400 p-0.5 ml-auto cursor-pointer"
-                        >
-                          <Trash2 size={11} />
-                        </button>
-                      )}
-                    </div>
+                  <div className="flex items-center gap-2 w-full min-w-0">
+                    <input
+                      type="text"
+                      value={trait.title}
+                      onChange={(e) => {
+                        const updated = [...anatomyTraits];
+                        updated[idx].title = e.target.value;
+                        setAnatomyTraits(updated);
+                      }}
+                      className="bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-1 text-[11.5px] font-bold text-white outline-none w-32 shrink-0"
+                      placeholder="จุดเด่น..."
+                    />
                     <input
                       type="text"
                       value={trait.detail}
@@ -608,19 +553,28 @@ export default function IdentityVisualCard({
                         updated[idx].detail = e.target.value;
                         setAnatomyTraits(updated);
                       }}
-                      className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-1.5 py-0.5 text-[12px] text-[#EDEDED] outline-none"
-                      placeholder="รายละเอียดสรีระ..."
+                      className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-1 text-[12px] text-[#EDEDED] outline-none"
+                      placeholder="คำบรรยาย..."
                     />
+                    {anatomyTraits.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveAnatomyTrait(idx)}
+                        className="text-white/40 hover:text-red-400 p-0.5 cursor-pointer shrink-0"
+                      >
+                        <Trash2 size={11} />
+                      </button>
+                    )}
                   </div>
                 ) : (
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[12.5px] font-bold text-white tracking-tight">
-                      {trait.title}
-                    </div>
-                    <p className="text-[12px] text-[#EDEDED] leading-snug line-clamp-2 mt-0.5 font-normal">
+                  <p className="text-[12.5px] text-[#EDEDED] leading-snug font-normal line-clamp-2">
+                    <span className="font-bold text-white mr-1.5">
+                      {trait.title} —
+                    </span>
+                    <span className="text-[#D6D6DC]">
                       {trait.detail}
-                    </p>
-                  </div>
+                    </span>
+                  </p>
                 )}
               </div>
             ))}
@@ -628,7 +582,7 @@ export default function IdentityVisualCard({
         </div>
 
         {/* ======================================================================= */}
-        {/* 🎭 WIDGET 4: SIGNATURE POSTURES (2x1 -> 346px × 165px - HORIZONTAL WIDE)  */}
+        {/* 🎭 WIDGET 4: SIGNATURE POSTURES (2x1 -> 346px × 165px - PURE THAI)        */}
         {/* ======================================================================= */}
         <div
           className={`col-span-2 row-span-1 rounded-[28px] p-3.5 ${frostedCardClass}`}
@@ -636,31 +590,22 @@ export default function IdentityVisualCard({
         >
           {/* Header Row */}
           <div className="flex items-center justify-between gap-1 shrink-0">
-            <div className="flex items-center gap-1.5">
-              <div className="w-5 h-5 rounded-full bg-rose-500/15 flex items-center justify-center">
-                <Sparkles size={12} className="text-rose-400" />
-              </div>
-              <span className="text-[11px] font-mono tracking-wider text-white/70 uppercase font-bold">
-                POSTURES (ภาษากาย 3 จังหวะ)
-              </span>
-            </div>
+            <span className="text-[12px] font-bold tracking-wider text-white/80 font-mono">
+              ท่วงท่าประจำตัว
+            </span>
 
-            <div className="flex items-center gap-1">
-              {isEditing ? (
-                <button
-                  type="button"
-                  onClick={handleAddPosture}
-                  className="text-[10.5px] text-[#EF264C] hover:underline flex items-center gap-0.5 cursor-pointer font-semibold"
-                >
-                  <Plus size={10} /> เพิ่มท่า
-                </button>
-              ) : (
-                <span className="text-[10px] text-white/50 font-mono">DYNAMIC ISLAND</span>
-              )}
-            </div>
+            {isEditing && (
+              <button
+                type="button"
+                onClick={handleAddPosture}
+                className="text-[10.5px] text-[#EF264C] hover:underline flex items-center gap-0.5 cursor-pointer font-semibold"
+              >
+                <Plus size={10} /> เพิ่มท่า
+              </button>
+            )}
           </div>
 
-          {/* 3 Dynamic Island Horizontal Capsules */}
+          {/* 3 Dynamic Posture Capsules */}
           <div className="space-y-1.5 py-0.5 overflow-hidden">
             {postures.map((poseText, idx) => {
               const isInitial = poseText === initialPose;
@@ -701,7 +646,7 @@ export default function IdentityVisualCard({
 
                   {isInitial && !isEditing && (
                     <span className="text-[9.5px] font-bold text-[#EF264C] bg-[#EF264C]/20 border border-[#EF264C]/40 px-2 py-0.5 rounded-full shrink-0">
-                      ✦ HUD
+                      ✦ เริ่มต้น
                     </span>
                   )}
 
@@ -727,13 +672,13 @@ export default function IdentityVisualCard({
         {/* 🌙 WIDGET 5: STARTING ATMOSPHERE (1x1 -> 165px × 165px - APPLE WEATHER)   */}
         {/* ======================================================================= */}
         <div
-          className={`col-span-1 row-span-1 rounded-[24px] p-3 ${frostedCardClass}`}
+          className={`col-span-1 row-span-1 rounded-[24px] p-3.5 ${frostedCardClass}`}
           style={{ width: '165px', height: '165px' }}
         >
-          {/* Header: Venue & Time */}
+          {/* Header: Time with small Moon */}
           <div className="flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-1">
-              <Moon size={12} className="text-indigo-400" />
+            <div className="flex items-center gap-1.5">
+              <Moon size={11} className="text-white/60" />
               {isEditing ? (
                 <input
                   type="text"
@@ -743,19 +688,19 @@ export default function IdentityVisualCard({
                   className="bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-1.5 py-0.5 text-[10px] text-white outline-none w-14"
                 />
               ) : (
-                <span className="text-[11px] text-white/70 font-medium truncate">
+                <span className="text-[11px] text-white/60 font-medium truncate">
                   {sceneTime}
                 </span>
               )}
             </div>
 
-            <div className="w-6 h-6 rounded-lg bg-white/[0.06] border border-white/10 flex items-center justify-center shrink-0">
-              <CloudRain size={13} className="text-sky-400" />
+            <div className="w-5 h-5 rounded-md bg-white/[0.06] border border-white/10 flex items-center justify-center shrink-0">
+              <CloudRain size={11} className="text-sky-400" />
             </div>
           </div>
 
-          {/* Main Weather Sensation (Bold, Easy to Read) */}
-          <div className="my-auto py-0.5 overflow-hidden">
+          {/* Main Weather Sensation (Apple Weather Style) */}
+          <div className="my-auto py-1 overflow-hidden">
             {isEditing ? (
               <div className="space-y-1">
                 <input
@@ -778,7 +723,7 @@ export default function IdentityVisualCard({
                 <div className="text-[16px] font-bold text-white tracking-tight truncate leading-tight">
                   {sceneWeather}
                 </div>
-                <div className="text-[11.5px] text-[#EDEDED] truncate mt-1">
+                <div className="text-[11.5px] text-[#A1A1A8] truncate mt-1">
                   {sceneLocation}
                 </div>
               </div>
@@ -787,25 +732,22 @@ export default function IdentityVisualCard({
         </div>
 
         {/* ======================================================================= */}
-        {/* 🧭 WIDGET 6: PLAYER STANCE (1x1 -> 165px × 165px - COMPASS TILE)         */}
+        {/* 🧭 WIDGET 6: PLAYER STANCE (1x1 -> 165px × 165px - PURE THAI)             */}
         {/* ======================================================================= */}
         <div
-          className={`col-span-1 row-span-1 rounded-[24px] p-3 ${frostedCardClass}`}
+          className={`col-span-1 row-span-1 rounded-[24px] p-3.5 ${frostedCardClass}`}
           style={{ width: '165px', height: '165px' }}
         >
           {/* Header */}
           <div className="flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-1.5">
-              <Compass size={12} className="text-[#EF264C]" />
-              <span className="text-[10px] font-mono tracking-wider text-white/70 uppercase font-bold">
-                STANCE
-              </span>
-            </div>
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-[11px] font-bold tracking-wider text-white/80 font-mono">
+              ท่าทีผู้เล่น
+            </span>
+            <span className="w-2 h-2 rounded-full bg-emerald-400/80 animate-pulse" />
           </div>
 
           {/* Stance Content */}
-          <div className="my-auto py-0.5 overflow-hidden">
+          <div className="my-auto py-1 overflow-hidden">
             {isEditing ? (
               <input
                 type="text"
@@ -816,10 +758,10 @@ export default function IdentityVisualCard({
               />
             ) : (
               <div>
-                <div className="text-[13px] font-bold text-white tracking-tight leading-snug line-clamp-3">
+                <div className="text-[13.5px] font-bold text-white tracking-tight leading-snug line-clamp-3">
                   {playerStance}
                 </div>
-                <div className="text-[11px] text-[#EDEDED] mt-1 truncate">
+                <div className="text-[11px] text-[#A1A1A8] mt-1.5 truncate">
                   พร้อมรับมือ / สังเกตการณ์
                 </div>
               </div>

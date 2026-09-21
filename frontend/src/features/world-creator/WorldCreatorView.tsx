@@ -47,7 +47,7 @@ function createFreshNewDraft(userName?: string): VaultDraft {
   const newId = `draft_${Date.now()}`;
   return {
     id: newId,
-    title: 'ตัวละครใหม่ (New Character)',
+    title: 'มาฮิโระ (Mahiro)',
     worldTitle: 'โลกใบใหม่ (New World)',
     mode: 'character',
     createdAt: 'วันนี้',

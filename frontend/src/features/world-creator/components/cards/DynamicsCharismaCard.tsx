@@ -20,13 +20,13 @@ interface PrimaryStatDef {
 }
 
 const PRIMARY_STATS_CONFIG: PrimaryStatDef[] = [
-  { key: 'initiative', labelTh: 'การริเริ่ม', labelEn: 'Initiative', angleDeg: -90, anchor: 'middle', dy: -5 },
-  { key: 'dominance', labelTh: 'การคุมเกม', labelEn: 'Dominance', angleDeg: -38.57, anchor: 'start', dx: 5, dy: -2 },
-  { key: 'physicality', labelTh: 'เข้าหาทางกาย', labelEn: 'Physicality', angleDeg: 12.86, anchor: 'start', dx: 6, dy: 4 },
-  { key: 'playfulness', labelTh: 'ความขี้เล่น', labelEn: 'Playfulness', angleDeg: 64.29, anchor: 'start', dx: 4, dy: 8 },
-  { key: 'formality', labelTh: 'ความเป็นทางการ', labelEn: 'Formality', angleDeg: 115.71, anchor: 'end', dx: -4, dy: 8 },
-  { key: 'expressiveness', labelTh: 'การแสดงออก', labelEn: 'Expressiveness', angleDeg: 167.14, anchor: 'end', dx: -6, dy: 4 },
-  { key: 'honesty', labelTh: 'ความซื่อตรง', labelEn: 'Honesty', angleDeg: 218.57, anchor: 'end', dx: -5, dy: -2 },
+  { key: 'initiative', labelTh: 'การริเริ่ม', labelEn: 'Initiative', angleDeg: -90, anchor: 'middle', dy: -7 },
+  { key: 'dominance', labelTh: 'การคุมเกม', labelEn: 'Dominance', angleDeg: -38.57, anchor: 'start', dx: 4, dy: -2 },
+  { key: 'physicality', labelTh: 'เข้าหาทางกาย', labelEn: 'Physicality', angleDeg: 12.86, anchor: 'start', dx: 3, dy: 3 },
+  { key: 'playfulness', labelTh: 'ความขี้เล่น', labelEn: 'Playfulness', angleDeg: 64.29, anchor: 'middle', dx: 14, dy: 8 },
+  { key: 'formality', labelTh: 'ความเป็นทางการ', labelEn: 'Formality', angleDeg: 115.71, anchor: 'middle', dx: -14, dy: 8 },
+  { key: 'expressiveness', labelTh: 'การแสดงออก', labelEn: 'Expressiveness', angleDeg: 167.14, anchor: 'end', dx: -3, dy: 3 },
+  { key: 'honesty', labelTh: 'ความซื่อตรง', labelEn: 'Honesty', angleDeg: 218.57, anchor: 'end', dx: -4, dy: -2 },
 ];
 
 // 5 Secondary Linear Gauges Config
@@ -268,11 +268,11 @@ export default function DynamicsCharismaCard({
   // ✦ RADAR WEB GEOMETRY ENGINE (HEPTAGON 7-AXIS)
   // =========================================================================
   const svgWidth = 314;
-  const svgHeight = 236;
+  const svgHeight = 238;
   const cx = 157;
-  const cy = 118;
-  const rMax = 74;
-  const labelDist = 94;
+  const cy = 117;
+  const rMax = 85;
+  const labelDist = 99;
 
   // Degrees to Radians helper
   const degToRad = (deg: number) => (deg * Math.PI) / 180;
@@ -343,11 +343,11 @@ export default function DynamicsCharismaCard({
           {/* Header Row: Pure Title (NO icon in front) + Edit / Save Pill */}
           <div className="flex items-center justify-between shrink-0 mb-1">
             <div className="flex items-baseline gap-1.5">
-              <span className="text-[16.5px] sm:text-[17.5px] font-semibold text-[#F1F1F1] tracking-tight">
-                พลวัต 7 แกนหลัก
+              <span className="text-[17.5px] sm:text-[18.5px] font-bold text-[#F1F1F1] tracking-tight">
+                สเตตัส
               </span>
-              <span className="text-[11px] font-normal text-white/40">
-                (7 มิติ)
+              <span className="text-[11.5px] font-normal text-white/40">
+                (7 แกนหลัก)
               </span>
             </div>
 
@@ -456,19 +456,19 @@ export default function DynamicsCharismaCard({
                         y={lbl.y}
                         textAnchor={lbl.anchor}
                         fill="#F1F1F1"
-                        className="text-[10px] font-medium tracking-tight"
+                        className="text-[11.5px] sm:text-[12px] font-semibold tracking-tight"
                       >
                         {lbl.labelTh}{' '}
-                        <tspan fill="#EF264C" className="font-bold">
+                        <tspan fill="#EF264C" className="font-bold text-[12.5px] sm:text-[13px]">
                           {lbl.val}
                         </tspan>
                       </text>
                       <text
                         x={lbl.x}
-                        y={lbl.y + 10}
+                        y={lbl.y + 11}
                         textAnchor={lbl.anchor}
-                        fill="rgba(255, 255, 255, 0.38)"
-                        className="text-[8px] font-normal tracking-wide"
+                        fill="rgba(255, 255, 255, 0.45)"
+                        className="text-[9px] sm:text-[9.5px] font-normal tracking-wide"
                       >
                         {lbl.labelEn}
                       </text>
@@ -479,9 +479,9 @@ export default function DynamicsCharismaCard({
 
               {/* Bottom Quick Persona Capsule */}
               <div className="w-full flex items-center justify-center">
-                <div className="w-full px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.07] flex items-center justify-between text-[10.5px] text-white/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-                  <span className="text-white/40">บุคลิกภาพเด่น:</span>
-                  <span className="text-[#F1F1F1] font-medium truncate ml-1">
+                <div className="w-full px-3.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.07] flex items-center justify-between text-[11.5px] text-white/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+                  <span className="text-white/45">บุคลิกภาพเด่น:</span>
+                  <span className="text-[#F1F1F1] font-semibold truncate ml-1">
                     คุมเกม {primaryStats.dominance} • ทางการ {primaryStats.formality} • ริเริ่ม {primaryStats.initiative}
                   </span>
                 </div>
@@ -490,9 +490,9 @@ export default function DynamicsCharismaCard({
           ) : (
             /* Edit Mode: Stepper List for 7 Primary Stats */
             <div className="flex-1 flex flex-col justify-between py-0.5 overflow-hidden">
-              <div className="text-[11px] text-white/40 mb-1 px-1 flex items-center justify-between">
+              <div className="text-[12px] text-white/45 mb-1 px-1 flex items-center justify-between">
                 <span>ปรับระดับคะแนน (1 - 10):</span>
-                <span className="text-[#EF264C]">โหมดแก้ไข</span>
+                <span className="text-[#EF264C] font-medium">โหมดแก้ไข</span>
               </div>
 
               <div className="space-y-1.5 overflow-y-auto pr-1 max-h-[240px] custom-scrollbar">
@@ -501,13 +501,13 @@ export default function DynamicsCharismaCard({
                   return (
                     <div
                       key={stat.key}
-                      className="flex items-center justify-between px-2.5 py-1 rounded-xl bg-white/[0.04] border border-white/[0.06]"
+                      className="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.06]"
                     >
                       <div className="flex flex-col">
-                        <span className="text-[11.5px] text-[#F1F1F1] font-medium leading-tight">
+                        <span className="text-[12.5px] text-[#F1F1F1] font-semibold leading-tight">
                           {stat.labelTh}
                         </span>
-                        <span className="text-[9px] text-white/40">
+                        <span className="text-[9.5px] text-white/45">
                           {stat.labelEn}
                         </span>
                       </div>
@@ -518,22 +518,22 @@ export default function DynamicsCharismaCard({
                           type="button"
                           onClick={() => handleStepPrimary(stat.key, -1)}
                           disabled={val <= 1}
-                          className="w-5 h-5 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-white text-[11px] transition-all active:scale-95 cursor-pointer"
+                          className="w-5.5 h-5.5 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-white text-[12px] transition-all active:scale-95 cursor-pointer"
                         >
                           -
                         </button>
-                        <span className="text-[12.5px] font-bold text-[#EF264C] w-4 text-center">
+                        <span className="text-[13.5px] font-bold text-[#EF264C] w-4 text-center">
                           {val}
                         </span>
                         <button
                           type="button"
                           onClick={() => handleStepPrimary(stat.key, 1)}
                           disabled={val >= 10}
-                          className="w-5 h-5 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-white text-[11px] transition-all active:scale-95 cursor-pointer"
+                          className="w-5.5 h-5.5 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-white text-[12px] transition-all active:scale-95 cursor-pointer"
                         >
                           +
                         </button>
-                        <span className="text-[9.5px] text-white/40">/10</span>
+                        <span className="text-[10px] text-white/40 font-medium">/10</span>
                       </div>
                     </div>
                   );

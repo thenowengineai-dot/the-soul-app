@@ -210,13 +210,23 @@ export default function SceneNodeCard({
       {/* 1. TOP HEADER & BEAT SELECTOR DOCK                                    */}
       {/* ===================================================================== */}
       <div className="shrink-0 space-y-2">
-        {/* Top Control Bar: Turn Gauge & Edit Actions (Draggable Header Area) */}
+        {/* Top Control Bar: Scene Title & Turn Gauge & Edit Actions (Draggable Header Area) */}
         <div
           onMouseDown={(e) => {
             if (!isEditing) onStartDrag(e, scene.scene_id);
           }}
           className="flex items-center justify-between gap-1.5 cursor-grab active:cursor-grabbing"
         >
+          {/* Scene Title (Matches WorldBeatCard exactly) */}
+          <div className="min-w-0 flex-1">
+            <span
+              className="truncate block font-medium text-[12px] sm:text-[12.5px] text-white/80"
+              title={scene.title || `ฉากที่ ${index + 1}`}
+            >
+              {scene.title || `ฉากที่ ${index + 1}`}
+            </span>
+          </div>
+
           {/* Turn Quota Dot Badge */}
           <div
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] shrink-0"

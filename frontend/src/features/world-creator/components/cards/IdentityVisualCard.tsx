@@ -6,6 +6,10 @@ import {
   Trash2,
   Moon,
   CloudRain,
+  Eye,
+  Wind,
+  Flame,
+  Feather,
 } from 'lucide-react';
 import type { VaultDraft } from '../../types';
 
@@ -15,7 +19,12 @@ interface IdentityVisualCardProps {
   isEditable?: boolean;
 }
 
-interface AnatomyTrait {
+interface CoreAnatomyItem {
+  title: string;
+  detail: string;
+}
+
+interface CustomAnatomyTrait {
   id: string;
   title: string;
   detail: string;
@@ -60,39 +69,67 @@ export default function IdentityVisualCard({
         ];
   });
 
-  // 2. Anatomy Traits (Direct Substance Editorial Rows)
-  const [anatomyTraits, setAnatomyTraits] = useState<AnatomyTrait[]>(() => {
+  // 2. Anatomy State: Two-Tier Dual Matrix (4 Core Pillars + Unlimited Custom Traits)
+  const [coreAnatomy, setCoreAnatomy] = useState<
+    Record<'eyes' | 'hair' | 'physique' | 'skin', CoreAnatomyItem>
+  >(() => {
     const raw = draft.appearance?.anatomy_features || [];
-    return [
-      {
-        id: 'trait-1',
-        title: 'สายตาใต้กรอบแว่น',
+    return {
+      eyes: {
+        title: 'ตาดำขลับใต้แว่นหนา',
         detail:
           raw[0] ||
-          'เรียวคมเฉียบขาดดุจตาเหยี่ยว ซ่อนอยู่หลังแว่นตากรอบหนาเตอะ',
+          'แว่นตากรอบโลหะหนาเตอะที่ปิดบังดวงตาสีดำขลับปลาบเยิ้มที่ซ่อนความต้องการทางเพศเอาไว้ข้างใน',
       },
-      {
-        id: 'trait-2',
-        title: 'ทรวดทรงนาฬิกาทราย',
+      hair: {
+        title: 'ผมดำขลับรวบต่ำ',
         detail:
-          raw[1] ||
-          'ผมยาวสีดำขลับรวบต่ำ อกสะบึมเอวคอดสะโพกผาย ซ่อนรูปภายใต้เสื้อผ้าตัวโคร่ง',
+          'เรือนผมสีดำขลับธรรมชาติที่รวบไว้หลวมๆ ด้านหลัง ปล่อยปอยผมบางส่วนตกลงมาเคลียข้างแก้มอย่างไม่ตั้งใจ',
       },
-      {
-        id: 'trait-3',
-        title: 'ผิวขาวจัดขึ้นสีระเรื่อ',
+      physique: {
+        title: 'นาฬิกาทรายสะบึม',
         detail:
           raw[2] ||
-          'ไอร้อนจากกำหนัดเมื่อสัมผัสกับความร้อน',
+          'รูปร่างนาฬิกาทรายสุดสะบึม (อกอวบใหญ่สะบึม สะโพกผึ่งผาย) ที่ซ่อนอยู่ภายใต้เสื้อผ้าตัวโคร่ง',
       },
-      {
-        id: 'trait-4',
-        title: 'กลิ่นอายสมุนไพรสด',
+      skin: {
+        title: 'ผิวขาวเนียนดุจน้ำนม',
         detail:
-          raw[3] ||
-          'และไอน้ำร้อนกรุ่นระเหยออกจากซอกคอและกระดูกไหปลาร้า',
+          raw[1] ||
+          'ผิวขาวเนียนละเอียดดุจน้ำนมที่ขึ้นสีชมพูระเรื่ออย่างรวดเร็วเมื่อสัมผัสกับความร้อน',
       },
-    ];
+    };
+  });
+
+  const [customTraits, setCustomTraits] = useState<CustomAnatomyTrait[]>(() => {
+    const raw = draft.appearance?.anatomy_features || [];
+    const list: CustomAnatomyTrait[] = [];
+    if (raw[3]) {
+      const parts = raw[3].split(' — ');
+      list.push({
+        id: 'custom-1',
+        title: parts.length > 1 ? parts[0] : 'ซอกคอ & ไหปลาร้า',
+        detail: parts.length > 1 ? parts[1] : raw[3],
+      });
+    } else {
+      list.push({
+        id: 'custom-1',
+        title: 'ซอกคอ & ไหปลาร้า',
+        detail: 'ซอกคอและกระดูกไหปลาร้าที่มักมีเหงื่อและไอน้ำระเหยฟุ้งออกมา',
+      });
+    }
+
+    if (raw.length > 4) {
+      for (let i = 4; i < raw.length; i++) {
+        const parts = raw[i].split(' — ');
+        list.push({
+          id: `custom-${i}`,
+          title: parts.length > 1 ? parts[0] : `จุดเด่นที่ ${i - 2}`,
+          detail: parts.length > 1 ? parts[1] : raw[i],
+        });
+      }
+    }
+    return list;
   });
 
   // 3. Wardrobe State: Situational Outfits & Slideable Clothes Rail
@@ -209,7 +246,13 @@ export default function IdentityVisualCard({
         ];
       });
 
-      const anatomyFlat = anatomyTraits.map((t) => `${t.title} — ${t.detail}`);
+      const anatomyFlat = [
+        `${coreAnatomy.eyes.title} — ${coreAnatomy.eyes.detail}`,
+        `${coreAnatomy.hair.title} — ${coreAnatomy.hair.detail}`,
+        `${coreAnatomy.physique.title} — ${coreAnatomy.physique.detail}`,
+        `${coreAnatomy.skin.title} — ${coreAnatomy.skin.detail}`,
+        ...customTraits.map((t) => `${t.title} — ${t.detail}`),
+      ];
 
       const updatedStartingState = {
         time: sceneTime,
@@ -262,18 +305,18 @@ export default function IdentityVisualCard({
     }
   };
 
-  const handleAddAnatomyTrait = () => {
-    const newTrait: AnatomyTrait = {
-      id: `trait-${Date.now()}`,
-      title: 'จุดเด่นใหม่',
-      detail: 'ระบุลักษณะเฉพาะทางกายภาพ...',
+  const handleAddCustomTrait = () => {
+    const nextIdx = customTraits.length + 1;
+    const newTrait: CustomAnatomyTrait = {
+      id: `custom-${Date.now()}`,
+      title: `จุดเด่นใหม่ ${nextIdx}`,
+      detail: 'ระบุรายละเอียดสรีระ จุดเด่น หรือเสน่ห์เฉพาะตัว...',
     };
-    setAnatomyTraits([...anatomyTraits, newTrait]);
+    setCustomTraits([...customTraits, newTrait]);
   };
 
-  const handleRemoveAnatomyTrait = (idx: number) => {
-    if (anatomyTraits.length <= 1) return;
-    setAnatomyTraits(anatomyTraits.filter((_, i) => i !== idx));
+  const handleRemoveCustomTrait = (id: string) => {
+    setCustomTraits(customTraits.filter((t) => t.id !== id));
   };
 
   const handleAddPosture = () => {
@@ -286,6 +329,38 @@ export default function IdentityVisualCard({
   };
 
   const activeOutfit = outfits[activeOutfitIndex] || outfits[0];
+
+  // 4 Core Foundations list for Two-Tier Dual Matrix
+  const corePillars = [
+    {
+      key: 'eyes' as const,
+      category: 'ดวงตา & ใบหน้า',
+      icon: <Eye size={12} strokeWidth={2.2} />,
+      title: coreAnatomy.eyes.title,
+      detail: coreAnatomy.eyes.detail,
+    },
+    {
+      key: 'hair' as const,
+      category: 'เรือนผม',
+      icon: <Wind size={12} strokeWidth={2.2} />,
+      title: coreAnatomy.hair.title,
+      detail: coreAnatomy.hair.detail,
+    },
+    {
+      key: 'physique' as const,
+      category: 'รูปร่างทรวดทรง',
+      icon: <Flame size={12} strokeWidth={2.2} />,
+      title: coreAnatomy.physique.title,
+      detail: coreAnatomy.physique.detail,
+    },
+    {
+      key: 'skin' as const,
+      category: 'ผิวพรรณ & สัมผัส',
+      icon: <Feather size={12} strokeWidth={2.2} />,
+      title: coreAnatomy.skin.title,
+      detail: coreAnatomy.skin.detail,
+    },
+  ];
 
   // ✦ APPLE SUBTLE WHITE FROSTED GLASS RECIPE (SAME AS COIN, HUD & CHATLIST BUTTONS)
   // Zero harsh drop-shadow! Clean 1px translucent border + top inner highlight.
@@ -629,83 +704,288 @@ export default function IdentityVisualCard({
         </div>
 
         {/* ======================================================================= */}
-        {/* 👓 WIDGET 3: ANATOMY & PHYSIQUE (2x2 -> 346px × 346px - EDITORIAL CLARITY) */}
+        {/* 👓 WIDGET 3: ANATOMY & PHYSIQUE (2x2 -> 346px × 346px - TWO-TIER DUAL MATRIX) */}
         {/* ======================================================================= */}
         <div
           className={`col-span-2 row-span-2 rounded-[28px] p-4 ${frostedCardClass}`}
           style={{ width: '346px', height: '346px' }}
         >
-          {/* Header Row: Pure Thai Label */}
+          {/* Header Row: Pure Thai Label + Trait Counter + Quick Add */}
           <div className="flex items-center justify-between gap-1 mb-2 shrink-0">
-            <span className="text-[16px] sm:text-[17px] font-semibold text-[#F1F1F1] tracking-tight">
-              สรีระและจุดเด่น
-            </span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-[16px] sm:text-[17px] font-semibold text-[#F1F1F1] tracking-tight">
+                สรีระและจุดเด่น
+              </span>
+              <span className="text-[11px] font-normal text-white/45">
+                (4 ส่วนหลัก{customTraits.length > 0 ? ` + ${customTraits.length} จุดเด่น` : ''})
+              </span>
+            </div>
 
-            {isEditing && (
-              <button
-                type="button"
-                onClick={handleAddAnatomyTrait}
-                className="text-[10.5px] text-[#EF264C] hover:underline flex items-center gap-0.5 cursor-pointer font-semibold"
-              >
-                <Plus size={10} /> เพิ่มจุดเด่น
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={handleAddCustomTrait}
+              className="px-2 py-0.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 hover:border-white/25 text-white/70 hover:text-white flex items-center gap-1 text-[10.5px] font-medium transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] active:scale-95 shrink-0"
+              title="เพิ่มจุดเด่นหรือเสน่ห์เฉพาะตัว"
+            >
+              <Plus size={10} strokeWidth={2.4} />
+              <span>เพิ่มจุดเด่น</span>
+            </button>
           </div>
 
-          {/* Full-width Stacked Rows - Direct Substance / Literary Flow */}
-          <div className="flex flex-col gap-2 flex-1 justify-between py-0.5 overflow-hidden">
-            {anatomyTraits.map((trait, idx) => (
-              <div
-                key={trait.id}
-                className="px-3.5 py-2.5 rounded-[16px] bg-black/40 hover:bg-black/50 backdrop-blur-xl border border-white/[0.06] hover:border-white/12 shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)] flex items-center transition-all"
-              >
-                {isEditing ? (
-                  <div className="flex items-center gap-2 w-full min-w-0">
+          {isEditing ? (
+            /* ================================================================= */
+            /* ✦ EDITING MODE: EDIT CORE PILLARS & CUSTOM CHARMS                 */
+            /* ================================================================= */
+            <div className="flex-1 flex flex-col gap-2.5 overflow-y-auto no-scrollbar pr-0.5">
+              {/* Core Pillars Inputs */}
+              <div className="space-y-2">
+                <div className="text-[11px] font-semibold text-[#F1F1F1] flex items-center gap-1">
+                  <span className="text-[#EF264C]">✦</span>
+                  <span>4 สัดส่วนหลักของร่างกาย</span>
+                </div>
+
+                {corePillars.map((pillar) => (
+                  <div
+                    key={pillar.key}
+                    className="p-2 rounded-[14px] bg-black/30 border border-white/10 space-y-1"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-white/70">{pillar.icon}</span>
+                      <span className="text-[11px] font-semibold text-white/80">
+                        {pillar.category}
+                      </span>
+                    </div>
                     <input
                       type="text"
-                      value={trait.title}
-                      onChange={(e) => {
-                        const updated = [...anatomyTraits];
-                        updated[idx].title = e.target.value;
-                        setAnatomyTraits(updated);
-                      }}
-                      className="bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-1 text-[11.5px] font-semibold text-white outline-none w-32 shrink-0"
-                      placeholder="จุดเด่น..."
+                      value={coreAnatomy[pillar.key].title}
+                      onChange={(e) =>
+                        setCoreAnatomy({
+                          ...coreAnatomy,
+                          [pillar.key]: {
+                            ...coreAnatomy[pillar.key],
+                            title: e.target.value,
+                          },
+                        })
+                      }
+                      className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-0.5 text-[11px] font-semibold text-white outline-none"
+                      placeholder="หัวข้อสั้น เช่น ตาดำขลับใต้แว่น..."
                     />
-                    <input
-                      type="text"
+                    <textarea
+                      rows={2}
+                      value={coreAnatomy[pillar.key].detail}
+                      onChange={(e) =>
+                        setCoreAnatomy({
+                          ...coreAnatomy,
+                          [pillar.key]: {
+                            ...coreAnatomy[pillar.key],
+                            detail: e.target.value,
+                          },
+                        })
+                      }
+                      className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-1 text-[11px] text-[#EDEDED] outline-none leading-relaxed resize-none"
+                      placeholder="คำบรรยายสรีระแบบเต็ม..."
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Custom Nuances Inputs */}
+              <div className="space-y-2 pt-1 border-t border-white/10">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-[#F1F1F1] flex items-center gap-1">
+                    <span className="text-[#EF264C]">✦</span>
+                    <span>จุดเด่นและเสน่ห์เฉพาะตัว ({customTraits.length})</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleAddCustomTrait}
+                    className="text-[10px] text-[#EF264C] hover:underline flex items-center gap-0.5 font-semibold cursor-pointer"
+                  >
+                    <Plus size={10} /> เพิ่มจุดเด่น
+                  </button>
+                </div>
+
+                {customTraits.map((trait, idx) => (
+                  <div
+                    key={trait.id}
+                    className="p-2 rounded-[14px] bg-black/30 border border-white/10 space-y-1"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <input
+                        type="text"
+                        value={trait.title}
+                        onChange={(e) => {
+                          const updated = [...customTraits];
+                          updated[idx].title = e.target.value;
+                          setCustomTraits(updated);
+                        }}
+                        className="bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-0.5 text-[11px] font-semibold text-white outline-none flex-1"
+                        placeholder="ชื่อจุดเด่น..."
+                      />
+                      {customTraits.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCustomTrait(trait.id)}
+                          className="text-white/40 hover:text-red-400 p-0.5 cursor-pointer"
+                          title="ลบจุดเด่นนี้"
+                        >
+                          <Trash2 size={11} />
+                        </button>
+                      )}
+                    </div>
+                    <textarea
+                      rows={2}
                       value={trait.detail}
                       onChange={(e) => {
-                        const updated = [...anatomyTraits];
+                        const updated = [...customTraits];
                         updated[idx].detail = e.target.value;
-                        setAnatomyTraits(updated);
+                        setCustomTraits(updated);
                       }}
-                      className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-1 text-[12px] font-normal text-[#EDEDED] outline-none"
-                      placeholder="คำบรรยาย..."
+                      className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-1 text-[11px] text-[#EDEDED] outline-none leading-relaxed resize-none"
+                      placeholder="คำบรรยายจุดเด่น..."
                     />
-                    {anatomyTraits.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveAnatomyTrait(idx)}
-                        className="text-white/40 hover:text-red-400 p-0.5 cursor-pointer shrink-0"
-                      >
-                        <Trash2 size={11} />
-                      </button>
-                    )}
                   </div>
-                ) : (
-                  <p className="text-[13px] text-[#EDEDED] leading-snug font-normal line-clamp-2">
-                    <span className="font-semibold text-white mr-1.5">
-                      {trait.title} —
-                    </span>
-                    <span className="font-normal text-[#D6D6DC]">
-                      {trait.detail}
-                    </span>
-                  </p>
-                )}
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          ) : (
+            /* ================================================================= */
+            /* ✦ TWO-TIER DUAL MATRIX (READING MODE WITH APPLE HOVER POPOVERS)   */
+            /* ================================================================= */
+            <div className="flex-1 flex flex-col justify-between overflow-hidden">
+              {/* --------------------------------------------------------------- */}
+              {/* 👑 TIER 1: 4 CORE ANATOMICAL FOUNDATIONS (2x2 FROSTED MATRIX)   */}
+              {/* --------------------------------------------------------------- */}
+              <div className="grid grid-cols-2 gap-2 shrink-0">
+                {corePillars.map((pillar, idx) => {
+                  const isTopRow = idx < 2;
+                  return (
+                    <div
+                      key={pillar.key}
+                      className="group relative p-2.5 rounded-[18px] bg-black/35 hover:bg-white/[0.08] backdrop-blur-xl border border-white/[0.07] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] flex flex-col justify-between transition-all duration-200 cursor-pointer h-[72px]"
+                    >
+                      {/* Top row: Icon + Category Name */}
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <div className="w-5 h-5 rounded-[7px] bg-white/[0.08] border border-white/10 flex items-center justify-center text-white/80 group-hover:text-white group-hover:bg-[#EF264C]/25 group-hover:border-[#EF264C]/40 transition-colors shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
+                          {pillar.icon}
+                        </div>
+                        <span className="text-[10.5px] font-medium text-white/50 group-hover:text-white/85 transition-colors truncate">
+                          {pillar.category}
+                        </span>
+                      </div>
+
+                      {/* Bottom row: Concise Headline + Hint */}
+                      <div className="mt-0.5">
+                        <div className="text-[12.5px] font-semibold text-white tracking-tight truncate leading-snug">
+                          {pillar.title}
+                        </div>
+                        <div className="text-[9.5px] text-white/40 group-hover:text-[#EF264C]/90 transition-colors truncate font-normal">
+                          ชี้ดูรายละเอียด...
+                        </div>
+                      </div>
+
+                      {/* ✦ APPLE FROSTED GLASS POPOVER (TOOLTIP) */}
+                      <div
+                        className={`absolute ${
+                          isTopRow ? 'top-full mt-2 origin-top' : 'bottom-full mb-2 origin-bottom'
+                        } left-1/2 -translate-x-1/2 w-[285px] p-3 rounded-[20px] bg-[#1a1a1e]/98 backdrop-blur-3xl border border-white/20 shadow-[0_16px_40px_rgba(0,0,0,0.75),inset_0_1px_0_rgba(255,255,255,0.2)] opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 transform scale-95 group-hover:scale-100`}
+                      >
+                        <div className="flex items-center gap-1.5 mb-1 pb-1 border-b border-white/10">
+                          <div className="w-4 h-4 rounded-full bg-[#EF264C]/20 text-[#EF264C] flex items-center justify-center text-[9.5px]">
+                            ✦
+                          </div>
+                          <span className="text-[11px] font-semibold text-white tracking-tight">
+                            {pillar.category}
+                          </span>
+                          <span className="text-white/30 text-[10px]">•</span>
+                          <span className="text-[11px] font-medium text-white/70 truncate">
+                            {pillar.title}
+                          </span>
+                        </div>
+                        <p className="text-[12px] text-[#EDEDED] leading-relaxed font-normal">
+                          {pillar.detail}
+                        </p>
+                        {/* Pointer triangle */}
+                        <div
+                          className={`absolute ${
+                            isTopRow
+                              ? 'bottom-full -mb-[1px] border-b-[#1a1a1e]/98 border-b-[6px]'
+                              : 'top-full -mt-[1px] border-t-[#1a1a1e]/98 border-t-[6px]'
+                          } left-1/2 -translate-x-1/2 w-0 h-0 border-x-[6px] border-x-transparent`}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* --------------------------------------------------------------- */}
+              {/* ✦ TIER 2: UNLIMITED CUSTOM TRAITS & CHARMS (SLIDEABLE DOCK)     */}
+              {/* --------------------------------------------------------------- */}
+              <div className="flex flex-col justify-end mt-2 pt-1 border-t border-white/[0.06]">
+                {/* Subhead */}
+                <div className="flex items-center justify-between px-1 mb-1.5 shrink-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] text-[#EF264C]">✦</span>
+                    <span className="text-[11.5px] font-semibold text-[#F1F1F1] tracking-tight">
+                      จุดเด่นและเสน่ห์เฉพาะตัว
+                    </span>
+                    <span className="text-[10.5px] font-normal text-white/40">
+                      ({customTraits.length} ส่วน)
+                    </span>
+                  </div>
+                  <span className="text-[9.5px] text-white/35 font-normal">
+                    เพิ่มได้ไม่จำกัด
+                  </span>
+                </div>
+
+                {/* Horizontal slideable tray of custom traits */}
+                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth py-1 px-1 select-none">
+                  {customTraits.map((trait) => (
+                    <div
+                      key={trait.id}
+                      className="group relative px-3 py-1.5 rounded-[14px] bg-black/35 hover:bg-white/[0.10] border border-white/[0.07] hover:border-white/20 flex items-center gap-2 shrink-0 transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#EF264C] shrink-0" />
+                      <span className="text-[12px] font-medium text-white/90 whitespace-nowrap">
+                        {trait.title}
+                      </span>
+
+                      {/* Hover Popover Tooltip for Custom Trait (floats upward) */}
+                      <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-[285px] p-3 rounded-[20px] bg-[#1a1a1e]/98 backdrop-blur-3xl border border-white/20 shadow-[0_16px_40px_rgba(0,0,0,0.75),inset_0_1px_0_rgba(255,255,255,0.2)] opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 transform scale-95 group-hover:scale-100 origin-bottom">
+                        <div className="flex items-center gap-1.5 mb-1 pb-1 border-b border-white/10">
+                          <div className="w-4 h-4 rounded-full bg-[#EF264C]/20 text-[#EF264C] flex items-center justify-center text-[9.5px]">
+                            ✦
+                          </div>
+                          <span className="text-[11px] font-semibold text-white tracking-tight">
+                            จุดเด่นเฉพาะตัว
+                          </span>
+                          <span className="text-white/30 text-[10px]">•</span>
+                          <span className="text-[11px] font-medium text-white/70 truncate">
+                            {trait.title}
+                          </span>
+                        </div>
+                        <p className="text-[12px] text-[#EDEDED] leading-relaxed font-normal">
+                          {trait.detail}
+                        </p>
+                        <div className="absolute top-full -mt-[1px] left-1/2 -translate-x-1/2 w-0 h-0 border-x-[6px] border-x-transparent border-t-[6px] border-t-[#1a1a1e]/98" />
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Inline Add Button on rail */}
+                  <button
+                    type="button"
+                    onClick={handleAddCustomTrait}
+                    className="px-2.5 py-1.5 rounded-[14px] border border-dashed border-white/20 hover:border-white/40 bg-white/[0.02] hover:bg-white/[0.08] text-white/60 hover:text-white flex items-center gap-1 text-[11px] font-medium transition-all cursor-pointer shrink-0"
+                  >
+                    <Plus size={11} strokeWidth={2.4} />
+                    <span>เพิ่มจุดเด่น</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ======================================================================= */}

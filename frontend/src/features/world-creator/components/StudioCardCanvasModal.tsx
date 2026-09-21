@@ -7,6 +7,7 @@ import type { VaultDraft } from '../types';
 import IdentityVisualCard from './cards/IdentityVisualCard';
 import MindShadowCard from './cards/MindShadowCard';
 import DynamicsCharismaCard from './cards/DynamicsCharismaCard';
+import LoreBackgroundCard from './cards/LoreBackgroundCard';
 
 interface StudioCardCanvasModalProps {
   isOpen: boolean;
@@ -115,6 +116,11 @@ export default function StudioCardCanvasModal({
               isEditable={true}
             />
             <DynamicsCharismaCard
+              draft={draft}
+              onUpdateDraft={onUpdateDraft}
+              isEditable={true}
+            />
+            <LoreBackgroundCard
               draft={draft}
               onUpdateDraft={onUpdateDraft}
               isEditable={true}

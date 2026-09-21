@@ -532,18 +532,18 @@ export default function WorldBeatCard({
       {/* 2. BODY: THE 3 CORE ORGANS (APPROACH 1: ถ้าทำ... ถ้าไม่ทำ...)           */}
       {/* ===================================================================== */}
       {!isEditing ? (
-        <div className="flex-1 flex flex-col justify-between py-1 gap-1.5 overflow-hidden">
+        <div className="flex-1 flex flex-col justify-between gap-2 py-1 overflow-hidden">
           {/* Organ 1: 🎭 ตัวละครกำลังทำอะไร (What character does) */}
-          <div className="rounded-[14px] bg-white/[0.03] border border-white/[0.06] px-3.5 py-2 flex flex-col gap-1 transition-colors hover:border-white/12">
+          <div className="rounded-[12px] bg-white/[0.03] border border-white/[0.06] px-3 py-1.5 flex flex-col gap-1 transition-colors hover:border-white/12">
             <div className="flex items-center gap-1.5 text-white/60">
-              <Sparkles size={13} className="text-[#EF264C] shrink-0" />
-              <span className="text-[11.5px] sm:text-[12px] font-semibold text-[#F1F1F1] tracking-tight">
+              <Sparkles size={11.5} className="text-[#EF264C] shrink-0" />
+              <span className="text-[10.5px] sm:text-[11px] font-semibold text-[#F1F1F1] tracking-tight whitespace-nowrap truncate">
                 1. ตัวละครกำลังทำอะไร
               </span>
             </div>
             <p
-              className={`text-[12px] sm:text-[12.5px] text-[#EDEDED] font-normal leading-[18px] tracking-tight ${
-                isExpandedCard ? '' : 'line-clamp-2'
+              className={`text-[10.5px] sm:text-[11px] text-[#EDEDED] font-normal tracking-tight ${
+                isExpandedCard ? 'leading-relaxed' : 'truncate'
               }`}
             >
               {currentBeat.actor_state || 'ยังไม่ได้ระบุท่าทางตัวละคร...'}
@@ -551,34 +551,34 @@ export default function WorldBeatCard({
           </div>
 
           {/* Organ 2: 🎯 2. ถ้าผู้เล่นทำแบบนี้ (เรื่องจะไปต่อทันที) */}
-          <div className="rounded-[14px] bg-white/[0.03] border border-white/[0.06] px-3.5 py-2 flex flex-col gap-1.5">
-            {/* Header: Clean title without action badge */}
+          <div className="rounded-[12px] bg-white/[0.03] border border-white/[0.06] px-3 py-1.5 flex flex-col gap-1">
+            {/* Header: Strictly 1 line */}
             <div className="flex items-center gap-1.5 text-emerald-400">
-              <Target size={13} className="shrink-0" />
-              <span className="text-[11.5px] sm:text-[12px] font-semibold text-[#F1F1F1] tracking-tight">
+              <Target size={11.5} className="shrink-0" />
+              <span className="text-[10.5px] sm:text-[11px] font-semibold text-[#F1F1F1] tracking-tight whitespace-nowrap truncate">
                 2. ถ้าผู้เล่นทำแบบนี้ (เรื่องจะไปต่อทันที)
               </span>
             </div>
 
-            {/* ✦ 1. ตอนหด (Collapsed): ดีไซน์เดิม 100% บรรทัดเดียว มีปุ่มไปต่อ/อยู่ที่เดิมอยู่หลังการกระทำข้อนั้น */}
+            {/* ✦ 1. ตอนหด (Collapsed): บรรทัดเดียวจบ [Pill] ➔ Feedback... [→ ไปต่อ] */}
             {!isExpandedCard ? (
               triggerEntries.length > 0 ? (
                 <div className="flex items-center justify-between gap-2 min-w-0">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     {/* Interactive Pill Button */}
-                    <span className="px-2.5 py-0.5 rounded-full bg-white/[0.08] border border-white/15 text-[11px] sm:text-[11.5px] font-medium text-white shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+                    <span className="px-2 py-0.5 rounded-full bg-white/[0.08] border border-white/15 text-[10px] sm:text-[10.5px] font-medium text-white shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
                       {triggerEntries[0][0]}
                     </span>
-                    {/* Feedback text */}
+                    {/* Feedback text: 1 line with truncate */}
                     {triggerEntries[0][1].feedback && (
-                      <span className="text-[11.5px] sm:text-[12px] text-white/70 italic truncate">
+                      <span className="text-[10.5px] text-white/70 italic truncate">
                         ➔ {triggerEntries[0][1].feedback}
                       </span>
                     )}
                   </div>
                   {/* ปุ่มไปต่อ/อยู่ที่เดิม อยู่ตรงขวาสุดของการกระทำข้อนั้นโดยตรง */}
                   <span
-                    className={`text-[9.5px] sm:text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${
+                    className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full shrink-0 ${
                       triggerEntries[0][1].action_result === 'loop' ||
                       (triggerEntries[0][1].action_result as string) === 'chaos_escalation'
                         ? 'text-amber-300 bg-amber-500/15 border border-amber-500/30'
@@ -592,7 +592,7 @@ export default function WorldBeatCard({
                   </span>
                 </div>
               ) : (
-                <div className="text-[11.5px] text-white/40 italic">
+                <div className="text-[10.5px] text-white/40 italic">
                   ยังไม่ได้กำหนดทางเลือก
                 </div>
               )
@@ -607,15 +607,15 @@ export default function WorldBeatCard({
                     return (
                       <div
                         key={key}
-                        className="rounded-[12px] bg-white/[0.03] border border-white/[0.06] p-2.5 flex flex-col gap-1.5"
+                        className="rounded-[10px] bg-white/[0.03] border border-white/[0.06] p-2 flex flex-col gap-1"
                       >
                         {/* แถวบน: ปุ่ม Pill ซ้าย <---------------> ปุ่มไปต่อ/อยู่ที่เดิม ขวาสุดของแต่ละอัน */}
                         <div className="flex items-center justify-between gap-2">
-                          <span className="px-2.5 py-0.5 rounded-full bg-white/[0.08] border border-white/15 text-[11px] sm:text-[11.5px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+                          <span className="px-2 py-0.5 rounded-full bg-white/[0.08] border border-white/15 text-[10px] sm:text-[10.5px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
                             {key}
                           </span>
                           <span
-                            className={`text-[9.5px] sm:text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${
+                            className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full shrink-0 ${
                               isLoop
                                 ? 'text-amber-300 bg-amber-500/15 border border-amber-500/30'
                                 : 'text-[#EF264C] bg-[#EF264C]/15 border border-[#EF264C]/30'
@@ -627,7 +627,7 @@ export default function WorldBeatCard({
 
                         {/* แถวล่าง: ข้อความตอบสนองแบบเต็มพื้นที่ 100% ไม่มีตัดคำ */}
                         {val.feedback && (
-                          <p className="text-[11.5px] sm:text-[12px] text-white/75 italic leading-[18px]">
+                          <p className="text-[10.5px] sm:text-[11px] text-white/75 italic leading-[17px]">
                             ➔ {val.feedback}
                           </p>
                         )}
@@ -635,7 +635,7 @@ export default function WorldBeatCard({
                     );
                   })
                 ) : (
-                  <div className="text-[11.5px] text-white/40 italic">
+                  <div className="text-[10.5px] text-white/40 italic">
                     ยังไม่ได้กำหนดทางเลือก
                   </div>
                 )}
@@ -644,16 +644,16 @@ export default function WorldBeatCard({
           </div>
 
           {/* Organ 3: ⏳ ถ้าผู้เล่นไม่ทำอะไร (คุยครบ X รอบ เรื่องจะเดินต่อเองว่า) */}
-          <div className="rounded-[14px] bg-amber-500/[0.03] border border-amber-500/20 px-3.5 py-2 flex flex-col gap-1">
+          <div className="rounded-[12px] bg-amber-500/[0.03] border border-amber-500/20 px-3 py-1.5 flex flex-col gap-1">
             <div className="flex items-center gap-1.5 text-amber-400">
-              <Clock size={13} className="shrink-0" />
-              <span className="text-[11.5px] sm:text-[12px] font-semibold text-amber-300 tracking-tight">
+              <Clock size={11.5} className="shrink-0" />
+              <span className="text-[10.5px] sm:text-[11px] font-semibold text-amber-300 tracking-tight whitespace-nowrap truncate">
                 3. ถ้าผู้เล่นไม่ทำอะไร (คุยครบ {maxTurns} รอบ เรื่องจะเดินต่อเองว่า)
               </span>
             </div>
             <p
-              className={`text-[12px] sm:text-[12.5px] text-[#EDEDED] font-normal leading-[18px] tracking-tight ${
-                isExpandedCard ? '' : 'line-clamp-2'
+              className={`text-[10.5px] sm:text-[11px] text-[#EDEDED] font-normal tracking-tight ${
+                isExpandedCard ? 'leading-relaxed' : 'truncate'
               }`}
             >
               {currentBeat.pacing_control?.inevitable_consequence ||

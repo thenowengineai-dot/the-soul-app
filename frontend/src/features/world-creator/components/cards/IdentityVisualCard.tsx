@@ -364,7 +364,7 @@ export default function IdentityVisualCard({
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="ชื่อตัวละคร"
-                    className="w-full bg-black/70 border border-white/15 focus:border-[#EF264C] shadow-[inset_0_2px_4px_rgba(0,0,0,0.85),0_1px_0_rgba(255,255,255,0.05)] rounded-lg px-2.5 py-1 text-[19px] font-bold text-white outline-none"
+                    className="w-full bg-black/30 border border-white/20 focus:border-[#EF264C] rounded-lg px-2.5 py-1 text-[19px] font-bold text-white outline-none"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
@@ -375,7 +375,7 @@ export default function IdentityVisualCard({
                       value={archetype}
                       onChange={(e) => setArchetype(e.target.value)}
                       placeholder="Archetype"
-                      className="w-full bg-black/70 border border-white/15 focus:border-[#EF264C] shadow-[inset_0_2px_4px_rgba(0,0,0,0.85)] rounded-md px-2 py-1 text-[11.5px] text-white outline-none"
+                      className="w-full bg-black/25 border border-white/15 focus:border-[#EF264C] rounded-md px-2 py-1 text-[11.5px] text-white outline-none"
                     />
                   </div>
                   <div>
@@ -385,7 +385,7 @@ export default function IdentityVisualCard({
                       value={archetypeTh}
                       onChange={(e) => setArchetypeTh(e.target.value)}
                       placeholder="คำอธิบายไทย"
-                      className="w-full bg-black/70 border border-white/15 focus:border-[#EF264C] shadow-[inset_0_2px_4px_rgba(0,0,0,0.85)] rounded-md px-2 py-1 text-[11.5px] text-white/80 outline-none"
+                      className="w-full bg-black/25 border border-white/15 focus:border-[#EF264C] rounded-md px-2 py-1 text-[11.5px] text-white/80 outline-none"
                     />
                   </div>
                 </div>
@@ -396,7 +396,7 @@ export default function IdentityVisualCard({
                     value={quote}
                     onChange={(e) => setQuote(e.target.value)}
                     placeholder="ประโยคคำพูดประจำตัว..."
-                    className="w-full bg-black/70 border border-white/15 focus:border-[#EF264C] shadow-[inset_0_2px_4px_rgba(0,0,0,0.85)] rounded-md px-2.5 py-1.5 text-[11.5px] text-[#EDEDED] outline-none leading-normal resize-none"
+                    className="w-full bg-black/25 border border-white/15 focus:border-[#EF264C] rounded-md px-2 py-1 text-[11.5px] text-[#EDEDED] outline-none leading-normal resize-none"
                   />
                 </div>
               </div>
@@ -413,11 +413,9 @@ export default function IdentityVisualCard({
                     </span>
                   )}
                 </div>
-                <div className="mt-2 p-2.5 rounded-[16px] bg-black/65 backdrop-blur-xl border border-white/[0.04] shadow-[inset_0_2px_6px_rgba(0,0,0,0.85),inset_0_1px_1px_rgba(0,0,0,0.95),0_1px_0_rgba(255,255,255,0.05)]">
-                  <p className="text-[12px] text-[#EDEDED] leading-relaxed font-normal italic line-clamp-3">
-                    {quote}
-                  </p>
-                </div>
+                <p className="text-[12.5px] text-[#EDEDED] mt-2 leading-relaxed font-normal italic line-clamp-3">
+                  {quote}
+                </p>
               </div>
             )}
           </div>
@@ -456,7 +454,7 @@ export default function IdentityVisualCard({
                     }
                   }}
                   placeholder="+ แท็ก"
-                  className="bg-black/70 border border-white/15 focus:border-[#EF264C] shadow-[inset_0_1px_2px_rgba(0,0,0,0.8)] rounded-full px-2.5 py-0.5 text-[11px] text-[#F1F1F1] outline-none w-16"
+                  className="bg-black/30 border border-white/20 focus:border-[#EF264C] rounded-full px-2.5 py-0.5 text-[11px] text-[#F1F1F1] outline-none w-16"
                 />
                 <button
                   type="button"
@@ -534,7 +532,7 @@ export default function IdentityVisualCard({
             </div>
 
             {/* Tactile Garment Swatch Card */}
-            <div className="my-auto py-3 px-3.5 rounded-[20px] bg-black/65 backdrop-blur-xl border border-white/[0.04] shadow-[inset_0_2px_6px_rgba(0,0,0,0.85),inset_0_1px_1px_rgba(0,0,0,0.95),0_1px_0_rgba(255,255,255,0.05)] flex flex-col justify-between gap-2">
+            <div className="my-auto py-3 px-3.5 rounded-[20px] bg-black/40 backdrop-blur-xl border border-white/[0.06] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)] flex flex-col justify-between gap-2">
               <div className="flex items-center justify-between gap-1.5">
                 {isEditing ? (
                   <div className="flex-1">
@@ -547,7 +545,7 @@ export default function IdentityVisualCard({
                         updated[activeOutfitIndex].name = e.target.value;
                         setOutfits(updated);
                       }}
-                      className="w-full bg-black/75 border border-white/15 focus:border-[#EF264C] shadow-[inset_0_2px_4px_rgba(0,0,0,0.85)] rounded px-2 py-0.5 text-[12.5px] font-bold text-white outline-none"
+                      className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-0.5 text-[12.5px] font-bold text-white outline-none"
                     />
                   </div>
                 ) : (
@@ -583,7 +581,7 @@ export default function IdentityVisualCard({
                       setOutfits(updated);
                     }}
                     placeholder="รายละเอียดเนื้อผ้า คัตติ้ง..."
-                    className="w-full bg-black/75 border border-white/15 focus:border-[#EF264C] shadow-[inset_0_2px_4px_rgba(0,0,0,0.85)] rounded-md p-2 text-[12px] text-[#EDEDED] outline-none leading-normal resize-none"
+                    className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded-md p-2 text-[12px] text-[#EDEDED] outline-none leading-normal resize-none"
                   />
                   {outfits.length > 1 && (
                     <button
@@ -638,14 +636,14 @@ export default function IdentityVisualCard({
               {anatomyTraits.map((trait, idx) => (
                 <div
                   key={trait.id}
-                  className="p-2.5 rounded-[18px] bg-black/65 hover:bg-black/75 backdrop-blur-xl border border-white/[0.04] hover:border-white/10 shadow-[inset_0_2px_5px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(0,0,0,0.95),0_1px_0_rgba(255,255,255,0.05)] flex flex-col justify-between transition-all h-[100px] overflow-hidden"
+                  className="p-2.5 rounded-[18px] bg-black/40 hover:bg-black/50 backdrop-blur-xl border border-white/[0.06] hover:border-white/12 shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)] flex flex-col justify-between transition-all h-[100px] overflow-hidden"
                 >
                   <div className="flex items-center justify-between gap-1 mb-1 shrink-0">
                     <div className="flex items-center gap-1.5">
-                      <div className="w-5 h-5 rounded-md bg-white/[0.08] flex items-center justify-center shrink-0">
+                      <div className="w-5 h-5 rounded-md bg-white/[0.06] flex items-center justify-center shrink-0">
                         {renderTraitIcon(trait.iconType)}
                       </div>
-                      <span className="text-[11.5px] font-bold text-white tracking-tight truncate">
+                      <span className="text-[11px] font-bold text-white tracking-tight truncate">
                         {trait.title}
                       </span>
                     </div>
@@ -670,10 +668,10 @@ export default function IdentityVisualCard({
                         updated[idx].detail = e.target.value;
                         setAnatomyTraits(updated);
                       }}
-                      className="w-full bg-black/80 border border-white/15 focus:border-[#EF264C] shadow-[inset_0_2px_4px_rgba(0,0,0,0.85)] rounded p-1 text-[10.5px] text-[#EDEDED] outline-none leading-normal resize-none flex-1"
+                      className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded p-1 text-[10.5px] text-[#EDEDED] outline-none leading-normal resize-none flex-1"
                     />
                   ) : (
-                    <p className="text-[11px] text-[#EDEDED] leading-normal line-clamp-3">
+                    <p className="text-[10.5px] text-[#EDEDED] leading-normal line-clamp-3">
                       {trait.detail}
                     </p>
                   )}
@@ -740,8 +738,8 @@ export default function IdentityVisualCard({
                   onClick={() => !isEditing && setInitialPose(poseText)}
                   className={`px-2.5 py-1 rounded-[14px] flex items-center gap-2.5 transition-all cursor-pointer ${
                     isInitial
-                      ? 'bg-white/[0.12] border border-white/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_2px_6px_rgba(0,0,0,0.4)]'
-                      : 'bg-black/65 hover:bg-black/75 backdrop-blur-xl border border-white/[0.04] hover:border-white/10 shadow-[inset_0_2px_4px_rgba(0,0,0,0.75),inset_0_1px_1px_rgba(0,0,0,0.9),0_1px_0_rgba(255,255,255,0.05)]'
+                      ? 'bg-white/[0.12] border border-white/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]'
+                      : 'bg-black/40 hover:bg-black/50 backdrop-blur-xl border border-white/[0.06] hover:border-white/12 shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)]'
                   }`}
                 >
                   <span
@@ -761,7 +759,7 @@ export default function IdentityVisualCard({
                         updated[idx] = e.target.value;
                         setPostures(updated);
                       }}
-                      className="bg-black/75 border border-white/15 focus:border-[#EF264C] shadow-[inset_0_2px_4px_rgba(0,0,0,0.85)] rounded px-2 py-0.5 text-[11px] text-[#F1F1F1] outline-none flex-1"
+                      className="bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-0.5 text-[11px] text-[#F1F1F1] outline-none flex-1"
                     />
                   ) : (
                     <span className="text-[11.5px] text-[#EDEDED] truncate flex-1 font-normal">
@@ -810,7 +808,7 @@ export default function IdentityVisualCard({
                   value={sceneTime}
                   onChange={(e) => setSceneTime(e.target.value)}
                   placeholder="เวลา"
-                  className="bg-black/70 border border-white/15 focus:border-[#EF264C] shadow-[inset_0_1px_2px_rgba(0,0,0,0.8)] rounded px-1.5 py-0.5 text-[10px] text-white outline-none w-14"
+                  className="bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-1.5 py-0.5 text-[10px] text-white outline-none w-14"
                 />
               ) : (
                 <span className="text-[11px] text-white/70 font-medium truncate">
@@ -824,8 +822,8 @@ export default function IdentityVisualCard({
             </div>
           </div>
 
-          {/* Main Weather Sensation (Tactile Debossed Well) */}
-          <div className="my-auto p-2.5 rounded-[16px] bg-black/65 backdrop-blur-xl border border-white/[0.04] shadow-[inset_0_2px_5px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(0,0,0,0.95),0_1px_0_rgba(255,255,255,0.05)] overflow-hidden">
+          {/* Main Weather Sensation (Bold, Easy to Read) */}
+          <div className="my-auto py-0.5 overflow-hidden">
             {isEditing ? (
               <div className="space-y-1">
                 <input
@@ -833,22 +831,22 @@ export default function IdentityVisualCard({
                   value={sceneWeather}
                   onChange={(e) => setSceneWeather(e.target.value)}
                   placeholder="สภาพอากาศ"
-                  className="w-full bg-black/70 border border-white/15 focus:border-[#EF264C] shadow-[inset_0_2px_4px_rgba(0,0,0,0.85)] rounded px-1.5 py-0.5 text-[12px] font-bold text-white outline-none"
+                  className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-1.5 py-0.5 text-[12px] font-bold text-white outline-none"
                 />
                 <input
                   type="text"
                   value={sceneLocation}
                   onChange={(e) => setSceneLocation(e.target.value)}
                   placeholder="สถานที่"
-                  className="w-full bg-black/60 border border-white/10 focus:border-[#EF264C] shadow-[inset_0_1px_2px_rgba(0,0,0,0.8)] rounded px-1.5 py-0.5 text-[10.5px] text-white/80 outline-none"
+                  className="w-full bg-black/25 border border-white/10 focus:border-[#EF264C] rounded px-1.5 py-0.5 text-[10.5px] text-white/80 outline-none"
                 />
               </div>
             ) : (
               <div>
-                <div className="text-[14px] font-bold text-white tracking-tight truncate leading-tight">
+                <div className="text-[15px] font-bold text-white tracking-tight truncate leading-tight">
                   {sceneWeather}
                 </div>
-                <div className="text-[11px] text-white/70 truncate mt-0.5 font-normal">
+                <div className="text-[11px] text-[#EDEDED] truncate mt-1">
                   {sceneLocation}
                 </div>
               </div>
@@ -879,22 +877,22 @@ export default function IdentityVisualCard({
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           </div>
 
-          {/* Stance Content (Tactile Debossed Well) */}
-          <div className="my-auto p-2.5 rounded-[16px] bg-black/65 backdrop-blur-xl border border-white/[0.04] shadow-[inset_0_2px_5px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(0,0,0,0.95),0_1px_0_rgba(255,255,255,0.05)] overflow-hidden">
+          {/* Stance Content */}
+          <div className="my-auto py-0.5 overflow-hidden">
             {isEditing ? (
               <input
                 type="text"
                 value={playerStance}
                 onChange={(e) => setPlayerStance(e.target.value)}
                 placeholder="ท่าทางเริ่มต้นของผู้เล่น"
-                className="w-full bg-black/70 border border-white/15 focus:border-[#EF264C] shadow-[inset_0_2px_4px_rgba(0,0,0,0.85)] rounded px-2 py-1 text-[11px] text-white outline-none"
+                className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-1 text-[11px] text-white outline-none"
               />
             ) : (
               <div>
-                <div className="text-[12px] font-bold text-white tracking-tight leading-snug line-clamp-2">
+                <div className="text-[12.5px] font-bold text-white tracking-tight leading-normal line-clamp-2">
                   {playerStance}
                 </div>
-                <div className="text-[10px] text-white/50 mt-1 truncate font-mono">
+                <div className="text-[10.5px] text-[#EDEDED] mt-1 truncate">
                   พร้อมรับมือ / สังเกตการณ์
                 </div>
               </div>

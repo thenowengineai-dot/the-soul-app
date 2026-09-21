@@ -6,6 +6,7 @@ import {
 import type { VaultDraft } from '../types';
 import IdentityVisualCard from './cards/IdentityVisualCard';
 import MindShadowCard from './cards/MindShadowCard';
+import DynamicsCharismaCard from './cards/DynamicsCharismaCard';
 
 interface StudioCardCanvasModalProps {
   isOpen: boolean;
@@ -127,6 +128,29 @@ export default function StudioCardCanvasModal({
               </span>
             </div>
             <MindShadowCard
+              draft={draft}
+              onUpdateDraft={onUpdateDraft}
+              isEditable={true}
+            />
+          </section>
+
+          {/* Hairline Separator Between Master Categories */}
+          <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/[0.10] to-transparent my-2" />
+
+          {/* =============================================================== */}
+          {/* ✦ หมวดหมู่ที่ 3: พลวัตสเตตัสและเสน่ห์เฉพาะตัว (Dynamics & Charisma) */}
+          {/* =============================================================== */}
+          <section className="space-y-2">
+            <div className="flex items-center gap-2.5 px-2">
+              <span className="text-[#EF264C] text-[14px]">✦</span>
+              <h2 className="text-[19px] sm:text-[21px] font-bold text-[#F1F1F1] tracking-tight">
+                3. พลวัตสเตตัสและเสน่ห์เฉพาะตัว
+              </h2>
+              <span className="text-[12px] text-white/40 font-normal ml-1 hidden sm:inline">
+                (พลวัต 7 แกนหลัก, สเตตัสรอง 5 แกน & เสน่ห์เฉพาะตัว)
+              </span>
+            </div>
+            <DynamicsCharismaCard
               draft={draft}
               onUpdateDraft={onUpdateDraft}
               isEditable={true}

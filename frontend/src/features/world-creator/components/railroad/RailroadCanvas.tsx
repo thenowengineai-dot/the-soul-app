@@ -464,11 +464,8 @@ export default function RailroadCanvas({
         isPanning ? 'cursor-grabbing' : ''
       }`}
       style={{
-        backgroundImage: `
-          linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-          linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px)
-        `,
-        backgroundSize: `${48 * zoom}px ${48 * zoom}px`,
+        backgroundImage: 'radial-gradient(circle, rgba(255, 255, 255, 0.12) 1px, transparent 1px)',
+        backgroundSize: `${24 * zoom}px ${24 * zoom}px`,
         backgroundPosition: `${pan.x}px ${pan.y}px`,
       }}
     >

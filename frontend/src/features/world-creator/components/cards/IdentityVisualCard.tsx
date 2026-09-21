@@ -226,14 +226,12 @@ export default function IdentityVisualCard({
 
   // External draft sync
   useEffect(() => {
-    if (
-      draft.title &&
-      !draft.title.includes('ตัวละครใหม่') &&
-      draft.title !== name
-    ) {
-      setName(draft.title);
+    if (draft.title && !draft.title.includes('ตัวละครใหม่')) {
+      setName((prev) => (prev !== draft.title ? draft.title! : prev));
     }
-    if (draft.quote && draft.quote !== quote) setQuote(draft.quote);
+    if (draft.quote) {
+      setQuote((prev) => (prev !== draft.quote ? draft.quote! : prev));
+    }
   }, [draft.title, draft.quote]);
 
   // Save changes handler

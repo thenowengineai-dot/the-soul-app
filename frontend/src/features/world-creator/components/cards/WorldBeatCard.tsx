@@ -737,15 +737,6 @@ export default function WorldBeatCard({
         </div>
       )}
 
-      {/* ===================================================================== */}
-      {/* 3. CARD FOOTER: BEAT STATUS                                           */}
-      {/* ===================================================================== */}
-      <div className="shrink-0 pt-2 border-t border-white/[0.06] flex items-center justify-between text-[10px] text-white/35 font-mono">
-        <span>
-          บีต {safeBeatIndex + 1} จาก {beats.length}
-        </span>
-        <span className="text-[#EF264C]/70">W4: THE CINEMATIC BEAT</span>
-      </div>
 
       {/* ===================================================================== */}
       {/* 4. THE RED EXPAND ORB (ปุ่มลูกศรลงสีแดงทรงกลมยืดการ์ดอ่านเต็มความยาว)      */}

@@ -460,7 +460,7 @@ export default function RailroadCanvas({
       ref={containerRef}
       onMouseDown={handleMouseDownCanvas}
       onWheel={handleWheel}
-      className={`relative w-full h-full min-h-[640px] flex-1 overflow-hidden select-none cursor-grab active:cursor-grabbing bg-app-bg ${
+      className={`relative w-full h-full min-h-[640px] flex-1 overflow-hidden select-none cursor-grab active:cursor-grabbing bg-[#0B0B0E] ${
         isPanning ? 'cursor-grabbing' : ''
       }`}
       style={{

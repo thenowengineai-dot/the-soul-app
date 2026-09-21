@@ -419,20 +419,18 @@ flowchart LR
 ### 12.2 World Bento Cards Suite (ชุดการ์ดจำลองโลก 2x2 Bento Format)
 
 #### 🎬 Card W1: ป้ายชื่อโลก & มิติบรรยากาศ (World Masthead & Atmosphere Sanctuary) — 2x2 (`346px × 346px`)
-- **Distance Silhouette:** **"The World Masthead & Atmospheric Sanctuary" (แผ่นป้ายจารึกชื่อโลกขนาดใหญ่ ขนาบด้วยเส้นขอบฟ้า Horizon Hairline และถาดผัสสะบรรยากาศ 3 มิติ)**
+- **Distance Silhouette:** **"The World Masthead & Atmospheric Sanctuary" (แผ่นป้ายจารึกชื่อโลกขนาดใหญ่ ขนาบด้วยเส้นขอบฟ้า Horizon Hairline และถาดผัสสะ 3 มิติพร้อมระบบขยายแบบ Perks)**
   - ถอดแบบดีไซน์มาจาก Card 1 (Identity & Soul): ตัวหนังสือชื่อเรื่องใหญ่ทรงพลัง ไร้ป้ายหัวข้อรกตา
 - **Layout & Visual Hierarchy:**
   - **Top Bar (Apple Tactile Circular Action):** ไร้ป้ายหัวข้อ Category Badge คงไว้เฉพาะปุ่มดินสอกระจกฝ้าทรงกลมชิดขวาบน
   - **Masthead Hero Title:**
-    - ชื่อภาษาไทย: ขนาดใหญ่ คมชัด `text-[23px] sm:text-[25px]` หนา `font-bold` สีขาวนวลตา `#F1F1F1`
-    - ชื่อภาษาอังกฤษ: `The Botanical Poison & Dragon Water Ritual` ขนาด `text-[12.5px] sm:text-[13px]` สีเงินอ่อน `#A1A1A8`
+    - ชื่อภาษาไทย: ขนาดใหญ่ คมชัด `text-[22px] sm:text-[24px]` หนา `font-bold` สีขาวนวลตา `#F1F1F1`
+    - ชื่อภาษาอังกฤษ: `The Botanical Poison & Dragon Water Ritual` ขนาด `text-[12px] sm:text-[12.5px]` สีเงินอ่อน `#A1A1A8`
   - **Horizon Hairline Gradient (เส้นขอบฟ้าใต้ชื่อเรื่อง):**
-    - เส้นคั่น 1px เกรเดียนท์ละลายสองข้าง: `bg-gradient-to-r from-transparent via-white/[0.16] to-transparent my-3`
-  - **Ambient Atmosphere Sanctuary (ถาดผัสสะบรรยากาศ 3 มิติเต็มรูปแบบ):**
-    - ได้พื้นที่แนวตั้งเต็มที่ ไม่ต้องบีบตัวหนังสือ บรรจุในถาดกระจกฝ้าทรงมน `rounded-2xl bg-white/[0.035] border border-white/[0.07] p-3 space-y-2.5`:
-      - 🔴 **สภาพอากาศและกาลเวลา:** แดดยามบ่ายเงียบสงัด ก่อนเมฆดำทะมึนจะกลืนทิวเขา
-      - 🟡 **ผัสสะและสิ่งแวดล้อม:** ไอหมอกกำมะถันออนเซ็น ปะทะ ลมหนาวชื้นกลางป่าสน
-      - 🟢 **โทนสีหลัก & ไวบ์ของภาพ:** เขียวมรกตพฤกษศาสตร์ตัดแดงคาร์ไมน์พิษร้อน
+    - เส้นคั่น 1px เกรเดียนท์ละลายสองข้าง: `bg-gradient-to-r from-transparent via-white/[0.14] to-transparent my-3`
+  - **Ambient Atmosphere Sanctuary (ถาดผัสสะบรรยากาศ 3 คอลัมน์ + ระบบ In-Place Expand แบบ Perks):**
+    - **State 1 (Overview Dock):** ถาดกระจกฝ้า 3 คอลัมน์แนวนอน (`กาลเวลา/อากาศ`, `ผัสสะฉาก`, `โทนสีภาพ`) กะทัดรัด สะอาดตา ไม่ตกขอบ
+    - **State 2 (Tap-to-Expand Drawer):** เมื่อผู้ใช้แตะที่คอลัมน์ใด คอลัมน์นั้นจะขยายเป็น **ถาดรายละเอียดเต็ม (Full Sensory Drawer)** แสดงประโยคบรรยายแบบเต็ม 100% ไม่ตัดทอน พร้อมปุ่ม `✕` ทรงกลมเพื่อย้อนกลับ ถอดแบบมาจากปุ่มเสน่ห์เฉพาะตัว (Perks) ของฝั่งตัวละคร 1:1
 - **Direct Manipulation / In-Place Edit Mode:**
   - ปุ่มดินสอขวาบน แตะเพื่อสลับเข้าโหมดแก้ไขชื่อไทย, ชื่ออังกฤษ, สภาพอากาศ, ผัสสะฉาก, และโทนสีหลัก แล้วกดบันทึกลง State ทันที
 

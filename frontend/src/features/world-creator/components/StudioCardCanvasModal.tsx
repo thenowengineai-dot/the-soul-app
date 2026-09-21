@@ -10,6 +10,7 @@ import IdentityVisualCard from './cards/IdentityVisualCard';
 import MindShadowCard from './cards/MindShadowCard';
 import DynamicsCharismaCard from './cards/DynamicsCharismaCard';
 import LoreBackgroundCard from './cards/LoreBackgroundCard';
+import WorldAtmosphereCard from './cards/WorldAtmosphereCard';
 import WorldPrologueCard from './cards/WorldPrologueCard';
 
 interface StudioCardCanvasModalProps {
@@ -157,8 +158,13 @@ export default function StudioCardCanvasModal({
                 />
               </>
             ) : (
-              /* World & Scenario Bento Suite (Starting with Card W1) */
+              /* World & Scenario Bento Suite (Cards W1 & W2) */
               <>
+                <WorldAtmosphereCard
+                  draft={draft}
+                  onUpdateDraft={onUpdateDraft}
+                  isEditable={true}
+                />
                 <WorldPrologueCard
                   draft={draft}
                   onUpdateDraft={onUpdateDraft}

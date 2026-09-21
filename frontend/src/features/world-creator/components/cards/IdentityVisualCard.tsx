@@ -26,7 +26,8 @@ interface IdentityVisualCardProps {
   isEditable?: boolean;
 }
 
-interface AnatomyComplication {
+interface AnatomyTrait {
+  id: string;
   iconType: 'glasses' | 'hourglass' | 'flame' | 'droplets';
   title: string;
   detail: string;
@@ -34,7 +35,7 @@ interface AnatomyComplication {
 
 interface OutfitItem {
   key: string;
-  label: string;
+  badgeLabel: string;
   name: string;
   description: string;
 }
@@ -46,56 +47,67 @@ export default function IdentityVisualCard({
 }: IdentityVisualCardProps) {
   const [isEditing, setIsEditing] = useState(false);
 
-  // 1. Identity State: Real Mock Data
+  // 1. Identity State: Real Mock Data (Mahiro 990)
   const [name, setName] = useState(draft.title || 'มาฮิโระ (Mahiro)990');
   const [archetype, setArchetype] = useState(draft.archetype || 'The Cloaked Predator');
+  const [archetypeTh, setArchetypeTh] = useState('นักล่าซ่อนรูปใต้หน้ากากพฤกษศาสตร์');
   const [quote, setQuote] = useState(
     draft.quote ||
-      '"อย่าขยับสิคะ... ถ้าขยับพิษจากละอองเกสรจะยิ่งแล่นเข้าสู่กระแสเลือดนะ ให้รุ่นพี่ช่วยรีดมันออกจะดีกว่า..."'
+      '“อย่าขยับสิคะ... ถ้าขยับพิษจากละอองเกสรจะยิ่งแล่นเข้าสู่กระแสเลือดนะ ให้รุ่นพี่ช่วยรีดมันออกจะดีกว่า...”'
   );
   const [hashtags, setHashtags] = useState<string[]>(() => {
     return draft.hashtags && draft.hashtags.length > 0
       ? draft.hashtags
-      : ['#รุ่นพี่สาวแว่น', '#สายหมอกซ่อนรูป', '#GapMoeขั้นสุด', '#นักล่ากระหายพิษ', '#ตรรกะรีดพิษด้วยน้ำมังกร'];
+      : [
+          '#รุ่นพี่สาวแว่น',
+          '#สายหมอกซ่อนรูป',
+          '#GapMoeขั้นสุด',
+          '#นักล่ากระหายพิษ',
+          '#ตรรกะรีดพิษด้วยน้ำมังกร',
+        ];
   });
   const [newTagInput, setNewTagInput] = useState('');
 
-  // 2. Anatomy & Visual DNA (Unified Card: ตา, ทรงผม, สัดส่วน, ผิว, ไอน้ำ)
-  const [anatomyItems, setAnatomyItems] = useState<AnatomyComplication[]>(() => {
+  // 2. Anatomy Traits (Unified 1 Card: 4 Biometric Quadrants)
+  const [anatomyTraits, setAnatomyTraits] = useState<AnatomyTrait[]>(() => {
     const raw = draft.appearance?.anatomy_features || [];
     return [
       {
+        id: 'trait-1',
         iconType: 'glasses',
         title: 'ดวงตา & แว่นตา',
         detail:
           raw[0] ||
-          'แว่นตากรอบโลหะหนาเตอะที่ปิดบังดวงตาสีดำขลับปลาบเยิ้มที่ซ่อนความต้องการทางเพศเอาไว้ข้างใน',
+          'ดวงตาเรียวคมเฉียบขาดดุจตาเหยี่ยว ซ่อนอยู่หลังแว่นตากรอบหนาเตอะ',
       },
       {
+        id: 'trait-2',
         iconType: 'hourglass',
-        title: 'ทรงผม & สรีระนาฬิกาทราย',
-        detail:
-          raw[2] ||
-          'รูปร่างนาฬิกาทรายสุดสะบึม (อกอวบใหญ่สะบึม สะโพกผึ่งผาย) ที่ซ่อนอยู่ภายใต้เสื้อผ้าตัวโคร่ง',
-      },
-      {
-        iconType: 'flame',
-        title: 'ผิวขาวน้ำนมไวต่อความร้อน',
+        title: 'ทรงผม & สรีระ',
         detail:
           raw[1] ||
-          'ผิวขาวเนียนละเอียดดุจน้ำนมที่ขึ้นสีชมพูระเรื่ออย่างรวดเร็วเมื่อสัมผัสกับความร้อน',
+          'ผมยาวสีดำขลับรวบต่ำ ซิลูเอตนาฬิกาทรายอกสะบึมเอวคอดสะโพกผาย ที่ซ่อนอยู่ภายใต้เสื้อผ้าตัวโคร่ง',
       },
       {
+        id: 'trait-3',
+        iconType: 'flame',
+        title: 'สีผิว & ความร้อน',
+        detail:
+          raw[2] ||
+          'ผิวขาวจัดราวกับน้ำนมที่เริ่มขึ้นสีระเรื่อจากไอร้อนและกำหนัดเมื่อสัมผัสกับความร้อน',
+      },
+      {
+        id: 'trait-4',
         iconType: 'droplets',
-        title: 'กลิ่นอาย & ไอน้ำซอกคอ',
+        title: 'กลิ่นอาย & ไอน้ำ',
         detail:
           raw[3] ||
-          'ซอกคอและกระดูกไหปลาร้าที่มักมีเหงื่อและไอน้ำระเหยฟุ้งออกมา',
+          'กลิ่นอายสมุนไพรสดและไอน้ำร้อนกรุ่นระเหยออกจากซอกคอและกระดูกไหปลาร้า',
       },
     ];
   });
 
-  // 3. Wardrobe State (2x2 Closet: outfit_1 & outfit_2)
+  // 3. Wardrobe State: Physical Outfits
   const [outfits, setOutfits] = useState<OutfitItem[]>(() => {
     const w = (draft.appearance?.wardrobe || {}) as Record<string, string[] | undefined>;
     const list: OutfitItem[] = [];
@@ -105,29 +117,29 @@ export default function IdentityVisualCard({
       'ชุดยูกาตะผ้าฝ้ายเนื้อหนาสีเข้มตัวโคร่งที่ดูแบนราบไร้ส่วนเว้าโค้ง พร้อมแว่นตากรอบหนาเตอะปิดบังใบหน้า';
     list.push({
       key: 'outfit_1',
-      label: 'ยูกาตะตัวโคร่ง',
-      name: 'ชุดยูกาตะผ้าฝ้ายเนื้อหนาตัวโคร่ง',
+      badgeLabel: 'ยูกาตะตัวโคร่ง',
+      name: 'ชุดยูกาตะผ้าฝ้ายเนื้อหนาสีเข้มตัวโคร่ง',
       description: o1,
     });
 
     const o2 =
       w.outfit_2?.[0] ||
-      'เสื้อเชิ้ตสีขาวและกระโปรงยาวสีทึบเรียบร้อย ทว่ายามเปียกฝนจะแนบเนื้อจนโปร่งแสง เผยให้เห็นบราเซียลูกไม้สีดำสนิทขัดกับผิวขาวจัด';
+      'เสื้อเชิ้ตสีขาวและกระโปรงสอบเปียกน้ำแนบเนื้อ เผยให้เห็นบราลูกไม้สีดำและทรวดทรงนาฬิกาทรายสะบึมอวบอัดแบบเต็มตา';
     list.push({
       key: 'outfit_2',
-      label: 'เชิ้ตขาวเปียกฝน',
-      name: 'เสื้อเชิ้ตขาวและกระโปรงยาว (โปร่งแสงยามเปียกฝน)',
+      badgeLabel: 'เชิ้ตขาวเปียกฝน',
+      name: 'เสื้อเชิ้ตขาวและกระโปรงสอบแนบเนื้อ',
       description: o2,
     });
 
-    // Additional outfits
+    // Additional outfits if any
     Object.keys(w).forEach((k) => {
       if (k !== 'outfit_1' && k !== 'outfit_2' && Array.isArray(w[k]) && w[k]!.length > 0) {
         const idx = list.length + 1;
         list.push({
           key: k,
-          label: `ชุดที่ ${idx}`,
-          name: w[k]![0].slice(0, 35),
+          badgeLabel: `ชุดที่ ${idx}`,
+          name: `ชุดคอลเลกชัน ${idx}`,
           description: w[k]![0],
         });
       }
@@ -147,9 +159,9 @@ export default function IdentityVisualCard({
     return p.length > 0
       ? p
       : [
-          'การใช้นิ้วชี้ดันดั้งแว่นตาขึ้นเพื่อเก็บซ่อนสายตาหิวกระหายยามปั้นหน้าสุภาพเหนียมอาย',
-          'ทิ้งตัวซบแผงอกหรือเกาะบ่าเหยื่อแน่นด้วยร่างกายท่อนล่างที่อ่อนแรงและสั่นเทาจากการเกร็งสะท้าน',
-          'ท่านั่งพับเพียบเรียบร้อย แต่แอบจงใจขยับสะโพกบดเบียดพื้นหรือเกร็งหน้าขาหนีบเข้าหากัน',
+          'ปลายนิ้วเรียวดันสันแว่นตาขึ้นเล็กน้อยขณะก้มมองด้วยสายตาเย็นชาดุจวิเคราะห์ตัวอย่างทดลอง',
+          'สองแขนโอบรัดรอบคออีกฝ่ายอย่างแนบแน่นจากด้านหลัง ลมหายใจร้อนผ่าวรดรินข้างใบหู',
+          'ยืนนิ่งหลังหมอกควันจาง กัดริมฝีปากล่างเบาๆ ขณะปลดกระดุมเสื้อเชิ้ตเปียกชื้นทีละเม็ด',
         ];
   });
 
@@ -163,12 +175,13 @@ export default function IdentityVisualCard({
   const [sceneLocation, setSceneLocation] = useState(draft.starting_state?.location || 'ห้อง VIP บาร์หรู');
   const [playerStance, setPlayerStance] = useState(draft.starting_state?.initial_p_pos || 'นั่งเอนตัวจิบเครื่องดื่ม');
 
-  // Sync when draft changes externally
+  // External draft sync
   useEffect(() => {
     if (draft.title && draft.title !== name) setName(draft.title);
     if (draft.quote && draft.quote !== quote) setQuote(draft.quote);
   }, [draft.title, draft.quote]);
 
+  // Save changes handler
   const handleSave = () => {
     setIsEditing(false);
     if (onUpdateDraft) {
@@ -177,7 +190,7 @@ export default function IdentityVisualCard({
         wardrobeObj[item.key] = [item.description];
       });
 
-      const anatomyFlat = anatomyItems.map((item) => item.detail);
+      const anatomyFlat = anatomyTraits.map((t) => t.detail);
 
       const updatedStartingState = {
         time: sceneTime,
@@ -219,7 +232,7 @@ export default function IdentityVisualCard({
     const newKey = `outfit_${nextIdx}`;
     const newOutfit: OutfitItem = {
       key: newKey,
-      label: `ชุดใหม่ ${nextIdx}`,
+      badgeLabel: `ชุดใหม่ ${nextIdx}`,
       name: `ชุดคอลเลกชันใหม่ ${nextIdx}`,
       description: 'ระบุรายละเอียดเนื้อผ้า คัตติ้ง และวัสดุ...',
     };
@@ -232,6 +245,24 @@ export default function IdentityVisualCard({
     const filtered = outfits.filter((_, i) => i !== idx);
     setOutfits(filtered);
     setActiveOutfitIndex(Math.max(0, idx - 1));
+    if (filtered.length > 0 && !filtered.some((o) => o.key === initialOutfitKey)) {
+      setInitialOutfitKey(filtered[0].key);
+    }
+  };
+
+  const handleAddAnatomyTrait = () => {
+    const newTrait: AnatomyTrait = {
+      id: `trait-${Date.now()}`,
+      iconType: 'droplets',
+      title: 'จุดเด่นใหม่',
+      detail: 'ระบุลักษณะเฉพาะทางกายภาพ...',
+    };
+    setAnatomyTraits([...anatomyTraits, newTrait]);
+  };
+
+  const handleRemoveAnatomyTrait = (idx: number) => {
+    if (anatomyTraits.length <= 1) return;
+    setAnatomyTraits(anatomyTraits.filter((_, i) => i !== idx));
   };
 
   const handleAddPosture = () => {
@@ -243,51 +274,53 @@ export default function IdentityVisualCard({
     setPostures(postures.filter((_, i) => i !== idx));
   };
 
-  const renderComplicationIcon = (type: AnatomyComplication['iconType']) => {
+  const renderTraitIcon = (type: AnatomyTrait['iconType']) => {
     switch (type) {
       case 'glasses':
-        return <Glasses size={15} className="text-[#EF264C]" strokeWidth={2.2} />;
+        return <Glasses size={12} className="text-[#EF264C]" strokeWidth={2.2} />;
       case 'hourglass':
-        return <Hourglass size={15} className="text-amber-400" strokeWidth={2.2} />;
+        return <Hourglass size={12} className="text-amber-400" strokeWidth={2.2} />;
       case 'flame':
-        return <Flame size={15} className="text-rose-400" strokeWidth={2.2} />;
+        return <Flame size={12} className="text-rose-400" strokeWidth={2.2} />;
       case 'droplets':
-        return <Droplets size={15} className="text-sky-400" strokeWidth={2.2} />;
+        return <Droplets size={12} className="text-sky-400" strokeWidth={2.2} />;
     }
   };
 
   const activeOutfit = outfits[activeOutfitIndex] || outfits[0];
 
   return (
-    <div className="w-full">
+    <div className="w-full flex justify-center py-2">
       {/* ========================================================================= */}
-      {/* ✦ APPLE WIDGETKIT DESK CANVAS (1x1, 2x1, 2x2 MODULAR TILES)               */}
+      {/* ✦ MATHEMATICAL GAME GRID: 160px BASE UNIT, 16px GAP (OPTION 2)             */}
+      {/* 1x1: 160x160 | 2x1: 336x160 | 2x2: 336x336 (FIXED SIZE, FLUID REFLOW)     */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-4 sm:gap-5 auto-rows-[minmax(180px,auto)]">
+      <div
+        className="grid gap-4 justify-center"
+        style={{
+          gridTemplateColumns: 'repeat(auto-fill, 160px)',
+          gridAutoRows: '160px',
+          width: '100%',
+          maxWidth: '1440px',
+        }}
+      >
 
         {/* ======================================================================= */}
-        {/* 🪪 WIDGET 1: PROFILE HERO TILE (2x2 Large Square)                       */}
+        {/* 🪪 WIDGET 1: IDENTITY & ARCHETYPE (2x2 -> 336px × 336px)                 */}
         {/* ======================================================================= */}
-        <div className="col-span-1 md:col-span-1 xl:col-span-2 xl:row-span-2 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
-          {/* Header Row: Archetype Pill & Edit Button */}
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-[#EF264C]/15 border border-[#EF264C]/30 flex items-center justify-center">
-                <User size={12} className="text-[#EF264C]" />
+        <div
+          className="col-span-2 row-span-2 rounded-[28px] bg-[#161618]/95 hover:bg-[#1b1b1e]/95 border border-white/[0.08] hover:border-white/14 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_26px_rgba(0,0,0,0.4)] transition-all flex flex-col justify-between relative overflow-hidden"
+          style={{ width: '336px', height: '336px' }}
+        >
+          {/* Top Row: Mini Pill Badge + Apple Edit/Save Button */}
+          <div className="flex items-center justify-between gap-2 shrink-0">
+            <div className="flex items-center gap-1.5">
+              <div className="w-5 h-5 rounded-full bg-[#EF264C]/15 border border-[#EF264C]/30 flex items-center justify-center">
+                <User size={11} className="text-[#EF264C]" />
               </div>
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={archetype}
-                  onChange={(e) => setArchetype(e.target.value)}
-                  placeholder="Archetype"
-                  className="bg-white/[0.06] border border-white/15 focus:border-[#EF264C]/60 rounded-full px-2.5 py-0.5 text-[11px] text-[#F1F1F1] outline-none"
-                />
-              ) : (
-                <span className="text-[12px] font-medium text-[#BEBEC4]">
-                  {archetype}
-                </span>
-              )}
+              <span className="text-[10.5px] font-mono tracking-wider text-white/50 uppercase font-semibold">
+                IDENTITY
+              </span>
             </div>
 
             {isEditable && (
@@ -296,64 +329,86 @@ export default function IdentityVisualCard({
                   <button
                     type="button"
                     onClick={handleSave}
-                    className="px-3 py-1 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white text-[11px] font-semibold flex items-center gap-1 shadow-sm transition-all cursor-pointer"
+                    className="px-3 py-0.5 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white text-[10.5px] font-semibold flex items-center gap-1 shadow-sm transition-all cursor-pointer"
                   >
-                    <Check size={12} strokeWidth={2.4} />
+                    <Check size={11} strokeWidth={2.4} />
                     <span>บันทึก</span>
                   </button>
                 ) : (
                   <button
                     type="button"
                     onClick={() => setIsEditing(true)}
-                    className="w-7 h-7 rounded-full bg-white/[0.06] hover:bg-white/[0.14] text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer"
-                    title="แก้ไขข้อมูล"
+                    className="px-2.5 py-0.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-white/80 hover:text-white text-[10.5px] font-medium flex items-center gap-1 transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
                   >
-                    <Pencil size={12} strokeWidth={2} />
+                    <Pencil size={10} strokeWidth={2} />
+                    <span>แก้ไข</span>
                   </button>
                 )}
               </div>
             )}
           </div>
 
-          {/* Center: Large Name & Persona Quote */}
-          <div className="my-auto py-3 space-y-2">
+          {/* Middle: Name, Archetype, Quote */}
+          <div className="my-auto py-1 space-y-1.5 overflow-hidden">
             {isEditing ? (
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="ชื่อตัวละคร"
-                  className="w-full bg-white/[0.06] border border-white/20 focus:border-[#EF264C]/60 rounded-xl px-3 py-1.5 text-[22px] font-bold text-[#F1F1F1] outline-none"
+                  className="w-full bg-white/[0.05] border border-white/20 focus:border-[#EF264C]/60 rounded-lg px-2.5 py-1 text-[18px] font-bold text-[#F1F1F1] outline-none"
+                />
+                <input
+                  type="text"
+                  value={archetype}
+                  onChange={(e) => setArchetype(e.target.value)}
+                  placeholder="Archetype (EN)"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-md px-2 py-0.5 text-[11px] text-white outline-none"
+                />
+                <input
+                  type="text"
+                  value={archetypeTh}
+                  onChange={(e) => setArchetypeTh(e.target.value)}
+                  placeholder="คำอธิบายภาษาไทย"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-md px-2 py-0.5 text-[11px] text-white/70 outline-none"
                 />
                 <textarea
-                  rows={3}
+                  rows={2}
                   value={quote}
                   onChange={(e) => setQuote(e.target.value)}
                   placeholder="ประโยคคำพูดประจำตัว..."
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-2.5 py-1 text-[12px] text-[#AAAAAA] outline-none leading-relaxed resize-none"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-md px-2 py-1 text-[11px] text-[#AAAAAA] outline-none leading-relaxed resize-none"
                 />
               </div>
             ) : (
               <div>
-                <h1 className="text-[26px] sm:text-[29px] font-bold text-[#F1F1F1] tracking-tight leading-tight">
+                <h1 className="text-[22px] sm:text-[24px] font-bold text-[#F1F1F1] tracking-tight leading-tight">
                   {name}
                 </h1>
-                <p className="text-[12.5px] text-[#A1A1A8] mt-2 leading-relaxed font-normal italic line-clamp-3">
+                <div className="text-[11.5px] text-white/80 mt-0.5">
+                  <span className="font-bold text-white">{archetype}</span>
+                  {archetypeTh && (
+                    <span className="text-white/45 font-normal ml-1">
+                      ( {archetypeTh} )
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-[#A1A1A8] mt-1.5 leading-relaxed font-normal italic line-clamp-3">
                   {quote}
                 </p>
               </div>
             )}
           </div>
 
-          {/* Bottom: Hashtags Pills */}
-          <div className="pt-2 flex flex-wrap items-center gap-1.5">
+          {/* Bottom: Hashtag Capsules */}
+          <div className="pt-1 flex flex-wrap items-center gap-1 shrink-0">
             {hashtags.map((tag, idx) => (
               <span
                 key={idx}
-                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/[0.06] hover:bg-white/[0.09] text-[11px] text-white/75 font-normal"
+                className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-white/[0.06] hover:bg-white/[0.09] text-[10px] text-white/75 font-normal"
               >
-                <Hash size={10} className="text-[#EF264C]" />
+                <Hash size={9} className="text-[#EF264C]" />
                 <span>{tag.replace(/^#/, '')}</span>
                 {isEditing && (
                   <button
@@ -367,7 +422,7 @@ export default function IdentityVisualCard({
               </span>
             ))}
 
-            {isEditing && (
+            {isEditing ? (
               <div className="flex items-center gap-1">
                 <input
                   type="text"
@@ -380,245 +435,298 @@ export default function IdentityVisualCard({
                     }
                   }}
                   placeholder="+ แท็ก"
-                  className="bg-white/[0.04] border border-white/10 rounded-full px-2 py-0.5 text-[11px] text-[#F1F1F1] outline-none w-16"
+                  className="bg-white/[0.04] border border-white/10 rounded-full px-2 py-0.5 text-[10px] text-[#F1F1F1] outline-none w-14"
                 />
                 <button
                   type="button"
                   onClick={handleAddHashtag}
-                  className="w-5 h-5 rounded-full bg-white/10 text-white flex items-center justify-center text-[10px] cursor-pointer"
+                  className="w-4 h-4 rounded-full bg-white/10 text-white flex items-center justify-center text-[9px] cursor-pointer"
                 >
                   +
                 </button>
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* ======================================================================= */}
-        {/* 👗 WIDGET 2: WARDROBE CLOSET (2x2 Large Square)                         */}
-        {/* ======================================================================= */}
-        <div className="col-span-1 md:col-span-1 xl:col-span-2 xl:row-span-2 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
-          {/* Header Row: Hanger Tabs */}
-          <div className="flex items-center justify-between gap-2 pb-2">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-white/[0.08] flex items-center justify-center">
-                <Shirt size={12} className="text-[#EF264C]" />
-              </div>
-              <span className="text-[12.5px] font-semibold text-[#F1F1F1]">
-                Wardrobe
-              </span>
-            </div>
-
-            {/* Switcher Pills */}
-            <div className="flex flex-wrap items-center gap-1">
-              {outfits.map((outfit, idx) => {
-                const isActive = idx === activeOutfitIndex;
-                const isInitial = outfit.key === initialOutfitKey;
-
-                return (
-                  <button
-                    key={outfit.key}
-                    type="button"
-                    onClick={() => setActiveOutfitIndex(idx)}
-                    className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-medium flex items-center gap-1 transition-all cursor-pointer ${
-                      isActive
-                        ? 'bg-white/20 text-white shadow-sm'
-                        : 'bg-white/[0.04] text-white/50 hover:text-white'
-                    }`}
-                  >
-                    {isInitial && <span className="text-[#EF264C] text-[8px]">✦</span>}
-                    <span>{outfit.label}</span>
-                  </button>
-                );
-              })}
-
-              {isEditing && (
-                <button
-                  type="button"
-                  onClick={handleAddNewOutfit}
-                  className="w-5 h-5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-white flex items-center justify-center text-[10px] cursor-pointer"
-                >
-                  <Plus size={10} />
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Garment Swatch Box */}
-          <div className="my-auto py-3 px-4 rounded-[20px] bg-black/25 border border-white/[0.06] flex flex-col justify-between gap-2">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[13px] font-bold text-[#F1F1F1] tracking-tight">
-                {activeOutfit.name}
-              </span>
-
-              {activeOutfit.key === initialOutfitKey ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-[10px] font-medium">
-                  <BookmarkCheck size={10} /> Default
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setInitialOutfitKey(activeOutfit.key)}
-                  className="text-[10px] text-white/40 hover:text-white underline cursor-pointer transition-colors"
-                >
-                  ตั้งเป็นชุดเริ่มต้น
-                </button>
-              )}
-            </div>
-
-            {isEditing ? (
-              <div className="space-y-1.5 pt-1">
-                <input
-                  type="text"
-                  value={activeOutfit.name}
-                  onChange={(e) => {
-                    const updated = [...outfits];
-                    updated[activeOutfitIndex].name = e.target.value;
-                    setOutfits(updated);
-                  }}
-                  placeholder="ชื่อสไตล์ชุด"
-                  className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-2 py-1 text-[12px] text-[#F1F1F1] outline-none"
-                />
-                <textarea
-                  rows={3}
-                  value={activeOutfit.description}
-                  onChange={(e) => {
-                    const updated = [...outfits];
-                    updated[activeOutfitIndex].description = e.target.value;
-                    setOutfits(updated);
-                  }}
-                  placeholder="รายละเอียดเนื้อผ้า คัตติ้ง..."
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-2 py-1 text-[11.5px] text-[#AAAAAA] outline-none leading-relaxed resize-none"
-                />
-              </div>
             ) : (
-              <p className="text-[12px] text-[#AAAAAA] leading-relaxed font-normal line-clamp-4">
-                {activeOutfit.description}
-              </p>
-            )}
-
-            {isEditing && outfits.length > 1 && (
               <button
                 type="button"
-                onClick={() => handleRemoveOutfit(activeOutfitIndex)}
-                className="self-end text-[10.5px] text-red-400/70 hover:text-red-300 flex items-center gap-1 cursor-pointer transition-colors pt-1"
+                onClick={() => setIsEditing(true)}
+                className="px-2 py-0.5 rounded-full border border-dashed border-white/20 text-[9.5px] text-white/40 hover:text-white/80 font-mono cursor-pointer"
               >
-                <Trash2 size={10} /> ลบชุดนี้
+                + Tag
               </button>
             )}
           </div>
+        </div>
 
-          <div className="pt-1 flex items-center justify-between text-[11px] text-white/35">
-            <span>{outfits.length} ชุดสลับใส่</span>
+        {/* ======================================================================= */}
+        {/* 👗 WIDGET 2: WARDROBE CLOSET (2x2 -> 336px × 336px)                      */}
+        {/* ======================================================================= */}
+        <div
+          className="col-span-2 row-span-2 rounded-[28px] bg-[#161618]/95 hover:bg-[#1b1b1e]/95 border border-white/[0.08] hover:border-white/14 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_26px_rgba(0,0,0,0.4)] transition-all flex flex-col justify-between relative overflow-hidden"
+          style={{ width: '336px', height: '336px' }}
+        >
+          {/* Header Row: Closet Badge + Hangers Switcher */}
+          <div>
+            <div className="flex items-center justify-between gap-1 mb-2">
+              <div className="flex items-center gap-1.5">
+                <div className="w-5 h-5 rounded-full bg-white/[0.08] flex items-center justify-center">
+                  <Shirt size={11} className="text-[#EF264C]" />
+                </div>
+                <span className="text-[10.5px] font-mono tracking-wider text-white/50 uppercase font-semibold">
+                  WARDROBE (ตู้เสื้อผ้า)
+                </span>
+              </div>
+
+              {/* Hanger Pills Switcher */}
+              <div className="flex flex-wrap items-center gap-1">
+                {outfits.map((outfit, idx) => {
+                  const isActive = idx === activeOutfitIndex;
+                  const isDefault = outfit.key === initialOutfitKey;
+
+                  return (
+                    <button
+                      key={outfit.key}
+                      type="button"
+                      onClick={() => setActiveOutfitIndex(idx)}
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-0.5 transition-all cursor-pointer ${
+                        isActive
+                          ? 'bg-white/20 text-white shadow-sm'
+                          : 'bg-white/[0.04] text-white/50 hover:text-white'
+                      }`}
+                    >
+                      {isDefault && <span className="text-[#EF264C] text-[7px]">✦</span>}
+                      <span>{outfit.badgeLabel}</span>
+                    </button>
+                  );
+                })}
+
+                {isEditing && (
+                  <button
+                    type="button"
+                    onClick={handleAddNewOutfit}
+                    className="w-5 h-5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-white flex items-center justify-center text-[10px] cursor-pointer"
+                    title="เพิ่มชุดใหม่ในตู้"
+                  >
+                    <Plus size={10} />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Tactile Garment Swatch Card */}
+            <div className="my-auto py-2.5 px-3 rounded-[20px] bg-black/35 border border-white/[0.06] flex flex-col justify-between gap-2">
+              <div className="flex items-center justify-between gap-1.5">
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={activeOutfit.name}
+                    onChange={(e) => {
+                      const updated = [...outfits];
+                      updated[activeOutfitIndex].name = e.target.value;
+                      setOutfits(updated);
+                    }}
+                    className="bg-white/[0.06] border border-white/10 rounded px-1.5 py-0.5 text-[11.5px] font-bold text-white outline-none flex-1"
+                  />
+                ) : (
+                  <span className="text-[12px] font-bold text-[#F1F1F1] tracking-tight truncate">
+                    {activeOutfit.name}
+                  </span>
+                )}
+
+                {activeOutfit.key === initialOutfitKey ? (
+                  <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[9.5px] font-medium shrink-0">
+                    <BookmarkCheck size={9} /> DEFAULT
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setInitialOutfitKey(activeOutfit.key)}
+                    className="text-[9.5px] text-white/40 hover:text-white underline cursor-pointer transition-colors shrink-0"
+                  >
+                    ตั้งเป็นชุดเริ่มต้น
+                  </button>
+                )}
+              </div>
+
+              {isEditing ? (
+                <div className="space-y-1">
+                  <textarea
+                    rows={3}
+                    value={activeOutfit.description}
+                    onChange={(e) => {
+                      const updated = [...outfits];
+                      updated[activeOutfitIndex].description = e.target.value;
+                      setOutfits(updated);
+                    }}
+                    placeholder="รายละเอียดเนื้อผ้า คัตติ้ง..."
+                    className="w-full bg-white/[0.04] border border-white/10 rounded-md p-1.5 text-[11px] text-[#AAAAAA] outline-none leading-relaxed resize-none"
+                  />
+                  {outfits.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveOutfit(activeOutfitIndex)}
+                      className="self-end text-[9.5px] text-red-400/70 hover:text-red-300 flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <Trash2 size={9} /> ลบชุดนี้
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <p className="text-[11px] text-[#AAAAAA] leading-relaxed font-normal line-clamp-4">
+                  {activeOutfit.description}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Bottom Closet Stats */}
+          <div className="pt-1 flex items-center justify-between text-[10px] text-white/35 font-mono">
+            <span>{outfits.length} OUTFITS IN CLOSET</span>
+            <span>CLOSET 2X2</span>
           </div>
         </div>
 
         {/* ======================================================================= */}
-        {/* 👓 WIDGET 3: ANATOMY & VISUAL DNA (2x2 Large Square - UNIFIED CARD)     */}
+        {/* 👓 WIDGET 3: ANATOMY & VISUAL DNA (2x2 -> 336px × 336px - 4 QUADRANTS)   */}
         {/* ======================================================================= */}
-        <div className="col-span-1 md:col-span-2 xl:col-span-2 xl:row-span-2 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
+        <div
+          className="col-span-2 row-span-2 rounded-[28px] bg-[#161618]/95 hover:bg-[#1b1b1e]/95 border border-white/[0.08] hover:border-white/14 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_26px_rgba(0,0,0,0.4)] transition-all flex flex-col justify-between relative overflow-hidden"
+          style={{ width: '336px', height: '336px' }}
+        >
           {/* Header Row */}
-          <div className="flex items-center justify-between pb-2">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-white/[0.08] flex items-center justify-center">
-                <Eye size={12} className="text-[#EF264C]" />
+          <div>
+            <div className="flex items-center justify-between gap-1 mb-2">
+              <div className="flex items-center gap-1.5">
+                <div className="w-5 h-5 rounded-full bg-white/[0.08] flex items-center justify-center">
+                  <Eye size={11} className="text-[#EF264C]" />
+                </div>
+                <span className="text-[10.5px] font-mono tracking-wider text-white/50 uppercase font-semibold">
+                  ANATOMY (สรีระ 4 มิติ)
+                </span>
               </div>
-              <span className="text-[12.5px] font-semibold text-[#F1F1F1]">
-                Anatomy & Visual DNA
+              <span className="text-[9.5px] text-white/40 font-mono">
+                {anatomyTraits.length} BIOMETRICS
               </span>
             </div>
-            <span className="text-[10.5px] text-white/40 font-mono">4 จุดเด่น</span>
-          </div>
 
-          {/* Unified 4 Visual Hallmarks: ตา, ทรงผม/สรีระ, ผิว, ไอน้ำ */}
-          <div className="my-auto py-1 space-y-2">
-            {anatomyItems.map((item, idx) => (
-              <div
-                key={idx}
-                className="p-2.5 rounded-[16px] bg-black/25 border border-white/[0.05] flex items-start gap-2.5 transition-all"
-              >
-                <div className="w-5.5 h-5.5 rounded-lg bg-white/[0.06] flex items-center justify-center shrink-0 mt-0.5">
-                  {renderComplicationIcon(item.iconType)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-[11.5px] font-bold text-[#F1F1F1] tracking-tight">
-                    {item.title}
+            {/* 4-Quadrant Tactile Mini-Tiles */}
+            <div className="grid grid-cols-2 gap-2 my-auto py-0.5">
+              {anatomyTraits.map((trait, idx) => (
+                <div
+                  key={trait.id}
+                  className="p-2 rounded-[16px] bg-black/35 border border-white/[0.05] hover:border-white/10 flex flex-col justify-between transition-all h-[95px] overflow-hidden"
+                >
+                  <div className="flex items-center justify-between gap-1 mb-1 shrink-0">
+                    <div className="flex items-center gap-1">
+                      <div className="w-4 h-4 rounded bg-white/[0.06] flex items-center justify-center shrink-0">
+                        {renderTraitIcon(trait.iconType)}
+                      </div>
+                      <span className="text-[10px] font-bold text-[#F1F1F1] tracking-tight truncate">
+                        {trait.title}
+                      </span>
+                    </div>
+
+                    {isEditing && anatomyTraits.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveAnatomyTrait(idx)}
+                        className="text-white/30 hover:text-red-400 p-0.5 cursor-pointer"
+                      >
+                        <Trash2 size={9} />
+                      </button>
+                    )}
                   </div>
+
                   {isEditing ? (
                     <textarea
                       rows={2}
-                      value={item.detail}
+                      value={trait.detail}
                       onChange={(e) => {
-                        const updated = [...anatomyItems];
+                        const updated = [...anatomyTraits];
                         updated[idx].detail = e.target.value;
-                        setAnatomyItems(updated);
+                        setAnatomyTraits(updated);
                       }}
-                      className="w-full bg-white/[0.04] border border-white/10 rounded p-1 text-[11px] text-[#AAAAAA] outline-none resize-none mt-1"
+                      className="w-full bg-white/[0.04] border border-white/10 rounded p-1 text-[9.5px] text-[#AAAAAA] outline-none leading-snug resize-none flex-1"
                     />
                   ) : (
-                    <p className="text-[11px] text-[#AAAAAA] leading-snug line-clamp-2 mt-0.5">
-                      {item.detail}
+                    <p className="text-[9.5px] text-[#AAAAAA] leading-snug line-clamp-3">
+                      {trait.detail}
                     </p>
                   )}
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
-          <div className="pt-1 flex items-center justify-between text-[11px] text-white/35">
+          {/* Bottom Info & Add Action */}
+          <div className="pt-1 flex items-center justify-between text-[10px] text-white/35 font-mono">
             <span>ตา • ทรงผม • สัดส่วน • สัมผัส</span>
+            {isEditing && (
+              <button
+                type="button"
+                onClick={handleAddAnatomyTrait}
+                className="text-[9.5px] text-[#EF264C] hover:underline flex items-center gap-0.5 cursor-pointer"
+              >
+                <Plus size={9} /> เพิ่ม
+              </button>
+            )}
           </div>
         </div>
 
         {/* ======================================================================= */}
-        {/* 🎭 WIDGET 4: SIGNATURE POSES DOCK (4 Cols Wide on Desktop, 1 Row)       */}
+        {/* 🎭 WIDGET 4: SIGNATURE POSTURES (2x1 -> 336px × 160px - HORIZONTAL WIDE)  */}
         {/* ======================================================================= */}
-        <div className="col-span-1 md:col-span-2 xl:col-span-4 xl:row-span-1 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
-          <div className="flex items-center justify-between pb-1">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-rose-500/15 flex items-center justify-center">
-                <Sparkles size={12} className="text-rose-400" />
+        <div
+          className="col-span-2 row-span-1 rounded-[28px] bg-[#161618]/95 hover:bg-[#1b1b1e]/95 border border-white/[0.08] hover:border-white/14 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_26px_rgba(0,0,0,0.4)] transition-all flex flex-col justify-between relative overflow-hidden"
+          style={{ width: '336px', height: '160px' }}
+        >
+          {/* Header Row */}
+          <div className="flex items-center justify-between gap-1 shrink-0">
+            <div className="flex items-center gap-1.5">
+              <div className="w-5 h-5 rounded-full bg-rose-500/15 flex items-center justify-center">
+                <Sparkles size={11} className="text-rose-400" />
               </div>
-              <span className="text-[12.5px] font-semibold text-[#F1F1F1]">
-                Signature Poses
+              <span className="text-[10.5px] font-mono tracking-wider text-white/50 uppercase font-semibold">
+                POSTURES (ภาษากาย 3 จังหวะ)
               </span>
             </div>
-            {isEditing ? (
-              <button
-                type="button"
-                onClick={handleAddPosture}
-                className="text-[11px] text-[#EF264C] hover:underline flex items-center gap-1 cursor-pointer"
-              >
-                <Plus size={10} /> เพิ่มท่า
-              </button>
-            ) : (
-              <span className="text-[10.5px] text-white/40 font-mono">
-                {postures.length} ภาษากาย
-              </span>
-            )}
+
+            <div className="flex items-center gap-1">
+              {isEditing ? (
+                <button
+                  type="button"
+                  onClick={handleAddPosture}
+                  className="text-[9.5px] text-[#EF264C] hover:underline flex items-center gap-0.5 cursor-pointer"
+                >
+                  <Plus size={9} /> เพิ่มท่า
+                </button>
+              ) : (
+                <span className="text-[9.5px] text-white/40 font-mono">DYNAMIC ISLAND</span>
+              )}
+            </div>
           </div>
 
-          {/* Compact Pill Rows */}
-          <div className="py-1 space-y-1.5">
+          {/* 3 Dynamic Island Horizontal Capsules */}
+          <div className="space-y-1 py-0.5 overflow-hidden">
             {postures.map((poseText, idx) => {
               const isInitial = poseText === initialPose;
               return (
                 <div
                   key={idx}
                   onClick={() => !isEditing && setInitialPose(poseText)}
-                  className={`px-3 py-1.5 rounded-xl flex items-center gap-2.5 transition-all cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-[14px] flex items-center gap-2 transition-all cursor-pointer ${
                     isInitial
-                      ? 'bg-white/[0.10] border border-white/20'
-                      : 'bg-white/[0.03] hover:bg-white/[0.06] border border-transparent'
+                      ? 'bg-white/[0.09] border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
+                      : 'bg-black/30 hover:bg-black/45 border border-white/[0.04] hover:border-white/10'
                   }`}
                 >
                   <span
-                    className={`text-[9.5px] font-mono font-bold w-5 h-5 rounded-md flex items-center justify-center shrink-0 ${
+                    className={`text-[8.5px] font-mono font-bold w-4 h-4 rounded-md flex items-center justify-center shrink-0 ${
                       isInitial ? 'bg-[#EF264C] text-white' : 'bg-white/10 text-white/50'
                     }`}
                   >
                     0{idx + 1}
                   </span>
+
                   {isEditing ? (
                     <input
                       type="text"
@@ -628,16 +736,20 @@ export default function IdentityVisualCard({
                         updated[idx] = e.target.value;
                         setPostures(updated);
                       }}
-                      className="bg-white/[0.04] border border-white/10 rounded px-1.5 py-0.5 text-[11px] text-[#F1F1F1] outline-none flex-1"
+                      className="bg-white/[0.04] border border-white/10 rounded px-1.5 py-0.5 text-[10px] text-[#F1F1F1] outline-none flex-1"
                     />
                   ) : (
-                    <span className="text-[11.5px] text-[#E0E0E4] truncate flex-1">
+                    <span className="text-[10px] text-[#E0E0E4] truncate flex-1">
                       {poseText}
                     </span>
                   )}
+
                   {isInitial && !isEditing && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                    <span className="text-[8.5px] font-semibold text-[#EF264C] bg-[#EF264C]/15 px-1.5 py-0.5 rounded-full shrink-0">
+                      ✦ HUD
+                    </span>
                   )}
+
                   {isEditing && postures.length > 1 && (
                     <button
                       type="button"
@@ -645,9 +757,9 @@ export default function IdentityVisualCard({
                         e.stopPropagation();
                         handleRemovePosture(idx);
                       }}
-                      className="text-white/40 hover:text-red-400 p-0.5"
+                      className="text-white/30 hover:text-red-400 p-0.5 cursor-pointer"
                     >
-                      <Trash2 size={10} />
+                      <Trash2 size={9} />
                     </button>
                   )}
                 </div>
@@ -657,80 +769,116 @@ export default function IdentityVisualCard({
         </div>
 
         {/* ======================================================================= */}
-        {/* 🌙 WIDGET 5: ENVIRONMENT & ATMOSPHERE (2 Cols on Desktop, 1 Row)        */}
+        {/* 🌙 WIDGET 5: STARTING ATMOSPHERE (1x1 -> 160px × 160px - APPLE WEATHER)   */}
         {/* ======================================================================= */}
-        <div className="col-span-1 md:col-span-2 xl:col-span-2 xl:row-span-1 rounded-[28px] bg-[#1c1c1e]/85 hover:bg-[#242426]/90 backdrop-blur-2xl border border-white/[0.10] hover:border-white/[0.18] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-200 flex flex-col justify-between relative group overflow-hidden">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-indigo-500/15 flex items-center justify-center">
-                <Moon size={12} className="text-indigo-400" />
-              </div>
+        <div
+          className="col-span-1 row-span-1 rounded-[24px] bg-[#161618]/95 hover:bg-[#1b1b1e]/95 border border-white/[0.08] hover:border-white/14 p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_26px_rgba(0,0,0,0.4)] transition-all flex flex-col justify-between relative overflow-hidden"
+          style={{ width: '160px', height: '160px' }}
+        >
+          {/* Header: Venue & Time */}
+          <div className="flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-1">
+              <Moon size={11} className="text-indigo-400" />
               {isEditing ? (
+                <input
+                  type="text"
+                  value={sceneTime}
+                  onChange={(e) => setSceneTime(e.target.value)}
+                  placeholder="เวลา"
+                  className="bg-white/[0.06] border border-white/10 rounded px-1 py-0.5 text-[9px] text-white outline-none w-12"
+                />
+              ) : (
+                <span className="text-[10px] text-white/50 font-medium truncate">
+                  {sceneTime}
+                </span>
+              )}
+            </div>
+
+            <div className="w-5 h-5 rounded-lg bg-white/[0.05] border border-white/10 flex items-center justify-center shrink-0">
+              <CloudRain size={11} className="text-sky-400" />
+            </div>
+          </div>
+
+          {/* Main Weather Sensation */}
+          <div className="my-auto py-0.5 overflow-hidden">
+            {isEditing ? (
+              <div className="space-y-1">
+                <input
+                  type="text"
+                  value={sceneWeather}
+                  onChange={(e) => setSceneWeather(e.target.value)}
+                  placeholder="สภาพอากาศ"
+                  className="w-full bg-white/[0.06] border border-white/10 rounded px-1 py-0.5 text-[11px] font-bold text-white outline-none"
+                />
                 <input
                   type="text"
                   value={sceneLocation}
                   onChange={(e) => setSceneLocation(e.target.value)}
                   placeholder="สถานที่"
-                  className="bg-white/[0.06] border border-white/10 rounded px-2 py-0.5 text-[11.5px] text-[#F1F1F1] outline-none w-32"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded px-1 py-0.5 text-[9.5px] text-white/70 outline-none"
                 />
-              ) : (
-                <span className="text-[12.5px] font-semibold text-[#F1F1F1]">
-                  {sceneLocation}
-                </span>
-              )}
-            </div>
-            {isEditing ? (
-              <input
-                type="text"
-                value={sceneTime}
-                onChange={(e) => setSceneTime(e.target.value)}
-                placeholder="เวลา"
-                className="bg-white/[0.06] border border-white/10 rounded px-2 py-0.5 text-[11px] text-[#F1F1F1] outline-none w-20 text-right"
-              />
+              </div>
             ) : (
-              <span className="text-[11px] text-white/40 font-medium">
-                {sceneTime}
-              </span>
+              <div>
+                <div className="text-[14px] font-bold text-[#F1F1F1] tracking-tight truncate leading-tight">
+                  {sceneWeather}
+                </div>
+                <div className="text-[9.5px] text-[#A1A1A8] truncate mt-0.5">
+                  {sceneLocation}
+                </div>
+              </div>
             )}
           </div>
 
-          <div className="py-1 flex items-center justify-between gap-4">
-            <div className="space-y-1 w-full">
-              {isEditing ? (
-                <div className="space-y-1.5">
-                  <input
-                    type="text"
-                    value={sceneWeather}
-                    onChange={(e) => setSceneWeather(e.target.value)}
-                    placeholder="สภาพอากาศ"
-                    className="w-full bg-white/[0.06] border border-white/10 rounded px-2 py-0.5 text-[14px] font-bold text-[#F1F1F1] outline-none"
-                  />
-                  <input
-                    type="text"
-                    value={playerStance}
-                    onChange={(e) => setPlayerStance(e.target.value)}
-                    placeholder="ท่าทางเริ่มต้นของผู้เล่น"
-                    className="w-full bg-white/[0.04] border border-white/10 rounded px-2 py-0.5 text-[11px] text-[#AAAAAA] outline-none"
-                  />
-                </div>
-              ) : (
-                <>
-                  <div className="text-[19px] font-bold text-[#F1F1F1] tracking-tight">
-                    {sceneWeather}
-                  </div>
-                  <div className="text-[11.5px] text-[#AAAAAA] flex items-center gap-1.5">
-                    <Compass size={11} className="text-white/40" />
-                    <span>{playerStance}</span>
-                  </div>
-                </>
-              )}
-            </div>
+          {/* Bottom Tag */}
+          <div className="text-[8.5px] font-mono uppercase tracking-wider text-white/30 shrink-0">
+            WEATHER • 1X1
+          </div>
+        </div>
 
-            {!isEditing && (
-              <div className="w-10 h-10 rounded-2xl bg-white/[0.05] border border-white/[0.08] flex items-center justify-center shrink-0">
-                <CloudRain size={20} className="text-sky-400" />
+        {/* ======================================================================= */}
+        {/* 🧭 WIDGET 6: PLAYER STANCE (1x1 -> 160px × 160px - COMPASS TILE)         */}
+        {/* ======================================================================= */}
+        <div
+          className="col-span-1 row-span-1 rounded-[24px] bg-[#161618]/95 hover:bg-[#1b1b1e]/95 border border-white/[0.08] hover:border-white/14 p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_26px_rgba(0,0,0,0.4)] transition-all flex flex-col justify-between relative overflow-hidden"
+          style={{ width: '160px', height: '160px' }}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-1">
+              <Compass size={11} className="text-[#EF264C]" />
+              <span className="text-[9px] font-mono tracking-wider text-white/50 uppercase font-semibold">
+                STANCE
+              </span>
+            </div>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          </div>
+
+          {/* Stance Content */}
+          <div className="my-auto py-0.5 overflow-hidden">
+            {isEditing ? (
+              <input
+                type="text"
+                value={playerStance}
+                onChange={(e) => setPlayerStance(e.target.value)}
+                placeholder="ท่าทางเริ่มต้นของผู้เล่น"
+                className="w-full bg-white/[0.06] border border-white/10 rounded px-1.5 py-0.5 text-[10px] text-white outline-none"
+              />
+            ) : (
+              <div>
+                <div className="text-[11.5px] font-bold text-[#F1F1F1] tracking-tight leading-snug line-clamp-2">
+                  {playerStance}
+                </div>
+                <div className="text-[9px] text-white/40 mt-0.5 truncate">
+                  พร้อมรับมือ / สังเกตการณ์
+                </div>
               </div>
             )}
+          </div>
+
+          {/* Bottom Tag */}
+          <div className="text-[8.5px] font-mono uppercase tracking-wider text-white/30 shrink-0">
+            PLAYER • 1X1
           </div>
         </div>
 

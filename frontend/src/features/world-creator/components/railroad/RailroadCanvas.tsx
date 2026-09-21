@@ -464,6 +464,31 @@ export default function RailroadCanvas({
         isPanning ? 'cursor-grabbing' : ''
       }`}
     >
+      {/* ✦ 0. SVG CRISP VECTOR DOT GRID (COMFORTABLE & CLEAN N8N/FIGMA STYLE) */}
+      <svg
+        className="absolute inset-0 w-full h-full pointer-events-none z-0 select-none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <pattern
+            id="railroad-clean-grid"
+            width={36 * zoom}
+            height={36 * zoom}
+            patternUnits="userSpaceOnUse"
+            x={pan.x % (36 * zoom)}
+            y={pan.y % (36 * zoom)}
+          >
+            <circle
+              cx={(36 * zoom) / 2}
+              cy={(36 * zoom) / 2}
+              r={1.5}
+              fill="rgba(255, 255, 255, 0.10)"
+            />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#railroad-clean-grid)" />
+      </svg>
+
       {/* ✦ 1. WORLD CANVAS TRANSFORM CONTAINER (SCALED & PANNED) */}
       <div
         className="absolute origin-top-left transition-transform duration-75 ease-out"

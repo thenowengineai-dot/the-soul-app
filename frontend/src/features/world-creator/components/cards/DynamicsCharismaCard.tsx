@@ -554,7 +554,7 @@ export default function DynamicsCharismaCard({
           <div className="flex items-center justify-between shrink-0 mb-1">
             <div className="flex items-baseline gap-1.5">
               <span className="text-[16.5px] sm:text-[17.5px] font-semibold text-[#F1F1F1] tracking-tight">
-                สเตตัสรอง & เสน่ห์เฉพาะตัว
+                สเตตัสพิเศษ & เสน่ห์เฉพาะตัว
               </span>
               <span className="text-[11px] font-normal text-white/40">
                 (5 ค่า + {perks.length} เสน่ห์)
@@ -568,7 +568,7 @@ export default function DynamicsCharismaCard({
                     type="button"
                     onClick={handleSaveSecondary}
                     className="w-7 h-7 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white flex items-center justify-center shadow-[0_2px_8px_rgba(239,38,76,0.4)] transition-all cursor-pointer active:scale-95"
-                    title="บันทึกสเตตัสรองและเสน่ห์"
+                    title="บันทึกสเตตัสพิเศษและเสน่ห์"
                   >
                     <Check size={13} strokeWidth={2.4} />
                   </button>
@@ -580,7 +580,7 @@ export default function DynamicsCharismaCard({
                       setActivePerkIndex(null);
                     }}
                     className="w-7 h-7 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 hover:border-white/20 text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] active:scale-95"
-                    title="แก้ไขสเตตัสรองและเสน่ห์"
+                    title="แก้ไขสเตตัสพิเศษและเสน่ห์"
                   >
                     <Pencil size={12} strokeWidth={2} />
                   </button>
@@ -591,29 +591,30 @@ export default function DynamicsCharismaCard({
 
           {/* Body Content */}
           <div className="flex-1 flex flex-col justify-between overflow-hidden">
-            {/* 1. Upper Tray: 5 Secondary Linear Gauges */}
+            {/* 1. Upper Tray: 5 Linear Gauges */}
             <div className="space-y-1.5">
               {SECONDARY_STATS_CONFIG.map((stat) => {
                 const val = secondaryStats[stat.key] ?? 5;
                 const percent = Math.min(100, Math.max(10, (val / 10) * 100));
 
                 return (
-                  <div key={stat.key} className="group">
+                  <div key={stat.key} className="group" title={stat.descTh}>
                     <div className="flex justify-between items-baseline mb-0.5 px-0.5">
-                      <div className="flex items-baseline gap-1.5 truncate">
-                        <span className="text-[11.5px] font-medium text-[#F1F1F1] leading-none">
+                      {/* Thai Name + English Name in subtle gray with hover tooltip */}
+                      <div className="flex items-baseline gap-1.5 truncate cursor-help">
+                        <span className="text-[12px] sm:text-[12.5px] font-semibold text-[#F1F1F1] leading-none">
                           {stat.labelTh}
                         </span>
-                        <span className="text-[9px] text-white/35 font-normal truncate hidden sm:inline">
-                          {stat.descTh}
+                        <span className="text-[9.5px] sm:text-[10px] text-white/40 font-normal leading-none truncate">
+                          {stat.labelEn}
                         </span>
                       </div>
 
-                      {/* Value / Stepper in edit mode */}
+                      {/* Value (Carmine Red consistent with Status Card) / Stepper in edit mode */}
                       {!isEditingSecondary ? (
-                        <div className="text-[10.5px] font-bold text-white/80 shrink-0">
+                        <div className="text-[12.5px] sm:text-[13px] font-bold text-[#EF264C] shrink-0 leading-none">
                           {val}
-                          <span className="text-[8.5px] text-white/40 font-normal">/10</span>
+                          <span className="text-[9.5px] text-white/40 font-normal ml-0.5">/10</span>
                         </div>
                       ) : (
                         <div className="flex items-center gap-1.5 shrink-0">
@@ -621,21 +622,22 @@ export default function DynamicsCharismaCard({
                             type="button"
                             onClick={() => handleStepSecondary(stat.key, -1)}
                             disabled={val <= 1}
-                            className="w-4 h-4 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-20 flex items-center justify-center text-white text-[10px] transition-all cursor-pointer"
+                            className="w-4.5 h-4.5 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-20 flex items-center justify-center text-white text-[11px] font-bold transition-all cursor-pointer active:scale-95"
                           >
                             -
                           </button>
-                          <span className="text-[11px] font-bold text-[#EF264C] w-3 text-center">
+                          <span className="text-[12.5px] font-bold text-[#EF264C] w-3.5 text-center leading-none">
                             {val}
                           </span>
                           <button
                             type="button"
                             onClick={() => handleStepSecondary(stat.key, 1)}
                             disabled={val >= 10}
-                            className="w-4 h-4 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-20 flex items-center justify-center text-white text-[10px] transition-all cursor-pointer"
+                            className="w-4.5 h-4.5 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-20 flex items-center justify-center text-white text-[11px] font-bold transition-all cursor-pointer active:scale-95"
                           >
                             +
                           </button>
+                          <span className="text-[9px] text-white/40 font-normal">/10</span>
                         </div>
                       )}
                     </div>
@@ -658,14 +660,14 @@ export default function DynamicsCharismaCard({
             {/* 2. Lower Tray: Signature Perks (Apple Dark Pill Chips) */}
             <div className="flex-1 flex flex-col justify-end min-h-[90px]">
               <div className="flex items-center justify-between mb-1.5 px-0.5">
-                <span className="text-[10.5px] font-medium text-white/50 tracking-wider uppercase">
+                <span className="text-[11px] font-semibold text-white/50 tracking-wider uppercase">
                   เสน่ห์เฉพาะตัว (Perks)
                 </span>
                 {isEditingSecondary && (
                   <button
                     type="button"
                     onClick={() => setIsAddingPerk(true)}
-                    className="text-[10.5px] text-[#EF264C] hover:text-[#ff4d6d] font-medium flex items-center gap-1 cursor-pointer transition-colors"
+                    className="text-[11px] text-[#EF264C] hover:text-[#ff4d6d] font-medium flex items-center gap-1 cursor-pointer transition-colors"
                   >
                     <Plus size={11} strokeWidth={2.5} />
                     เพิ่มเสน่ห์
@@ -680,7 +682,7 @@ export default function DynamicsCharismaCard({
                     <div
                       key={index}
                       onClick={() => !isEditingSecondary && setActivePerkIndex(index)}
-                      className={`px-2.5 py-1 rounded-full text-[11px] font-normal flex items-center gap-1.5 transition-all select-none ${
+                      className={`px-2.5 py-1 rounded-full text-[11.5px] font-normal flex items-center gap-1.5 transition-all select-none ${
                         isEditingSecondary
                           ? 'bg-white/[0.07] border border-white/12 text-white/90'
                           : 'bg-white/[0.05] hover:bg-white/[0.12] border border-white/[0.08] hover:border-white/20 text-white/85 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] active:scale-95'
@@ -710,7 +712,7 @@ export default function DynamicsCharismaCard({
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-1.5 truncate">
                       <span className="text-[#EF264C] text-[10px]">✦</span>
-                      <span className="text-[11.5px] font-semibold text-[#F1F1F1] truncate">
+                      <span className="text-[12px] font-semibold text-[#F1F1F1] truncate">
                         {perks[activePerkIndex]?.perk_name}
                       </span>
                     </div>
@@ -724,7 +726,7 @@ export default function DynamicsCharismaCard({
                     </button>
                   </div>
 
-                  <div className="space-y-1 text-[10px] leading-relaxed">
+                  <div className="space-y-1 text-[10.5px] leading-relaxed">
                     <p className="text-white/70 line-clamp-2">
                       <span className="text-white/40 font-medium mr-1">เงื่อนไข:</span>
                       {perks[activePerkIndex]?.trigger}

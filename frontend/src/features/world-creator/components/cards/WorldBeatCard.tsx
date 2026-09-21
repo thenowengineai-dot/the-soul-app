@@ -324,18 +324,18 @@ export default function WorldBeatCard({
             <button
               type="button"
               onClick={() => setIsSelectingScene(!isSelectingScene)}
-              className="text-left flex items-center gap-1 text-[11px] text-white/50 hover:text-white transition-colors truncate cursor-pointer group/scn"
+              className="text-left flex items-center gap-1.5 text-[12px] sm:text-[12.5px] text-white/60 hover:text-white transition-colors truncate cursor-pointer group/scn"
             >
-              <span className="truncate max-w-[120px] font-medium text-white/70 group-hover/scn:text-white">
+              <span className="truncate max-w-[130px] font-medium text-white/80 group-hover/scn:text-white">
                 {currentScene.title || `ฉากที่ ${selectedSceneIndex + 1}`}
               </span>
-              <ChevronDown size={11} className="text-white/40 shrink-0" />
+              <ChevronDown size={12} className="text-white/40 shrink-0" />
             </button>
 
             {/* Scene Selector Popup */}
             {isSelectingScene && (
               <div className="absolute left-0 top-full mt-1 w-[200px] rounded-[14px] bg-[#181820] border border-white/15 shadow-[0_12px_36px_rgba(0,0,0,0.85)] p-1 z-30 space-y-0.5 animate-in fade-in zoom-in-95 duration-100">
-                <div className="text-[9.5px] uppercase font-mono text-white/40 px-2 py-1">
+                <div className="text-[10px] uppercase font-mono text-white/40 px-2 py-1">
                   เลือกฉาก
                 </div>
                 {scenes.map((sc, scIdx) => (
@@ -348,7 +348,7 @@ export default function WorldBeatCard({
                       setIsSelectingScene(false);
                       setIsEditing(false);
                     }}
-                    className={`w-full text-left px-2 py-1 rounded-[8px] text-[11px] transition-colors truncate cursor-pointer ${
+                    className={`w-full text-left px-2 py-1 rounded-[8px] text-[11.5px] transition-colors truncate cursor-pointer ${
                       scIdx === selectedSceneIndex
                         ? 'bg-[#EF264C]/20 text-white font-medium'
                         : 'text-white/70 hover:bg-white/[0.08] hover:text-white'
@@ -366,7 +366,7 @@ export default function WorldBeatCard({
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] shrink-0"
             title={`โควตาคุยเล่น: ${maxTurns} รอบ`}
           >
-            <span className="text-[10px] font-medium text-white/50">
+            <span className="text-[11px] font-medium text-white/60">
               โควตา: {maxTurns} รอบ
             </span>
             <div className="flex items-center gap-0.5">
@@ -428,17 +428,17 @@ export default function WorldBeatCard({
                 <button
                   type="button"
                   onClick={() => handleInsertBeatAfter(bIdx - 1)}
-                  className="w-3.5 h-3.5 rounded-full bg-white/[0.04] hover:bg-[#EF264C]/30 text-white/30 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                  className="w-4 h-4 rounded-full bg-white/[0.04] hover:bg-[#EF264C]/30 text-white/30 hover:text-white flex items-center justify-center transition-all cursor-pointer"
                   title={`แทรกบีตคั่นกลางระหว่างบีต ${bIdx} และ ${bIdx + 1}`}
                 >
-                  <Plus size={8} strokeWidth={2.5} />
+                  <Plus size={9} strokeWidth={2.5} />
                 </button>
               )}
 
               {/* Beat Pill with Reorder Controls when active */}
               <div
                 onClick={() => handleSelectBeat(bIdx)}
-                className={`px-2 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer flex items-center gap-1 ${
+                className={`px-2.5 py-1 rounded-full text-[11.5px] sm:text-[12px] font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
                   bIdx === safeBeatIndex
                     ? 'bg-white/12 text-white border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] font-semibold'
                     : 'bg-white/[0.03] text-white/45 hover:text-white/80 border border-transparent'
@@ -456,11 +456,11 @@ export default function WorldBeatCard({
                     className="w-3.5 h-3.5 rounded hover:bg-white/20 flex items-center justify-center disabled:opacity-20 cursor-pointer transition-colors"
                     title="เลื่อนบีตนี้ไปทางซ้าย"
                   >
-                    <ChevronLeft size={9} strokeWidth={2.4} />
+                    <ChevronLeft size={10} strokeWidth={2.4} />
                   </button>
                 )}
 
-                <span className="text-[#EF264C] text-[9px] font-mono">✦</span>
+                <span className="text-[#EF264C] text-[10px] font-mono">✦</span>
                 <span>บีต {bIdx + 1}</span>
 
                 {/* Move Right Arrow on Active Beat */}
@@ -475,7 +475,7 @@ export default function WorldBeatCard({
                     className="w-3.5 h-3.5 rounded hover:bg-white/20 flex items-center justify-center disabled:opacity-20 cursor-pointer transition-colors"
                     title="เลื่อนบีตนี้ไปทางขวา"
                   >
-                    <ChevronRight size={9} strokeWidth={2.4} />
+                    <ChevronRight size={10} strokeWidth={2.4} />
                   </button>
                 )}
               </div>
@@ -502,15 +502,15 @@ export default function WorldBeatCard({
       {!isEditing ? (
         <div className="flex-1 flex flex-col justify-between py-1.5 gap-2">
           {/* Organ 1: 🎭 ตัวละครกำลังทำอะไร (What character does) */}
-          <div className="rounded-[16px] bg-white/[0.03] border border-white/[0.07] px-3 py-2 flex flex-col gap-1 transition-colors hover:border-white/12">
-            <div className="flex items-center gap-1.5 text-white/50">
-              <Sparkles size={11} className="text-[#EF264C]" />
-              <span className="text-[10.5px] font-semibold text-[#F1F1F1] tracking-tight">
+          <div className="rounded-[16px] bg-white/[0.03] border border-white/[0.07] px-3.5 py-2.5 flex flex-col gap-1.5 transition-colors hover:border-white/12">
+            <div className="flex items-center gap-1.5 text-white/60">
+              <Sparkles size={13} className="text-[#EF264C]" />
+              <span className="text-[12px] sm:text-[12.5px] font-semibold text-[#F1F1F1] tracking-tight">
                 1. ตัวละครกำลังทำอะไร
               </span>
             </div>
             <p
-              className={`text-[11.5px] text-[#EDEDED] leading-[18px] ${
+              className={`text-[12.5px] sm:text-[13px] text-[#EDEDED] font-normal leading-[20px] tracking-tight ${
                 isExpandedCard ? '' : 'line-clamp-3'
               }`}
             >
@@ -519,10 +519,10 @@ export default function WorldBeatCard({
           </div>
 
           {/* Organ 2: 🎯 ถ้าผู้เล่นทำแบบนี้ (เรื่องจะไปต่อทันที) */}
-          <div className="rounded-[14px] bg-white/[0.03] border border-white/[0.07] px-3 py-1.5 flex flex-col gap-1.5">
+          <div className="rounded-[14px] bg-white/[0.03] border border-white/[0.07] px-3.5 py-2 flex flex-col gap-1.5">
             <div className="flex items-center gap-1.5 text-emerald-400">
-              <Target size={11} />
-              <span className="text-[10px] font-semibold text-[#F1F1F1] tracking-tight">
+              <Target size={13} />
+              <span className="text-[12px] sm:text-[12.5px] font-semibold text-[#F1F1F1] tracking-tight">
                 {isExpandedCard
                   ? '2. ถ้าผู้เล่นทำแบบนี้ (เรื่องจะไปต่อทันที)'
                   : '2. ถ้าผู้เล่นทำแบบนี้...'}
@@ -530,28 +530,28 @@ export default function WorldBeatCard({
             </div>
 
             {/* List of Triggers */}
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               {triggerEntries.length > 0 ? (
                 (isExpandedCard ? triggerEntries : triggerEntries.slice(0, 1)).map(([key, val]) => {
                   const isLoop = val.action_result === 'loop';
                   return (
                     <div
                       key={key}
-                      className="flex items-center justify-between gap-1.5 text-[10.5px] min-w-0"
+                      className="flex items-center justify-between gap-2 text-[12px] min-w-0"
                     >
-                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                        <span className="px-2 py-0.5 rounded-full bg-white/[0.07] border border-white/10 font-medium text-white shrink-0">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <span className="px-2.5 py-0.5 rounded-full bg-white/[0.07] border border-white/10 font-medium text-white text-[11.5px] shrink-0">
                           {key}
                         </span>
                         {val.feedback && (
-                          <span className="text-white/60 italic truncate">
+                          <span className="text-[12px] text-white/70 italic truncate">
                             ➔ {val.feedback}
                           </span>
                         )}
                       </div>
                       {/* Action Result Badge: ไปต่อ vs อยู่ที่เดิม */}
                       <span
-                        className={`text-[9px] font-mono px-1.5 py-0.2 rounded-full shrink-0 ${
+                        className={`text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${
                           isLoop
                             ? 'text-amber-300 bg-amber-500/15 border border-amber-500/30'
                             : 'text-[#EF264C] bg-[#EF264C]/15 border border-[#EF264C]/30'
@@ -563,12 +563,12 @@ export default function WorldBeatCard({
                   );
                 })
               ) : (
-                <div className="text-[10.5px] text-white/40 italic">
+                <div className="text-[12px] text-white/40 italic">
                   ยังไม่ได้กำหนดทางเลือก
                 </div>
               )}
               {!isExpandedCard && triggerEntries.length > 1 && (
-                <div className="text-[9.5px] text-white/35 italic pt-0.5">
+                <div className="text-[11px] text-white/40 italic pt-0.5">
                   + อีก {triggerEntries.length - 1} ทางเลือก (แตะลูกศรแดงเพื่อดูทั้งหมด)
                 </div>
               )}
@@ -576,17 +576,17 @@ export default function WorldBeatCard({
           </div>
 
           {/* Organ 3: ⏳ ถ้าผู้เล่นไม่ทำอะไร (คุยครบ X รอบ เรื่องจะเดินต่อเองว่า) */}
-          <div className="rounded-[14px] bg-amber-500/[0.03] border border-amber-500/20 px-3 py-1.5 flex flex-col gap-0.5">
+          <div className="rounded-[14px] bg-amber-500/[0.03] border border-amber-500/20 px-3.5 py-2 flex flex-col gap-1">
             <div className="flex items-center gap-1.5 text-amber-400">
-              <Clock size={11} />
-              <span className="text-[10px] font-semibold text-amber-300 tracking-tight">
+              <Clock size={13} />
+              <span className="text-[12px] sm:text-[12.5px] font-semibold text-amber-300 tracking-tight">
                 {isExpandedCard
                   ? `3. ถ้าผู้เล่นไม่ทำอะไร (คุยครบ ${maxTurns} รอบ เรื่องจะเดินต่อเองว่า)`
                   : '3. ถ้าผู้เล่นไม่ทำอะไร...'}
               </span>
             </div>
             <p
-              className={`text-[11px] text-[#EDEDED] leading-[17px] ${
+              className={`text-[12.5px] text-[#EDEDED] font-normal leading-[19px] tracking-tight ${
                 isExpandedCard ? '' : 'line-clamp-2'
               }`}
             >

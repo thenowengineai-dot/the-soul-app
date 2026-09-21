@@ -4,7 +4,6 @@ import {
   Check,
   Plus,
   Trash2,
-  BookmarkCheck,
   Moon,
   CloudRain,
 } from 'lucide-react';
@@ -26,6 +25,7 @@ interface OutfitItem {
   key: string;
   badgeLabel: string;
   name: string;
+  occasion: string;
   description: string;
 }
 
@@ -95,51 +95,71 @@ export default function IdentityVisualCard({
     ];
   });
 
-  // 3. Wardrobe State: Physical Outfits
+  // 3. Wardrobe State: Situational Outfits & Slideable Clothes Rail
   const [outfits, setOutfits] = useState<OutfitItem[]>(() => {
     const w = (draft.appearance?.wardrobe || {}) as Record<string, string[] | undefined>;
     const list: OutfitItem[] = [];
 
-    const o1 =
+    const o1Desc =
       w.outfit_1?.[0] ||
       'ชุดยูกาตะผ้าฝ้ายเนื้อหนาสีเข้มตัวโคร่งที่ดูแบนราบไร้ส่วนเว้าโค้ง พร้อมแว่นตากรอบหนาเตอะปิดบังใบหน้า';
+    const o1Occasion = w.outfit_1?.[1] || 'ใส่เวลาอยู่บ้าน / ในห้องทดลองส่วนตัว';
+    const o1Name = w.outfit_1?.[2] || 'ชุดยูกาตะผ้าฝ้ายเนื้อหนาตัวโคร่ง';
+    const o1Badge = w.outfit_1?.[3] || 'ยูกาตะตัวโคร่ง';
     list.push({
       key: 'outfit_1',
-      badgeLabel: 'ยูกาตะตัวโคร่ง',
-      name: 'ชุดยูกาตะผ้าฝ้ายเนื้อหนาสีเข้มตัวโคร่ง',
-      description: o1,
+      badgeLabel: o1Badge,
+      name: o1Name,
+      occasion: o1Occasion,
+      description: o1Desc,
     });
 
-    const o2 =
+    const o2Desc =
       w.outfit_2?.[0] ||
       'เสื้อเชิ้ตสีขาวและกระโปรงสอบเปียกน้ำแนบเนื้อ เผยให้เห็นบราลูกไม้สีดำและทรวดทรงนาฬิกาทรายสะบึมอวบอัดแบบเต็มตา';
+    const o2Occasion = w.outfit_2?.[1] || 'ใส่เวลาเดินทาง / เจอตอนฝนตกกะทันหัน';
+    const o2Name = w.outfit_2?.[2] || 'เสื้อเชิ้ตขาวและกระโปรงสอบแนบเนื้อ';
+    const o2Badge = w.outfit_2?.[3] || 'เชิ้ตขาวเปียกฝน';
     list.push({
       key: 'outfit_2',
-      badgeLabel: 'เชิ้ตขาวเปียกฝน',
-      name: 'เสื้อเชิ้ตขาวและกระโปรงสอบแนบเนื้อ',
-      description: o2,
+      badgeLabel: o2Badge,
+      name: o2Name,
+      occasion: o2Occasion,
+      description: o2Desc,
     });
 
-    // Additional outfits if any
-    Object.keys(w).forEach((k) => {
-      if (k !== 'outfit_1' && k !== 'outfit_2' && Array.isArray(w[k]) && w[k]!.length > 0) {
-        const idx = list.length + 1;
+    // Check additional outfits in draft
+    const otherKeys = Object.keys(w).filter(
+      (k) => k !== 'outfit_1' && k !== 'outfit_2' && Array.isArray(w[k]) && w[k]!.length > 0
+    );
+
+    if (otherKeys.length > 0) {
+      otherKeys.forEach((k) => {
+        const item = w[k]!;
         list.push({
           key: k,
-          badgeLabel: `ชุดที่ ${idx}`,
-          name: `ชุดคอลเลกชัน ${idx}`,
-          description: w[k]![0],
+          badgeLabel: item[3] || `ชุดที่ ${list.length + 1}`,
+          name: item[2] || `ชุดคอลเลกชัน ${list.length + 1}`,
+          occasion: item[1] || 'ใส่ตามสถานการณ์ที่กำหนด',
+          description: item[0] || 'ระบุรายละเอียด...',
         });
-      }
-    });
+      });
+    } else {
+      // Add situation-based 3rd outfit: Nightwear / Bedroom
+      list.push({
+        key: 'outfit_3',
+        badgeLabel: 'ชุดนอนผ้าซาติน',
+        name: 'ชุดนอนสายเดี่ยวผ้าซาตินสีดำขลับ',
+        occasion: 'ใส่เวลาอยู่ในห้องนอน / ยามดึกก่อนนอน',
+        description:
+          'ชุดนอนสายเดี่ยวผ้าซาตินเนื้อลื่นทิ้งตัวบางเบา สัมผัสเย็นเฉียบแนบชิดผิวขาวเนียน เผยแผ่นหลังเปลือยเปล่าและทรวดทรงสะบึมใต้แสงสลัว',
+      });
+    }
 
     return list;
   });
 
   const [activeOutfitIndex, setActiveOutfitIndex] = useState(0);
-  const [initialOutfitKey, setInitialOutfitKey] = useState(
-    draft.starting_state?.initial_outfit_key || 'outfit_1'
-  );
 
   // 4. Signature Postures (3 Poses)
   const [postures, setPostures] = useState<string[]>(() => {
@@ -181,7 +201,12 @@ export default function IdentityVisualCard({
     if (onUpdateDraft) {
       const wardrobeObj: Record<string, string[]> = {};
       outfits.forEach((item) => {
-        wardrobeObj[item.key] = [item.description];
+        wardrobeObj[item.key] = [
+          item.description,
+          item.occasion,
+          item.name,
+          item.badgeLabel,
+        ];
       });
 
       const anatomyFlat = anatomyTraits.map((t) => `${t.title} — ${t.detail}`);
@@ -192,7 +217,7 @@ export default function IdentityVisualCard({
         location: sceneLocation,
         initial_p_pos: playerStance,
         initial_a_pos: initialPose || postures[0] || '',
-        initial_outfit_key: initialOutfitKey || outfits[0]?.key || 'outfit_1',
+        initial_outfit_key: outfits[0]?.key || 'outfit_1',
       };
 
       onUpdateDraft({
@@ -212,14 +237,15 @@ export default function IdentityVisualCard({
 
   const handleAddNewOutfit = () => {
     const nextIdx = outfits.length + 1;
-    const newKey = `outfit_${nextIdx}`;
+    const newKey = `outfit_${Date.now()}`;
     const newOutfit: OutfitItem = {
       key: newKey,
-      badgeLabel: `ชุดใหม่ ${nextIdx}`,
-      name: `ชุดคอลเลกชันใหม่ ${nextIdx}`,
+      badgeLabel: `ชุดที่ ${nextIdx}`,
+      name: `ชุดคอลเลกชัน ${nextIdx}`,
+      occasion: 'ใส่ตามสถานการณ์ (เช่น ยูนิฟอร์ม, ชุดเที่ยว, ชุดนอน)...',
       description: 'ระบุรายละเอียดเนื้อผ้า คัตติ้ง และสัมผัส...',
     };
-    setOutfits([...outfits, newOutfit]);
+    setOutfits((prev) => [...prev, newOutfit]);
     setActiveOutfitIndex(outfits.length);
   };
 
@@ -228,8 +254,11 @@ export default function IdentityVisualCard({
     const filtered = outfits.filter((_, i) => i !== idx);
     setOutfits(filtered);
     setActiveOutfitIndex(Math.max(0, idx - 1));
-    if (filtered.length > 0 && !filtered.some((o) => o.key === initialOutfitKey)) {
-      setInitialOutfitKey(filtered[0].key);
+  };
+
+  const handleRailWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (e.deltaY !== 0) {
+      e.currentTarget.scrollLeft += e.deltaY;
     }
   };
 
@@ -383,120 +412,218 @@ export default function IdentityVisualCard({
         </div>
 
         {/* ======================================================================= */}
-        {/* 👗 WIDGET 2: WARDROBE CLOSET (2x2 -> 346px × 346px)                      */}
+        {/* 👗 WIDGET 2: WARDROBE CLOSET (2x2 -> 346px × 346px - REALISTIC RAIL)    */}
         {/* ======================================================================= */}
         <div
           className={`col-span-2 row-span-2 rounded-[28px] p-4 ${frostedCardClass}`}
           style={{ width: '346px', height: '346px' }}
         >
-          {/* Header Row: Pure Thai Label + Hangers Switcher */}
-          <div className="flex items-center justify-between gap-1 mb-2 shrink-0">
-            <span className="text-[12px] font-bold tracking-wider text-white/80 font-mono">
-              ตู้เสื้อผ้า
-            </span>
+          {/* Header Row: Wardrobe Closet Title + Quick Add Outfit */}
+          <div className="flex items-center justify-between gap-1 mb-1.5 shrink-0">
+            <div className="flex items-center gap-2">
+              <span className="text-[12px] font-bold tracking-wider text-white/80 font-mono">
+                ตู้เสื้อผ้า
+              </span>
+              <span className="text-[10px] font-mono text-white/40">
+                ({outfits.length} ชุด)
+              </span>
+            </div>
 
-            {/* Hanger Pills Switcher */}
-            <div className="flex flex-wrap items-center gap-1">
+            {/* Quick Add Hanger Pill */}
+            <button
+              type="button"
+              onClick={handleAddNewOutfit}
+              className="px-2 py-0.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 hover:border-white/25 text-white/70 hover:text-white flex items-center gap-1 text-[10px] font-medium transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] active:scale-95 shrink-0"
+              title="แขวนชุดใหม่ในตู้เสื้อผ้า"
+            >
+              <Plus size={10} strokeWidth={2.4} />
+              <span>แขวนชุดใหม่</span>
+            </button>
+          </div>
+
+          {/* ===================================================================== */}
+          {/* ✦ REALISTIC SLIDEABLE CLOTHES RAIL (ราวแขวนผ้าโลหะที่สไลด์ได้)            */}
+          {/* ===================================================================== */}
+          <div className="relative w-full shrink-0 my-0.5 py-0.5">
+            {/* Metallic Clothes Rail Bar running behind hangers */}
+            <div className="absolute top-[17px] left-0 right-0 h-[2.5px] rounded-full bg-gradient-to-r from-white/15 via-white/35 to-white/15 shadow-[0_1px_3px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.3)] pointer-events-none" />
+            {/* Left & Right Metallic Closet Mount Brackets */}
+            <div className="absolute top-[14px] left-0 w-1.5 h-[8px] rounded-l-sm bg-gradient-to-b from-white/40 to-white/20 shadow-sm pointer-events-none" />
+            <div className="absolute top-[14px] right-0 w-1.5 h-[8px] rounded-r-sm bg-gradient-to-b from-white/40 to-white/20 shadow-sm pointer-events-none" />
+
+            {/* Horizontally Slideable Hanger Track */}
+            <div
+              onWheel={handleRailWheel}
+              className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth px-2 py-1 cursor-grab active:cursor-grabbing select-none relative z-10"
+              style={{
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+              }}
+            >
               {outfits.map((outfit, idx) => {
                 const isActive = idx === activeOutfitIndex;
-                const isDefault = outfit.key === initialOutfitKey;
-
                 return (
-                  <button
+                  <div
                     key={outfit.key}
-                    type="button"
                     onClick={() => setActiveOutfitIndex(idx)}
-                    className={`px-2.5 py-1 rounded-full text-[11px] font-medium flex items-center gap-1 transition-all cursor-pointer ${
-                      isActive
-                        ? 'bg-white/20 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] border border-white/25'
-                        : 'bg-white/[0.04] text-white/60 hover:text-white border border-transparent'
+                    className={`group/hanger flex flex-col items-center shrink-0 cursor-pointer transition-all duration-200 ${
+                      isActive ? '-translate-y-0.5' : 'hover:-translate-y-0.5 opacity-70 hover:opacity-100'
                     }`}
                   >
-                    {isDefault && <span className="text-[#EF264C] text-[8px]">✦</span>}
-                    <span>{outfit.badgeLabel}</span>
-                  </button>
+                    {/* Realistic Metallic Hanger Hook */}
+                    <div className="flex flex-col items-center justify-end h-[9px] w-full">
+                      <div
+                        className={`w-2.5 h-2 rounded-t-full border-t-2 border-l-2 border-r-2 transition-colors ${
+                          isActive
+                            ? 'border-[#EF264C]'
+                            : 'border-white/40 group-hover/hanger:border-white/70'
+                        }`}
+                      />
+                    </div>
+
+                    {/* Hanger Label Tag / Capsule */}
+                    <div
+                      className={`px-2.5 py-1 rounded-[12px] text-[11px] font-medium flex items-center gap-1.5 transition-all ${
+                        isActive
+                          ? 'bg-white/20 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_2px_8px_rgba(0,0,0,0.4)] border border-white/30 font-semibold'
+                          : 'bg-black/50 text-white/60 hover:text-white border border-white/[0.08] hover:border-white/20'
+                      }`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          isActive ? 'bg-[#EF264C]' : 'bg-white/30 group-hover/hanger:bg-white/60'
+                        }`}
+                      />
+                      <span className="whitespace-nowrap">{outfit.badgeLabel}</span>
+                    </div>
+                  </div>
                 );
               })}
 
-              {isEditing && (
-                <button
-                  type="button"
-                  onClick={handleAddNewOutfit}
-                  className="w-5 h-5 rounded-full bg-white/[0.08] hover:bg-white/[0.18] text-white flex items-center justify-center text-[10px] cursor-pointer"
-                  title="เพิ่มชุดใหม่ในตู้"
-                >
-                  <Plus size={11} />
-                </button>
-              )}
+              {/* Add New Hanger Pill directly on the rail */}
+              <div
+                onClick={handleAddNewOutfit}
+                className="group/add flex flex-col items-center shrink-0 cursor-pointer transition-all duration-200 hover:-translate-y-0.5 opacity-45 hover:opacity-100"
+                title="เพิ่มชุดใหม่ในตู้"
+              >
+                <div className="flex flex-col items-center justify-end h-[9px] w-full">
+                  <div className="w-2.5 h-2 rounded-t-full border-t border-dashed border-l border-dashed border-r border-dashed border-white/40 group-hover/add:border-white/80" />
+                </div>
+                <div className="px-2 py-1 rounded-[12px] text-[10px] font-medium flex items-center gap-1 border border-dashed border-white/20 hover:border-white/40 bg-white/[0.02] hover:bg-white/[0.08] text-white/60 hover:text-white whitespace-nowrap transition-all">
+                  <Plus size={9} strokeWidth={2.2} />
+                  <span>เพิ่มชุด</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Tactile Garment Swatch Card - Cohesive Grouping (No Void) */}
-          <div className="flex-1 p-4 rounded-[20px] bg-black/40 backdrop-blur-xl border border-white/[0.06] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)] flex flex-col gap-3 overflow-hidden">
-            <div className="flex items-center justify-between gap-1.5 shrink-0">
-              {isEditing ? (
-                <div className="flex-1">
-                  <label className="text-[9.5px] font-mono text-white/50 uppercase">ชื่อสไตล์ชุด</label>
+          {/* ===================================================================== */}
+          {/* ✦ TACTILE FABRIC & OCCASION TRAY (ถาดสัมผัสเนื้อผ้าและสถานการณ์)          */}
+          {/* ===================================================================== */}
+          <div className="flex-1 p-3.5 rounded-[20px] bg-black/40 backdrop-blur-xl border border-white/[0.06] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)] flex flex-col justify-between overflow-hidden">
+            {isEditing ? (
+              <div className="flex-1 flex flex-col justify-between gap-1.5 overflow-y-auto no-scrollbar">
+                {/* Style Name & Badge */}
+                <div className="grid grid-cols-3 gap-1.5 shrink-0">
+                  <div className="col-span-1">
+                    <label className="text-[9px] font-mono text-white/50 uppercase">ป้ายชื่อราว</label>
+                    <input
+                      type="text"
+                      value={activeOutfit.badgeLabel}
+                      onChange={(e) => {
+                        const updated = [...outfits];
+                        updated[activeOutfitIndex].badgeLabel = e.target.value;
+                        setOutfits(updated);
+                      }}
+                      className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-0.5 text-[11px] text-white outline-none"
+                      placeholder="ป้ายชื่อ..."
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="text-[9px] font-mono text-white/50 uppercase">ชื่อสไตล์ชุด</label>
+                    <input
+                      type="text"
+                      value={activeOutfit.name}
+                      onChange={(e) => {
+                        const updated = [...outfits];
+                        updated[activeOutfitIndex].name = e.target.value;
+                        setOutfits(updated);
+                      }}
+                      className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-0.5 text-[11.5px] font-bold text-white outline-none"
+                      placeholder="ชื่อชุด..."
+                    />
+                  </div>
+                </div>
+
+                {/* Occasion / Scenario Trigger */}
+                <div className="shrink-0">
+                  <label className="text-[9px] font-mono text-white/50 uppercase">สถานการณ์ที่สวมใส่ (AI เลือกอัตโนมัติ)</label>
                   <input
                     type="text"
-                    value={activeOutfit.name}
+                    value={activeOutfit.occasion}
                     onChange={(e) => {
                       const updated = [...outfits];
-                      updated[activeOutfitIndex].name = e.target.value;
+                      updated[activeOutfitIndex].occasion = e.target.value;
                       setOutfits(updated);
                     }}
-                    className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-0.5 text-[12.5px] font-bold text-white outline-none"
+                    className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-0.5 text-[11px] text-white/90 outline-none"
+                    placeholder="เช่น ยูนิฟอร์มโรงเรียน, ชุดอยู่บ้าน, ชุดเที่ยว..."
                   />
                 </div>
-              ) : (
-                <span className="text-[14px] font-bold text-white tracking-tight truncate">
-                  {activeOutfit.name}
-                </span>
-              )}
 
-              {activeOutfit.key === initialOutfitKey ? (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-semibold shrink-0">
-                  <BookmarkCheck size={10} /> ชุดเริ่มต้น
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setInitialOutfitKey(activeOutfit.key)}
-                  className="text-[10px] text-white/50 hover:text-white underline cursor-pointer transition-colors shrink-0"
-                >
-                  ตั้งเป็นชุดเริ่มต้น
-                </button>
-              )}
-            </div>
+                {/* Fabric Description */}
+                <div className="flex-1 flex flex-col min-h-0">
+                  <label className="text-[9px] font-mono text-white/50 uppercase">รายละเอียดเนื้อผ้า & สัมผัส</label>
+                  <textarea
+                    rows={3}
+                    value={activeOutfit.description}
+                    onChange={(e) => {
+                      const updated = [...outfits];
+                      updated[activeOutfitIndex].description = e.target.value;
+                      setOutfits(updated);
+                    }}
+                    placeholder="รายละเอียดเนื้อผ้า คัตติ้ง..."
+                    className="w-full flex-1 bg-black/30 border border-white/15 focus:border-[#EF264C] rounded-md p-1.5 text-[11px] text-[#EDEDED] outline-none leading-normal resize-none"
+                  />
+                </div>
 
-            {isEditing ? (
-              <div className="space-y-1 flex-1 flex flex-col justify-between">
-                <label className="text-[9.5px] font-mono text-white/50 uppercase">รายละเอียดเนื้อผ้า & สัมผัส</label>
-                <textarea
-                  rows={4}
-                  value={activeOutfit.description}
-                  onChange={(e) => {
-                    const updated = [...outfits];
-                    updated[activeOutfitIndex].description = e.target.value;
-                    setOutfits(updated);
-                  }}
-                  placeholder="รายละเอียดเนื้อผ้า คัตติ้ง..."
-                  className="w-full flex-1 bg-black/30 border border-white/15 focus:border-[#EF264C] rounded-md p-2 text-[12px] text-[#EDEDED] outline-none leading-normal resize-none"
-                />
+                {/* Delete outfit button */}
                 {outfits.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveOutfit(activeOutfitIndex)}
-                    className="self-end text-[10px] text-red-400/80 hover:text-red-300 flex items-center gap-1 cursor-pointer transition-colors pt-0.5"
-                  >
-                    <Trash2 size={10} /> ลบชุดนี้ออกจากตู้
-                  </button>
+                  <div className="flex justify-end pt-0.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveOutfit(activeOutfitIndex)}
+                      className="text-[10px] text-red-400/80 hover:text-red-300 flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <Trash2 size={10} /> ปลดชุดนี้ออกจากราว
+                    </button>
+                  </div>
                 )}
               </div>
             ) : (
-              <p className="text-[13px] text-[#EDEDED] leading-relaxed font-normal line-clamp-6">
-                {activeOutfit.description}
-              </p>
+              <div className="flex flex-col justify-between h-full">
+                <div className="space-y-1.5">
+                  {/* Garment Style Name */}
+                  <div className="text-[14px] font-bold text-white tracking-tight leading-snug truncate">
+                    {activeOutfit.name}
+                  </div>
+
+                  {/* Occasion / Scenario Trigger Pill (Pure Situational, No Default concept) */}
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/[0.05] border border-white/[0.08] text-[11px] text-white/80 max-w-full">
+                    <span className="text-[#EF264C] text-[9px]">✦</span>
+                    <span className="text-white/40 text-[10px] shrink-0 font-medium">สวมใส่เมื่อ:</span>
+                    <span className="text-white/90 truncate font-normal">{activeOutfit.occasion}</span>
+                  </div>
+                </div>
+
+                {/* Subtle Hairline Divider */}
+                <div className="w-full h-[1px] bg-white/[0.06] my-1" />
+
+                {/* Fabric & Sensory Texture */}
+                <p className="text-[12.5px] text-[#D6D6DC] leading-relaxed font-normal line-clamp-4">
+                  {activeOutfit.description}
+                </p>
+              </div>
             )}
           </div>
         </div>

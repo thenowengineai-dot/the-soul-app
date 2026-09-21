@@ -10,6 +10,7 @@ export interface CharacterAppearance {
   wardrobe?: {
     outfit_1?: string[];
     outfit_2?: string[];
+    [key: string]: string[] | undefined;
   };
   anatomy_features?: string[];
   signature_postures?: string[];

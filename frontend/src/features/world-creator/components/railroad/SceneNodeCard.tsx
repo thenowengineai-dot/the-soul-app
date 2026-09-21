@@ -19,9 +19,14 @@ interface SceneNodeCardProps {
   scene: WorldScene;
   index: number;
   availableLocations?: WorldLocationsMap;
+  hasIncomingCable?: boolean;
+  hasOutgoingCable?: boolean;
+  isDropTarget?: boolean;
   onUpdateScene: (updated: WorldScene) => void;
   onDeleteScene: () => void;
   onStartDrag: (e: MouseEvent, sceneId: string) => void;
+  onStartDragWire?: (e: MouseEvent, sceneId: string) => void;
+  onStartDetachIncoming?: (e: MouseEvent, sceneId: string) => void;
   isEditable?: boolean;
 }
 
@@ -35,9 +40,14 @@ interface EditTriggerItem {
 export default function SceneNodeCard({
   scene,
   index,
+  hasIncomingCable = false,
+  hasOutgoingCable = false,
+  isDropTarget = false,
   onUpdateScene,
   onDeleteScene,
   onStartDrag,
+  onStartDragWire,
+  onStartDetachIncoming,
   isEditable = true,
 }: SceneNodeCardProps) {
   const [activeBeatIndex, setActiveBeatIndex] = useState(0);
@@ -178,9 +188,11 @@ export default function SceneNodeCard({
 
   return (
     <div
-      className={`absolute w-[346px] rounded-[24px] bg-[#141419]/95 backdrop-blur-2xl border border-white/10 hover:border-white/18 shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.10)] p-4 flex flex-col justify-between transition-all select-none group/node ${
-        isExpandedCard || isEditing ? 'min-h-[346px] h-auto pb-6 z-20' : 'h-[346px]'
-      }`}
+      className={`absolute w-[346px] rounded-[24px] bg-[#141419]/95 backdrop-blur-2xl border p-4 flex flex-col justify-between transition-all select-none group/node ${
+        isDropTarget
+          ? 'border-[#EF264C] ring-2 ring-[#EF264C]/40 shadow-[0_8px_32px_rgba(239,38,76,0.3)] z-30'
+          : 'border-white/10 hover:border-white/18 shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.10)]'
+      } ${isExpandedCard || isEditing ? 'min-h-[346px] h-auto pb-6 z-20' : 'h-[346px]'}`}
       style={{
         left: `${scene.position?.x ?? 80 + index * 460}px`,
         top: `${scene.position?.y ?? 100}px`,
@@ -189,21 +201,49 @@ export default function SceneNodeCard({
       {/* ✦ AMBIENT CORNER GLOW */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-[#EF264C]/[0.05] rounded-full blur-2xl pointer-events-none" />
 
-      {/* ✦ RAIL CONNECTOR PORTS (SUBTLE MINIMAL CONNECTORS) */}
+      {/* ✦ RAIL CONNECTOR PORTS (BLENDER NODE STYLE) */}
       {/* Input Port (Left) */}
       <div
-        className="absolute -left-[7px] top-[24px] -translate-y-1/2 w-[14px] h-[14px] rounded-full bg-[#141419] border border-white/30 flex items-center justify-center pointer-events-none z-10"
-        title="Input Port"
+        onMouseDown={(e) => {
+          if (hasIncomingCable && isEditable && onStartDetachIncoming) {
+            onStartDetachIncoming(e, scene.scene_id);
+          }
+        }}
+        className={`absolute -left-[8px] top-[24px] -translate-y-1/2 w-[16px] h-[16px] rounded-full bg-[#141419] border transition-all z-30 flex items-center justify-center ${
+          isDropTarget
+            ? 'scale-150 border-[#EF264C] ring-4 ring-[#EF264C]/40 bg-[#EF264C]/25'
+            : hasIncomingCable
+            ? 'border-[#EF264C]/80 cursor-grab active:cursor-grabbing hover:scale-125'
+            : 'border-white/30'
+        }`}
+        title={
+          hasIncomingCable
+            ? 'พอร์ตรับสัญญาณ: คลิกลากเพื่อย้ายสายเชื่อมต่อ (Click & Drag to Detach/Reroute)'
+            : 'พอร์ตรับสัญญาณ (Input Socket)'
+        }
       >
-        <div className="w-1 h-1 rounded-full bg-white/60" />
+        <div
+          className={`rounded-full transition-all ${
+            isDropTarget
+              ? 'w-2 h-2 bg-white'
+              : hasIncomingCable
+              ? 'w-1.5 h-1.5 bg-[#EF264C] shadow-[0_0_6px_rgba(239,38,76,0.6)]'
+              : 'w-1 h-1 bg-white/40'
+          }`}
+        />
       </div>
 
       {/* Output Port (Right) */}
       <div
-        className="absolute -right-[7px] top-[24px] -translate-y-1/2 w-[14px] h-[14px] rounded-full bg-[#141419] border border-white/30 flex items-center justify-center pointer-events-none z-10"
-        title="Output Port"
+        onMouseDown={(e) => {
+          if (isEditable && onStartDragWire) {
+            onStartDragWire(e, scene.scene_id);
+          }
+        }}
+        className="absolute -right-[8px] top-[24px] -translate-y-1/2 w-[16px] h-[16px] rounded-full bg-[#141419] border border-[#EF264C]/90 hover:border-white hover:scale-125 transition-all z-30 flex items-center justify-center cursor-crosshair group/port shadow-[0_0_8px_rgba(239,38,76,0.4)]"
+        title="พอร์ตส่งสัญญาณ: คลิกลากเส้นเชื่อมต่อไปยังฉากอื่น (Click & Drag to Connect Node)"
       >
-        <div className="w-1 h-1 rounded-full bg-white/60" />
+        <div className="w-1.5 h-1.5 rounded-full bg-[#EF264C] group-hover/port:scale-125 transition-transform" />
       </div>
 
       {/* ===================================================================== */}
@@ -218,13 +258,27 @@ export default function SceneNodeCard({
           className="flex items-center justify-between gap-1.5 cursor-grab active:cursor-grabbing"
         >
           {/* Scene Title (Matches WorldBeatCard exactly) */}
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 flex items-center gap-1.5">
             <span
               className="truncate block font-medium text-[12px] sm:text-[12.5px] text-white/80"
               title={scene.title || `ฉากที่ ${index + 1}`}
             >
               {scene.title || `ฉากที่ ${index + 1}`}
             </span>
+
+            {/* Free Unlinked Node Badge */}
+            {!hasIncomingCable && !hasOutgoingCable && (
+              <span className="px-1.5 py-0.2 rounded-full bg-white/[0.04] border border-white/10 text-[9px] font-mono text-white/40 shrink-0">
+                อิสระ
+              </span>
+            )}
+
+            {/* Target Drop Hover Badge */}
+            {isDropTarget && (
+              <span className="px-2 py-0.2 rounded-full bg-[#EF264C]/20 border border-[#EF264C]/40 text-[9.5px] font-medium text-[#EF264C] shrink-0 animate-pulse">
+                ✦ ปล่อยเพื่อเชื่อม
+              </span>
+            )}
           </div>
 
           {/* Turn Quota Dot Badge */}

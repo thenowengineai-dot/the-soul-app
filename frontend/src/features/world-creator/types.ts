@@ -126,7 +126,7 @@ export interface WorldScene {
   title?: string;
   location_key?: string; // Links 1 scene to 1 location
   position?: { x: number; y: number }; // For canvas node positioning
-  next_scene_id?: string; // For railroad connection
+  next_scene_id?: string | null; // For railroad connection (null = unlinked / separated node)
   scene_objective: string;
   forced_chaos_level: 'low' | 'medium' | 'high';
   event_mood: string;

@@ -10,7 +10,12 @@ import {
 import type { VaultDraft, WorldScene, WorldScenario } from '../../types';
 import { DEFAULT_BOTANICAL_LOCATIONS } from '../../defaultWorldLocations';
 import SceneNodeCard from './SceneNodeCard';
-import RailroadCableOverlay from './RailroadCableOverlay';
+import RailroadCableOverlay, {
+  type DraggingWireState,
+  resolveNextSceneId,
+  SCENE_WIDTH,
+  PORT_Y_OFFSET,
+} from './RailroadCableOverlay';
 
 interface RailroadCanvasProps {
   draft: VaultDraft;
@@ -25,6 +30,7 @@ const DEFAULT_SCENES: WorldScene[] = [
     title: 'ฉากที่ 1: ห้องโถงเสื่อทาทามิเรียวกัง',
     location_key: 'ห้องโถงเสื่อทาทามิเรียวกัง',
     position: { x: 80, y: 100 },
+    next_scene_id: 'scene_2',
     scene_objective: "พา [PLAYER] เดินทางขึ้นเขาไปเก็บสมุนไพร 'เฟิร์นหมอกอัคคี' และหลบเข้าซอกถ้ำร้าง",
     forced_chaos_level: 'low',
     event_mood: 'อบอุ่น อึดอัด ชื้นแฉะ ลื่นไถล แนบเนื้อ',
@@ -96,6 +102,7 @@ const DEFAULT_SCENES: WorldScene[] = [
     title: 'ฉากที่ 2: ซอกถ้ำหินแกรนิตร้าง',
     location_key: 'ซอกถ้ำหินแกรนิตร้าง',
     position: { x: 540, y: 100 },
+    next_scene_id: 'scene_3',
     scene_objective: "[ACTOR] ต้องการชำระล้างคราบโคลนและบรรเทาอาการร้อนรุ่มจากพิษพฤกษศาสตร์ที่ซึมเข้าผิวด้วย 'โอสถน้ำมังกร' ของ [PLAYER]",
     forced_chaos_level: 'medium',
     event_mood: 'มืดสลัว เย็นเยือก ร้อนรุ่ม ซ่านสยิว พื้นที่ปิดตาย (Proxemic Trap)',
@@ -257,6 +264,10 @@ export default function RailroadCanvas({
     nodeY: 0,
   });
 
+  // Wire Dragging State (Blender Node Cable Dragging)
+  const [draggingWire, setDraggingWire] = useState<DraggingWireState | null>(null);
+  const [hoveredTargetSceneId, setHoveredTargetSceneId] = useState<string | null>(null);
+
   // Current Scenario Scenes
   const scenario: WorldScenario = draft.scenario || {
     id: 'botanical_scenario_01',
@@ -271,6 +282,19 @@ export default function RailroadCanvas({
     draft.real_locations && Object.keys(draft.real_locations).length > 0
       ? draft.real_locations
       : DEFAULT_BOTANICAL_LOCATIONS;
+
+  // Coordinate Conversion (Screen clientX/Y to Canvas world coordinates)
+  const getCanvasCoords = useCallback(
+    (clientX: number, clientY: number) => {
+      if (!containerRef.current) return { x: 0, y: 0 };
+      const rect = containerRef.current.getBoundingClientRect();
+      return {
+        x: (clientX - rect.left - pan.x) / zoom,
+        y: (clientY - rect.top - pan.y) / zoom,
+      };
+    },
+    [pan.x, pan.y, zoom]
+  );
 
   // Save changes back to draft
   const handleUpdateScenes = useCallback(
@@ -321,7 +345,79 @@ export default function RailroadCanvas({
     };
   };
 
-  // Global mouse move and up for Pan & Node Drag
+  // 4. WIRE DRAG HANDLERS (BLENDER NODE CABLE SYSTEM)
+  const handleStartDragWire = (e: React.MouseEvent, fromSceneId: string) => {
+    e.stopPropagation();
+    const sourceScene = scenes.find((s) => s.scene_id === fromSceneId);
+    if (!sourceScene) return;
+
+    const sourceIdx = scenes.findIndex((s) => s.scene_id === fromSceneId);
+    const startX = (sourceScene.position?.x ?? 80 + sourceIdx * 460) + SCENE_WIDTH;
+    const startY = (sourceScene.position?.y ?? 100) + PORT_Y_OFFSET;
+    const coords = getCanvasCoords(e.clientX, e.clientY);
+
+    setDraggingWire({
+      fromSceneId,
+      startX,
+      startY,
+      currentX: coords.x,
+      currentY: coords.y,
+    });
+  };
+
+  // Blender Unplug: detach incoming wire from target scene input port
+  const handleStartDetachIncoming = (e: React.MouseEvent, toSceneId: string) => {
+    e.stopPropagation();
+    const sourceScene = scenes.find((s, sIdx) => {
+      const nextId = resolveNextSceneId(s, sIdx, scenes);
+      return nextId === toSceneId;
+    });
+    if (!sourceScene) return;
+
+    const sourceIdx = scenes.findIndex((s) => s.scene_id === sourceScene.scene_id);
+    const startX = (sourceScene.position?.x ?? 80 + sourceIdx * 460) + SCENE_WIDTH;
+    const startY = (sourceScene.position?.y ?? 100) + PORT_Y_OFFSET;
+    const coords = getCanvasCoords(e.clientX, e.clientY);
+
+    setDraggingWire({
+      fromSceneId: sourceScene.scene_id,
+      startX,
+      startY,
+      currentX: coords.x,
+      currentY: coords.y,
+    });
+  };
+
+  // Connect two scenes
+  const handleConnectScenes = useCallback(
+    (fromSceneId: string, toSceneId: string) => {
+      if (fromSceneId === toSceneId) return; // disallow self loop
+      const updated = scenes.map((s) => {
+        if (s.scene_id === fromSceneId) {
+          return { ...s, next_scene_id: toSceneId };
+        }
+        return s;
+      });
+      handleUpdateScenes(updated);
+    },
+    [scenes, handleUpdateScenes]
+  );
+
+  // Disconnect / Unlink scene
+  const handleDisconnectScene = useCallback(
+    (fromSceneId: string) => {
+      const updated = scenes.map((s) => {
+        if (s.scene_id === fromSceneId) {
+          return { ...s, next_scene_id: null };
+        }
+        return s;
+      });
+      handleUpdateScenes(updated);
+    },
+    [scenes, handleUpdateScenes]
+  );
+
+  // Global mouse move and up for Pan, Node Drag & Wire Drag
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (isPanning) {
@@ -346,12 +442,47 @@ export default function RailroadCanvas({
           return s;
         });
         handleUpdateScenes(updatedScenes);
+      } else if (draggingWire) {
+        const coords = getCanvasCoords(e.clientX, e.clientY);
+        setDraggingWire((prev) => (prev ? { ...prev, currentX: coords.x, currentY: coords.y } : null));
+
+        // Magnetic snap: search for card under or near cursor
+        let targetId: string | null = null;
+        for (const s of scenes) {
+          if (s.scene_id === draggingWire.fromSceneId) continue;
+          const sx = s.position?.x ?? 80;
+          const sy = s.position?.y ?? 100;
+          if (
+            coords.x >= sx - 30 &&
+            coords.x <= sx + SCENE_WIDTH + 30 &&
+            coords.y >= sy - 20 &&
+            coords.y <= sy + 400
+          ) {
+            targetId = s.scene_id;
+            break;
+          }
+        }
+        setHoveredTargetSceneId(targetId);
       }
     };
 
     const handleMouseUp = () => {
-      setIsPanning(false);
-      setDraggingSceneId(null);
+      if (isPanning) {
+        setIsPanning(false);
+      }
+      if (draggingSceneId) {
+        setDraggingSceneId(null);
+      }
+      if (draggingWire) {
+        if (hoveredTargetSceneId) {
+          handleConnectScenes(draggingWire.fromSceneId, hoveredTargetSceneId);
+        } else {
+          // Dragged wire dropped into empty canvas = Disconnect / Unplug node
+          handleDisconnectScene(draggingWire.fromSceneId);
+        }
+        setDraggingWire(null);
+        setHoveredTargetSceneId(null);
+      }
     };
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -360,9 +491,20 @@ export default function RailroadCanvas({
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isPanning, draggingSceneId, zoom, scenes, handleUpdateScenes]);
+  }, [
+    isPanning,
+    draggingSceneId,
+    draggingWire,
+    hoveredTargetSceneId,
+    zoom,
+    scenes,
+    getCanvasCoords,
+    handleUpdateScenes,
+    handleConnectScenes,
+    handleDisconnectScene,
+  ]);
 
-  // 4. SCENE ACTIONS (UPDATE, DELETE, INSERT, ADD)
+  // 5. SCENE ACTIONS (UPDATE, DELETE, INSERT, ADD)
   const handleUpdateScene = (index: number, updatedScene: WorldScene) => {
     const updated = [...scenes];
     updated[index] = updatedScene;
@@ -370,7 +512,19 @@ export default function RailroadCanvas({
   };
 
   const handleDeleteScene = (index: number) => {
-    const updated = scenes.filter((_, idx) => idx !== index);
+    const sceneToDelete = scenes[index];
+    if (!sceneToDelete) return;
+
+    const nextTargetId = resolveNextSceneId(sceneToDelete, index, scenes);
+
+    const updated = scenes
+      .filter((_, idx) => idx !== index)
+      .map((s) => {
+        if (s.next_scene_id === sceneToDelete.scene_id) {
+          return { ...s, next_scene_id: nextTargetId };
+        }
+        return s;
+      });
     handleUpdateScenes(updated);
   };
 
@@ -384,6 +538,7 @@ export default function RailroadCanvas({
       title: `ฉากที่ ${scenes.length + 1}: สถานการณ์ใหม่`,
       location_key: Object.keys(availableLocations)[0] || 'ห้องสกัดสมุนไพร ณ เรือนพักปีกใน',
       position: { x: newX, y: newY },
+      next_scene_id: null,
       scene_objective: 'เป้าหมายหลักในฉากนี้...',
       forced_chaos_level: 'low',
       event_mood: 'อารมณ์และบรรยากาศ...',
@@ -405,12 +560,24 @@ export default function RailroadCanvas({
       ],
     };
 
-    handleUpdateScenes([...scenes, newScene]);
+    // If lastScene was using fallback sequential connection, maintain it
+    const updated = scenes.map((s, idx) => {
+      if (idx === scenes.length - 1 && s.next_scene_id === undefined) {
+        return { ...s, next_scene_id: newScene.scene_id };
+      }
+      return s;
+    });
+
+    handleUpdateScenes([...updated, newScene]);
   };
 
-  const handleInsertSceneBetween = (fromIndex: number) => {
+  const handleInsertSceneBetween = (fromSceneId: string) => {
+    const fromIndex = scenes.findIndex((s) => s.scene_id === fromSceneId);
     const sceneA = scenes[fromIndex];
-    const sceneB = scenes[fromIndex + 1];
+    if (!sceneA) return;
+
+    const targetId = resolveNextSceneId(sceneA, fromIndex, scenes);
+    const sceneB = targetId ? scenes.find((s) => s.scene_id === targetId) : null;
 
     const posX =
       sceneA?.position && sceneB?.position
@@ -422,11 +589,13 @@ export default function RailroadCanvas({
         ? Math.round((sceneA.position.y + sceneB.position.y) / 2)
         : 100;
 
+    const newSceneId = `scene_mid_${Date.now()}`;
     const insertedScene: WorldScene = {
-      scene_id: `scene_mid_${Date.now()}`,
+      scene_id: newSceneId,
       title: `ฉากคั่น: จังหวะเปลี่ยนผ่าน`,
       location_key: sceneA?.location_key || Object.keys(availableLocations)[0],
       position: { x: posX, y: posY },
+      next_scene_id: sceneB ? sceneB.scene_id : null,
       scene_objective: 'ฉากคั่นกลางเพื่อชะลอหรือเร่งจังหวะเรื่องราว...',
       forced_chaos_level: 'medium',
       event_mood: 'ตึงเครียด ชะงักงัน',
@@ -448,7 +617,13 @@ export default function RailroadCanvas({
       ],
     };
 
-    const updated = [...scenes];
+    const updated = scenes.map((s) => {
+      if (s.scene_id === sceneA.scene_id) {
+        return { ...s, next_scene_id: newSceneId };
+      }
+      return s;
+    });
+
     updated.splice(fromIndex + 1, 0, insertedScene);
     handleUpdateScenes(updated);
   };
@@ -482,22 +657,38 @@ export default function RailroadCanvas({
         <RailroadCableOverlay
           scenes={scenes}
           onInsertSceneBetween={handleInsertSceneBetween}
+          onDisconnectScene={handleDisconnectScene}
+          draggingWire={draggingWire}
+          hoveredTargetSceneId={hoveredTargetSceneId}
           isEditable={isEditable}
         />
 
         {/* Render Each Scene Node Card */}
-        {scenes.map((scene, idx) => (
-          <SceneNodeCard
-            key={scene.scene_id || idx}
-            scene={scene}
-            index={idx}
-            availableLocations={availableLocations}
-            onUpdateScene={(updated) => handleUpdateScene(idx, updated)}
-            onDeleteScene={() => handleDeleteScene(idx)}
-            onStartDrag={handleStartDragNode}
-            isEditable={isEditable}
-          />
-        ))}
+        {scenes.map((scene, idx) => {
+          const hasIncoming = scenes.some(
+            (s, sIdx) => resolveNextSceneId(s, sIdx, scenes) === scene.scene_id
+          );
+          const hasOutgoing = Boolean(resolveNextSceneId(scene, idx, scenes));
+          const isTarget = hoveredTargetSceneId === scene.scene_id;
+
+          return (
+            <SceneNodeCard
+              key={scene.scene_id || idx}
+              scene={scene}
+              index={idx}
+              availableLocations={availableLocations}
+              hasIncomingCable={hasIncoming}
+              hasOutgoingCable={hasOutgoing}
+              isDropTarget={isTarget}
+              onUpdateScene={(updated) => handleUpdateScene(idx, updated)}
+              onDeleteScene={() => handleDeleteScene(idx)}
+              onStartDrag={handleStartDragNode}
+              onStartDragWire={handleStartDragWire}
+              onStartDetachIncoming={handleStartDetachIncoming}
+              isEditable={isEditable}
+            />
+          );
+        })}
       </div>
 
       {/* ✦ 2. FLOATING HUD TOOLBAR (APPLE TACTILE DOCK) */}
@@ -562,7 +753,7 @@ export default function RailroadCanvas({
       {/* ✦ 3. TOP-LEFT CANVAS INSTRUCTION HINT */}
       <div className="absolute top-4 left-6 flex items-center gap-2 px-3 py-1 rounded-full bg-black/40 backdrop-blur-xl border border-white/[0.08] text-[10.5px] text-white/40 pointer-events-none z-20">
         <Sparkles size={11} className="text-[#EF264C]" />
-        <span>ลากเมาส์เลื่อนผืนผ้าใบ • หมุนลูกกลิ้งเพื่อซูม • ลากหัวการ์ดย้ายตำแหน่ง</span>
+        <span>ลากเมาส์เลื่อนแคนวาส • หมุนลูกกลิ้งเพื่อซูม • ลากพอร์ตแดงเชื่อมโยง Node • ชี้ที่เส้นเพื่อตัด/แทรกฉาก</span>
       </div>
     </div>
   );

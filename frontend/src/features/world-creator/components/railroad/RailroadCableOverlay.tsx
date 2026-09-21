@@ -1,82 +1,254 @@
-import { Plus } from 'lucide-react';
+import { Plus, Scissors } from 'lucide-react';
 import type { WorldScene } from '../../types';
+
+export interface DraggingWireState {
+  fromSceneId: string;
+  startX: number;
+  startY: number;
+  currentX: number;
+  currentY: number;
+}
 
 interface RailroadCableOverlayProps {
   scenes: WorldScene[];
-  onInsertSceneBetween: (fromIndex: number) => void;
+  onInsertSceneBetween: (fromSceneId: string) => void;
+  onDisconnectScene?: (fromSceneId: string) => void;
+  draggingWire?: DraggingWireState | null;
+  hoveredTargetSceneId?: string | null;
   isEditable?: boolean;
 }
 
-const SCENE_WIDTH = 346;
-const PORT_Y_OFFSET = 24;
+export const SCENE_WIDTH = 346;
+export const PORT_Y_OFFSET = 24;
+
+/**
+ * Resolves the target scene ID for a given scene:
+ * 1. If scene.next_scene_id !== undefined: returns scene.next_scene_id (null if disconnected, or string ID).
+ * 2. If scene.next_scene_id === undefined: falls back to next sequential scene in array (legacy compatibility).
+ */
+export function resolveNextSceneId(
+  scene: WorldScene,
+  index: number,
+  allScenes: WorldScene[]
+): string | null {
+  if (scene.next_scene_id !== undefined) {
+    return scene.next_scene_id || null;
+  }
+  if (index < allScenes.length - 1) {
+    return allScenes[index + 1]?.scene_id || null;
+  }
+  return null;
+}
 
 export default function RailroadCableOverlay({
   scenes,
   onInsertSceneBetween,
+  onDisconnectScene,
+  draggingWire,
+  hoveredTargetSceneId,
   isEditable = true,
 }: RailroadCableOverlayProps) {
-  if (scenes.length < 2) return null;
+  // Find target scene for dragging wire snap
+  const snappedTargetScene = hoveredTargetSceneId
+    ? scenes.find((s) => s.scene_id === hoveredTargetSceneId)
+    : null;
 
   return (
     <svg
       className="absolute inset-0 w-full h-full pointer-events-none overflow-visible z-0"
       style={{ minWidth: '4000px', minHeight: '4000px' }}
     >
+      <defs>
+        {/* Subtle marker for directional flow on carmine red line */}
+        <marker
+          id="cable-arrow"
+          viewBox="0 0 10 10"
+          refX="6"
+          refY="5"
+          markerWidth="5"
+          markerHeight="5"
+          orient="auto-start-reverse"
+        >
+          <path d="M 1 1.5 L 7 5 L 1 8.5 z" fill="#EF264C" />
+        </marker>
+      </defs>
+
+      {/* =================================================================== */}
+      {/* 1. EXISTING CONNECTED CABLES                                        */}
+      {/* =================================================================== */}
       {scenes.map((scene, idx) => {
-        if (idx === scenes.length - 1) return null;
+        const nextSceneId = resolveNextSceneId(scene, idx, scenes);
+        if (!nextSceneId) return null;
 
-        const nextScene = scenes[idx + 1];
-        if (!nextScene) return null;
+        const targetScene = scenes.find((s) => s.scene_id === nextSceneId);
+        if (!targetScene) return null;
 
-        // Positions
+        // Start from source scene output socket (Right)
         const x1 = (scene.position?.x ?? 80 + idx * 460) + SCENE_WIDTH;
         const y1 = (scene.position?.y ?? 100) + PORT_Y_OFFSET;
 
-        const x2 = nextScene.position?.x ?? 80 + (idx + 1) * 460;
-        const y2 = (nextScene.position?.y ?? 100) + PORT_Y_OFFSET;
+        // End at target scene input socket (Left)
+        const targetIdx = scenes.findIndex((s) => s.scene_id === targetScene.scene_id);
+        const x2 = targetScene.position?.x ?? 80 + (targetIdx >= 0 ? targetIdx * 460 : 0);
+        const y2 = (targetScene.position?.y ?? 100) + PORT_Y_OFFSET;
 
-        // Bezier Curvature
+        // Bezier Curvature Calculation
         const dx = Math.abs(x2 - x1);
-        const curvature = Math.max(dx * 0.45, 50);
-
+        const curvature = Math.max(dx * 0.45, 60);
         const pathData = `M ${x1} ${y1} C ${x1 + curvature} ${y1}, ${x2 - curvature} ${y2}, ${x2} ${y2}`;
 
-        // Approximate Midpoint for the Quick Insert Button
+        // Midpoint for Apple Frosted Quick Action Capsule
         const midX = (x1 + x2) / 2;
         const midY = (y1 + y2) / 2;
 
         return (
-          <g key={`cable-${scene.scene_id || idx}-${nextScene.scene_id || idx + 1}`}>
-            {/* ✦ 1. SUBTLE MINIMAL HAIRLINE CABLE (APPLE MINIMAL DESIGN) */}
+          <g
+            key={`cable-${scene.scene_id}-${targetScene.scene_id}`}
+            className="group/cable"
+          >
+            {/* ✦ 1. WIDE TRANSPARENT HOVER CAPTURE PATH (Easy Mouse Interaction) */}
             <path
               d={pathData}
               fill="none"
-              stroke="rgba(255, 255, 255, 0.18)"
-              strokeWidth="1.5"
+              stroke="transparent"
+              strokeWidth="28"
+              className="pointer-events-auto cursor-pointer"
             />
 
-            {/* ✦ 2. MIDPOINT QUICK SCENE INSERTION FROSTED BUTTON */}
+            {/* ✦ 2. SUBTLE AMBIENT HALO (Zero-Glow Philosophy - Clean Edge 1px Depth) */}
+            <path
+              d={pathData}
+              fill="none"
+              stroke="#EF264C"
+              strokeOpacity="0.18"
+              strokeWidth="6"
+              className="transition-opacity group-hover/cable:stroke-opacity-35"
+            />
+
+            {/* ✦ 3. PRIMARY CARMINE RED CABLE (#EF264C) */}
+            <path
+              d={pathData}
+              fill="none"
+              stroke="#EF264C"
+              strokeWidth="2.5"
+              markerEnd="url(#cable-arrow)"
+              className="transition-all group-hover/cable:stroke-width-[3px]"
+            />
+
+            {/* ✦ 4. MIDPOINT FLOATING ACTION DOCK (APPLE FROSTED GLASS CAPSULE) */}
             {isEditable && (
               <foreignObject
-                x={midX - 12}
-                y={midY - 12}
-                width={24}
-                height={24}
+                x={midX - 65}
+                y={midY - 14}
+                width={130}
+                height={28}
                 className="overflow-visible pointer-events-auto"
               >
-                <button
-                  type="button"
-                  onClick={() => onInsertSceneBetween(idx)}
-                  className="w-6 h-6 rounded-full bg-[#181820]/90 hover:bg-white/[0.16] border border-white/15 hover:border-white/40 text-white/50 hover:text-white flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.5)] active:scale-95 transition-all cursor-pointer backdrop-blur-md group"
-                  title="แทรกฉากใหม่คั่นกลางตรงนี้ (Insert Scene)"
-                >
-                  <Plus size={11} strokeWidth={2.4} />
-                </button>
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#16161E]/95 hover:bg-[#1C1C26] border border-white/20 backdrop-blur-xl shadow-[0_4px_14px_rgba(0,0,0,0.65)] opacity-85 hover:opacity-100 transition-all select-none">
+                    {/* Disconnect Button (Scissors) */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDisconnectScene?.(scene.scene_id);
+                      }}
+                      className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium text-white/75 hover:text-[#EF264C] hover:bg-[#EF264C]/15 transition-all cursor-pointer active:scale-95"
+                      title="ตัดเส้นเชื่อมต่อ แยกโหนดนี้ออกอิสระ (Disconnect Node)"
+                    >
+                      <Scissors size={10} strokeWidth={2.4} />
+                      <span>ตัดเส้น</span>
+                    </button>
+
+                    {/* Vertical Divider */}
+                    <span className="w-px h-2.5 bg-white/20" />
+
+                    {/* Insert Intermediate Scene Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onInsertSceneBetween(scene.scene_id);
+                      }}
+                      className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium text-white/75 hover:text-emerald-400 hover:bg-emerald-500/15 transition-all cursor-pointer active:scale-95"
+                      title="แทรกฉากใหม่คั่นกลางตรงนี้ (Insert Scene)"
+                    >
+                      <Plus size={10} strokeWidth={2.4} />
+                      <span>แทรก</span>
+                    </button>
+                  </div>
+                </div>
               </foreignObject>
             )}
           </g>
         );
       })}
+
+      {/* =================================================================== */}
+      {/* 2. ACTIVE LIVE DRAGGING WIRE (BLENDER / UNREAL ENGINE STYLE)        */}
+      {/* =================================================================== */}
+      {draggingWire && (
+        <g className="pointer-events-none">
+          {(() => {
+            const x1 = draggingWire.startX;
+            const y1 = draggingWire.startY;
+
+            // If snapped to a hovered target node, magnetically lock onto target input port
+            const x2 = snappedTargetScene
+              ? (snappedTargetScene.position?.x ?? 80)
+              : draggingWire.currentX;
+            const y2 = snappedTargetScene
+              ? (snappedTargetScene.position?.y ?? 100) + PORT_Y_OFFSET
+              : draggingWire.currentY;
+
+            const dx = Math.abs(x2 - x1);
+            const curvature = Math.max(dx * 0.45, 60);
+            const dragPathData = `M ${x1} ${y1} C ${x1 + curvature} ${y1}, ${x2 - curvature} ${y2}, ${x2} ${y2}`;
+
+            return (
+              <>
+                {/* Dragging Wire Ambient Halo */}
+                <path
+                  d={dragPathData}
+                  fill="none"
+                  stroke="#EF264C"
+                  strokeOpacity="0.25"
+                  strokeWidth="7"
+                />
+
+                {/* Dragging Wire Active Pulsing Dashed Line */}
+                <path
+                  d={dragPathData}
+                  fill="none"
+                  stroke="#EF264C"
+                  strokeWidth="2.5"
+                  strokeDasharray="6 4"
+                  markerEnd="url(#cable-arrow)"
+                />
+
+                {/* Target Snap Ring / Tip Dot */}
+                <circle
+                  cx={x2}
+                  cy={y2}
+                  r={snappedTargetScene ? 7 : 5}
+                  fill="#EF264C"
+                  stroke="#FFFFFF"
+                  strokeWidth={snappedTargetScene ? 2.5 : 2}
+                  className={snappedTargetScene ? 'animate-ping' : ''}
+                />
+                <circle
+                  cx={x2}
+                  cy={y2}
+                  r={snappedTargetScene ? 6 : 4}
+                  fill="#EF264C"
+                  stroke="#FFFFFF"
+                  strokeWidth={1.5}
+                />
+              </>
+            );
+          })()}
+        </g>
+      )}
     </svg>
   );
 }

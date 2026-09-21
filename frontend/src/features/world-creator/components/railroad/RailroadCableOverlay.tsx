@@ -19,6 +19,7 @@ interface RailroadCableOverlayProps {
 }
 
 export const SCENE_WIDTH = 346;
+export const SCENE_STEP_X = 540;
 export const PORT_Y_OFFSET = 24;
 
 /**
@@ -163,12 +164,12 @@ export default function RailroadCableOverlay({
         if (!targetScene) return null;
 
         // Start from source scene output socket (Right)
-        const x1 = (scene.position?.x ?? 80 + idx * 460) + SCENE_WIDTH;
+        const x1 = (scene.position?.x ?? 80 + idx * SCENE_STEP_X) + SCENE_WIDTH;
         const y1 = (scene.position?.y ?? 100) + PORT_Y_OFFSET;
 
         // End at target scene input socket (Left)
         const targetIdx = scenes.findIndex((s) => s.scene_id === targetScene.scene_id);
-        const x2 = targetScene.position?.x ?? 80 + (targetIdx >= 0 ? targetIdx * 460 : 0);
+        const x2 = targetScene.position?.x ?? 80 + (targetIdx >= 0 ? targetIdx * SCENE_STEP_X : 0);
         const y2 = (targetScene.position?.y ?? 100) + PORT_Y_OFFSET;
 
         // Bezier Curvature Calculation

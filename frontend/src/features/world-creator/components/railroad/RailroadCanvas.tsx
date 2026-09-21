@@ -6,6 +6,7 @@ import {
   Sparkles,
   RotateCcw,
   Layers,
+  Workflow,
 } from 'lucide-react';
 import type { VaultDraft, WorldScene, WorldScenario } from '../../types';
 import { DEFAULT_BOTANICAL_LOCATIONS } from '../../defaultWorldLocations';
@@ -15,6 +16,7 @@ import RailroadCableOverlay, {
   resolveNextSceneId,
   computeSceneChainOrder,
   SCENE_WIDTH,
+  SCENE_STEP_X,
   PORT_Y_OFFSET,
 } from './RailroadCableOverlay';
 
@@ -102,7 +104,7 @@ const DEFAULT_SCENES: WorldScene[] = [
     scene_id: 'scene_2',
     title: 'ซอกถ้ำหินแกรนิตร้าง',
     location_key: 'ซอกถ้ำหินแกรนิตร้าง',
-    position: { x: 540, y: 100 },
+    position: { x: 620, y: 100 },
     next_scene_id: 'scene_3',
     scene_objective: "[ACTOR] ต้องการชำระล้างคราบโคลนและบรรเทาอาการร้อนรุ่มจากพิษพฤกษศาสตร์ที่ซึมเข้าผิวด้วย 'โอสถน้ำมังกร' ของ [PLAYER]",
     forced_chaos_level: 'medium',
@@ -174,7 +176,7 @@ const DEFAULT_SCENES: WorldScene[] = [
     scene_id: 'scene_3',
     title: 'เส้นทางป่าทึบขากลับ',
     location_key: 'เส้นทางป่าทึบขากลับ',
-    position: { x: 1000, y: 100 },
+    position: { x: 1160, y: 100 },
     scene_objective: '[ACTOR] ต้องบังคับให้ [PLAYER] ประคองช่วยดับพิษ โดยไม่ให้เพื่อนชมรมจับได้',
     forced_chaos_level: 'high',
     event_mood: 'สุ่มเสี่ยง ตื่นเต้น ป่าทึบ เปียกปอน ไร้ทางถอย',
@@ -356,7 +358,7 @@ export default function RailroadCanvas({
     if (!sourceScene) return;
 
     const sourceIdx = scenes.findIndex((s) => s.scene_id === fromSceneId);
-    const startX = (sourceScene.position?.x ?? 80 + sourceIdx * 460) + SCENE_WIDTH;
+    const startX = (sourceScene.position?.x ?? 80 + sourceIdx * SCENE_STEP_X) + SCENE_WIDTH;
     const startY = (sourceScene.position?.y ?? 100) + PORT_Y_OFFSET;
     const coords = getCanvasCoords(e.clientX, e.clientY);
 
@@ -379,7 +381,7 @@ export default function RailroadCanvas({
     if (!sourceScene) return;
 
     const sourceIdx = scenes.findIndex((s) => s.scene_id === sourceScene.scene_id);
-    const startX = (sourceScene.position?.x ?? 80 + sourceIdx * 460) + SCENE_WIDTH;
+    const startX = (sourceScene.position?.x ?? 80 + sourceIdx * SCENE_STEP_X) + SCENE_WIDTH;
     const startY = (sourceScene.position?.y ?? 100) + PORT_Y_OFFSET;
     const coords = getCanvasCoords(e.clientX, e.clientY);
 
@@ -534,7 +536,7 @@ export default function RailroadCanvas({
 
   const handleAddSceneEnd = () => {
     const lastScene = scenes[scenes.length - 1];
-    const newX = lastScene?.position?.x ? lastScene.position.x + 460 : 80;
+    const newX = lastScene?.position?.x ? lastScene.position.x + SCENE_STEP_X : 80;
     const newY = lastScene?.position?.y ? lastScene.position.y : 100;
 
     const newScene: WorldScene = {
@@ -574,6 +576,58 @@ export default function RailroadCanvas({
 
     handleUpdateScenes([...updated, newScene]);
   };
+
+  // ✦ AUTO-ALIGN SCENES (RESET TO PRISTINE SEQUENTIAL RAILROAD)
+  const handleAutoAlignScenes = useCallback(() => {
+    if (scenes.length === 0) return;
+
+    // 1. Calculate dynamic narrative chain order (1, 2, 3...)
+    const sceneOrderMap = computeSceneChainOrder(scenes);
+    const hasAnyConnected = sceneOrderMap.size > 0;
+
+    let updated: WorldScene[];
+
+    if (!hasAnyConnected) {
+      // If all scenes are disconnected, align them all horizontally in row 1
+      updated = scenes.map((scene, idx) => ({
+        ...scene,
+        position: {
+          x: 80 + idx * SCENE_STEP_X,
+          y: 100,
+        },
+      }));
+    } else {
+      // Separate into connected scenes (ordered 1, 2, 3...) and unlinked/staging scenes
+      const unlinkedScenes = scenes.filter((s) => !sceneOrderMap.has(s.scene_id));
+
+      updated = scenes.map((scene) => {
+        const order = sceneOrderMap.get(scene.scene_id);
+        if (order !== undefined) {
+          return {
+            ...scene,
+            position: {
+              x: 80 + (order - 1) * SCENE_STEP_X,
+              y: 100,
+            },
+          };
+        }
+        const uIdx = unlinkedScenes.findIndex((u) => u.scene_id === scene.scene_id);
+        return {
+          ...scene,
+          position: {
+            x: 80 + (uIdx >= 0 ? uIdx : 0) * SCENE_STEP_X,
+            y: 520,
+          },
+        };
+      });
+    }
+
+    handleUpdateScenes(updated);
+
+    // Smooth reset zoom & pan to show pristine railroad
+    setZoom(0.85);
+    setPan({ x: 50, y: 40 });
+  }, [scenes, handleUpdateScenes]);
 
   const handleInsertSceneBetween = (fromSceneId: string) => {
     const fromIndex = scenes.findIndex((s) => s.scene_id === fromSceneId);
@@ -716,6 +770,19 @@ export default function RailroadCanvas({
           >
             <Plus size={13} strokeWidth={2.4} />
             <span>เพิ่มฉากใหม่</span>
+          </button>
+        )}
+
+        {/* Auto-Align Scenes Button */}
+        {isEditable && (
+          <button
+            type="button"
+            onClick={handleAutoAlignScenes}
+            className="px-3.5 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] backdrop-blur-xl border border-white/[0.10] hover:border-white/20 text-white/80 hover:text-white text-[12px] font-medium flex items-center gap-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] active:scale-95 transition-all cursor-pointer select-none"
+            title="จัดระเบียบเรียงฉากเป็นเส้นตรงตามลำดับเรื่องราวอัตโนมัติ"
+          >
+            <Workflow size={13} className="text-[#EF264C]" strokeWidth={2.2} />
+            <span>จัดระเบียบฉาก</span>
           </button>
         )}
 

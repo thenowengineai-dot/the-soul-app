@@ -314,7 +314,7 @@ export default function IdentityVisualCard({
         {/* 🪪 WIDGET 1: IDENTITY & ARCHETYPE (2x2 -> 336px × 336px)                 */}
         {/* ======================================================================= */}
         <div
-          className={`col-span-2 row-span-2 rounded-[28px] p-5 ${frostedCardClass}`}
+          className={`col-span-2 row-span-2 rounded-[28px] p-4 ${frostedCardClass}`}
           style={{ width: '336px', height: '336px' }}
         >
           {/* Top Bar: Label Badge + Obvious Tactile Edit/Save Action */}
@@ -402,10 +402,10 @@ export default function IdentityVisualCard({
               </div>
             ) : (
               <div>
-                <h1 className="text-[25px] sm:text-[27px] font-bold text-white tracking-tight leading-tight">
+                <h1 className="text-[26px] sm:text-[28px] font-bold text-white tracking-tight leading-tight">
                   {name}
                 </h1>
-                <div className="text-[13px] text-white/90 mt-0.5 leading-normal">
+                <div className="text-[13px] sm:text-[13.5px] text-white/90 mt-0.5 leading-normal">
                   <span className="font-bold text-white">{archetype}</span>
                   {archetypeTh && (
                     <span className="text-white/60 font-normal ml-1.5">
@@ -413,7 +413,7 @@ export default function IdentityVisualCard({
                     </span>
                   )}
                 </div>
-                <p className="text-[12.5px] text-[#EDEDED] mt-2 leading-relaxed font-normal italic line-clamp-3">
+                <p className="text-[13px] sm:text-[13.5px] text-[#EDEDED] mt-2 leading-relaxed font-normal italic line-clamp-4">
                   {quote}
                 </p>
               </div>
@@ -480,12 +480,12 @@ export default function IdentityVisualCard({
         {/* 👗 WIDGET 2: WARDROBE CLOSET (2x2 -> 336px × 336px)                      */}
         {/* ======================================================================= */}
         <div
-          className={`col-span-2 row-span-2 rounded-[28px] p-5 ${frostedCardClass}`}
+          className={`col-span-2 row-span-2 rounded-[28px] p-4 ${frostedCardClass}`}
           style={{ width: '336px', height: '336px' }}
         >
           {/* Header Row: Closet Badge + Hangers Switcher */}
           <div>
-            <div className="flex items-center justify-between gap-1 mb-2.5">
+            <div className="flex items-center justify-between gap-1 mb-2">
               <div className="flex items-center gap-1.5">
                 <div className="w-6 h-6 rounded-full bg-white/[0.08] flex items-center justify-center">
                   <Shirt size={12} className="text-[#EF264C]" />
@@ -532,7 +532,7 @@ export default function IdentityVisualCard({
             </div>
 
             {/* Tactile Garment Swatch Card */}
-            <div className="my-auto py-3 px-3.5 rounded-[20px] bg-black/40 backdrop-blur-xl border border-white/[0.06] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)] flex flex-col justify-between gap-2">
+            <div className="my-auto p-3 rounded-[18px] bg-black/40 backdrop-blur-xl border border-white/[0.06] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)] flex flex-col justify-between gap-2">
               <div className="flex items-center justify-between gap-1.5">
                 {isEditing ? (
                   <div className="flex-1">
@@ -594,7 +594,7 @@ export default function IdentityVisualCard({
                   )}
                 </div>
               ) : (
-                <p className="text-[12px] text-[#EDEDED] leading-relaxed font-normal line-clamp-4">
+                <p className="text-[12.5px] text-[#EDEDED] leading-relaxed font-normal line-clamp-5">
                   {activeOutfit.description}
                 </p>
               )}
@@ -612,12 +612,12 @@ export default function IdentityVisualCard({
         {/* 👓 WIDGET 3: ANATOMY & PHYSIQUE (2x2 -> 336px × 336px - 4 QUADRANTS)   */}
         {/* ======================================================================= */}
         <div
-          className={`col-span-2 row-span-2 rounded-[28px] p-5 ${frostedCardClass}`}
+          className={`col-span-2 row-span-2 rounded-[28px] p-4 ${frostedCardClass}`}
           style={{ width: '336px', height: '336px' }}
         >
           {/* Header Row */}
           <div>
-            <div className="flex items-center justify-between gap-1 mb-2.5">
+            <div className="flex items-center justify-between gap-1 mb-2">
               <div className="flex items-center gap-1.5">
                 <div className="w-6 h-6 rounded-full bg-white/[0.08] flex items-center justify-center">
                   <Eye size={12} className="text-[#EF264C]" />
@@ -636,14 +636,14 @@ export default function IdentityVisualCard({
               {anatomyTraits.map((trait, idx) => (
                 <div
                   key={trait.id}
-                  className="p-2.5 rounded-[18px] bg-black/40 hover:bg-black/50 backdrop-blur-xl border border-white/[0.06] hover:border-white/12 shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)] flex flex-col justify-between transition-all h-[100px] overflow-hidden"
+                  className="p-2.5 rounded-[18px] bg-black/40 hover:bg-black/50 backdrop-blur-xl border border-white/[0.06] hover:border-white/12 shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)] flex flex-col justify-between transition-all h-[105px] overflow-hidden"
                 >
                   <div className="flex items-center justify-between gap-1 mb-1 shrink-0">
                     <div className="flex items-center gap-1.5">
                       <div className="w-5 h-5 rounded-md bg-white/[0.06] flex items-center justify-center shrink-0">
                         {renderTraitIcon(trait.iconType)}
                       </div>
-                      <span className="text-[11px] font-bold text-white tracking-tight truncate">
+                      <span className="text-[11.5px] font-bold text-white tracking-tight truncate">
                         {trait.title}
                       </span>
                     </div>
@@ -668,10 +668,10 @@ export default function IdentityVisualCard({
                         updated[idx].detail = e.target.value;
                         setAnatomyTraits(updated);
                       }}
-                      className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded p-1 text-[10.5px] text-[#EDEDED] outline-none leading-normal resize-none flex-1"
+                      className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded p-1 text-[11px] text-[#EDEDED] outline-none leading-normal resize-none flex-1"
                     />
                   ) : (
-                    <p className="text-[10.5px] text-[#EDEDED] leading-normal line-clamp-3">
+                    <p className="text-[11px] text-[#EDEDED] leading-snug line-clamp-3">
                       {trait.detail}
                     </p>
                   )}
@@ -699,7 +699,7 @@ export default function IdentityVisualCard({
         {/* 🎭 WIDGET 4: SIGNATURE POSTURES (2x1 -> 336px × 160px - HORIZONTAL WIDE)  */}
         {/* ======================================================================= */}
         <div
-          className={`col-span-2 row-span-1 rounded-[28px] p-4 ${frostedCardClass}`}
+          className={`col-span-2 row-span-1 rounded-[28px] p-3.5 ${frostedCardClass}`}
           style={{ width: '336px', height: '160px' }}
         >
           {/* Header Row */}
@@ -736,7 +736,7 @@ export default function IdentityVisualCard({
                 <div
                   key={idx}
                   onClick={() => !isEditing && setInitialPose(poseText)}
-                  className={`px-2.5 py-1 rounded-[14px] flex items-center gap-2.5 transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-[14px] flex items-center gap-2.5 transition-all cursor-pointer ${
                     isInitial
                       ? 'bg-white/[0.12] border border-white/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]'
                       : 'bg-black/40 hover:bg-black/50 backdrop-blur-xl border border-white/[0.06] hover:border-white/12 shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)]'
@@ -762,7 +762,7 @@ export default function IdentityVisualCard({
                       className="bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-0.5 text-[11px] text-[#F1F1F1] outline-none flex-1"
                     />
                   ) : (
-                    <span className="text-[11.5px] text-[#EDEDED] truncate flex-1 font-normal">
+                    <span className="text-[12px] text-[#EDEDED] truncate flex-1 font-normal">
                       {poseText}
                     </span>
                   )}
@@ -795,7 +795,7 @@ export default function IdentityVisualCard({
         {/* 🌙 WIDGET 5: STARTING ATMOSPHERE (1x1 -> 160px × 160px - APPLE WEATHER)   */}
         {/* ======================================================================= */}
         <div
-          className={`col-span-1 row-span-1 rounded-[24px] p-3.5 ${frostedCardClass}`}
+          className={`col-span-1 row-span-1 rounded-[24px] p-3 ${frostedCardClass}`}
           style={{ width: '160px', height: '160px' }}
         >
           {/* Header: Venue & Time */}
@@ -843,10 +843,10 @@ export default function IdentityVisualCard({
               </div>
             ) : (
               <div>
-                <div className="text-[15px] font-bold text-white tracking-tight truncate leading-tight">
+                <div className="text-[16px] font-bold text-white tracking-tight truncate leading-tight">
                   {sceneWeather}
                 </div>
-                <div className="text-[11px] text-[#EDEDED] truncate mt-1">
+                <div className="text-[11.5px] text-[#EDEDED] truncate mt-1">
                   {sceneLocation}
                 </div>
               </div>
@@ -863,7 +863,7 @@ export default function IdentityVisualCard({
         {/* 🧭 WIDGET 6: PLAYER STANCE (1x1 -> 160px × 160px - COMPASS TILE)         */}
         {/* ======================================================================= */}
         <div
-          className={`col-span-1 row-span-1 rounded-[24px] p-3.5 ${frostedCardClass}`}
+          className={`col-span-1 row-span-1 rounded-[24px] p-3 ${frostedCardClass}`}
           style={{ width: '160px', height: '160px' }}
         >
           {/* Header */}
@@ -889,10 +889,10 @@ export default function IdentityVisualCard({
               />
             ) : (
               <div>
-                <div className="text-[12.5px] font-bold text-white tracking-tight leading-normal line-clamp-2">
+                <div className="text-[13px] font-bold text-white tracking-tight leading-snug line-clamp-3">
                   {playerStance}
                 </div>
-                <div className="text-[10.5px] text-[#EDEDED] mt-1 truncate">
+                <div className="text-[11px] text-[#EDEDED] mt-1 truncate">
                   พร้อมรับมือ / สังเกตการณ์
                 </div>
               </div>

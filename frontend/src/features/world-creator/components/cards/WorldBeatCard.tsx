@@ -561,36 +561,43 @@ export default function WorldBeatCard({
               </span>
             </div>
 
-            {/* List of Triggers */}
-            <div className="space-y-1.5">
+            {/* List of Triggers in Multi-Line Tactile Format */}
+            <div className="space-y-2">
               {triggerEntries.length > 0 ? (
                 (isExpandedCard ? triggerEntries : triggerEntries.slice(0, 1)).map(([key, val]) => {
                   const isLoop = val.action_result === 'loop';
                   return (
                     <div
                       key={key}
-                      className="flex items-center justify-between gap-2 text-[12px] min-w-0"
+                      className="flex flex-col gap-1 py-1 border-b border-white/[0.04] last:border-0"
                     >
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <span className="px-2.5 py-0.5 rounded-full bg-white/[0.07] border border-white/10 font-medium text-white text-[11.5px] shrink-0">
+                      {/* Line 1: Player Choice (Multi-line supported, no truncate) */}
+                      <div className="flex items-start gap-1.5">
+                        <span className="text-emerald-400/80 text-[11px] mt-0.5 shrink-0 font-bold">
+                          ▸
+                        </span>
+                        <span className="text-[12px] sm:text-[12.5px] font-medium text-white/90 leading-snug">
                           {key}
                         </span>
+                      </div>
+
+                      {/* Line 2: Action Badge + Feedback response (Multi-line, no truncate) */}
+                      <div className="flex items-baseline gap-2 pl-3.5 flex-wrap">
+                        <span
+                          className={`text-[9.5px] sm:text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${
+                            isLoop
+                              ? 'text-amber-300 bg-amber-500/15 border border-amber-500/30'
+                              : 'text-[#EF264C] bg-[#EF264C]/15 border border-[#EF264C]/30'
+                          }`}
+                        >
+                          {isLoop ? '↺ อยู่ที่เดิม' : '→ ไปต่อ'}
+                        </span>
                         {val.feedback && (
-                          <span className="text-[12px] text-white/70 italic truncate">
+                          <span className="text-[11.5px] sm:text-[12px] text-white/65 italic leading-relaxed">
                             ➔ {val.feedback}
                           </span>
                         )}
                       </div>
-                      {/* Action Result Badge: ไปต่อ vs อยู่ที่เดิม */}
-                      <span
-                        className={`text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${
-                          isLoop
-                            ? 'text-amber-300 bg-amber-500/15 border border-amber-500/30'
-                            : 'text-[#EF264C] bg-[#EF264C]/15 border border-[#EF264C]/30'
-                        }`}
-                      >
-                        {isLoop ? '↺ อยู่ที่เดิม' : '→ ไปต่อ'}
-                      </span>
                     </div>
                   );
                 })

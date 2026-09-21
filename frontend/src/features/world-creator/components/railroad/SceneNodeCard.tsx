@@ -1,7 +1,5 @@
 import { useState, type MouseEvent } from 'react';
 import {
-  GripHorizontal,
-  MapPin,
   Sparkles,
   Target,
   Clock,
@@ -37,7 +35,6 @@ interface EditTriggerItem {
 export default function SceneNodeCard({
   scene,
   index,
-  availableLocations,
   onUpdateScene,
   onDeleteScene,
   onStartDrag,
@@ -46,14 +43,10 @@ export default function SceneNodeCard({
   const [activeBeatIndex, setActiveBeatIndex] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [isExpandedCard, setIsExpandedCard] = useState(false);
-  const [isSelectingLocation, setIsSelectingLocation] = useState(false);
 
   const beats = scene.beats && scene.beats.length > 0 ? scene.beats : [];
   const safeBeatIndex = Math.min(activeBeatIndex, Math.max(0, beats.length - 1));
   const currentBeat: WorldBeat | undefined = beats[safeBeatIndex];
-
-  const locKeys = availableLocations ? Object.keys(availableLocations) : [];
-  const currentLocationKey = scene.location_key || locKeys[0] || 'ยังไม่ได้ระบุสถานที่';
 
   // Edit Form States
   const [actorStateText, setActorStateText] = useState('');
@@ -124,14 +117,6 @@ export default function SceneNodeCard({
     });
   };
 
-  const handleSelectLocation = (locKey: string) => {
-    setIsSelectingLocation(false);
-    onUpdateScene({
-      ...scene,
-      location_key: locKey,
-    });
-  };
-
   // Beat Management: Reorder, Insert, Add, Delete
   const handleMoveBeatLeft = (bIdx: number) => {
     if (bIdx <= 0) return;
@@ -177,7 +162,10 @@ export default function SceneNodeCard({
   };
 
   const handleDeleteCurrentBeat = () => {
-    if (beats.length <= 1) return;
+    if (beats.length <= 1) {
+      onDeleteScene();
+      return;
+    }
     const updatedBeats = beats.filter((_, idx) => idx !== safeBeatIndex);
     onUpdateScene({ ...scene, beats: updatedBeats });
     setActiveBeatIndex(Math.max(0, safeBeatIndex - 1));
@@ -186,120 +174,83 @@ export default function SceneNodeCard({
   const triggerEntries = currentBeat?.hidden_evaluation_criteria
     ? Object.entries(currentBeat.hidden_evaluation_criteria)
     : [];
+  const displayTurns = currentBeat?.pacing_control?.max_turns || 3;
 
   return (
     <div
-      className={`absolute w-[360px] sm:w-[380px] rounded-[24px] bg-[#141419]/95 backdrop-blur-2xl border border-white/12 shadow-[0_16px_48px_rgba(0,0,0,0.65),inset_0_1px_0_rgba(255,255,255,0.12)] flex flex-col transition-all duration-200 hover:border-white/20 select-none group/node ${
-        isExpandedCard || isEditing ? 'min-h-[346px] h-auto pb-6' : 'h-[346px] pb-4'
+      className={`absolute w-[346px] rounded-[24px] bg-[#141419]/95 backdrop-blur-2xl border border-white/10 hover:border-white/18 shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.10)] p-4 flex flex-col justify-between transition-all select-none group/node ${
+        isExpandedCard || isEditing ? 'min-h-[346px] h-auto pb-6 z-20' : 'h-[346px]'
       }`}
       style={{
-        left: scene.position?.x ?? 80 + index * 460,
-        top: scene.position?.y ?? 100,
+        left: `${scene.position?.x ?? 80 + index * 460}px`,
+        top: `${scene.position?.y ?? 100}px`,
       }}
     >
-      {/* ✦ RAIL CONNECTOR PORTS (PORTS FOR SVG BEZIER RAILS) */}
+      {/* ✦ AMBIENT CORNER GLOW */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-[#EF264C]/[0.05] rounded-full blur-2xl pointer-events-none" />
+
+      {/* ✦ RAIL CONNECTOR PORTS (SUBTLE MINIMAL CONNECTORS) */}
       {/* Input Port (Left) */}
       <div
-        className="absolute -left-[9px] top-6 w-[18px] h-[18px] rounded-full bg-[#1A1A22] border-2 border-white/40 group-hover/node:border-[#EF264C] shadow-[0_0_8px_rgba(239,38,76,0.3)] flex items-center justify-center pointer-events-none z-10"
-        title="Input Port (รับขบวนรถไฟจากฉากก่อนหน้า)"
+        className="absolute -left-[7px] top-[24px] -translate-y-1/2 w-[14px] h-[14px] rounded-full bg-[#141419] border border-white/30 flex items-center justify-center pointer-events-none z-10"
+        title="Input Port"
       >
-        <div className="w-1.5 h-1.5 rounded-full bg-[#EF264C]" />
+        <div className="w-1 h-1 rounded-full bg-white/60" />
       </div>
 
       {/* Output Port (Right) */}
       <div
-        className="absolute -right-[9px] top-6 w-[18px] h-[18px] rounded-full bg-[#1A1A22] border-2 border-white/40 group-hover/node:border-[#EF264C] shadow-[0_0_8px_rgba(239,38,76,0.3)] flex items-center justify-center pointer-events-none z-10"
-        title="Output Port (ส่งรางรถไฟต่อไปยังฉากถัดไป)"
+        className="absolute -right-[7px] top-[24px] -translate-y-1/2 w-[14px] h-[14px] rounded-full bg-[#141419] border border-white/30 flex items-center justify-center pointer-events-none z-10"
+        title="Output Port"
       >
-        <div className="w-1.5 h-1.5 rounded-full bg-[#EF264C]" />
+        <div className="w-1 h-1 rounded-full bg-white/60" />
       </div>
 
-      {/* ✦ 1. DRAGGABLE SCENE HEADER BAR */}
-      <div
-        onMouseDown={(e) => onStartDrag(e, scene.scene_id)}
-        className="px-4 py-3 border-b border-white/[0.08] flex items-center justify-between gap-2 cursor-grab active:cursor-grabbing bg-white/[0.02] hover:bg-white/[0.04] rounded-t-[24px] transition-colors"
-      >
-        <div className="flex items-center gap-2 min-w-0 flex-1">
-          <GripHorizontal size={14} className="text-white/30 shrink-0" />
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-[#EF264C] font-semibold">
-                SCENE {String(index + 1).padStart(2, '0')}
-              </span>
-              <span className="text-white/20 text-[10px]">•</span>
-              {/* Location Badge with Selector Dropdown */}
-              <div className="relative inline-block min-w-0">
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onClick={() => setIsSelectingLocation(!isSelectingLocation)}
-                  className="flex items-center gap-1 text-[11px] text-emerald-400/90 hover:text-emerald-300 transition-colors cursor-pointer"
-                  title="คลิกเพื่อเปลี่ยนสถานที่ของฉากนี้"
-                >
-                  <MapPin size={10} className="shrink-0" />
-                  <span className="truncate max-w-[130px] font-medium">
-                    {currentLocationKey}
-                  </span>
-                  <ChevronDown size={10} className="text-white/40 shrink-0" />
-                </button>
-
-                {/* Location Picker Popup */}
-                {isSelectingLocation && (
-                  <div
-                    onMouseDown={(e) => e.stopPropagation()}
-                    className="absolute left-0 top-full mt-1.5 w-[220px] rounded-[16px] bg-[#181820] border border-white/15 shadow-[0_10px_30px_rgba(0,0,0,0.8)] p-1.5 z-40 space-y-1 animate-in fade-in zoom-in-95 duration-100"
-                  >
-                    <div className="text-[10px] uppercase font-mono text-white/40 px-2 py-1">
-                      เลือกสถานที่ผูกกับฉากนี้
-                    </div>
-                    {locKeys.map((key) => (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => handleSelectLocation(key)}
-                        className={`w-full text-left px-2.5 py-1.5 rounded-[10px] text-[11.5px] font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
-                          key === currentLocationKey
-                            ? 'bg-[#EF264C]/20 text-white border border-[#EF264C]/30'
-                            : 'text-white/70 hover:bg-white/[0.08] hover:text-white'
-                        }`}
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                        <span className="truncate">{key}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <h3 className="text-[13px] sm:text-[13.5px] font-semibold text-[#F1F1F1] tracking-tight truncate mt-0.5">
-              {scene.title || `ฉากที่ ${index + 1}`}
-            </h3>
-          </div>
-        </div>
-
-        {/* Header Right: Pacing Quota & Action Controls */}
+      {/* ===================================================================== */}
+      {/* 1. TOP HEADER & BEAT SELECTOR DOCK                                    */}
+      {/* ===================================================================== */}
+      <div className="shrink-0 space-y-2">
+        {/* Top Control Bar: Turn Gauge & Edit Actions (Draggable Header Area) */}
         <div
-          className="flex items-center gap-1.5 shrink-0"
-          onMouseDown={(e) => e.stopPropagation()}
+          onMouseDown={(e) => {
+            if (!isEditing) onStartDrag(e, scene.scene_id);
+          }}
+          className="flex items-center justify-between gap-1.5 cursor-grab active:cursor-grabbing"
         >
-          {/* Turn Quota Pill */}
-          <div className="px-2 py-0.5 rounded-full bg-white/[0.05] border border-white/10 flex items-center gap-1 text-[10.5px] text-white/60 font-medium">
-            <span>โควตา: {currentBeat?.pacing_control?.max_turns || 3} รอบ</span>
-            <span className="flex items-center gap-0.5 text-[#EF264C] text-[9px]">
-              ●●○
+          {/* Turn Quota Dot Badge */}
+          <div
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] shrink-0"
+            title={`โควตาคุยเล่น: ${displayTurns} รอบ`}
+          >
+            <span className="text-[11px] font-medium text-white/60">
+              โควตา: {displayTurns} รอบ
             </span>
+            <div className="flex items-center gap-0.5">
+              {Array.from({ length: Math.min(5, displayTurns) }).map((_, dotIdx) => (
+                <div
+                  key={dotIdx}
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    dotIdx < 2
+                      ? 'bg-[#EF264C] shadow-[0_0_4px_rgba(239,38,76,0.6)]'
+                      : 'bg-white/30'
+                  }`}
+                />
+              ))}
+            </div>
           </div>
 
-          {/* Edit / Save Button */}
+          {/* Edit / Save / Delete Buttons */}
           {isEditable && (
-            <>
+            <div
+              className="flex items-center gap-1 shrink-0"
+              onMouseDown={(e) => e.stopPropagation()}
+            >
               {isEditing ? (
                 <button
                   type="button"
                   onClick={handleSaveEdit}
                   className="w-6 h-6 rounded-full bg-[#EF264C] text-white flex items-center justify-center cursor-pointer shadow-[0_2px_8px_rgba(239,38,76,0.4)] active:scale-95 transition-all"
-                  title="บันทึกการแก้ไขบีต"
+                  title="บันทึกบีต"
                 >
                   <Check size={11} strokeWidth={2.4} />
                 </button>
@@ -307,33 +258,31 @@ export default function SceneNodeCard({
                 <button
                   type="button"
                   onClick={handleStartEdit}
-                  className="w-6 h-6 rounded-full bg-white/[0.04] hover:bg-white/[0.12] border border-white/10 text-white/60 hover:text-white flex items-center justify-center cursor-pointer transition-all"
-                  title="แก้ไขบีตนี้"
+                  className="w-6 h-6 rounded-full bg-white/[0.04] hover:bg-white/[0.12] border border-white/10 text-white/60 hover:text-white flex items-center justify-center cursor-pointer transition-all active:scale-95"
+                  title="แก้ไขข้อมูลบีตนี้"
                 >
                   <Pencil size={10} strokeWidth={2} />
                 </button>
               )}
-
-              {/* Delete Beat or Scene */}
-              <button
-                type="button"
-                onClick={beats.length > 1 ? handleDeleteCurrentBeat : onDeleteScene}
-                className="w-6 h-6 rounded-full bg-white/[0.04] hover:bg-red-500/20 border border-white/10 hover:border-red-500/30 text-white/40 hover:text-red-300 flex items-center justify-center cursor-pointer transition-all"
-                title={beats.length > 1 ? 'ลบบีตนี้' : 'ลบฉากนี้'}
-              >
-                <Trash2 size={10} strokeWidth={2} />
-              </button>
-            </>
+              {!isEditing && (
+                <button
+                  type="button"
+                  onClick={handleDeleteCurrentBeat}
+                  className="w-6 h-6 rounded-full bg-white/[0.04] hover:bg-red-500/20 border border-white/10 hover:border-red-500/30 text-white/40 hover:text-red-300 flex items-center justify-center cursor-pointer transition-all active:scale-95"
+                  title={beats.length > 1 ? 'ลบบีตนี้' : 'ลบฉากนี้'}
+                >
+                  <Trash2 size={10} strokeWidth={2} />
+                </button>
+              )}
+            </div>
           )}
         </div>
-      </div>
 
-      {/* ✦ 2. BEAT SELECTOR PILL DOCK (REORDER CONTROLS & MID-PILL INSERTION) */}
-      <div className="px-4 py-2 border-b border-white/[0.06] bg-black/20 flex items-center justify-between gap-2 overflow-x-auto custom-scrollbar select-none">
-        <div className="flex items-center gap-1.5 flex-1 min-w-0">
-          {beats.map((_, bIdx) => (
-            <div key={bIdx} className="flex items-center gap-1 shrink-0">
-              {/* Mid-Pill Insertion Button [+] */}
+        {/* ✦ BEAT SELECTOR PILL DOCK WITH REORDERING ARROWS & MID-INSERTION */}
+        <div className="flex items-center gap-1 overflow-x-auto custom-scrollbar pb-0.5">
+          {beats.map((b, bIdx) => (
+            <div key={b.beat_id || bIdx} className="flex items-center gap-1 shrink-0">
+              {/* Mid-Pill Insertion Button (Before Beat if not first) */}
               {isEditable && bIdx > 0 && (
                 <button
                   type="button"
@@ -347,7 +296,10 @@ export default function SceneNodeCard({
 
               {/* Beat Pill with Reorder Controls when active */}
               <div
-                onClick={() => setActiveBeatIndex(bIdx)}
+                onClick={() => {
+                  setActiveBeatIndex(bIdx);
+                  setIsEditing(false);
+                }}
                 className={`px-2.5 py-1 rounded-full text-[11.5px] sm:text-[12px] font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
                   bIdx === safeBeatIndex
                     ? 'bg-white/12 text-white border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] font-semibold'
@@ -397,48 +349,51 @@ export default function SceneNodeCard({
             <button
               type="button"
               onClick={handleAddBeatEnd}
-              className="w-6 h-6 rounded-full bg-white/[0.03] hover:bg-white/[0.10] border border-dashed border-white/20 text-white/50 hover:text-white flex items-center justify-center cursor-pointer shrink-0 transition-all ml-0.5"
+              className="px-2 py-1 rounded-full bg-white/[0.03] hover:bg-white/[0.08] text-white/40 hover:text-white text-[11px] font-medium flex items-center gap-1 transition-all cursor-pointer shrink-0"
               title="เพิ่มบีตใหม่ต่อท้าย"
             >
-              <Plus size={11} strokeWidth={2.2} />
+              <Plus size={10} strokeWidth={2} />
+              <span>บีต</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* ✦ 3. BODY: THE 3 CORE DRAMATIC ORGANS (APPROACH 1) */}
+      {/* ===================================================================== */}
+      {/* 2. THE 3 DRAMATIC ORGANS / READ MODE                                  */}
+      {/* ===================================================================== */}
       {!isEditing ? (
-        <div className="flex-1 flex flex-col justify-between p-3.5 gap-2 overflow-hidden">
-          {/* Organ 1: 🎭 ตัวละครกำลังทำอะไร */}
-          <div className="rounded-[16px] bg-white/[0.03] border border-white/[0.07] px-3.5 py-2.5 flex flex-col gap-1.5 transition-colors hover:border-white/12">
-            <div className="flex items-center gap-1.5 text-white/60">
-              <Sparkles size={13} className="text-[#EF264C]" />
-              <span className="text-[12px] sm:text-[12.5px] font-semibold text-[#F1F1F1] tracking-tight">
+        <div className="flex-1 flex flex-col justify-between gap-1.5 py-1 overflow-hidden">
+          {/* Organ 1: 🎭 1. ตัวละครกำลังทำอะไร */}
+          <div className="rounded-[14px] bg-white/[0.03] border border-white/[0.06] px-3.5 py-2 flex flex-col gap-1">
+            <div className="flex items-center gap-1.5 text-[#EF264C]">
+              <Sparkles size={13} />
+              <span className="text-[12px] sm:text-[12.5px] font-semibold text-white/90 tracking-tight">
                 1. ตัวละครกำลังทำอะไร
               </span>
             </div>
             <p
-              className={`text-[12.5px] sm:text-[13px] text-[#EDEDED] font-normal leading-[20px] tracking-tight ${
-                isExpandedCard ? '' : 'line-clamp-3'
+              className={`text-[12.5px] sm:text-[13px] text-white/80 font-normal leading-[19px] tracking-tight ${
+                isExpandedCard ? '' : 'line-clamp-2'
               }`}
             >
-              {currentBeat?.actor_state || 'ยังไม่ได้ระบุท่าทางตัวละคร...'}
+              {currentBeat?.actor_state || 'ยังไม่มีการระบุการกระทำของตัวละคร'}
             </p>
           </div>
 
-          {/* Organ 2: 🎯 ถ้าผู้เล่นทำแบบนี้ (เรื่องจะไปต่อทันที) */}
-          <div className="rounded-[14px] bg-white/[0.03] border border-white/[0.07] px-3.5 py-2 flex flex-col gap-1.5">
+          {/* Organ 2: 🎯 2. ถ้าผู้เล่นทำแบบนี้ (Tactile Multi-Line Layout) */}
+          <div className="rounded-[14px] bg-white/[0.03] border border-white/[0.06] px-3.5 py-2 flex flex-col gap-1.5">
             <div className="flex items-center gap-1.5 text-emerald-400">
               <Target size={13} />
-              <span className="text-[12px] sm:text-[12.5px] font-semibold text-[#F1F1F1] tracking-tight">
+              <span className="text-[12px] sm:text-[12.5px] font-semibold text-white/90 tracking-tight">
                 {isExpandedCard
                   ? '2. ถ้าผู้เล่นทำแบบนี้ (เรื่องจะไปต่อทันที)'
                   : '2. ถ้าผู้เล่นทำแบบนี้...'}
               </span>
             </div>
 
-            {/* List of Triggers */}
-            <div className="space-y-1.5">
+            {/* List of Triggers in Multi-Line Tactile Format */}
+            <div className="space-y-2">
               {triggerEntries.length > 0 ? (
                 (isExpandedCard ? triggerEntries : triggerEntries.slice(0, 1)).map(([key, val]) => {
                   const isLoop =
@@ -447,28 +402,35 @@ export default function SceneNodeCard({
                   return (
                     <div
                       key={key}
-                      className="flex items-center justify-between gap-2 text-[12px] min-w-0"
+                      className="flex flex-col gap-1 py-1 border-b border-white/[0.04] last:border-0"
                     >
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <span className="px-2.5 py-0.5 rounded-full bg-white/[0.07] border border-white/10 font-medium text-white text-[11.5px] shrink-0">
+                      {/* Line 1: Player Choice (Multi-line supported, no truncate) */}
+                      <div className="flex items-start gap-1.5">
+                        <span className="text-emerald-400/80 text-[11px] mt-0.5 shrink-0 font-bold">
+                          ▸
+                        </span>
+                        <span className="text-[12px] sm:text-[12.5px] font-medium text-white/90 leading-snug">
                           {key}
                         </span>
+                      </div>
+
+                      {/* Line 2: Action Badge + Feedback response (Multi-line, no truncate) */}
+                      <div className="flex items-baseline gap-2 pl-3.5 flex-wrap">
+                        <span
+                          className={`text-[9.5px] sm:text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${
+                            isLoop
+                              ? 'text-amber-300 bg-amber-500/15 border border-amber-500/30'
+                              : 'text-[#EF264C] bg-[#EF264C]/15 border border-[#EF264C]/30'
+                          }`}
+                        >
+                          {isLoop ? '↺ อยู่ที่เดิม' : '→ ไปต่อ'}
+                        </span>
                         {val.feedback && (
-                          <span className="text-[12px] text-white/70 italic truncate">
+                          <span className="text-[11.5px] sm:text-[12px] text-white/65 italic leading-relaxed">
                             ➔ {val.feedback}
                           </span>
                         )}
                       </div>
-                      {/* Action Result Badge: ไปต่อ vs อยู่ที่เดิม */}
-                      <span
-                        className={`text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${
-                          isLoop
-                            ? 'text-amber-300 bg-amber-500/15 border border-amber-500/30'
-                            : 'text-[#EF264C] bg-[#EF264C]/15 border border-[#EF264C]/30'
-                        }`}
-                      >
-                        {isLoop ? '↺ อยู่ที่เดิม' : '→ ไปต่อ'}
-                      </span>
                     </div>
                   );
                 })
@@ -485,13 +447,13 @@ export default function SceneNodeCard({
             </div>
           </div>
 
-          {/* Organ 3: ⏳ ถ้าผู้เล่นไม่ทำอะไร */}
+          {/* Organ 3: ⏳ 3. ถ้าผู้เล่นไม่ทำอะไร */}
           <div className="rounded-[14px] bg-amber-500/[0.03] border border-amber-500/20 px-3.5 py-2 flex flex-col gap-1">
             <div className="flex items-center gap-1.5 text-amber-400">
               <Clock size={13} />
               <span className="text-[12px] sm:text-[12.5px] font-semibold text-amber-300 tracking-tight">
                 {isExpandedCard
-                  ? `3. ถ้าผู้เล่นไม่ทำอะไร (คุยครบ ${maxTurns} รอบ เรื่องจะเดินต่อเองว่า)`
+                  ? `3. ถ้าผู้เล่นไม่ทำอะไร (คุยครบ ${displayTurns} รอบ เรื่องจะเดินต่อเองว่า)`
                   : '3. ถ้าผู้เล่นไม่ทำอะไร...'}
               </span>
             </div>
@@ -500,7 +462,8 @@ export default function SceneNodeCard({
                 isExpandedCard ? '' : 'line-clamp-2'
               }`}
             >
-              {currentBeat?.pacing_control?.inevitable_consequence || 'ยังไม่ได้ระบุจุดจบเทิร์น...'}
+              {currentBeat?.pacing_control?.inevitable_consequence ||
+                'เรื่องราวดำเนินสู่ขั้นถัดไปอัตโนมัติ'}
             </p>
           </div>
         </div>
@@ -508,7 +471,7 @@ export default function SceneNodeCard({
         /* ===================================================================== */
         /* ✦ IN-PLACE EDIT MODE                                                  */
         /* ===================================================================== */
-        <div className="flex-1 flex flex-col gap-3 p-3.5 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 flex flex-col gap-3 py-1 overflow-y-auto custom-scrollbar pr-1">
           {/* 1. Edit Actor State */}
           <div className="flex flex-col gap-1">
             <label className="text-[11.5px] font-semibold text-white/70 flex items-center gap-1.5">

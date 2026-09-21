@@ -73,20 +73,7 @@ export default function MindShadowCard({
     'bg-white/[0.06] hover:bg-white/[0.09] backdrop-blur-2xl border border-white/[0.10] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-all flex flex-col justify-between relative overflow-hidden';
 
   return (
-    <div className="w-full flex justify-center py-2">
-      {/* ========================================================================= */}
-      {/* ✦ MATHEMATICAL GAME GRID: 165px BASE UNIT, 16px GAP                        */}
-      {/* CARD SIZE: STRICT 2x2 (346px × 346px) MATCHING SECTION 1 EXACTLY           */}
-      {/* ========================================================================= */}
-      <div
-        className="grid gap-4 justify-center"
-        style={{
-          gridTemplateColumns: 'repeat(auto-fill, 165px)',
-          gridAutoRows: '165px',
-          width: '100%',
-          maxWidth: '1440px',
-        }}
-      >
+    <>
         <div
           className={`col-span-2 row-span-2 rounded-[28px] p-4 ${frostedCardClass}`}
           style={{ width: '346px', height: '346px' }}
@@ -318,7 +305,6 @@ export default function MindShadowCard({
             </div>
           )}
         </div>
-      </div>
-    </div>
+    </>
   );
 }

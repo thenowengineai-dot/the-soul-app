@@ -436,20 +436,7 @@ export default function IdentityVisualCard({
     'bg-white/[0.06] hover:bg-white/[0.09] backdrop-blur-2xl border border-white/[0.10] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-all flex flex-col justify-between relative overflow-hidden';
 
   return (
-    <div className="w-full flex justify-center py-2">
-      {/* ========================================================================= */}
-      {/* ✦ MATHEMATICAL GAME GRID: 165px BASE UNIT, 16px GAP (GOLDILOCKS ZONE)       */}
-      {/* 1x1: 165x165 | 2x1: 346x165 | 2x2: 346x346 (FROSTED GLASS, ZERO SHADOW)    */}
-      {/* ========================================================================= */}
-      <div
-        className="grid gap-4 justify-center"
-        style={{
-          gridTemplateColumns: 'repeat(auto-fill, 165px)',
-          gridAutoRows: '165px',
-          width: '100%',
-          maxWidth: '1440px',
-        }}
-      >
+    <>
 
         {/* ======================================================================= */}
         {/* 👑 WIDGET 1: IDENTITY & SOUL (2x2 -> 346px × 346px - HERO TITLE)          */}
@@ -1033,7 +1020,7 @@ export default function IdentityVisualCard({
         {/* 🎭 WIDGET 4: SIGNATURE POSTURES (2x1 -> 346px × 165px - SLIDE REEL)       */}
         {/* ======================================================================= */}
         <div
-          className={`col-span-2 row-span-1 rounded-[28px] p-3.5 ${frostedCardClass}`}
+          className={`col-span-2 row-span-1 rounded-[28px] p-3.5 order-last ${frostedCardClass}`}
           style={{ width: '346px', height: '165px' }}
         >
           {/* Header Row: Title + Posture Count + Slide Controls */}
@@ -1161,7 +1148,6 @@ export default function IdentityVisualCard({
           </div>
         </div>
 
-      </div>
-    </div>
+    </>
   );
 }

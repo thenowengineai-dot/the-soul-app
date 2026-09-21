@@ -332,20 +332,7 @@ export default function DynamicsCharismaCard({
   });
 
   return (
-    <div className="w-full flex justify-center py-2">
-      {/* ========================================================================= */}
-      {/* ✦ MATHEMATICAL GAME GRID: 165px BASE UNIT, 16px GAP                        */}
-      {/* DUAL 2x2 BENTO SUITE: 346px + 16px + 346px = 708px TOTAL WIDTH              */}
-      {/* ========================================================================= */}
-      <div
-        className="grid gap-4 justify-center"
-        style={{
-          gridTemplateColumns: 'repeat(auto-fill, 165px)',
-          gridAutoRows: '165px',
-          width: '100%',
-          maxWidth: '1440px',
-        }}
-      >
+    <>
         {/* ======================================================================= */}
         {/* ✦ CARD 3.1: THE 7-AXIS DYNAMICS RADAR (2x2 — 346px × 346px)            */}
         {/* ======================================================================= */}
@@ -752,7 +739,6 @@ export default function DynamicsCharismaCard({
             </div>
           </div>
         </div>
-      </div>
 
       {/* ========================================================================= */}
       {/* ✦ ADD NEW PERK MODAL DIALOG                                              */}
@@ -834,6 +820,6 @@ export default function DynamicsCharismaCard({
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

@@ -90,72 +90,36 @@ export default function StudioCardCanvasModal({
 
       {/* 2. MAIN SCROLLABLE CANVAS STAGE */}
       <main className="flex-1 overflow-y-auto px-4 sm:px-8 py-8 flex justify-center items-start">
-        <div className="w-full max-w-[1440px] pb-24 space-y-10">
+        <div className="w-full max-w-[1440px] pb-24 flex justify-center">
           {/* =============================================================== */}
-          {/* ✦ หมวดหมู่ที่ 1: รูปลักษณ์และสไตล์ (Identity & Visual)              */}
+          {/* ✦ UNIFIED MASTER BENTO GRID (165px BASE UNIT, 16px GAP)          */}
+          {/* All cards merged seamlessly into one continuous Bento Canvas     */}
           {/* =============================================================== */}
-          <section className="space-y-2">
-            <div className="flex items-center gap-2.5 px-2">
-              <span className="text-[#EF264C] text-[14px]">✦</span>
-              <h2 className="text-[19px] sm:text-[21px] font-bold text-[#F1F1F1] tracking-tight">
-                1. รูปลักษณ์และสไตล์
-              </h2>
-              <span className="text-[12px] text-white/40 font-normal ml-1 hidden sm:inline">
-                (ตัวตน, ตู้เสื้อผ้าตามสถานการณ์, สรีระ & ท่วงท่า)
-              </span>
-            </div>
+          <div
+            className="grid gap-4 justify-center"
+            style={{
+              gridTemplateColumns: 'repeat(auto-fill, 165px)',
+              gridAutoRows: '165px',
+              width: '100%',
+              maxWidth: '1440px',
+            }}
+          >
             <IdentityVisualCard
               draft={draft}
               onUpdateDraft={onUpdateDraft}
               isEditable={true}
             />
-          </section>
-
-          {/* Hairline Separator Between Master Categories */}
-          <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/[0.10] to-transparent my-2" />
-
-          {/* =============================================================== */}
-          {/* ✦ หมวดหมู่ที่ 2: จิตวิทยาและตัวตนเบื้องลึก (Mind & Shadow)         */}
-          {/* =============================================================== */}
-          <section className="space-y-2">
-            <div className="flex items-center gap-2.5 px-2">
-              <span className="text-[#EF264C] text-[14px]">✦</span>
-              <h2 className="text-[19px] sm:text-[21px] font-bold text-[#F1F1F1] tracking-tight">
-                2. จิตวิทยาและตัวตนเบื้องลึก
-              </h2>
-              <span className="text-[12px] text-white/40 font-normal ml-1 hidden sm:inline">
-                (หน้ากากทางสังคม, จุดขัดแย้งในใจ, ธาตุแท้ใต้หน้ากาก)
-              </span>
-            </div>
             <MindShadowCard
               draft={draft}
               onUpdateDraft={onUpdateDraft}
               isEditable={true}
             />
-          </section>
-
-          {/* Hairline Separator Between Master Categories */}
-          <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/[0.10] to-transparent my-2" />
-
-          {/* =============================================================== */}
-          {/* ✦ หมวดหมู่ที่ 3: พลวัตสเตตัสและเสน่ห์เฉพาะตัว (Dynamics & Charisma) */}
-          {/* =============================================================== */}
-          <section className="space-y-2">
-            <div className="flex items-center gap-2.5 px-2">
-              <span className="text-[#EF264C] text-[14px]">✦</span>
-              <h2 className="text-[19px] sm:text-[21px] font-bold text-[#F1F1F1] tracking-tight">
-                3. พลวัตสเตตัสและเสน่ห์เฉพาะตัว
-              </h2>
-              <span className="text-[12px] text-white/40 font-normal ml-1 hidden sm:inline">
-                (พลวัต 7 แกนหลัก, สเตตัสรอง 5 แกน & เสน่ห์เฉพาะตัว)
-              </span>
-            </div>
             <DynamicsCharismaCard
               draft={draft}
               onUpdateDraft={onUpdateDraft}
               isEditable={true}
             />
-          </section>
+          </div>
         </div>
       </main>
     </div>

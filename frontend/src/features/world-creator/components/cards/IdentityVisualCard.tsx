@@ -297,25 +297,25 @@ export default function IdentityVisualCard({
   return (
     <div className="w-full flex justify-center py-2">
       {/* ========================================================================= */}
-      {/* ✦ MATHEMATICAL GAME GRID: 170px BASE UNIT, 16px GAP (CALIBRATED)           */}
-      {/* 1x1: 170x170 | 2x1: 356x170 | 2x2: 356x356 (FROSTED GLASS, ZERO SHADOW)    */}
+      {/* ✦ MATHEMATICAL GAME GRID: 165px BASE UNIT, 16px GAP (GOLDILOCKS ZONE)       */}
+      {/* 1x1: 165x165 | 2x1: 346x165 | 2x2: 346x346 (FROSTED GLASS, ZERO SHADOW)    */}
       {/* ========================================================================= */}
       <div
         className="grid gap-4 justify-center"
         style={{
-          gridTemplateColumns: 'repeat(auto-fill, 170px)',
-          gridAutoRows: '170px',
+          gridTemplateColumns: 'repeat(auto-fill, 165px)',
+          gridAutoRows: '165px',
           width: '100%',
           maxWidth: '1440px',
         }}
       >
 
         {/* ======================================================================= */}
-        {/* 🪪 WIDGET 1: IDENTITY & ARCHETYPE (2x2 -> 356px × 356px)                 */}
+        {/* 🪪 WIDGET 1: IDENTITY & ARCHETYPE (2x2 -> 346px × 346px)                 */}
         {/* ======================================================================= */}
         <div
           className={`col-span-2 row-span-2 rounded-[28px] p-4 ${frostedCardClass}`}
-          style={{ width: '356px', height: '356px' }}
+          style={{ width: '346px', height: '346px' }}
         >
           {/* Top Bar: Label Badge + Obvious Tactile Edit/Save Action */}
           <div className="flex items-center justify-between gap-2 shrink-0">
@@ -477,11 +477,11 @@ export default function IdentityVisualCard({
         </div>
 
         {/* ======================================================================= */}
-        {/* 👗 WIDGET 2: WARDROBE CLOSET (2x2 -> 356px × 356px)                      */}
+        {/* 👗 WIDGET 2: WARDROBE CLOSET (2x2 -> 346px × 346px)                      */}
         {/* ======================================================================= */}
         <div
           className={`col-span-2 row-span-2 rounded-[28px] p-4 ${frostedCardClass}`}
-          style={{ width: '356px', height: '356px' }}
+          style={{ width: '346px', height: '346px' }}
         >
           {/* Header Row: Closet Badge + Hangers Switcher */}
           <div>
@@ -609,11 +609,11 @@ export default function IdentityVisualCard({
         </div>
 
         {/* ======================================================================= */}
-        {/* 👓 WIDGET 3: ANATOMY & PHYSIQUE (2x2 -> 356px × 356px - 4 QUADRANTS)   */}
+        {/* 👓 WIDGET 3: ANATOMY & PHYSIQUE (2x2 -> 346px × 346px - 4 QUADRANTS)   */}
         {/* ======================================================================= */}
         <div
           className={`col-span-2 row-span-2 rounded-[28px] p-4 ${frostedCardClass}`}
-          style={{ width: '356px', height: '356px' }}
+          style={{ width: '346px', height: '346px' }}
         >
           {/* Header Row */}
           <div>
@@ -636,7 +636,7 @@ export default function IdentityVisualCard({
               {anatomyTraits.map((trait, idx) => (
                 <div
                   key={trait.id}
-                  className="p-2.5 rounded-[18px] bg-black/40 hover:bg-black/50 backdrop-blur-xl border border-white/[0.06] hover:border-white/12 shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)] flex flex-col justify-between transition-all h-[110px] overflow-hidden"
+                  className="p-2.5 rounded-[18px] bg-black/40 hover:bg-black/50 backdrop-blur-xl border border-white/[0.06] hover:border-white/12 shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)] flex flex-col justify-between transition-all h-[106px] overflow-hidden"
                 >
                   <div className="flex items-center justify-between gap-1 mb-1 shrink-0">
                     <div className="flex items-center gap-1.5">
@@ -696,11 +696,11 @@ export default function IdentityVisualCard({
         </div>
 
         {/* ======================================================================= */}
-        {/* 🎭 WIDGET 4: SIGNATURE POSTURES (2x1 -> 356px × 170px - HORIZONTAL WIDE)  */}
+        {/* 🎭 WIDGET 4: SIGNATURE POSTURES (2x1 -> 346px × 165px - HORIZONTAL WIDE)  */}
         {/* ======================================================================= */}
         <div
           className={`col-span-2 row-span-1 rounded-[28px] p-3.5 ${frostedCardClass}`}
-          style={{ width: '356px', height: '170px' }}
+          style={{ width: '346px', height: '165px' }}
         >
           {/* Header Row */}
           <div className="flex items-center justify-between gap-1 shrink-0">
@@ -792,11 +792,11 @@ export default function IdentityVisualCard({
         </div>
 
         {/* ======================================================================= */}
-        {/* 🌙 WIDGET 5: STARTING ATMOSPHERE (1x1 -> 170px × 170px - APPLE WEATHER)   */}
+        {/* 🌙 WIDGET 5: STARTING ATMOSPHERE (1x1 -> 165px × 165px - APPLE WEATHER)   */}
         {/* ======================================================================= */}
         <div
           className={`col-span-1 row-span-1 rounded-[24px] p-3 ${frostedCardClass}`}
-          style={{ width: '170px', height: '170px' }}
+          style={{ width: '165px', height: '165px' }}
         >
           {/* Header: Venue & Time */}
           <div className="flex items-center justify-between shrink-0">
@@ -860,11 +860,11 @@ export default function IdentityVisualCard({
         </div>
 
         {/* ======================================================================= */}
-        {/* 🧭 WIDGET 6: PLAYER STANCE (1x1 -> 170px × 170px - COMPASS TILE)         */}
+        {/* 🧭 WIDGET 6: PLAYER STANCE (1x1 -> 165px × 165px - COMPASS TILE)         */}
         {/* ======================================================================= */}
         <div
           className={`col-span-1 row-span-1 rounded-[24px] p-3 ${frostedCardClass}`}
-          style={{ width: '170px', height: '170px' }}
+          style={{ width: '165px', height: '165px' }}
         >
           {/* Header */}
           <div className="flex items-center justify-between shrink-0">

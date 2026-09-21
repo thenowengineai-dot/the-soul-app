@@ -552,17 +552,14 @@ export default function DynamicsCharismaCard({
         >
           {/* Header Row: Pure Title (NO icon in front) + Edit / Save Pill */}
           <div className="flex items-center justify-between shrink-0 mb-1">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-[16.5px] sm:text-[17.5px] font-semibold text-[#F1F1F1] tracking-tight">
+            <div className="flex items-baseline min-w-0 pr-2">
+              <span className="text-[15.5px] sm:text-[16.5px] font-semibold text-[#F1F1F1] tracking-tight whitespace-nowrap">
                 สเตตัสพิเศษ & เสน่ห์เฉพาะตัว
-              </span>
-              <span className="text-[11px] font-normal text-white/40">
-                (5 ค่า + {perks.length} เสน่ห์)
               </span>
             </div>
 
             {isEditable && (
-              <div>
+              <div className="shrink-0">
                 {isEditingSecondary ? (
                   <button
                     type="button"
@@ -610,11 +607,10 @@ export default function DynamicsCharismaCard({
                         </span>
                       </div>
 
-                      {/* Value (Carmine Red consistent with Status Card) / Stepper in edit mode */}
+                      {/* Value (Carmine Red consistent with Status Card, NO /10) / Stepper in edit mode */}
                       {!isEditingSecondary ? (
-                        <div className="text-[12.5px] sm:text-[13px] font-bold text-[#EF264C] shrink-0 leading-none">
+                        <div className="text-[11.5px] sm:text-[12px] font-bold text-[#EF264C] shrink-0 leading-none">
                           {val}
-                          <span className="text-[9.5px] text-white/40 font-normal ml-0.5">/10</span>
                         </div>
                       ) : (
                         <div className="flex items-center gap-1.5 shrink-0">
@@ -626,7 +622,7 @@ export default function DynamicsCharismaCard({
                           >
                             -
                           </button>
-                          <span className="text-[12.5px] font-bold text-[#EF264C] w-3.5 text-center leading-none">
+                          <span className="text-[12px] font-bold text-[#EF264C] w-3.5 text-center leading-none">
                             {val}
                           </span>
                           <button
@@ -637,7 +633,6 @@ export default function DynamicsCharismaCard({
                           >
                             +
                           </button>
-                          <span className="text-[9px] text-white/40 font-normal">/10</span>
                         </div>
                       )}
                     </div>
@@ -658,7 +653,7 @@ export default function DynamicsCharismaCard({
             <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/[0.10] to-transparent my-1.5" />
 
             {/* 2. Lower Tray: Signature Perks (Apple Dark Pill Chips) */}
-            <div className="flex-1 flex flex-col justify-end min-h-[90px]">
+            <div className="flex-1 flex flex-col justify-end min-h-[92px]">
               <div className="flex items-center justify-between mb-1.5 px-0.5">
                 <span className="text-[11px] font-semibold text-white/50 tracking-wider uppercase">
                   เสน่ห์เฉพาะตัว (Perks)
@@ -682,7 +677,7 @@ export default function DynamicsCharismaCard({
                     <div
                       key={index}
                       onClick={() => !isEditingSecondary && setActivePerkIndex(index)}
-                      className={`px-2.5 py-1 rounded-full text-[11.5px] font-normal flex items-center gap-1.5 transition-all select-none ${
+                      className={`px-2.5 py-1 rounded-full text-[11.5px] sm:text-[12px] font-normal flex items-center gap-1.5 transition-all select-none ${
                         isEditingSecondary
                           ? 'bg-white/[0.07] border border-white/12 text-white/90'
                           : 'bg-white/[0.05] hover:bg-white/[0.12] border border-white/[0.08] hover:border-white/20 text-white/85 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] active:scale-95'
@@ -708,31 +703,31 @@ export default function DynamicsCharismaCard({
                 </div>
               ) : (
                 /* Tap-to-Expand Perk Detail Drawer */
-                <div className="p-2 rounded-2xl bg-white/[0.05] border border-white/[0.10] flex flex-col justify-between animate-fadeIn">
-                  <div className="flex items-center justify-between mb-1">
+                <div className="p-2.5 rounded-2xl bg-white/[0.05] border border-white/[0.10] flex flex-col justify-between animate-fadeIn">
+                  <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-1.5 truncate">
-                      <span className="text-[#EF264C] text-[10px]">✦</span>
-                      <span className="text-[12px] font-semibold text-[#F1F1F1] truncate">
+                      <span className="text-[#EF264C] text-[11px]">✦</span>
+                      <span className="text-[12.5px] sm:text-[13px] font-semibold text-[#F1F1F1] truncate">
                         {perks[activePerkIndex]?.perk_name}
                       </span>
                     </div>
                     <button
                       type="button"
                       onClick={() => setActivePerkIndex(null)}
-                      className="w-4 h-4 rounded-full bg-white/10 hover:bg-white/20 text-white/60 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
+                      className="w-5 h-5 rounded-full bg-white/10 hover:bg-white/20 text-white/60 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
                       title="ย้อนกลับ"
                     >
-                      <X size={10} strokeWidth={2} />
+                      <X size={11} strokeWidth={2} />
                     </button>
                   </div>
 
-                  <div className="space-y-1 text-[10.5px] leading-relaxed">
-                    <p className="text-white/70 line-clamp-2">
-                      <span className="text-white/40 font-medium mr-1">เงื่อนไข:</span>
+                  <div className="space-y-1 text-[11px] sm:text-[11.5px] leading-relaxed">
+                    <p className="text-white/85 line-clamp-2">
+                      <span className="text-white/50 font-medium mr-1">เงื่อนไข:</span>
                       {perks[activePerkIndex]?.trigger}
                     </p>
-                    <p className="text-white/70 line-clamp-2">
-                      <span className="text-[#EF264C]/90 font-medium mr-1">ผลลัพธ์:</span>
+                    <p className="text-white/85 line-clamp-2">
+                      <span className="text-[#EF264C] font-semibold mr-1">ผลลัพธ์:</span>
                       {perks[activePerkIndex]?.effect}
                     </p>
                   </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Pencil,
   Check,
@@ -14,6 +14,7 @@ import {
   X,
 } from 'lucide-react';
 import type { VaultDraft, WorldScene, WorldBeat, PlayerTriggerAction } from '../../types';
+import { computeSceneChainOrder, getCleanSceneTitle } from '../railroad/RailroadCableOverlay';
 
 interface WorldBeatCardProps {
   draft: VaultDraft;
@@ -118,6 +119,15 @@ export default function WorldBeatCard({
 
   // Safe scene and beat references
   const currentScene = scenes[selectedSceneIndex] || scenes[0];
+
+  // Dynamic Sequential Scene Order Map (Recalculated on connection changes)
+  const sceneOrderMap = useMemo(() => computeSceneChainOrder(scenes), [scenes]);
+  const currentOrder = sceneOrderMap.get(currentScene?.scene_id) ?? null;
+  const currentCleanTitle = getCleanSceneTitle(currentScene?.title);
+  const currentDisplayTitle = currentOrder
+    ? `ฉากที่ ${currentOrder}: ${currentCleanTitle || 'สถานการณ์'}`
+    : currentCleanTitle || 'ฉากอิสระ';
+
   const beats = currentScene?.beats || [];
   const safeBeatIndex = Math.min(selectedBeatIndex, Math.max(0, beats.length - 1));
   const currentBeat: WorldBeat = beats[safeBeatIndex] || {
@@ -359,36 +369,44 @@ export default function WorldBeatCard({
               className="text-left flex items-center gap-1.5 text-[12px] sm:text-[12.5px] text-white/60 hover:text-white transition-colors truncate cursor-pointer group/scn"
             >
               <span className="truncate max-w-[130px] font-medium text-white/80 group-hover/scn:text-white">
-                {currentScene.title || `ฉากที่ ${selectedSceneIndex + 1}`}
+                {currentDisplayTitle}
               </span>
               <ChevronDown size={12} className="text-white/40 shrink-0" />
             </button>
 
             {/* Scene Selector Popup */}
             {isSelectingScene && (
-              <div className="absolute left-0 top-full mt-1 w-[200px] rounded-[14px] bg-[#181820] border border-white/15 shadow-[0_12px_36px_rgba(0,0,0,0.85)] p-1 z-30 space-y-0.5 animate-in fade-in zoom-in-95 duration-100">
+              <div className="absolute left-0 top-full mt-1 w-[220px] rounded-[14px] bg-[#181820] border border-white/15 shadow-[0_12px_36px_rgba(0,0,0,0.85)] p-1 z-30 space-y-0.5 animate-in fade-in zoom-in-95 duration-100">
                 <div className="text-[10px] uppercase font-mono text-white/40 px-2 py-1">
                   เลือกฉาก
                 </div>
-                {scenes.map((sc, scIdx) => (
-                  <button
-                    key={sc.scene_id || scIdx}
-                    type="button"
-                    onClick={() => {
-                      setSelectedSceneIndex(scIdx);
-                      setSelectedBeatIndex(0);
-                      setIsSelectingScene(false);
-                      setIsEditing(false);
-                    }}
-                    className={`w-full text-left px-2 py-1 rounded-[8px] text-[11.5px] transition-colors truncate cursor-pointer ${
-                      scIdx === selectedSceneIndex
-                        ? 'bg-[#EF264C]/20 text-white font-medium'
-                        : 'text-white/70 hover:bg-white/[0.08] hover:text-white'
-                    }`}
-                  >
-                    {sc.title || `ฉากที่ ${scIdx + 1}`}
-                  </button>
-                ))}
+                {scenes.map((sc, scIdx) => {
+                  const scOrder = sceneOrderMap.get(sc.scene_id) ?? null;
+                  const scClean = getCleanSceneTitle(sc.title);
+                  const scDisplay = scOrder
+                    ? `ฉากที่ ${scOrder}: ${scClean || 'สถานการณ์'}`
+                    : `${scClean || 'ฉากอิสระ'} (อิสระ)`;
+
+                  return (
+                    <button
+                      key={sc.scene_id || scIdx}
+                      type="button"
+                      onClick={() => {
+                        setSelectedSceneIndex(scIdx);
+                        setSelectedBeatIndex(0);
+                        setIsSelectingScene(false);
+                        setIsEditing(false);
+                      }}
+                      className={`w-full text-left px-2 py-1 rounded-[8px] text-[11.5px] transition-colors truncate cursor-pointer ${
+                        scIdx === selectedSceneIndex
+                          ? 'bg-[#EF264C]/20 text-white font-medium'
+                          : 'text-white/70 hover:bg-white/[0.08] hover:text-white'
+                      }`}
+                    >
+                      {scDisplay}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>

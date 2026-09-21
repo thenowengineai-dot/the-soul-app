@@ -40,6 +40,85 @@ export function resolveNextSceneId(
   return null;
 }
 
+/**
+ * Strips prefixes like "ฉากที่ 1: ", "ฉากที่ 1 ", "ฉากคั่น: ", "ฉากคั่น " from raw title.
+ */
+export function getCleanSceneTitle(rawTitle?: string): string {
+  if (!rawTitle) return '';
+  return rawTitle
+    .replace(/^(ฉากที่\s*\d+\s*:\s*|ฉากที่\s*\d+\s*|ฉากคั่น\s*:\s*|ฉากคั่น\s*)/i, '')
+    .trim();
+}
+
+/**
+ * Computes dynamic sequential numbering (1, 2, 3, 4...) following the railroad connection chain:
+ * - Traverses from root nodes (no incoming connection + has outgoing connection).
+ * - Connected nodes receive consecutive numbers: 1, 2, 3, 4...
+ * - Disconnected / unlinked nodes (no incoming and no outgoing) are NOT assigned a number.
+ */
+export function computeSceneChainOrder(scenes: WorldScene[]): Map<string, number> {
+  const orderMap = new Map<string, number>();
+  if (!scenes || scenes.length === 0) return orderMap;
+
+  const outgoing = new Map<string, string>();
+  const incomingCount = new Map<string, number>();
+
+  scenes.forEach((s) => {
+    incomingCount.set(s.scene_id, 0);
+  });
+
+  scenes.forEach((s, idx) => {
+    const nextId = resolveNextSceneId(s, idx, scenes);
+    if (nextId && scenes.some((other) => other.scene_id === nextId)) {
+      outgoing.set(s.scene_id, nextId);
+    }
+  });
+
+  outgoing.forEach((targetId) => {
+    incomingCount.set(targetId, (incomingCount.get(targetId) || 0) + 1);
+  });
+
+  const isConnected = (id: string) =>
+    outgoing.has(id) || (incomingCount.get(id) || 0) > 0;
+
+  // Root nodes: in-degree === 0 AND has outgoing connection
+  const roots = scenes.filter(
+    (s) => (incomingCount.get(s.scene_id) || 0) === 0 && outgoing.has(s.scene_id)
+  );
+
+  // If no root with outgoing found but there are connected nodes (e.g. cycle), pick first connected
+  if (roots.length === 0) {
+    const firstConnected = scenes.find((s) => isConnected(s.scene_id));
+    if (firstConnected) roots.push(firstConnected);
+  }
+
+  const visited = new Set<string>();
+  let currentOrder = 1;
+
+  for (const root of roots) {
+    let curr: string | undefined = root.scene_id;
+    while (curr && !visited.has(curr)) {
+      visited.add(curr);
+      orderMap.set(curr, currentOrder++);
+      curr = outgoing.get(curr);
+    }
+  }
+
+  // Handle any remaining connected chains or loops
+  for (const s of scenes) {
+    if (isConnected(s.scene_id) && !visited.has(s.scene_id)) {
+      let curr: string | undefined = s.scene_id;
+      while (curr && !visited.has(curr)) {
+        visited.add(curr);
+        orderMap.set(curr, currentOrder++);
+        curr = outgoing.get(curr);
+      }
+    }
+  }
+
+  return orderMap;
+}
+
 export default function RailroadCableOverlay({
   scenes,
   onInsertSceneBetween,

@@ -14,11 +14,13 @@ import {
   X,
 } from 'lucide-react';
 import type { WorldScene, WorldBeat, WorldLocationsMap, PlayerTriggerAction } from '../../types';
+import { getCleanSceneTitle } from './RailroadCableOverlay';
 
 interface SceneNodeCardProps {
   scene: WorldScene;
   index: number;
   availableLocations?: WorldLocationsMap;
+  sceneOrder?: number | null;
   hasIncomingCable?: boolean;
   hasOutgoingCable?: boolean;
   isDropTarget?: boolean;
@@ -40,6 +42,7 @@ interface EditTriggerItem {
 export default function SceneNodeCard({
   scene,
   index,
+  sceneOrder = null,
   hasIncomingCable = false,
   hasOutgoingCable = false,
   isDropTarget = false,
@@ -186,6 +189,11 @@ export default function SceneNodeCard({
     : [];
   const displayTurns = currentBeat?.pacing_control?.max_turns || 3;
 
+  const cleanTitle = getCleanSceneTitle(scene.title);
+  const displayTitle = sceneOrder
+    ? `ฉากที่ ${sceneOrder}: ${cleanTitle || 'สถานการณ์'}`
+    : cleanTitle || 'ฉากอิสระ';
+
   return (
     <div
       className={`absolute w-[346px] rounded-[24px] bg-[#141419]/95 backdrop-blur-2xl border p-4 flex flex-col justify-between transition-all select-none group/node ${
@@ -241,7 +249,11 @@ export default function SceneNodeCard({
           }
         }}
         className="absolute -right-[8px] top-[24px] -translate-y-1/2 w-[16px] h-[16px] rounded-full bg-[#141419] border border-[#EF264C]/90 hover:border-white hover:scale-125 transition-all z-30 flex items-center justify-center cursor-crosshair group/port shadow-[0_0_8px_rgba(239,38,76,0.4)]"
-        title="พอร์ตส่งสัญญาณ: คลิกลากเส้นเชื่อมต่อไปยังฉากอื่น (Click & Drag to Connect Node)"
+        title={
+          hasOutgoingCable
+            ? 'พอร์ตส่งสัญญาณ: คลิกลากเพื่อเปลี่ยนเส้นเชื่อมต่อไปยังฉากอื่น (Drag to Reconnect)'
+            : 'พอร์ตส่งสัญญาณ: คลิกลากเส้นเชื่อมต่อไปยังฉากอื่น (Drag to Connect)'
+        }
       >
         <div className="w-1.5 h-1.5 rounded-full bg-[#EF264C] group-hover/port:scale-125 transition-transform" />
       </div>
@@ -261,13 +273,13 @@ export default function SceneNodeCard({
           <div className="min-w-0 flex-1 flex items-center gap-1.5">
             <span
               className="truncate block font-medium text-[12px] sm:text-[12.5px] text-white/80"
-              title={scene.title || `ฉากที่ ${index + 1}`}
+              title={displayTitle}
             >
-              {scene.title || `ฉากที่ ${index + 1}`}
+              {displayTitle}
             </span>
 
-            {/* Free Unlinked Node Badge */}
-            {!hasIncomingCable && !hasOutgoingCable && (
+            {/* Free Unlinked Node Badge (When unlinked from chain) */}
+            {!sceneOrder && (
               <span className="px-1.5 py-0.2 rounded-full bg-white/[0.04] border border-white/10 text-[9px] font-mono text-white/40 shrink-0">
                 อิสระ
               </span>

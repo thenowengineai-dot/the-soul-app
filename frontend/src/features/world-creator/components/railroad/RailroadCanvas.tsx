@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import {
   Plus,
   ZoomIn,
@@ -13,6 +13,7 @@ import SceneNodeCard from './SceneNodeCard';
 import RailroadCableOverlay, {
   type DraggingWireState,
   resolveNextSceneId,
+  computeSceneChainOrder,
   SCENE_WIDTH,
   PORT_Y_OFFSET,
 } from './RailroadCableOverlay';
@@ -27,7 +28,7 @@ interface RailroadCanvasProps {
 const DEFAULT_SCENES: WorldScene[] = [
   {
     scene_id: 'scene_1',
-    title: 'ฉากที่ 1: ห้องโถงเสื่อทาทามิเรียวกัง',
+    title: 'ห้องโถงเสื่อทาทามิเรียวกัง',
     location_key: 'ห้องโถงเสื่อทาทามิเรียวกัง',
     position: { x: 80, y: 100 },
     next_scene_id: 'scene_2',
@@ -99,7 +100,7 @@ const DEFAULT_SCENES: WorldScene[] = [
   },
   {
     scene_id: 'scene_2',
-    title: 'ฉากที่ 2: ซอกถ้ำหินแกรนิตร้าง',
+    title: 'ซอกถ้ำหินแกรนิตร้าง',
     location_key: 'ซอกถ้ำหินแกรนิตร้าง',
     position: { x: 540, y: 100 },
     next_scene_id: 'scene_3',
@@ -171,7 +172,7 @@ const DEFAULT_SCENES: WorldScene[] = [
   },
   {
     scene_id: 'scene_3',
-    title: 'ฉากที่ 3: เส้นทางป่าทึบขากลับ',
+    title: 'เส้นทางป่าทึบขากลับ',
     location_key: 'เส้นทางป่าทึบขากลับ',
     position: { x: 1000, y: 100 },
     scene_objective: '[ACTOR] ต้องบังคับให้ [PLAYER] ประคองช่วยดับพิษ โดยไม่ให้เพื่อนชมรมจับได้',
@@ -277,6 +278,9 @@ export default function RailroadCanvas({
 
   const scenes: WorldScene[] =
     scenario.scenes && scenario.scenes.length > 0 ? scenario.scenes : DEFAULT_SCENES;
+
+  // Dynamic Sequential Scene Order Map (Recalculated on connection changes)
+  const sceneOrderMap = useMemo(() => computeSceneChainOrder(scenes), [scenes]);
 
   const availableLocations =
     draft.real_locations && Object.keys(draft.real_locations).length > 0
@@ -535,7 +539,7 @@ export default function RailroadCanvas({
 
     const newScene: WorldScene = {
       scene_id: `scene_${Date.now()}`,
-      title: `ฉากที่ ${scenes.length + 1}: สถานการณ์ใหม่`,
+      title: 'สถานการณ์ใหม่',
       location_key: Object.keys(availableLocations)[0] || 'ห้องสกัดสมุนไพร ณ เรือนพักปีกใน',
       position: { x: newX, y: newY },
       next_scene_id: null,
@@ -592,7 +596,7 @@ export default function RailroadCanvas({
     const newSceneId = `scene_mid_${Date.now()}`;
     const insertedScene: WorldScene = {
       scene_id: newSceneId,
-      title: `ฉากคั่น: จังหวะเปลี่ยนผ่าน`,
+      title: 'จังหวะเปลี่ยนผ่าน',
       location_key: sceneA?.location_key || Object.keys(availableLocations)[0],
       position: { x: posX, y: posY },
       next_scene_id: sceneB ? sceneB.scene_id : null,
@@ -670,6 +674,7 @@ export default function RailroadCanvas({
           );
           const hasOutgoing = Boolean(resolveNextSceneId(scene, idx, scenes));
           const isTarget = hoveredTargetSceneId === scene.scene_id;
+          const sceneOrder = sceneOrderMap.get(scene.scene_id) ?? null;
 
           return (
             <SceneNodeCard
@@ -677,6 +682,7 @@ export default function RailroadCanvas({
               scene={scene}
               index={idx}
               availableLocations={availableLocations}
+              sceneOrder={sceneOrder}
               hasIncomingCable={hasIncoming}
               hasOutgoingCable={hasOutgoing}
               isDropTarget={isTarget}

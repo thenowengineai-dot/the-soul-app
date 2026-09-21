@@ -482,7 +482,7 @@ export default function RailroadCanvas({
               cx={(36 * zoom) / 2}
               cy={(36 * zoom) / 2}
               r={1.5}
-              fill="rgba(255, 255, 255, 0.045)"
+              fill="rgba(255, 255, 255, 0.07)"
             />
           </pattern>
         </defs>

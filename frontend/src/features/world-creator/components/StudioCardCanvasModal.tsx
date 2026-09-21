@@ -69,9 +69,12 @@ export default function StudioCardCanvasModal({
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-gradient-to-b from-[#EF264C]/[0.06] via-white/[0.02] to-transparent pointer-events-none blur-3xl -z-10" />
 
       {/* 1. TOP CONTROL BAR (APPLE EDITORIAL LUXURY) */}
-      <header className="h-[60px] sm:h-[64px] shrink-0 border-b border-white/[0.08] px-6 sm:px-8 flex items-center justify-between bg-app-bg/85 backdrop-blur-2xl z-20">
-        {/* Left: Apple Tactile Segmented Studio Switcher */}
-        <div className="flex items-center p-1 rounded-full bg-white/[0.04] border border-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+      <header className="relative h-[60px] sm:h-[64px] shrink-0 border-b border-white/[0.08] px-6 sm:px-8 flex items-center justify-between bg-app-bg/85 backdrop-blur-2xl z-20">
+        {/* Left Spacer for absolute center balance */}
+        <div className="w-10 sm:w-24 shrink-0" />
+
+        {/* Center: Apple Tactile Segmented Studio Switcher (Dead Center) */}
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center p-1 rounded-full bg-white/[0.04] border border-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
           <button
             type="button"
             onClick={() => setActiveStudioTab('character')}
@@ -115,11 +118,11 @@ export default function StudioCardCanvasModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.10] hover:border-white/20 text-white/85 hover:text-white text-[12.5px] font-medium flex items-center gap-2 transition-all active:scale-95 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]"
+            className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.10] hover:border-white/20 text-white/85 hover:text-white text-[12.5px] font-medium flex items-center gap-2 transition-all active:scale-95 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]"
           >
             <X size={14} strokeWidth={2.4} />
-            <span>กลับสู่ห้องแชท</span>
-            <span className="text-white/30 text-[10px] uppercase font-mono px-1 rounded bg-white/5">
+            <span className="hidden sm:inline">กลับสู่ห้องแชท</span>
+            <span className="text-white/30 text-[10px] uppercase font-mono px-1 rounded bg-white/5 hidden sm:inline">
               ESC
             </span>
           </button>

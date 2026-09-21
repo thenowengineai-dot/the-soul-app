@@ -533,10 +533,10 @@ export default function IdentityVisualCard({
               </div>
             ) : (
               <div>
-                <h1 className="text-[30px] sm:text-[32px] font-bold text-[#F1F1F1] tracking-tight leading-[1.15]">
+                <h1 className="text-[32px] sm:text-[34px] font-bold text-[#F1F1F1] tracking-tight leading-[1.15]">
                   {name}
                 </h1>
-                <div className="text-[13px] sm:text-[13.5px] text-[#A1A1A8] mt-1.5 font-normal leading-normal">
+                <div className="text-[13.5px] sm:text-[14px] text-[#A1A1A8] mt-1.5 font-normal leading-normal">
                   <span className="font-medium text-white/80">{archetype}</span>
                   {archetypeTh && (
                     <span className="text-white/45 font-normal ml-1.5">
@@ -548,19 +548,16 @@ export default function IdentityVisualCard({
                 {/* Subtle Divider Hairline */}
                 <div className="w-8 h-[1px] bg-white/15 my-3.5" />
 
-                {/* Hashtags Frosted Dark Pills */}
+                {/* Hashtags Frosted Dark Pills - 3-Row Compact Rhythm */}
                 <div className="flex flex-wrap gap-1.5">
                   {hashtags.map((tag, idx) => {
-                    const cleanTag = tag.startsWith('#') ? tag.slice(1) : tag;
+                    const cleanTag = tag.startsWith('#') ? tag : `#${tag}`;
                     return (
                       <span
                         key={idx}
-                        className="inline-flex items-center px-2.5 py-1 rounded-full text-[11.5px] sm:text-[12px] font-normal bg-white/[0.05] hover:bg-white/[0.09] border border-white/[0.08] hover:border-white/15 text-white/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-all cursor-default select-none group"
+                        className="inline-flex items-center px-2 py-0.5 rounded-full text-[11.5px] sm:text-[12px] font-normal bg-white/[0.05] hover:bg-white/[0.09] border border-white/[0.08] hover:border-white/15 text-white/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-all cursor-default select-none"
                       >
-                        <span className="text-[#EF264C] font-semibold text-[11px] mr-1 group-hover:scale-110 transition-transform">
-                          #
-                        </span>
-                        <span>{cleanTag}</span>
+                        {cleanTag}
                       </span>
                     );
                   })}

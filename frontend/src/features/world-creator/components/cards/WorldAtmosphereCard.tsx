@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Pencil, Check, CloudSun, Wind, Palette } from 'lucide-react';
+import { Pencil, Check, CloudSun, Wind, Palette, X } from 'lucide-react';
 import type { VaultDraft } from '../../types';
 
 interface WorldAtmosphereCardProps {
@@ -20,6 +20,9 @@ export default function WorldAtmosphereCard({
   isEditable = true,
 }: WorldAtmosphereCardProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [activeDimension, setActiveDimension] = useState<'weather' | 'sensory' | 'color' | null>(
+    null
+  );
 
   const [thaiName, setThaiName] = useState(() => {
     return draft.thai_name || DEFAULT_THAI_NAME;
@@ -120,7 +123,10 @@ export default function WorldAtmosphereCard({
             ) : (
               <button
                 type="button"
-                onClick={() => setIsEditing(true)}
+                onClick={() => {
+                  setIsEditing(true);
+                  setActiveDimension(null);
+                }}
                 className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 hover:border-white/20 text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] active:scale-95"
                 title="แก้ไขข้อมูลโลก"
               >
@@ -148,64 +154,148 @@ export default function WorldAtmosphereCard({
             {/* Horizon Hairline Gradient (Under Title) */}
             <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/[0.14] to-transparent my-3 shrink-0" />
 
-            {/* 💡 Concept 1: The Apple Weather / Biome Micro-Dock (3 คอลัมน์แนวนอน ไม่ตกขอบ) */}
-            <div className="rounded-[20px] bg-white/[0.035] border border-white/[0.08] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] shrink-0">
-              <div className="grid grid-cols-3 gap-2 divide-x divide-white/[0.08]">
-                {/* Column 1: Time & Weather */}
-                <div className="flex flex-col justify-between pr-1.5 min-w-0">
-                  <div className="flex items-center gap-1.5 text-white/40">
-                    <CloudSun size={12} className="shrink-0 text-amber-300/80" />
-                    <span className="text-[9.5px] uppercase font-medium tracking-wider truncate">
-                      กาลเวลา/อากาศ
-                    </span>
-                  </div>
+            {/* ✦ ATMOSPHERE SANCTUARY: 3-COLUMN OVERVIEW vs EXPANDED DETAIL (สไตล์ปุ่มเสน่ห์ Perks) */}
+            {activeDimension === null ? (
+              /* State 1: 3-Column Dock Overview (แตะเพื่อขยายดูข้อความเต็ม) */
+              <div className="rounded-[20px] bg-white/[0.035] border border-white/[0.08] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] shrink-0">
+                <div className="grid grid-cols-3 gap-2 divide-x divide-white/[0.08]">
+                  {/* Column 1: Time & Weather */}
                   <div
-                    className="mt-1.5 text-[11.5px] text-[#EDEDED] font-normal leading-snug line-clamp-2"
-                    title={weather}
+                    onClick={() => setActiveDimension('weather')}
+                    className="flex flex-col justify-between pr-1.5 min-w-0 cursor-pointer hover:bg-white/[0.04] p-1 -m-1 rounded-xl transition-all group"
+                    title="แตะเพื่อดูสภาพอากาศแบบเต็ม"
                   >
-                    {weather}
-                  </div>
-                </div>
-
-                {/* Column 2: Sensory & Biome */}
-                <div className="flex flex-col justify-between px-2 min-w-0">
-                  <div className="flex items-center gap-1.5 text-white/40">
-                    <Wind size={12} className="shrink-0 text-sky-300/80" />
-                    <span className="text-[9.5px] uppercase font-medium tracking-wider truncate">
-                      ผัสสะฉาก
-                    </span>
-                  </div>
-                  <div
-                    className="mt-1.5 text-[11.5px] text-[#EDEDED] font-normal leading-snug line-clamp-2"
-                    title={sensory}
-                  >
-                    {sensory}
-                  </div>
-                </div>
-
-                {/* Column 3: Color Tone & Vibe */}
-                <div className="flex flex-col justify-between pl-2 min-w-0">
-                  <div className="flex items-center gap-1.5 text-white/40">
-                    <Palette size={12} className="shrink-0 text-rose-400/80" />
-                    <span className="text-[9.5px] uppercase font-medium tracking-wider truncate">
-                      โทนสีภาพ
-                    </span>
-                  </div>
-                  <div className="mt-1.5 flex flex-col gap-1 min-w-0">
-                    <div className="flex items-center gap-1 shrink-0">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_5px_rgba(52,211,153,0.35)]" />
-                      <span className="w-2 h-2 rounded-full bg-[#EF264C] shrink-0 shadow-[0_0_5px_rgba(239,38,76,0.35)]" />
+                    <div className="flex items-center gap-1.5 text-white/40 group-hover:text-white/70 transition-colors">
+                      <CloudSun size={12} className="shrink-0 text-amber-300/80" />
+                      <span className="text-[9.5px] uppercase font-medium tracking-wider truncate">
+                        กาลเวลา/อากาศ
+                      </span>
                     </div>
                     <div
-                      className="text-[11px] text-[#EDEDED] font-normal leading-tight line-clamp-2"
-                      title={colorVibe}
+                      className="mt-1.5 text-[11.5px] text-[#EDEDED] font-normal leading-snug line-clamp-2 group-hover:text-white transition-colors"
+                      title={weather}
                     >
-                      {colorVibe}
+                      {weather}
+                    </div>
+                  </div>
+
+                  {/* Column 2: Sensory & Biome */}
+                  <div
+                    onClick={() => setActiveDimension('sensory')}
+                    className="flex flex-col justify-between px-2 min-w-0 cursor-pointer hover:bg-white/[0.04] p-1 -m-1 rounded-xl transition-all group"
+                    title="แตะเพื่อดูผัสสะสิ่งแวดล้อมแบบเต็ม"
+                  >
+                    <div className="flex items-center gap-1.5 text-white/40 group-hover:text-white/70 transition-colors">
+                      <Wind size={12} className="shrink-0 text-sky-300/80" />
+                      <span className="text-[9.5px] uppercase font-medium tracking-wider truncate">
+                        ผัสสะฉาก
+                      </span>
+                    </div>
+                    <div
+                      className="mt-1.5 text-[11.5px] text-[#EDEDED] font-normal leading-snug line-clamp-2 group-hover:text-white transition-colors"
+                      title={sensory}
+                    >
+                      {sensory}
+                    </div>
+                  </div>
+
+                  {/* Column 3: Color Tone & Vibe */}
+                  <div
+                    onClick={() => setActiveDimension('color')}
+                    className="flex flex-col justify-between pl-2 min-w-0 cursor-pointer hover:bg-white/[0.04] p-1 -m-1 rounded-xl transition-all group"
+                    title="แตะเพื่อดูโทนสีภาพแบบเต็ม"
+                  >
+                    <div className="flex items-center gap-1.5 text-white/40 group-hover:text-white/70 transition-colors">
+                      <Palette size={12} className="shrink-0 text-rose-400/80" />
+                      <span className="text-[9.5px] uppercase font-medium tracking-wider truncate">
+                        โทนสีภาพ
+                      </span>
+                    </div>
+                    <div className="mt-1.5 flex flex-col gap-1 min-w-0">
+                      <div className="flex items-center gap-1 shrink-0">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_5px_rgba(52,211,153,0.35)]" />
+                        <span className="w-2 h-2 rounded-full bg-[#EF264C] shrink-0 shadow-[0_0_5px_rgba(239,38,76,0.35)]" />
+                      </div>
+                      <div
+                        className="text-[11px] text-[#EDEDED] font-normal leading-tight line-clamp-2 group-hover:text-white transition-colors"
+                        title={colorVibe}
+                      >
+                        {colorVibe}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              /* State 2: Expanded Detail Drawer (แสดงข้อความเต็ม 100% เหมือนในปุ่มเสน่ห์เฉพาะตัว Perks) */
+              <div className="rounded-[20px] bg-white/[0.045] hover:bg-white/[0.06] border border-white/[0.10] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] flex flex-col justify-between animate-fadeIn shrink-0 min-h-[92px]">
+                {/* Header Row: Dimension Name + Back Button */}
+                <div className="flex items-center justify-between pb-1">
+                  {activeDimension === 'weather' && (
+                    <div className="flex items-center gap-1.5 truncate">
+                      <CloudSun size={13} className="text-amber-300 shrink-0" />
+                      <span className="text-[11.5px] sm:text-[12px] font-semibold text-[#F1F1F1] truncate">
+                        สภาพอากาศและกาลเวลา
+                      </span>
+                    </div>
+                  )}
+                  {activeDimension === 'sensory' && (
+                    <div className="flex items-center gap-1.5 truncate">
+                      <Wind size={13} className="text-sky-300 shrink-0" />
+                      <span className="text-[11.5px] sm:text-[12px] font-semibold text-[#F1F1F1] truncate">
+                        ผัสสะและสิ่งแวดล้อม
+                      </span>
+                    </div>
+                  )}
+                  {activeDimension === 'color' && (
+                    <div className="flex items-center gap-1.5 truncate">
+                      <Palette size={13} className="text-rose-400 shrink-0" />
+                      <span className="text-[11.5px] sm:text-[12px] font-semibold text-[#F1F1F1] truncate">
+                        โทนสีหลัก & ไวบ์ของภาพ
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Close / Back Button */}
+                  <button
+                    type="button"
+                    onClick={() => setActiveDimension(null)}
+                    className="w-5 h-5 rounded-full bg-white/10 hover:bg-white/20 text-white/60 hover:text-white flex items-center justify-center cursor-pointer transition-colors shrink-0 ml-1.5"
+                    title="ย้อนกลับไปดูทั้ง 3 มิติ"
+                  >
+                    <X size={11} strokeWidth={2.4} />
+                  </button>
+                </div>
+
+                {/* Body Row: Full Uncut Text */}
+                <div className="overflow-y-auto max-h-[75px] pr-1 custom-scrollbar select-text pt-0.5">
+                  {activeDimension === 'weather' && (
+                    <p className="text-[12px] sm:text-[12.5px] text-[#EDEDED] font-normal leading-[21px]">
+                      {weather}
+                    </p>
+                  )}
+                  {activeDimension === 'sensory' && (
+                    <p className="text-[12px] sm:text-[12.5px] text-[#EDEDED] font-normal leading-[21px]">
+                      {sensory}
+                    </p>
+                  )}
+                  {activeDimension === 'color' && (
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.4)]" />
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#EF264C] shadow-[0_0_6px_rgba(239,38,76,0.4)]" />
+                        <span className="text-[9.5px] text-white/40 font-mono uppercase tracking-wider">
+                          COLOR PALETTE
+                        </span>
+                      </div>
+                      <p className="text-[12px] sm:text-[12.5px] text-[#EDEDED] font-normal leading-[21px]">
+                        {colorVibe}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           /* Edit Mode Form */

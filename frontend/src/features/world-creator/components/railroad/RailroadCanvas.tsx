@@ -3,7 +3,8 @@ import {
   Plus,
   ZoomIn,
   ZoomOut,
-  Sparkles,
+  Lightbulb,
+  X,
   RotateCcw,
   Layers,
   AlignHorizontalDistributeCenter,
@@ -257,6 +258,9 @@ export default function RailroadCanvas({
   const [zoom, setZoom] = useState<number>(0.9);
   const [isPanning, setIsPanning] = useState<boolean>(false);
   const startPanRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  // Canvas Instruction Tip Pill Visibility
+  const [showTip, setShowTip] = useState<boolean>(true);
 
   // Node Dragging State
   const [draggingSceneId, setDraggingSceneId] = useState<string | null>(null);
@@ -865,11 +869,22 @@ export default function RailroadCanvas({
         </div>
       </div>
 
-      {/* ✦ 3. TOP-LEFT CANVAS INSTRUCTION HINT */}
-      <div className="absolute top-4 left-6 flex items-center gap-2 px-3 py-1 rounded-full bg-black/40 backdrop-blur-xl border border-white/[0.08] text-[10.5px] text-white/40 pointer-events-none z-20">
-        <Sparkles size={11} className="text-[#EF264C]" />
-        <span>ลากเมาส์เลื่อนแคนวาส • หมุนลูกกลิ้งเพื่อซูม • ลากพอร์ตแดงเชื่อมโยง Node • ชี้ที่เส้นเพื่อตัด/แทรกฉาก</span>
-      </div>
+      {/* ✦ 3. TOP-LEFT CANVAS INSTRUCTION TIP PILL (APPLE FROSTED PILL WITH AMBER LIGHTBULB & DISMISS X) */}
+      {showTip && (
+        <div className="absolute top-4 left-6 flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#16161E]/90 hover:bg-[#1A1A24] backdrop-blur-2xl border border-white/[0.12] shadow-[0_8px_24px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.10)] text-[11.5px] text-white/75 pointer-events-auto z-20 select-none animate-in fade-in duration-200">
+          <Lightbulb size={13} className="text-amber-400 shrink-0 fill-amber-400/20" />
+          <span>ลากเมาส์เลื่อนแคนวาส • หมุนลูกกลิ้งเพื่อซูม • ลากพอร์ตแดงเชื่อมโยง Node • ชี้ที่เส้นเพื่อตัด/แทรกฉาก</span>
+          <button
+            type="button"
+            onClick={() => setShowTip(false)}
+            className="w-4 h-4 rounded-full bg-white/10 hover:bg-white/20 text-white/60 hover:text-white flex items-center justify-center transition-colors cursor-pointer shrink-0 ml-1 active:scale-90"
+            title="ปิดคำแนะนำ"
+            aria-label="ปิดคำแนะนำ"
+          >
+            <X size={10} strokeWidth={2.4} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

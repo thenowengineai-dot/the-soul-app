@@ -10,7 +10,6 @@ import {
   Flame,
   Droplets,
   Hourglass,
-  Hash,
   Sparkles,
   Moon,
   CloudRain,
@@ -55,7 +54,7 @@ export default function IdentityVisualCard({
     draft.quote ||
       '“อย่าขยับสิคะ... ถ้าขยับพิษจากละอองเกสรจะยิ่งแล่นเข้าสู่กระแสเลือดนะ ให้รุ่นพี่ช่วยรีดมันออกจะดีกว่า...”'
   );
-  const [hashtags, setHashtags] = useState<string[]>(() => {
+  const [hashtags] = useState<string[]>(() => {
     return draft.hashtags && draft.hashtags.length > 0
       ? draft.hashtags
       : [
@@ -66,9 +65,8 @@ export default function IdentityVisualCard({
           '#ตรรกะรีดพิษด้วยน้ำมังกร',
         ];
   });
-  const [newTagInput, setNewTagInput] = useState('');
 
-  // 2. Anatomy Traits (Unified 1 Card: 4 Biometric Quadrants)
+  // 2. Anatomy Traits (Unified 1 Card: 4 Biometric Rows)
   const [anatomyTraits, setAnatomyTraits] = useState<AnatomyTrait[]>(() => {
     const raw = draft.appearance?.anatomy_features || [];
     return [
@@ -214,17 +212,6 @@ export default function IdentityVisualCard({
         starting_state: updatedStartingState,
       });
     }
-  };
-
-  const handleAddHashtag = () => {
-    if (!newTagInput.trim()) return;
-    const tag = newTagInput.startsWith('#') ? newTagInput.trim() : `#${newTagInput.trim()}`;
-    setHashtags([...hashtags, tag]);
-    setNewTagInput('');
-  };
-
-  const handleRemoveHashtag = (idx: number) => {
-    setHashtags(hashtags.filter((_, i) => i !== idx));
   };
 
   const handleAddNewOutfit = () => {
@@ -419,61 +406,6 @@ export default function IdentityVisualCard({
               </div>
             )}
           </div>
-
-          {/* Bottom: Hashtag Capsules */}
-          <div className="pt-1 flex flex-wrap items-center gap-1.5 shrink-0">
-            {hashtags.map((tag, idx) => (
-              <span
-                key={idx}
-                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/[0.08] hover:bg-white/[0.14] border border-white/10 text-[11px] text-white/90 font-medium shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
-              >
-                <Hash size={10} className="text-[#EF264C]" />
-                <span>{tag.replace(/^#/, '')}</span>
-                {isEditing && (
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveHashtag(idx)}
-                    className="hover:text-red-400 text-white/40 ml-0.5 cursor-pointer text-[12px]"
-                  >
-                    ×
-                  </button>
-                )}
-              </span>
-            ))}
-
-            {isEditing ? (
-              <div className="flex items-center gap-1">
-                <input
-                  type="text"
-                  value={newTagInput}
-                  onChange={(e) => setNewTagInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleAddHashtag();
-                    }
-                  }}
-                  placeholder="+ แท็ก"
-                  className="bg-black/30 border border-white/20 focus:border-[#EF264C] rounded-full px-2.5 py-0.5 text-[11px] text-[#F1F1F1] outline-none w-16"
-                />
-                <button
-                  type="button"
-                  onClick={handleAddHashtag}
-                  className="w-5 h-5 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center text-[10px] cursor-pointer"
-                >
-                  +
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setIsEditing(true)}
-                className="px-2.5 py-0.5 rounded-full border border-dashed border-white/25 text-[10.5px] text-white/50 hover:text-white font-mono cursor-pointer transition-colors"
-              >
-                + Tag
-              </button>
-            )}
-          </div>
         </div>
 
         {/* ======================================================================= */}
@@ -484,206 +416,141 @@ export default function IdentityVisualCard({
           style={{ width: '346px', height: '346px' }}
         >
           {/* Header Row: Closet Badge + Hangers Switcher */}
-          <div>
-            <div className="flex items-center justify-between gap-1 mb-2">
-              <div className="flex items-center gap-1.5">
-                <div className="w-6 h-6 rounded-full bg-white/[0.08] flex items-center justify-center">
-                  <Shirt size={12} className="text-[#EF264C]" />
-                </div>
-                <span className="text-[11px] font-mono tracking-wider text-white/70 uppercase font-bold">
-                  WARDROBE (ตู้เสื้อผ้า)
-                </span>
+          <div className="flex items-center justify-between gap-1 mb-2 shrink-0">
+            <div className="flex items-center gap-1.5">
+              <div className="w-6 h-6 rounded-full bg-white/[0.08] flex items-center justify-center">
+                <Shirt size={12} className="text-[#EF264C]" />
               </div>
-
-              {/* Hanger Pills Switcher */}
-              <div className="flex flex-wrap items-center gap-1">
-                {outfits.map((outfit, idx) => {
-                  const isActive = idx === activeOutfitIndex;
-                  const isDefault = outfit.key === initialOutfitKey;
-
-                  return (
-                    <button
-                      key={outfit.key}
-                      type="button"
-                      onClick={() => setActiveOutfitIndex(idx)}
-                      className={`px-2.5 py-1 rounded-full text-[11px] font-medium flex items-center gap-1 transition-all cursor-pointer ${
-                        isActive
-                          ? 'bg-white/20 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] border border-white/25'
-                          : 'bg-white/[0.04] text-white/60 hover:text-white border border-transparent'
-                      }`}
-                    >
-                      {isDefault && <span className="text-[#EF264C] text-[8px]">✦</span>}
-                      <span>{outfit.badgeLabel}</span>
-                    </button>
-                  );
-                })}
-
-                {isEditing && (
-                  <button
-                    type="button"
-                    onClick={handleAddNewOutfit}
-                    className="w-5 h-5 rounded-full bg-white/[0.08] hover:bg-white/[0.18] text-white flex items-center justify-center text-[10px] cursor-pointer"
-                    title="เพิ่มชุดใหม่ในตู้"
-                  >
-                    <Plus size={11} />
-                  </button>
-                )}
-              </div>
+              <span className="text-[11px] font-mono tracking-wider text-white/70 uppercase font-bold">
+                WARDROBE (ตู้เสื้อผ้า)
+              </span>
             </div>
 
-            {/* Tactile Garment Swatch Card */}
-            <div className="my-auto p-3 rounded-[18px] bg-black/40 backdrop-blur-xl border border-white/[0.06] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)] flex flex-col justify-between gap-2">
-              <div className="flex items-center justify-between gap-1.5">
-                {isEditing ? (
-                  <div className="flex-1">
-                    <label className="text-[9.5px] font-mono text-white/50 uppercase">ชื่อสไตล์ชุด</label>
-                    <input
-                      type="text"
-                      value={activeOutfit.name}
-                      onChange={(e) => {
-                        const updated = [...outfits];
-                        updated[activeOutfitIndex].name = e.target.value;
-                        setOutfits(updated);
-                      }}
-                      className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-0.5 text-[12.5px] font-bold text-white outline-none"
-                    />
-                  </div>
-                ) : (
-                  <span className="text-[13.5px] font-bold text-white tracking-tight truncate">
-                    {activeOutfit.name}
-                  </span>
-                )}
+            {/* Hanger Pills Switcher */}
+            <div className="flex flex-wrap items-center gap-1">
+              {outfits.map((outfit, idx) => {
+                const isActive = idx === activeOutfitIndex;
+                const isDefault = outfit.key === initialOutfitKey;
 
-                {activeOutfit.key === initialOutfitKey ? (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-semibold shrink-0">
-                    <BookmarkCheck size={10} /> DEFAULT
-                  </span>
-                ) : (
+                return (
                   <button
+                    key={outfit.key}
                     type="button"
-                    onClick={() => setInitialOutfitKey(activeOutfit.key)}
-                    className="text-[10px] text-white/50 hover:text-white underline cursor-pointer transition-colors shrink-0"
+                    onClick={() => setActiveOutfitIndex(idx)}
+                    className={`px-2.5 py-1 rounded-full text-[11px] font-medium flex items-center gap-1 transition-all cursor-pointer ${
+                      isActive
+                        ? 'bg-white/20 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] border border-white/25'
+                        : 'bg-white/[0.04] text-white/60 hover:text-white border border-transparent'
+                    }`}
                   >
-                    ตั้งเป็นชุดเริ่มต้น
+                    {isDefault && <span className="text-[#EF264C] text-[8px]">✦</span>}
+                    <span>{outfit.badgeLabel}</span>
                   </button>
-                )}
-              </div>
+                );
+              })}
 
-              {isEditing ? (
-                <div className="space-y-1">
-                  <label className="text-[9.5px] font-mono text-white/50 uppercase">รายละเอียดเนื้อผ้า & สัมผัส</label>
-                  <textarea
-                    rows={3}
-                    value={activeOutfit.description}
-                    onChange={(e) => {
-                      const updated = [...outfits];
-                      updated[activeOutfitIndex].description = e.target.value;
-                      setOutfits(updated);
-                    }}
-                    placeholder="รายละเอียดเนื้อผ้า คัตติ้ง..."
-                    className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded-md p-2 text-[12px] text-[#EDEDED] outline-none leading-normal resize-none"
-                  />
-                  {outfits.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveOutfit(activeOutfitIndex)}
-                      className="self-end text-[10px] text-red-400/80 hover:text-red-300 flex items-center gap-1 cursor-pointer transition-colors pt-0.5"
-                    >
-                      <Trash2 size={10} /> ลบชุดนี้ออกจากตู้
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <p className="text-[12.5px] text-[#EDEDED] leading-relaxed font-normal line-clamp-5">
-                  {activeOutfit.description}
-                </p>
+              {isEditing && (
+                <button
+                  type="button"
+                  onClick={handleAddNewOutfit}
+                  className="w-5 h-5 rounded-full bg-white/[0.08] hover:bg-white/[0.18] text-white flex items-center justify-center text-[10px] cursor-pointer"
+                  title="เพิ่มชุดใหม่ในตู้"
+                >
+                  <Plus size={11} />
+                </button>
               )}
             </div>
           </div>
 
-          {/* Bottom Closet Stats */}
-          <div className="pt-1 flex items-center justify-between text-[10.5px] text-white/40 font-mono">
-            <span>{outfits.length} ชุดสลับใส่ในตู้</span>
-            <span>CLOSET 2X2</span>
+          {/* Tactile Garment Swatch Card */}
+          <div className="flex-1 p-3.5 rounded-[18px] bg-black/40 backdrop-blur-xl border border-white/[0.06] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)] flex flex-col justify-between gap-2 overflow-hidden">
+            <div className="flex items-center justify-between gap-1.5">
+              {isEditing ? (
+                <div className="flex-1">
+                  <label className="text-[9.5px] font-mono text-white/50 uppercase">ชื่อสไตล์ชุด</label>
+                  <input
+                    type="text"
+                    value={activeOutfit.name}
+                    onChange={(e) => {
+                      const updated = [...outfits];
+                      updated[activeOutfitIndex].name = e.target.value;
+                      setOutfits(updated);
+                    }}
+                    className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-0.5 text-[12.5px] font-bold text-white outline-none"
+                  />
+                </div>
+              ) : (
+                <span className="text-[13.5px] font-bold text-white tracking-tight truncate">
+                  {activeOutfit.name}
+                </span>
+              )}
+
+              {activeOutfit.key === initialOutfitKey ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-semibold shrink-0">
+                  <BookmarkCheck size={10} /> DEFAULT
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setInitialOutfitKey(activeOutfit.key)}
+                  className="text-[10px] text-white/50 hover:text-white underline cursor-pointer transition-colors shrink-0"
+                >
+                  ตั้งเป็นชุดเริ่มต้น
+                </button>
+              )}
+            </div>
+
+            {isEditing ? (
+              <div className="space-y-1 flex-1 flex flex-col justify-between">
+                <label className="text-[9.5px] font-mono text-white/50 uppercase">รายละเอียดเนื้อผ้า & สัมผัส</label>
+                <textarea
+                  rows={4}
+                  value={activeOutfit.description}
+                  onChange={(e) => {
+                    const updated = [...outfits];
+                    updated[activeOutfitIndex].description = e.target.value;
+                    setOutfits(updated);
+                  }}
+                  placeholder="รายละเอียดเนื้อผ้า คัตติ้ง..."
+                  className="w-full flex-1 bg-black/30 border border-white/15 focus:border-[#EF264C] rounded-md p-2 text-[12px] text-[#EDEDED] outline-none leading-normal resize-none"
+                />
+                {outfits.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveOutfit(activeOutfitIndex)}
+                    className="self-end text-[10px] text-red-400/80 hover:text-red-300 flex items-center gap-1 cursor-pointer transition-colors pt-0.5"
+                  >
+                    <Trash2 size={10} /> ลบชุดนี้ออกจากตู้
+                  </button>
+                )}
+              </div>
+            ) : (
+              <p className="text-[12.5px] text-[#EDEDED] leading-relaxed font-normal line-clamp-6">
+                {activeOutfit.description}
+              </p>
+            )}
           </div>
         </div>
 
         {/* ======================================================================= */}
-        {/* 👓 WIDGET 3: ANATOMY & PHYSIQUE (2x2 -> 346px × 346px - 4 QUADRANTS)   */}
+        {/* 👓 WIDGET 3: ANATOMY & PHYSIQUE (2x2 -> 346px × 346px - FULL-WIDTH ROWS) */}
         {/* ======================================================================= */}
         <div
           className={`col-span-2 row-span-2 rounded-[28px] p-4 ${frostedCardClass}`}
           style={{ width: '346px', height: '346px' }}
         >
           {/* Header Row */}
-          <div>
-            <div className="flex items-center justify-between gap-1 mb-2">
-              <div className="flex items-center gap-1.5">
-                <div className="w-6 h-6 rounded-full bg-white/[0.08] flex items-center justify-center">
-                  <Eye size={12} className="text-[#EF264C]" />
-                </div>
-                <span className="text-[11px] font-mono tracking-wider text-white/70 uppercase font-bold">
-                  ANATOMY (สรีระ 4 มิติ)
-                </span>
+          <div className="flex items-center justify-between gap-1 mb-2 shrink-0">
+            <div className="flex items-center gap-1.5">
+              <div className="w-6 h-6 rounded-full bg-white/[0.08] flex items-center justify-center">
+                <Eye size={12} className="text-[#EF264C]" />
               </div>
-              <span className="text-[10px] text-white/50 font-mono">
-                {anatomyTraits.length} BIOMETRICS
+              <span className="text-[11px] font-mono tracking-wider text-white/70 uppercase font-bold">
+                ANATOMY (สรีระ 4 มิติ)
               </span>
             </div>
 
-            {/* 4-Quadrant Tactile Mini-Tiles */}
-            <div className="grid grid-cols-2 gap-2 my-auto py-0.5">
-              {anatomyTraits.map((trait, idx) => (
-                <div
-                  key={trait.id}
-                  className="p-2.5 rounded-[18px] bg-black/40 hover:bg-black/50 backdrop-blur-xl border border-white/[0.06] hover:border-white/12 shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)] flex flex-col justify-between transition-all h-[106px] overflow-hidden"
-                >
-                  <div className="flex items-center justify-between gap-1 mb-1 shrink-0">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-5 h-5 rounded-md bg-white/[0.06] flex items-center justify-center shrink-0">
-                        {renderTraitIcon(trait.iconType)}
-                      </div>
-                      <span className="text-[11.5px] font-bold text-white tracking-tight truncate">
-                        {trait.title}
-                      </span>
-                    </div>
-
-                    {isEditing && anatomyTraits.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveAnatomyTrait(idx)}
-                        className="text-white/40 hover:text-red-400 p-0.5 cursor-pointer"
-                      >
-                        <Trash2 size={10} />
-                      </button>
-                    )}
-                  </div>
-
-                  {isEditing ? (
-                    <textarea
-                      rows={2}
-                      value={trait.detail}
-                      onChange={(e) => {
-                        const updated = [...anatomyTraits];
-                        updated[idx].detail = e.target.value;
-                        setAnatomyTraits(updated);
-                      }}
-                      className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded p-1 text-[11px] text-[#EDEDED] outline-none leading-normal resize-none flex-1"
-                    />
-                  ) : (
-                    <p className="text-[11px] text-[#EDEDED] leading-snug line-clamp-3">
-                      {trait.detail}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Bottom Info & Add Action */}
-          <div className="pt-1 flex items-center justify-between text-[10.5px] text-white/40 font-mono">
-            <span>ตา • ทรงผม • สัดส่วน • สัมผัส</span>
-            {isEditing && (
+            {isEditing ? (
               <button
                 type="button"
                 onClick={handleAddAnatomyTrait}
@@ -691,7 +558,72 @@ export default function IdentityVisualCard({
               >
                 <Plus size={10} /> เพิ่มจุดเด่น
               </button>
+            ) : (
+              <span className="text-[10px] text-white/50 font-mono">
+                {anatomyTraits.length} BIOMETRICS
+              </span>
             )}
+          </div>
+
+          {/* Full-width Stacked Rows (4 แถวยาวเต็มความกว้าง) */}
+          <div className="flex flex-col gap-2 flex-1 justify-between py-0.5 overflow-hidden">
+            {anatomyTraits.map((trait, idx) => (
+              <div
+                key={trait.id}
+                className="p-2.5 rounded-[16px] bg-black/40 hover:bg-black/50 backdrop-blur-xl border border-white/[0.06] hover:border-white/12 shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)] flex items-start gap-2.5 transition-all"
+              >
+                <div className="w-7 h-7 rounded-[10px] bg-white/[0.06] border border-white/[0.08] flex items-center justify-center shrink-0 mt-0.5">
+                  {renderTraitIcon(trait.iconType)}
+                </div>
+
+                {isEditing ? (
+                  <div className="flex flex-col gap-1 w-full min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="text"
+                        value={trait.title}
+                        onChange={(e) => {
+                          const updated = [...anatomyTraits];
+                          updated[idx].title = e.target.value;
+                          setAnatomyTraits(updated);
+                        }}
+                        className="bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-1.5 py-0.5 text-[11.5px] font-bold text-white outline-none w-32"
+                        placeholder="หัวข้อสรีระ..."
+                      />
+                      {anatomyTraits.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveAnatomyTrait(idx)}
+                          className="text-white/40 hover:text-red-400 p-0.5 ml-auto cursor-pointer"
+                        >
+                          <Trash2 size={11} />
+                        </button>
+                      )}
+                    </div>
+                    <input
+                      type="text"
+                      value={trait.detail}
+                      onChange={(e) => {
+                        const updated = [...anatomyTraits];
+                        updated[idx].detail = e.target.value;
+                        setAnatomyTraits(updated);
+                      }}
+                      className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-1.5 py-0.5 text-[12px] text-[#EDEDED] outline-none"
+                      placeholder="รายละเอียดสรีระ..."
+                    />
+                  </div>
+                ) : (
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[12.5px] font-bold text-white tracking-tight">
+                      {trait.title}
+                    </div>
+                    <p className="text-[12px] text-[#EDEDED] leading-snug line-clamp-2 mt-0.5 font-normal">
+                      {trait.detail}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
 
@@ -852,11 +784,6 @@ export default function IdentityVisualCard({
               </div>
             )}
           </div>
-
-          {/* Bottom Tag */}
-          <div className="text-[9.5px] font-mono uppercase tracking-wider text-white/40 shrink-0">
-            WEATHER • 1X1
-          </div>
         </div>
 
         {/* ======================================================================= */}
@@ -897,11 +824,6 @@ export default function IdentityVisualCard({
                 </div>
               </div>
             )}
-          </div>
-
-          {/* Bottom Tag */}
-          <div className="text-[9.5px] font-mono uppercase tracking-wider text-white/40 shrink-0">
-            PLAYER • 1X1
           </div>
         </div>
 

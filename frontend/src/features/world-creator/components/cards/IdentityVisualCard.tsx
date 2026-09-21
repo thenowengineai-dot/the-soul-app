@@ -4,8 +4,6 @@ import {
   Check,
   Plus,
   Trash2,
-  Moon,
-  CloudRain,
   Eye,
   Wind,
   Flame,
@@ -214,13 +212,7 @@ export default function IdentityVisualCard({
   });
   const [activePostureIndex, setActivePostureIndex] = useState(0);
 
-  // 5. Environment & Starting Atmosphere
-  const [sceneTime, setSceneTime] = useState(draft.starting_state?.time || 'ยามค่ำคืน');
-  const [sceneWeather, setSceneWeather] = useState(draft.starting_state?.weather || 'แอร์เย็นสบาย');
-  const [sceneLocation, setSceneLocation] = useState(draft.starting_state?.location || 'ห้อง VIP บาร์หรู');
-  const [playerStance, setPlayerStance] = useState(draft.starting_state?.initial_p_pos || 'นั่งเอนตัวจิบเครื่องดื่ม');
-
-  // 6. Active Anatomy Key for Tactile Sensory Tray (Wardrobe Model)
+  // 5. Active Anatomy Key for Tactile Sensory Tray (Wardrobe Model)
   const [activeAnatomyKey, setActiveAnatomyKey] = useState<string>('eyes');
 
   // External draft sync
@@ -256,10 +248,10 @@ export default function IdentityVisualCard({
       ];
 
       const updatedStartingState = {
-        time: sceneTime,
-        weather: sceneWeather,
-        location: sceneLocation,
-        initial_p_pos: playerStance,
+        time: draft.starting_state?.time || 'ยามค่ำคืน',
+        weather: draft.starting_state?.weather || 'แอร์เย็นสบาย',
+        location: draft.starting_state?.location || 'ห้อง VIP บาร์หรู',
+        initial_p_pos: draft.starting_state?.initial_p_pos || 'นั่งเอนตัวจิบเครื่องดื่ม',
         initial_a_pos: postures[0] || '',
         initial_outfit_key: outfits[0]?.key || 'outfit_1',
       };
@@ -1166,107 +1158,6 @@ export default function IdentityVisualCard({
                 <span>เพิ่มท่า</span>
               </button>
             </div>
-          </div>
-        </div>
-
-        {/* ======================================================================= */}
-        {/* 🌙 WIDGET 5: STARTING ATMOSPHERE (1x1 -> 165px × 165px - APPLE WEATHER)   */}
-        {/* ======================================================================= */}
-        <div
-          className={`col-span-1 row-span-1 rounded-[24px] p-3.5 ${frostedCardClass}`}
-          style={{ width: '165px', height: '165px' }}
-        >
-          {/* Header: Time with small Moon */}
-          <div className="flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-1.5">
-              <Moon size={12} className="text-white/70" />
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={sceneTime}
-                  onChange={(e) => setSceneTime(e.target.value)}
-                  placeholder="เวลา"
-                  className="bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-1.5 py-0.5 text-[11px] text-white outline-none w-14"
-                />
-              ) : (
-                <span className="text-[12px] text-white/75 font-medium truncate">
-                  {sceneTime}
-                </span>
-              )}
-            </div>
-
-            <div className="w-6 h-6 rounded-lg bg-white/[0.06] border border-white/10 flex items-center justify-center shrink-0">
-              <CloudRain size={12} className="text-sky-400" />
-            </div>
-          </div>
-
-          {/* Main Weather Sensation (Apple Weather Style) */}
-          <div className="my-auto py-1 overflow-hidden">
-            {isEditing ? (
-              <div className="space-y-1">
-                <input
-                  type="text"
-                  value={sceneWeather}
-                  onChange={(e) => setSceneWeather(e.target.value)}
-                  placeholder="สภาพอากาศ"
-                  className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-1.5 py-0.5 text-[13px] font-semibold text-white outline-none"
-                />
-                <input
-                  type="text"
-                  value={sceneLocation}
-                  onChange={(e) => setSceneLocation(e.target.value)}
-                  placeholder="สถานที่"
-                  className="w-full bg-black/25 border border-white/10 focus:border-[#EF264C] rounded px-1.5 py-0.5 text-[11px] text-white/80 outline-none"
-                />
-              </div>
-            ) : (
-              <div>
-                <div className="text-[17px] sm:text-[18px] font-semibold text-white tracking-tight truncate leading-tight">
-                  {sceneWeather}
-                </div>
-                <div className="text-[12px] text-[#A1A1A8] truncate mt-1 font-normal">
-                  {sceneLocation}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ======================================================================= */}
-        {/* 🧭 WIDGET 6: PLAYER STANCE (1x1 -> 165px × 165px - PURE THAI)             */}
-        {/* ======================================================================= */}
-        <div
-          className={`col-span-1 row-span-1 rounded-[24px] p-3.5 ${frostedCardClass}`}
-          style={{ width: '165px', height: '165px' }}
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between shrink-0">
-            <span className="text-[14px] sm:text-[15px] font-semibold text-[#F1F1F1] tracking-tight">
-              ท่าทีผู้เล่น
-            </span>
-            <span className="w-2 h-2 rounded-full bg-emerald-400/80 animate-pulse" />
-          </div>
-
-          {/* Stance Content */}
-          <div className="my-auto py-1 overflow-hidden">
-            {isEditing ? (
-              <input
-                type="text"
-                value={playerStance}
-                onChange={(e) => setPlayerStance(e.target.value)}
-                placeholder="ท่าทางเริ่มต้นของผู้เล่น"
-                className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-1 text-[11.5px] text-white outline-none"
-              />
-            ) : (
-              <div>
-                <div className="text-[13.5px] font-semibold text-white tracking-tight leading-snug line-clamp-3">
-                  {playerStance}
-                </div>
-                <div className="text-[11px] text-[#A1A1A8] mt-1.5 truncate font-normal">
-                  พร้อมรับมือ / สังเกตการณ์
-                </div>
-              </div>
-            )}
           </div>
         </div>
 

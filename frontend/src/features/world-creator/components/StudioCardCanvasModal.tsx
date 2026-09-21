@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import type { VaultDraft } from '../types';
 import IdentityVisualCard from './cards/IdentityVisualCard';
+import MindShadowCard from './cards/MindShadowCard';
 
 interface StudioCardCanvasModalProps {
   isOpen: boolean;
@@ -66,7 +67,7 @@ export default function StudioCardCanvasModal({
         <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
           <span className="w-2 h-2 rounded-full bg-[#EF264C] animate-pulse" />
           <span className="text-[12px] font-medium text-[#F1F1F1]">
-            พิมพ์เขียวตัวละคร: 1 / 4 การ์ดสร้างแล้ว
+            พิมพ์เขียวตัวละคร: 2 / 4 หมวดหลักสร้างแล้ว
           </span>
         </div>
 
@@ -88,12 +89,49 @@ export default function StudioCardCanvasModal({
 
       {/* 2. MAIN SCROLLABLE CANVAS STAGE */}
       <main className="flex-1 overflow-y-auto px-4 sm:px-8 py-8 flex justify-center items-start">
-        <div className="w-full max-w-[1440px] pb-20">
-          <IdentityVisualCard
-            draft={draft}
-            onUpdateDraft={onUpdateDraft}
-            isEditable={true}
-          />
+        <div className="w-full max-w-[1440px] pb-24 space-y-10">
+          {/* =============================================================== */}
+          {/* ✦ หมวดหมู่ที่ 1: รูปลักษณ์และสไตล์ (Identity & Visual)              */}
+          {/* =============================================================== */}
+          <section className="space-y-2">
+            <div className="flex items-center gap-2.5 px-2">
+              <span className="text-[#EF264C] text-[14px]">✦</span>
+              <h2 className="text-[19px] sm:text-[21px] font-bold text-[#F1F1F1] tracking-tight">
+                1. รูปลักษณ์และสไตล์
+              </h2>
+              <span className="text-[12px] text-white/40 font-normal ml-1 hidden sm:inline">
+                (ตัวตน, ตู้เสื้อผ้าตามสถานการณ์, สรีระ & ท่วงท่า)
+              </span>
+            </div>
+            <IdentityVisualCard
+              draft={draft}
+              onUpdateDraft={onUpdateDraft}
+              isEditable={true}
+            />
+          </section>
+
+          {/* Hairline Separator Between Master Categories */}
+          <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/[0.10] to-transparent my-2" />
+
+          {/* =============================================================== */}
+          {/* ✦ หมวดหมู่ที่ 2: จิตวิทยาและตัวตนเบื้องลึก (Mind & Shadow)         */}
+          {/* =============================================================== */}
+          <section className="space-y-2">
+            <div className="flex items-center gap-2.5 px-2">
+              <span className="text-[#EF264C] text-[14px]">✦</span>
+              <h2 className="text-[19px] sm:text-[21px] font-bold text-[#F1F1F1] tracking-tight">
+                2. จิตวิทยาและตัวตนเบื้องลึก
+              </h2>
+              <span className="text-[12px] text-white/40 font-normal ml-1 hidden sm:inline">
+                (กระจกทวิภาวะ: หน้ากากสังคม vs เงามืด, แรงขับปรารถนา & จุดเปราะบาง)
+              </span>
+            </div>
+            <MindShadowCard
+              draft={draft}
+              onUpdateDraft={onUpdateDraft}
+              isEditable={true}
+            />
+          </section>
         </div>
       </main>
     </div>

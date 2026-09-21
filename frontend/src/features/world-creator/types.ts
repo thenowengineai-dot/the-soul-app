@@ -4,6 +4,8 @@ export interface CharacterPsychology {
   the_core?: string;
   the_mask?: string;
   the_conflict?: string;
+  core_desire?: string;
+  emotional_triggers?: string[];
 }
 
 export interface CharacterAppearance {

@@ -12,6 +12,8 @@ import DynamicsCharismaCard from './cards/DynamicsCharismaCard';
 import LoreBackgroundCard from './cards/LoreBackgroundCard';
 import WorldAtmosphereCard from './cards/WorldAtmosphereCard';
 import WorldPrologueCard from './cards/WorldPrologueCard';
+import WorldSpatialAnchorsCard from './cards/WorldSpatialAnchorsCard';
+import WorldStagePropsCard from './cards/WorldStagePropsCard';
 
 interface StudioCardCanvasModalProps {
   isOpen: boolean;
@@ -29,6 +31,22 @@ export default function StudioCardCanvasModal({
   onTalkAboutCard: _onTalkAboutCard,
 }: StudioCardCanvasModalProps) {
   const [activeStudioTab, setActiveStudioTab] = useState<'character' | 'world'>('character');
+  const [activeLocationKey, setActiveLocationKey] = useState<string>(() => {
+    if (draft.real_locations && Object.keys(draft.real_locations).length > 0) {
+      return Object.keys(draft.real_locations)[0];
+    }
+    return 'ห้องสกัดสมุนไพร ณ เรือนพักปีกใน';
+  });
+
+  // Keep activeLocationKey valid if draft updates
+  useEffect(() => {
+    if (draft.real_locations && Object.keys(draft.real_locations).length > 0) {
+      const keys = Object.keys(draft.real_locations);
+      if (!keys.includes(activeLocationKey)) {
+        setActiveLocationKey(keys[0]);
+      }
+    }
+  }, [draft.real_locations, activeLocationKey]);
 
   // ESC key to close
   useEffect(() => {
@@ -158,15 +176,32 @@ export default function StudioCardCanvasModal({
                 />
               </>
             ) : (
-              /* World & Scenario Bento Suite (Cards W1 & W2) */
+              /* World & Scenario Bento Suite (Cards W1, W2, W3, W4) */
               <>
+                {/* Card W1: World Title & Macro-Atmosphere Sanctuary (2x2) */}
                 <WorldAtmosphereCard
                   draft={draft}
                   onUpdateDraft={onUpdateDraft}
                   isEditable={true}
                 />
+                {/* Card W2: Prologue Narrative (2x1) */}
                 <WorldPrologueCard
                   draft={draft}
+                  onUpdateDraft={onUpdateDraft}
+                  isEditable={true}
+                />
+                {/* Card W3: Spatial Enclosure & Anchor Points (2x1, stacked vertically under Card W2) */}
+                <WorldSpatialAnchorsCard
+                  draft={draft}
+                  activeLocationKey={activeLocationKey}
+                  onUpdateDraft={onUpdateDraft}
+                  isEditable={true}
+                />
+                {/* Card W4: The Master Stage & Props Ensemble (2x2, with Master Scene Selector) */}
+                <WorldStagePropsCard
+                  draft={draft}
+                  activeLocationKey={activeLocationKey}
+                  onSelectLocation={setActiveLocationKey}
                   onUpdateDraft={onUpdateDraft}
                   isEditable={true}
                 />

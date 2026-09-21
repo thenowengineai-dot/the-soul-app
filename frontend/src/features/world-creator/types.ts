@@ -198,6 +198,10 @@ export interface WorldLocationItem {
   key_furniture: string;
   spatial_layout: string;
   sensory_cues: WorldLocationSensoryCues;
+  anchor_points?: string;
+  interactive_props?: string;
+  lighting_shadow?: string;
+  dynamic_shift?: string;
 }
 
 export type WorldLocationsMap = Record<string, WorldLocationItem>;

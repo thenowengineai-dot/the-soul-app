@@ -536,7 +536,7 @@ export default function IdentityVisualCard({
                 <h1 className="text-[32px] sm:text-[34px] font-bold text-[#F1F1F1] tracking-tight leading-[1.15]">
                   {name}
                 </h1>
-                <div className="text-[13.5px] sm:text-[14px] text-[#A1A1A8] mt-1.5 font-normal leading-normal">
+                <div className="text-[14px] sm:text-[14.5px] text-[#A1A1A8] mt-1.5 font-normal leading-normal">
                   <span className="font-medium text-white/80">{archetype}</span>
                   {archetypeTh && (
                     <span className="text-white/45 font-normal ml-1.5">
@@ -546,7 +546,7 @@ export default function IdentityVisualCard({
                 </div>
 
                 {/* Subtle Divider Hairline */}
-                <div className="w-8 h-[1px] bg-white/15 my-3.5" />
+                <div className="w-10 h-[1px] bg-white/15 my-4.5 sm:my-5" />
 
                 {/* Hashtags Frosted Dark Pills - 3-Row Compact Rhythm */}
                 <div className="flex flex-wrap gap-1.5">

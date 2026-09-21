@@ -270,10 +270,10 @@ flowchart LR
 #### 👑 Widget 1: อัตลักษณ์และจิตวิญญาณ (Identity & Soul) — 2x2 (346px × 346px)
 - **Distance Silhouette:** **"The Masthead Plaque" (แผ่นป้ายจารึกเกียรติยศ / หน้าเปิดนิตยสารแฟชั่นชั้นสูง)**
 - **องค์ประกอบหลัก:**
-  - **Hero Title:** ชื่อตัวละครขนาดใหญ่พิเศษ `text-[30px] sm:text-[32px] font-bold text-[#F1F1F1] tracking-tight leading-[1.15]` สะกดสายตาทันทีตั้งแต่แรกเห็น
-  - **Dual Archetype:** สเตตัส Archetype ภาษาอังกฤษควบคู่คำแปลไทยสีเงินเทา `text-[13px] sm:text-[13.5px] text-[#A1A1A8]` (เช่น `The Cloaked Predator • นักล่าซ่อนรูปใต้หน้ากากพฤกษศาสตร์`)
-  - **Divider Hairline:** เส้นคั่น 32px สีขาว 15% ให้จังหวะพักสายตาสไตล์ Editorial
-  - **Character Hashtags (ทรงแคปซูล Dark Pill):** แฮชแท็กประจำตัวแสดงตัวตนและเสน่ห์เฉพาะตัวในรูป Dark Pill กระจกฝ้า (`rounded-full bg-white/[0.05] border border-white/[0.08]`) พร้อมเครื่องหมาย `#` สีแดงคาร์ไมน์ `#EF264C` (เช่น `#รุ่นพี่สาวแว่น`, `#สายหมอกซ่อนรูป`, `#GapMoeขั้นสุด`, `#นักล่ากระหายพิษ`, `#ตรรกะรีดพิษด้วยน้ำมังกร`)
+  - **Hero Title:** ชื่อตัวละครขนาดใหญ่พิเศษ `text-[32px] sm:text-[34px] font-bold text-[#F1F1F1] tracking-tight leading-[1.15]` สะกดสายตาทันทีตั้งแต่แรกเห็น
+  - **Dual Archetype:** สเตตัส Archetype ภาษาอังกฤษควบคู่คำแปลไทยสีเงินเทา `text-[14px] sm:text-[14.5px] text-[#A1A1A8]` (เช่น `The Cloaked Predator • นักล่าซ่อนรูปใต้หน้ากากพฤกษศาสตร์`)
+  - **Divider Hairline:** เส้นคั่น 40px (`w-10 h-[1px] bg-white/15 my-4.5 sm:my-5`) ให้จังหวะพักสายตาสไตล์ Editorial กว้างขวาง มี Breathing Room บนล่าง
+  - **Character Hashtags (ทรงแคปซูล Dark Pill):** แฮชแท็กประจำตัวแสดงตัวตนและเสน่ห์เฉพาะตัวในรูป Dark Pill กระจกฝ้า (`rounded-full bg-white/[0.05] border border-white/[0.08]`) สีเดียวกับตัวอักษร จัดเรียง 3 แถวสวยงาม (เช่น `#รุ่นพี่สาวแว่น`, `#สายหมอกซ่อนรูป`, `#GapMoeขั้นสุด`, `#นักล่ากระหายพิษ`, `#ตรรกะรีดพิษด้วยน้ำมังกร`)
   - **Tactile Edit Control:** ปุ่มวงกลม 32px ขอบบนขวา สวมกระจกฝ้าสูตรมาตรฐาน แตะเพื่อเปิดโหมดแก้ไข In-Place (แก้ชื่อ, Archetype, และแฮชแท็กได้โดยตรง)
 
 #### 👗 Widget 2: ตู้เสื้อผ้าตามสถานการณ์ (Wardrobe Closet) — 2x2 (346px × 346px)

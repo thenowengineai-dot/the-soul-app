@@ -58,7 +58,7 @@ export default function IdentityVisualCard({
     draft.quote ||
       '“อย่าขยับสิคะ... ถ้าขยับพิษจากละอองเกสรจะยิ่งแล่นเข้าสู่กระแสเลือดนะ ให้รุ่นพี่ช่วยรีดมันออกจะดีกว่า...”'
   );
-  const [hashtags] = useState<string[]>(() => {
+  const [hashtags, setHashtags] = useState<string[]>(() => {
     return draft.hashtags && draft.hashtags.length > 0
       ? draft.hashtags
       : [
@@ -223,7 +223,10 @@ export default function IdentityVisualCard({
     if (draft.quote) {
       setQuote((prev) => (prev !== draft.quote ? draft.quote! : prev));
     }
-  }, [draft.title, draft.quote]);
+    if (draft.hashtags && draft.hashtags.length > 0) {
+      setHashtags(draft.hashtags);
+    }
+  }, [draft.title, draft.quote, draft.hashtags]);
 
   // Save changes handler
   const handleSave = () => {
@@ -509,22 +512,31 @@ export default function IdentityVisualCard({
                   </div>
                 </div>
                 <div>
-                  <label className="text-[10.5px] font-medium text-white/50">ประโยคคำพูดประจำตัว</label>
-                  <textarea
-                    rows={2}
-                    value={quote}
-                    onChange={(e) => setQuote(e.target.value)}
-                    placeholder="ประโยคคำพูดประจำตัว..."
-                    className="w-full bg-black/25 border border-white/15 focus:border-[#EF264C] rounded-md px-2 py-1 text-[11.5px] text-[#EDEDED] outline-none leading-normal resize-none"
+                  <label className="text-[10.5px] font-medium text-white/50">
+                    แฮชแท็กประจำตัว (Hashtags คั่นด้วยช่องว่าง)
+                  </label>
+                  <input
+                    type="text"
+                    value={hashtags.join(' ')}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      const split = raw
+                        .split(/[,\s]+/)
+                        .filter(Boolean)
+                        .map((t) => (t.startsWith('#') ? t : `#${t}`));
+                      setHashtags(split);
+                    }}
+                    placeholder="#รุ่นพี่สาวแว่น #สายหมอกซ่อนรูป..."
+                    className="w-full bg-black/25 border border-white/15 focus:border-[#EF264C] rounded-md px-2 py-1.5 text-[11.5px] text-[#EDEDED] outline-none leading-normal"
                   />
                 </div>
               </div>
             ) : (
               <div>
-                <h1 className="text-[32px] sm:text-[34px] font-bold text-[#F1F1F1] tracking-tight leading-[1.15]">
+                <h1 className="text-[30px] sm:text-[32px] font-bold text-[#F1F1F1] tracking-tight leading-[1.15]">
                   {name}
                 </h1>
-                <div className="text-[13.5px] sm:text-[14px] text-[#A1A1A8] mt-1.5 font-normal leading-normal">
+                <div className="text-[13px] sm:text-[13.5px] text-[#A1A1A8] mt-1.5 font-normal leading-normal">
                   <span className="font-medium text-white/80">{archetype}</span>
                   {archetypeTh && (
                     <span className="text-white/45 font-normal ml-1.5">
@@ -532,10 +544,27 @@ export default function IdentityVisualCard({
                     </span>
                   )}
                 </div>
-                <div className="w-10 h-[1px] bg-white/15 my-4" />
-                <p className="text-[13.5px] sm:text-[14px] text-[#EDEDED] leading-relaxed font-normal italic line-clamp-4">
-                  {quote}
-                </p>
+
+                {/* Subtle Divider Hairline */}
+                <div className="w-8 h-[1px] bg-white/15 my-3.5" />
+
+                {/* Hashtags Frosted Dark Pills */}
+                <div className="flex flex-wrap gap-1.5">
+                  {hashtags.map((tag, idx) => {
+                    const cleanTag = tag.startsWith('#') ? tag.slice(1) : tag;
+                    return (
+                      <span
+                        key={idx}
+                        className="inline-flex items-center px-2.5 py-1 rounded-full text-[11.5px] sm:text-[12px] font-normal bg-white/[0.05] hover:bg-white/[0.09] border border-white/[0.08] hover:border-white/15 text-white/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-all cursor-default select-none group"
+                      >
+                        <span className="text-[#EF264C] font-semibold text-[11px] mr-1 group-hover:scale-110 transition-transform">
+                          #
+                        </span>
+                        <span>{cleanTag}</span>
+                      </span>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>

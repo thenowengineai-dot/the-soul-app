@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", system-ui, -apple-system, sans-serif;
   --color-app-bg: #151517;
   --color-app-border: rgba(255, 255, 255, 0.08);
   --color-app-primary: #F5F5F7;
@@ -16,6 +17,7 @@ html, body, #root {
   overscroll-behavior: none;
   overscroll-behavior-y: none;
   overscroll-behavior-x: none;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", system-ui, sans-serif;
 }
 
 body {

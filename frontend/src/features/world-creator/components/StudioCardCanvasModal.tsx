@@ -57,7 +57,7 @@ export default function StudioCardCanvasModal({
             </span>
             <span className="text-white/20 text-[12px]">/</span>
             <span className="text-[13px] text-[#F1F1F1] font-medium">
-              {draft.title || 'ตัวละครใหม่'}
+              {draft.title || 'ตัวละคร'}
             </span>
           </div>
         </div>

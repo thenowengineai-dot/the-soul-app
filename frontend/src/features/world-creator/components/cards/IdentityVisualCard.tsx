@@ -347,18 +347,18 @@ export default function IdentityVisualCard({
             {isEditing ? (
               <div className="space-y-2">
                 <div>
-                  <label className="text-[10px] font-mono text-white/50 uppercase">ชื่อตัวละคร</label>
+                  <label className="text-[11px] font-medium text-white/50">ชื่อตัวละคร</label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="ชื่อตัวละคร"
-                    className="w-full bg-black/30 border border-white/20 focus:border-[#EF264C] rounded-lg px-2.5 py-1 text-[20px] font-bold text-white outline-none"
+                    className="w-full bg-black/30 border border-white/20 focus:border-[#EF264C] rounded-lg px-2.5 py-1 text-[22px] font-bold text-white outline-none"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
                   <div>
-                    <label className="text-[9.5px] font-mono text-white/50 uppercase">Archetype (EN)</label>
+                    <label className="text-[10.5px] font-medium text-white/50">Archetype (EN)</label>
                     <input
                       type="text"
                       value={archetype}
@@ -368,7 +368,7 @@ export default function IdentityVisualCard({
                     />
                   </div>
                   <div>
-                    <label className="text-[9.5px] font-mono text-white/50 uppercase">คำอธิบายไทย</label>
+                    <label className="text-[10.5px] font-medium text-white/50">คำอธิบายไทย</label>
                     <input
                       type="text"
                       value={archetypeTh}
@@ -379,7 +379,7 @@ export default function IdentityVisualCard({
                   </div>
                 </div>
                 <div>
-                  <label className="text-[9.5px] font-mono text-white/50 uppercase">ประโยคคำพูดประจำตัว</label>
+                  <label className="text-[10.5px] font-medium text-white/50">ประโยคคำพูดประจำตัว</label>
                   <textarea
                     rows={2}
                     value={quote}
@@ -391,11 +391,11 @@ export default function IdentityVisualCard({
               </div>
             ) : (
               <div>
-                <h1 className="text-[28px] sm:text-[30px] font-bold text-[#F1F1F1] tracking-tight leading-tight">
+                <h1 className="text-[32px] sm:text-[34px] font-bold text-[#F1F1F1] tracking-tight leading-[1.15]">
                   {name}
                 </h1>
-                <div className="text-[13px] sm:text-[13.5px] text-[#A1A1A8] mt-1.5 font-medium leading-normal">
-                  <span>{archetype}</span>
+                <div className="text-[13.5px] sm:text-[14px] text-[#A1A1A8] mt-1.5 font-normal leading-normal">
+                  <span className="font-medium text-white/80">{archetype}</span>
                   {archetypeTh && (
                     <span className="text-white/45 font-normal ml-1.5">
                       • {archetypeTh}
@@ -419,12 +419,12 @@ export default function IdentityVisualCard({
           style={{ width: '346px', height: '346px' }}
         >
           {/* Header Row: Wardrobe Closet Title + Quick Add Outfit */}
-          <div className="flex items-center justify-between gap-1 mb-1.5 shrink-0">
-            <div className="flex items-center gap-2">
-              <span className="text-[12px] font-bold tracking-wider text-white/80 font-mono">
+          <div className="flex items-center justify-between gap-1 mb-2 shrink-0">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-[16px] sm:text-[17px] font-semibold text-[#F1F1F1] tracking-tight">
                 ตู้เสื้อผ้า
               </span>
-              <span className="text-[10px] font-mono text-white/40">
+              <span className="text-[11.5px] font-normal text-white/45">
                 ({outfits.length} ชุด)
               </span>
             </div>
@@ -526,7 +526,7 @@ export default function IdentityVisualCard({
                 {/* Style Name & Badge */}
                 <div className="grid grid-cols-3 gap-1.5 shrink-0">
                   <div className="col-span-1">
-                    <label className="text-[9px] font-mono text-white/50 uppercase">ป้ายชื่อราว</label>
+                    <label className="text-[10px] font-medium text-white/50">ป้ายชื่อราว</label>
                     <input
                       type="text"
                       value={activeOutfit.badgeLabel}
@@ -540,7 +540,7 @@ export default function IdentityVisualCard({
                     />
                   </div>
                   <div className="col-span-2">
-                    <label className="text-[9px] font-mono text-white/50 uppercase">ชื่อสไตล์ชุด</label>
+                    <label className="text-[10px] font-medium text-white/50">ชื่อสไตล์ชุด</label>
                     <input
                       type="text"
                       value={activeOutfit.name}
@@ -549,7 +549,7 @@ export default function IdentityVisualCard({
                         updated[activeOutfitIndex].name = e.target.value;
                         setOutfits(updated);
                       }}
-                      className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-0.5 text-[11.5px] font-bold text-white outline-none"
+                      className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-0.5 text-[11.5px] font-semibold text-white outline-none"
                       placeholder="ชื่อชุด..."
                     />
                   </div>
@@ -557,7 +557,7 @@ export default function IdentityVisualCard({
 
                 {/* Occasion / Scenario Trigger */}
                 <div className="shrink-0">
-                  <label className="text-[9px] font-mono text-white/50 uppercase">สถานการณ์ที่สวมใส่ (AI เลือกอัตโนมัติ)</label>
+                  <label className="text-[10px] font-medium text-white/50">สถานการณ์ที่สวมใส่ (AI เลือกอัตโนมัติ)</label>
                   <input
                     type="text"
                     value={activeOutfit.occasion}
@@ -573,7 +573,7 @@ export default function IdentityVisualCard({
 
                 {/* Fabric Description */}
                 <div className="flex-1 flex flex-col min-h-0">
-                  <label className="text-[9px] font-mono text-white/50 uppercase">รายละเอียดเนื้อผ้า & สัมผัส</label>
+                  <label className="text-[10px] font-medium text-white/50">รายละเอียดเนื้อผ้า & สัมผัส</label>
                   <textarea
                     rows={3}
                     value={activeOutfit.description}
@@ -604,14 +604,14 @@ export default function IdentityVisualCard({
               <div className="flex flex-col justify-between h-full">
                 <div className="space-y-1.5">
                   {/* Garment Style Name */}
-                  <div className="text-[14px] font-bold text-white tracking-tight leading-snug truncate">
+                  <div className="text-[15px] font-semibold text-white tracking-tight leading-snug truncate">
                     {activeOutfit.name}
                   </div>
 
                   {/* Occasion / Scenario Trigger Pill (Pure Situational, No Default concept) */}
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/[0.05] border border-white/[0.08] text-[11px] text-white/80 max-w-full">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/[0.05] border border-white/[0.08] text-[11.5px] text-white/80 max-w-full">
                     <span className="text-[#EF264C] text-[9px]">✦</span>
-                    <span className="text-white/40 text-[10px] shrink-0 font-medium">สวมใส่เมื่อ:</span>
+                    <span className="text-white/40 text-[10.5px] shrink-0 font-medium">สวมใส่เมื่อ:</span>
                     <span className="text-white/90 truncate font-normal">{activeOutfit.occasion}</span>
                   </div>
                 </div>
@@ -620,7 +620,7 @@ export default function IdentityVisualCard({
                 <div className="w-full h-[1px] bg-white/[0.06] my-1" />
 
                 {/* Fabric & Sensory Texture */}
-                <p className="text-[12.5px] text-[#D6D6DC] leading-relaxed font-normal line-clamp-4">
+                <p className="text-[13px] text-[#D6D6DC] leading-relaxed font-normal line-clamp-4">
                   {activeOutfit.description}
                 </p>
               </div>
@@ -637,7 +637,7 @@ export default function IdentityVisualCard({
         >
           {/* Header Row: Pure Thai Label */}
           <div className="flex items-center justify-between gap-1 mb-2 shrink-0">
-            <span className="text-[12px] font-bold tracking-wider text-white/80 font-mono">
+            <span className="text-[16px] sm:text-[17px] font-semibold text-[#F1F1F1] tracking-tight">
               สรีระและจุดเด่น
             </span>
 
@@ -669,7 +669,7 @@ export default function IdentityVisualCard({
                         updated[idx].title = e.target.value;
                         setAnatomyTraits(updated);
                       }}
-                      className="bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-1 text-[11.5px] font-bold text-white outline-none w-32 shrink-0"
+                      className="bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-1 text-[11.5px] font-semibold text-white outline-none w-32 shrink-0"
                       placeholder="จุดเด่น..."
                     />
                     <input
@@ -680,7 +680,7 @@ export default function IdentityVisualCard({
                         updated[idx].detail = e.target.value;
                         setAnatomyTraits(updated);
                       }}
-                      className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-1 text-[12px] text-[#EDEDED] outline-none"
+                      className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-1 text-[12px] font-normal text-[#EDEDED] outline-none"
                       placeholder="คำบรรยาย..."
                     />
                     {anatomyTraits.length > 1 && (
@@ -694,11 +694,11 @@ export default function IdentityVisualCard({
                     )}
                   </div>
                 ) : (
-                  <p className="text-[12.5px] text-[#EDEDED] leading-snug font-normal line-clamp-2">
-                    <span className="font-bold text-white mr-1.5">
+                  <p className="text-[13px] text-[#EDEDED] leading-snug font-normal line-clamp-2">
+                    <span className="font-semibold text-white mr-1.5">
                       {trait.title} —
                     </span>
-                    <span className="text-[#D6D6DC]">
+                    <span className="font-normal text-[#D6D6DC]">
                       {trait.detail}
                     </span>
                   </p>
@@ -717,7 +717,7 @@ export default function IdentityVisualCard({
         >
           {/* Header Row */}
           <div className="flex items-center justify-between gap-1 shrink-0">
-            <span className="text-[12px] font-bold tracking-wider text-white/80 font-mono">
+            <span className="text-[15px] sm:text-[16px] font-semibold text-[#F1F1F1] tracking-tight">
               ท่วงท่าประจำตัว
             </span>
 
@@ -747,7 +747,7 @@ export default function IdentityVisualCard({
                   }`}
                 >
                   <span
-                    className={`text-[9.5px] font-mono font-bold w-5 h-5 rounded-md flex items-center justify-center shrink-0 ${
+                    className={`text-[9.5px] font-mono font-semibold w-5 h-5 rounded-md flex items-center justify-center shrink-0 ${
                       isInitial ? 'bg-[#EF264C] text-white' : 'bg-white/15 text-white/70'
                     }`}
                   >
@@ -763,16 +763,16 @@ export default function IdentityVisualCard({
                         updated[idx] = e.target.value;
                         setPostures(updated);
                       }}
-                      className="bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-0.5 text-[11px] text-[#F1F1F1] outline-none flex-1"
+                      className="bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-0.5 text-[11px] text-[#F1F1F1] outline-none flex-1 font-normal"
                     />
                   ) : (
-                    <span className="text-[12px] text-[#EDEDED] truncate flex-1 font-normal">
+                    <span className="text-[12.5px] text-[#EDEDED] truncate flex-1 font-normal">
                       {poseText}
                     </span>
                   )}
 
                   {isInitial && !isEditing && (
-                    <span className="text-[9.5px] font-bold text-[#EF264C] bg-[#EF264C]/20 border border-[#EF264C]/40 px-2 py-0.5 rounded-full shrink-0">
+                    <span className="text-[9.5px] font-semibold text-[#EF264C] bg-[#EF264C]/20 border border-[#EF264C]/40 px-2 py-0.5 rounded-full shrink-0">
                       ✦ เริ่มต้น
                     </span>
                   )}
@@ -805,24 +805,24 @@ export default function IdentityVisualCard({
           {/* Header: Time with small Moon */}
           <div className="flex items-center justify-between shrink-0">
             <div className="flex items-center gap-1.5">
-              <Moon size={11} className="text-white/60" />
+              <Moon size={12} className="text-white/70" />
               {isEditing ? (
                 <input
                   type="text"
                   value={sceneTime}
                   onChange={(e) => setSceneTime(e.target.value)}
                   placeholder="เวลา"
-                  className="bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-1.5 py-0.5 text-[10px] text-white outline-none w-14"
+                  className="bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-1.5 py-0.5 text-[11px] text-white outline-none w-14"
                 />
               ) : (
-                <span className="text-[11px] text-white/60 font-medium truncate">
+                <span className="text-[12px] text-white/75 font-medium truncate">
                   {sceneTime}
                 </span>
               )}
             </div>
 
-            <div className="w-5 h-5 rounded-md bg-white/[0.06] border border-white/10 flex items-center justify-center shrink-0">
-              <CloudRain size={11} className="text-sky-400" />
+            <div className="w-6 h-6 rounded-lg bg-white/[0.06] border border-white/10 flex items-center justify-center shrink-0">
+              <CloudRain size={12} className="text-sky-400" />
             </div>
           </div>
 
@@ -835,22 +835,22 @@ export default function IdentityVisualCard({
                   value={sceneWeather}
                   onChange={(e) => setSceneWeather(e.target.value)}
                   placeholder="สภาพอากาศ"
-                  className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-1.5 py-0.5 text-[12px] font-bold text-white outline-none"
+                  className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-1.5 py-0.5 text-[13px] font-semibold text-white outline-none"
                 />
                 <input
                   type="text"
                   value={sceneLocation}
                   onChange={(e) => setSceneLocation(e.target.value)}
                   placeholder="สถานที่"
-                  className="w-full bg-black/25 border border-white/10 focus:border-[#EF264C] rounded px-1.5 py-0.5 text-[10.5px] text-white/80 outline-none"
+                  className="w-full bg-black/25 border border-white/10 focus:border-[#EF264C] rounded px-1.5 py-0.5 text-[11px] text-white/80 outline-none"
                 />
               </div>
             ) : (
               <div>
-                <div className="text-[16px] font-bold text-white tracking-tight truncate leading-tight">
+                <div className="text-[17px] sm:text-[18px] font-semibold text-white tracking-tight truncate leading-tight">
                   {sceneWeather}
                 </div>
-                <div className="text-[11.5px] text-[#A1A1A8] truncate mt-1">
+                <div className="text-[12px] text-[#A1A1A8] truncate mt-1 font-normal">
                   {sceneLocation}
                 </div>
               </div>
@@ -867,7 +867,7 @@ export default function IdentityVisualCard({
         >
           {/* Header */}
           <div className="flex items-center justify-between shrink-0">
-            <span className="text-[11px] font-bold tracking-wider text-white/80 font-mono">
+            <span className="text-[14px] sm:text-[15px] font-semibold text-[#F1F1F1] tracking-tight">
               ท่าทีผู้เล่น
             </span>
             <span className="w-2 h-2 rounded-full bg-emerald-400/80 animate-pulse" />
@@ -881,14 +881,14 @@ export default function IdentityVisualCard({
                 value={playerStance}
                 onChange={(e) => setPlayerStance(e.target.value)}
                 placeholder="ท่าทางเริ่มต้นของผู้เล่น"
-                className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-1 text-[11px] text-white outline-none"
+                className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-1 text-[11.5px] text-white outline-none"
               />
             ) : (
               <div>
-                <div className="text-[13.5px] font-bold text-white tracking-tight leading-snug line-clamp-3">
+                <div className="text-[13.5px] font-semibold text-white tracking-tight leading-snug line-clamp-3">
                   {playerStance}
                 </div>
-                <div className="text-[11px] text-[#A1A1A8] mt-1.5 truncate">
+                <div className="text-[11px] text-[#A1A1A8] mt-1.5 truncate font-normal">
                   พร้อมรับมือ / สังเกตการณ์
                 </div>
               </div>

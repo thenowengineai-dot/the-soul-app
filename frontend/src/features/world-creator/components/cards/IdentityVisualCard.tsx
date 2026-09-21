@@ -707,7 +707,7 @@ export default function IdentityVisualCard({
         {/* 👓 WIDGET 3: ANATOMY & PHYSIQUE (2x2 -> 346px × 346px - TWO-TIER DUAL MATRIX) */}
         {/* ======================================================================= */}
         <div
-          className={`col-span-2 row-span-2 rounded-[28px] p-4 ${frostedCardClass}`}
+          className="col-span-2 row-span-2 rounded-[28px] p-4 bg-white/[0.06] hover:bg-white/[0.09] backdrop-blur-2xl border border-white/[0.10] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-all flex flex-col justify-between relative z-10 hover:z-50 focus-within:z-50"
           style={{ width: '346px', height: '346px' }}
         >
           {/* Header Row: Pure Thai Label + Trait Counter + Quick Add */}
@@ -852,17 +852,18 @@ export default function IdentityVisualCard({
             /* ================================================================= */
             /* ✦ TWO-TIER DUAL MATRIX (READING MODE WITH APPLE HOVER POPOVERS)   */
             /* ================================================================= */
-            <div className="flex-1 flex flex-col justify-between overflow-hidden">
+            <div className="flex-1 flex flex-col justify-between relative">
               {/* --------------------------------------------------------------- */}
               {/* 👑 TIER 1: 4 CORE ANATOMICAL FOUNDATIONS (2x2 FROSTED MATRIX)   */}
               {/* --------------------------------------------------------------- */}
               <div className="grid grid-cols-2 gap-2 shrink-0">
                 {corePillars.map((pillar, idx) => {
                   const isTopRow = idx < 2;
+                  const isLeftCol = idx % 2 === 0;
                   return (
                     <div
                       key={pillar.key}
-                      className="group relative p-2.5 rounded-[18px] bg-black/35 hover:bg-white/[0.08] backdrop-blur-xl border border-white/[0.07] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] flex flex-col justify-between transition-all duration-200 cursor-pointer h-[72px]"
+                      className="group relative hover:z-50 focus-within:z-50 p-2.5 rounded-[18px] bg-black/40 hover:bg-white/[0.08] backdrop-blur-xl border border-white/[0.07] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] flex flex-col justify-between transition-all duration-200 cursor-pointer h-[72px]"
                     >
                       {/* Top row: Icon + Category Name */}
                       <div className="flex items-center gap-1.5 shrink-0">
@@ -884,13 +885,15 @@ export default function IdentityVisualCard({
                         </div>
                       </div>
 
-                      {/* ✦ APPLE FROSTED GLASS POPOVER (TOOLTIP) */}
+                      {/* ✦ APPLE FROSTED GLASS POPOVER (TOOLTIP IN FRONT OF ALL CARDS) */}
                       <div
                         className={`absolute ${
-                          isTopRow ? 'top-full mt-2 origin-top' : 'bottom-full mb-2 origin-bottom'
-                        } left-1/2 -translate-x-1/2 w-[285px] p-3 rounded-[20px] bg-[#1a1a1e]/98 backdrop-blur-3xl border border-white/20 shadow-[0_16px_40px_rgba(0,0,0,0.75),inset_0_1px_0_rgba(255,255,255,0.2)] opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 transform scale-95 group-hover:scale-100`}
+                          isTopRow ? 'top-full mt-2' : 'bottom-full mb-2'
+                        } ${
+                          isLeftCol ? 'left-0 origin-top-left' : 'right-0 origin-top-right'
+                        } w-[285px] p-3.5 rounded-[20px] bg-[#161618] backdrop-blur-3xl border border-white/25 shadow-[0_22px_50px_rgba(0,0,0,0.95),inset_0_1px_0_rgba(255,255,255,0.25)] opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-[100] transform scale-95 group-hover:scale-100`}
                       >
-                        <div className="flex items-center gap-1.5 mb-1 pb-1 border-b border-white/10">
+                        <div className="flex items-center gap-1.5 mb-1.5 pb-1.5 border-b border-white/10">
                           <div className="w-4 h-4 rounded-full bg-[#EF264C]/20 text-[#EF264C] flex items-center justify-center text-[9.5px]">
                             ✦
                           </div>
@@ -909,9 +912,11 @@ export default function IdentityVisualCard({
                         <div
                           className={`absolute ${
                             isTopRow
-                              ? 'bottom-full -mb-[1px] border-b-[#1a1a1e]/98 border-b-[6px]'
-                              : 'top-full -mt-[1px] border-t-[#1a1a1e]/98 border-t-[6px]'
-                          } left-1/2 -translate-x-1/2 w-0 h-0 border-x-[6px] border-x-transparent`}
+                              ? 'bottom-full -mb-[1px] border-b-[#161618] border-b-[6px]'
+                              : 'top-full -mt-[1px] border-t-[#161618] border-t-[6px]'
+                          } ${
+                            isLeftCol ? 'left-6' : 'right-6'
+                          } w-0 h-0 border-x-[6px] border-x-transparent`}
                         />
                       </div>
                     </div>
@@ -920,9 +925,9 @@ export default function IdentityVisualCard({
               </div>
 
               {/* --------------------------------------------------------------- */}
-              {/* ✦ TIER 2: UNLIMITED CUSTOM TRAITS & CHARMS (SLIDEABLE DOCK)     */}
+              {/* ✦ TIER 2: UNLIMITED CUSTOM TRAITS & CHARMS (VISIBLE DOCK)       */}
               {/* --------------------------------------------------------------- */}
-              <div className="flex flex-col justify-end mt-2 pt-1 border-t border-white/[0.06]">
+              <div className="flex flex-col justify-end mt-2 pt-1 border-t border-white/[0.06] relative">
                 {/* Subhead */}
                 <div className="flex items-center justify-between px-1 mb-1.5 shrink-0">
                   <div className="flex items-center gap-1.5">
@@ -939,39 +944,58 @@ export default function IdentityVisualCard({
                   </span>
                 </div>
 
-                {/* Horizontal slideable tray of custom traits */}
-                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth py-1 px-1 select-none">
-                  {customTraits.map((trait) => (
-                    <div
-                      key={trait.id}
-                      className="group relative px-3 py-1.5 rounded-[14px] bg-black/35 hover:bg-white/[0.10] border border-white/[0.07] hover:border-white/20 flex items-center gap-2 shrink-0 transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#EF264C] shrink-0" />
-                      <span className="text-[12px] font-medium text-white/90 whitespace-nowrap">
-                        {trait.title}
-                      </span>
+                {/* Custom traits pills container */}
+                <div className="flex items-center gap-1.5 py-0.5 px-0.5 flex-wrap select-none relative">
+                  {customTraits.map((trait, traitIdx) => {
+                    const isNearLeft = traitIdx === 0;
+                    const isNearRight = traitIdx === customTraits.length - 1 && customTraits.length > 1;
+                    const popoverPos = isNearLeft
+                      ? 'left-0 origin-bottom-left'
+                      : isNearRight
+                      ? 'right-0 origin-bottom-right'
+                      : 'left-1/2 -translate-x-1/2 origin-bottom';
+                    const arrowPos = isNearLeft
+                      ? 'left-6'
+                      : isNearRight
+                      ? 'right-6'
+                      : 'left-1/2 -translate-x-1/2';
 
-                      {/* Hover Popover Tooltip for Custom Trait (floats upward) */}
-                      <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-[285px] p-3 rounded-[20px] bg-[#1a1a1e]/98 backdrop-blur-3xl border border-white/20 shadow-[0_16px_40px_rgba(0,0,0,0.75),inset_0_1px_0_rgba(255,255,255,0.2)] opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 transform scale-95 group-hover:scale-100 origin-bottom">
-                        <div className="flex items-center gap-1.5 mb-1 pb-1 border-b border-white/10">
-                          <div className="w-4 h-4 rounded-full bg-[#EF264C]/20 text-[#EF264C] flex items-center justify-center text-[9.5px]">
-                            ✦
+                    return (
+                      <div
+                        key={trait.id}
+                        className="group relative hover:z-50 focus-within:z-50 px-3 py-1.5 rounded-[14px] bg-black/40 hover:bg-white/[0.10] border border-white/[0.07] hover:border-white/20 flex items-center gap-2 shrink-0 transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#EF264C] shrink-0" />
+                        <span className="text-[12px] font-medium text-white/90 whitespace-nowrap">
+                          {trait.title}
+                        </span>
+
+                        {/* Hover Popover Tooltip for Custom Trait (floats upward in front) */}
+                        <div
+                          className={`absolute bottom-full mb-2 ${popoverPos} w-[285px] p-3.5 rounded-[20px] bg-[#161618] backdrop-blur-3xl border border-white/25 shadow-[0_22px_50px_rgba(0,0,0,0.95),inset_0_1px_0_rgba(255,255,255,0.25)] opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-[100] transform scale-95 group-hover:scale-100`}
+                        >
+                          <div className="flex items-center gap-1.5 mb-1.5 pb-1.5 border-b border-white/10">
+                            <div className="w-4 h-4 rounded-full bg-[#EF264C]/20 text-[#EF264C] flex items-center justify-center text-[9.5px]">
+                              ✦
+                            </div>
+                            <span className="text-[11px] font-semibold text-white tracking-tight">
+                              จุดเด่นเฉพาะตัว
+                            </span>
+                            <span className="text-white/30 text-[10px]">•</span>
+                            <span className="text-[11px] font-medium text-white/70 truncate">
+                              {trait.title}
+                            </span>
                           </div>
-                          <span className="text-[11px] font-semibold text-white tracking-tight">
-                            จุดเด่นเฉพาะตัว
-                          </span>
-                          <span className="text-white/30 text-[10px]">•</span>
-                          <span className="text-[11px] font-medium text-white/70 truncate">
-                            {trait.title}
-                          </span>
+                          <p className="text-[12px] text-[#EDEDED] leading-relaxed font-normal">
+                            {trait.detail}
+                          </p>
+                          <div
+                            className={`absolute top-full -mt-[1px] ${arrowPos} w-0 h-0 border-x-[6px] border-x-transparent border-t-[6px] border-t-[#161618]`}
+                          />
                         </div>
-                        <p className="text-[12px] text-[#EDEDED] leading-relaxed font-normal">
-                          {trait.detail}
-                        </p>
-                        <div className="absolute top-full -mt-[1px] left-1/2 -translate-x-1/2 w-0 h-0 border-x-[6px] border-x-transparent border-t-[6px] border-t-[#1a1a1e]/98" />
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
 
                   {/* Inline Add Button on rail */}
                   <button

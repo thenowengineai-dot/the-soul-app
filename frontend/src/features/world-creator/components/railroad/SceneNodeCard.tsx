@@ -373,17 +373,17 @@ export default function SceneNodeCard({
       {/* 2. THE 3 DRAMATIC ORGANS / READ MODE                                  */}
       {/* ===================================================================== */}
       {!isEditing ? (
-        <div className="flex-1 flex flex-col justify-between gap-1.5 py-1 overflow-hidden">
+        <div className="flex-1 flex flex-col justify-between gap-1.5 py-0.5 overflow-hidden">
           {/* Organ 1: 🎭 1. ตัวละครกำลังทำอะไร */}
           <div className="rounded-[14px] bg-white/[0.03] border border-white/[0.06] px-3.5 py-2 flex flex-col gap-1">
             <div className="flex items-center gap-1.5 text-[#EF264C]">
-              <Sparkles size={13} />
-              <span className="text-[12px] sm:text-[12.5px] font-semibold text-white/90 tracking-tight">
+              <Sparkles size={13} className="shrink-0" />
+              <span className="text-[11.5px] sm:text-[12px] font-semibold text-white/90 tracking-tight">
                 1. ตัวละครกำลังทำอะไร
               </span>
             </div>
             <p
-              className={`text-[12.5px] sm:text-[13px] text-white/80 font-normal leading-[19px] tracking-tight ${
+              className={`text-[12px] sm:text-[12.5px] text-white/80 font-normal leading-[18px] tracking-tight ${
                 isExpandedCard ? '' : 'line-clamp-2'
               }`}
             >
@@ -391,41 +391,59 @@ export default function SceneNodeCard({
             </p>
           </div>
 
-          {/* Organ 2: 🎯 2. ถ้าผู้เล่นทำแบบนี้ (Tactile Multi-Line Layout) */}
+          {/* Organ 2: 🎯 2. ถ้าผู้เล่นทำแบบนี้ (เรื่องจะไปต่อทันที) - Pill Button & Trailing Action */}
           <div className="rounded-[14px] bg-white/[0.03] border border-white/[0.06] px-3.5 py-2 flex flex-col gap-1.5">
-            <div className="flex items-center gap-1.5 text-emerald-400">
-              <Target size={13} />
-              <span className="text-[12px] sm:text-[12.5px] font-semibold text-white/90 tracking-tight">
-                {isExpandedCard
-                  ? '2. ถ้าผู้เล่นทำแบบนี้ (เรื่องจะไปต่อทันที)'
-                  : '2. ถ้าผู้เล่นทำแบบนี้...'}
-              </span>
+            {/* Header: Title + Trailing Action Badge (→ ไปต่อ / ↺ อยู่ที่เดิม) */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 text-emerald-400 min-w-0">
+                <Target size={13} className="shrink-0" />
+                <span className="text-[11.5px] sm:text-[12px] font-semibold text-[#F1F1F1] tracking-tight truncate">
+                  2. ถ้าผู้เล่นทำแบบนี้ (เรื่องจะไปต่อทันที)
+                </span>
+              </div>
+              {triggerEntries.length > 0 && (
+                <span
+                  className={`text-[9.5px] sm:text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${
+                    triggerEntries[0][1].action_result === 'loop' ||
+                    (triggerEntries[0][1].action_result as string) === 'chaos_escalation'
+                      ? 'text-amber-300 bg-amber-500/15 border border-amber-500/30'
+                      : 'text-[#EF264C] bg-[#EF264C]/15 border border-[#EF264C]/30'
+                  }`}
+                >
+                  {triggerEntries[0][1].action_result === 'loop' ||
+                  (triggerEntries[0][1].action_result as string) === 'chaos_escalation'
+                    ? '↺ อยู่ที่เดิม'
+                    : '→ ไปต่อ'}
+                </span>
+              )}
             </div>
 
-            {/* List of Triggers in Multi-Line Tactile Format */}
-            <div className="space-y-2">
+            {/* List of Triggers: Pill Button + Feedback Text */}
+            <div className="space-y-1.5">
               {triggerEntries.length > 0 ? (
-                (isExpandedCard ? triggerEntries : triggerEntries.slice(0, 1)).map(([key, val]) => {
+                (isExpandedCard ? triggerEntries : triggerEntries.slice(0, 1)).map(([key, val], tIdx) => {
                   const isLoop =
                     val.action_result === 'loop' ||
                     (val.action_result as string) === 'chaos_escalation';
                   return (
                     <div
                       key={key}
-                      className="flex flex-col gap-1 py-1 border-b border-white/[0.04] last:border-0"
+                      className="flex items-center justify-between gap-2 min-w-0"
                     >
-                      {/* Line 1: Player Choice (Multi-line supported, no truncate) */}
-                      <div className="flex items-start gap-1.5">
-                        <span className="text-emerald-400/80 text-[11px] mt-0.5 shrink-0 font-bold">
-                          ▸
-                        </span>
-                        <span className="text-[12px] sm:text-[12.5px] font-medium text-white/90 leading-snug">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        {/* Interactive Pill Button for Player Action */}
+                        <span className="px-2.5 py-0.5 rounded-full bg-white/[0.08] border border-white/15 text-[11px] sm:text-[11.5px] font-medium text-white shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
                           {key}
                         </span>
+                        {/* Feedback text */}
+                        {val.feedback && (
+                          <span className="text-[11.5px] sm:text-[12px] text-white/70 italic truncate">
+                            ➔ {val.feedback}
+                          </span>
+                        )}
                       </div>
-
-                      {/* Line 2: Action Badge + Feedback response (Multi-line, no truncate) */}
-                      <div className="flex items-baseline gap-2 pl-3.5 flex-wrap">
+                      {/* In expanded view, if there are multiple triggers beyond the first, show their individual action badges */}
+                      {isExpandedCard && tIdx > 0 && (
                         <span
                           className={`text-[9.5px] sm:text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${
                             isLoop
@@ -435,23 +453,13 @@ export default function SceneNodeCard({
                         >
                           {isLoop ? '↺ อยู่ที่เดิม' : '→ ไปต่อ'}
                         </span>
-                        {val.feedback && (
-                          <span className="text-[11.5px] sm:text-[12px] text-white/65 italic leading-relaxed">
-                            ➔ {val.feedback}
-                          </span>
-                        )}
-                      </div>
+                      )}
                     </div>
                   );
                 })
               ) : (
-                <div className="text-[12px] text-white/40 italic">
+                <div className="text-[11.5px] text-white/40 italic">
                   ยังไม่ได้กำหนดทางเลือก
-                </div>
-              )}
-              {!isExpandedCard && triggerEntries.length > 1 && (
-                <div className="text-[11px] text-white/40 italic pt-0.5">
-                  + อีก {triggerEntries.length - 1} ทางเลือก (แตะลูกศรแดงเพื่อดูทั้งหมด)
                 </div>
               )}
             </div>
@@ -460,15 +468,13 @@ export default function SceneNodeCard({
           {/* Organ 3: ⏳ 3. ถ้าผู้เล่นไม่ทำอะไร */}
           <div className="rounded-[14px] bg-amber-500/[0.03] border border-amber-500/20 px-3.5 py-2 flex flex-col gap-1">
             <div className="flex items-center gap-1.5 text-amber-400">
-              <Clock size={13} />
-              <span className="text-[12px] sm:text-[12.5px] font-semibold text-amber-300 tracking-tight">
-                {isExpandedCard
-                  ? `3. ถ้าผู้เล่นไม่ทำอะไร (คุยครบ ${displayTurns} รอบ เรื่องจะเดินต่อเองว่า)`
-                  : '3. ถ้าผู้เล่นไม่ทำอะไร...'}
+              <Clock size={13} className="shrink-0" />
+              <span className="text-[11.5px] sm:text-[12px] font-semibold text-amber-300 tracking-tight">
+                3. ถ้าผู้เล่นไม่ทำอะไร (คุยครบ {displayTurns} รอบ เรื่องจะเดินต่อเองว่า)
               </span>
             </div>
             <p
-              className={`text-[12.5px] text-[#EDEDED] font-normal leading-[19px] tracking-tight ${
+              className={`text-[12px] sm:text-[12.5px] text-[#EDEDED] font-normal leading-[18px] tracking-tight ${
                 isExpandedCard ? '' : 'line-clamp-2'
               }`}
             >

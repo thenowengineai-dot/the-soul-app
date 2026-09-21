@@ -65,160 +65,188 @@ export default function MindShadowCard({
     }
   };
 
+  // Apple Frosted Glass Recipe matching Section 1
+  const frostedCardClass =
+    'bg-white/[0.06] hover:bg-white/[0.09] backdrop-blur-2xl border border-white/[0.10] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-all flex flex-col justify-between relative overflow-hidden';
+
   return (
     <div className="w-full flex justify-center py-2">
       {/* ========================================================================= */}
-      {/* ✦ THE MASTER PSYCHOLOGY CARD: THE 3-TIER GLASS CHAMBER                    */}
-      {/* 4x2 Module in 165px Bento Grid: 708px wide x 346px high (Lego snapped)   */}
+      {/* ✦ MATHEMATICAL GAME GRID: 165px BASE UNIT, 16px GAP                        */}
+      {/* CARD SIZE: STRICT 2x2 (346px × 346px) MATCHING SECTION 1 EXACTLY           */}
       {/* ========================================================================= */}
       <div
-        className="w-full max-w-[708px] rounded-[28px] p-4 sm:p-5 bg-white/[0.06] hover:bg-white/[0.09] backdrop-blur-2xl border border-white/[0.10] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-all flex flex-col justify-between relative overflow-hidden"
-        style={{ minHeight: '346px' }}
+        className="grid gap-4 justify-center"
+        style={{
+          gridTemplateColumns: 'repeat(auto-fill, 165px)',
+          gridAutoRows: '165px',
+          width: '100%',
+          maxWidth: '1440px',
+        }}
       >
-        {/* Top Header Row: Title & In-Place Edit Control */}
-        <div className="flex items-center justify-between shrink-0 mb-3">
-          <div className="flex items-center gap-2">
-            <span className="text-[#EF264C] text-[13px]">✦</span>
-            <span className="text-[16px] sm:text-[17px] font-semibold text-[#F1F1F1] tracking-tight">
-              จิตวิทยาและสองขั้วอารมณ์
-            </span>
-            <span className="text-[11px] text-white/40 font-normal hidden sm:inline">
-              (Duality Architecture)
-            </span>
+        <div
+          className={`col-span-2 row-span-2 rounded-[28px] p-4 ${frostedCardClass}`}
+          style={{ width: '346px', height: '346px' }}
+        >
+          {/* Header Row: Clean Title (NO icon in front) + In-Place Edit Pill */}
+          <div className="flex items-center justify-between shrink-0 mb-1.5">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-[16px] sm:text-[17px] font-semibold text-[#F1F1F1] tracking-tight">
+                จิตวิทยาและสองขั้วอารมณ์
+              </span>
+              <span className="text-[11px] font-normal text-white/40">
+                (3 มิติ)
+              </span>
+            </div>
+
+            {isEditable && (
+              <div>
+                {isEditing ? (
+                  <button
+                    type="button"
+                    onClick={handleSave}
+                    className="w-7 h-7 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white flex items-center justify-center shadow-[0_2px_8px_rgba(239,38,76,0.4)] transition-all cursor-pointer active:scale-95"
+                    title="บันทึก"
+                  >
+                    <Check size={13} strokeWidth={2.4} />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditing(true)}
+                    className="w-7 h-7 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 hover:border-white/20 text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] active:scale-95"
+                    title="แก้ไขข้อมูลจิตวิทยา"
+                  >
+                    <Pencil size={12} strokeWidth={2} />
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
-          {isEditable && (
-            <div>
-              {isEditing ? (
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  className="h-7 px-3 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white text-[12px] font-medium flex items-center gap-1.5 shadow-[0_2px_8px_rgba(239,38,76,0.4)] transition-all cursor-pointer active:scale-95"
-                  title="บันทึกข้อมูล"
-                >
-                  <Check size={13} strokeWidth={2.4} />
-                  <span>บันทึก</span>
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setIsEditing(true)}
-                  className="w-7 h-7 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 hover:border-white/20 text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] active:scale-95"
-                  title="แก้ไขข้อมูลจิตวิทยา"
-                >
-                  <Pencil size={12} strokeWidth={2} />
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* 3-Tier Glass Chamber Stack */}
-        <div className="flex-1 flex flex-col justify-between gap-2.5">
-          {/* ===================================================================== */}
-          {/* TIER 1: 🛡️ THE MASK (หน้ากากทางสังคม)                                 */}
-          {/* ===================================================================== */}
-          <div className="p-3 sm:p-3.5 rounded-[20px] bg-black/35 hover:bg-black/45 backdrop-blur-xl border border-white/[0.07] transition-all flex items-start gap-3 sm:gap-4 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
-            {/* Tactile Icon Orb: Shield */}
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full shrink-0 flex items-center justify-center bg-cyan-500/10 text-cyan-400 border border-cyan-400/25 shadow-[0_0_14px_rgba(34,211,238,0.15)] mt-0.5">
-              <Shield size={19} strokeWidth={2.2} />
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[12px] sm:text-[12.5px] font-semibold text-cyan-300/90 tracking-wide uppercase">
-                  หน้ากากทางสังคม
-                </span>
-                <span className="text-[10px] text-white/35 font-mono">
-                  THE MASK
-                </span>
-              </div>
-
-              {isEditing ? (
+          {/* Body Content */}
+          {isEditing ? (
+            /* ================================================================= */
+            /* ✦ EDITING MODE: COMPACT IN-PLACE TEXTAREAS                        */
+            /* ================================================================= */
+            <div className="flex-1 flex flex-col gap-2 overflow-y-auto no-scrollbar py-1">
+              <div>
+                <label className="text-[10px] font-medium text-cyan-300/90 uppercase tracking-wider mb-0.5 block">
+                  หน้ากากทางสังคม (The Mask)
+                </label>
                 <textarea
                   rows={2}
                   value={socialMask}
                   onChange={(e) => setSocialMask(e.target.value)}
-                  className="w-full bg-black/40 border border-white/15 focus:border-cyan-400 rounded-lg px-2.5 py-1.5 text-[12px] sm:text-[12.5px] text-[#EDEDED] outline-none leading-relaxed resize-none"
-                  placeholder="ระบุบุคลิกภายนอกที่แสดงต่อหน้าโลกและสังคม..."
+                  className="w-full bg-black/40 border border-white/15 focus:border-cyan-400 rounded-lg p-1.5 text-[11px] text-[#EDEDED] outline-none leading-relaxed resize-none"
+                  placeholder="บุคลิกภายนอกที่แสดงต่อโลก..."
                 />
-              ) : (
-                <p className="text-[12.5px] sm:text-[13px] text-[#EDEDED] leading-relaxed font-normal">
-                  {socialMask}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* ===================================================================== */}
-          {/* TIER 2: ⚡ THE CONFLICT (จุดขัดแย้งในใจ)                               */}
-          {/* ===================================================================== */}
-          <div className="p-3 sm:p-3.5 rounded-[20px] bg-black/35 hover:bg-black/45 backdrop-blur-xl border border-white/[0.07] transition-all flex items-start gap-3 sm:gap-4 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
-            {/* Tactile Icon Orb: Lightning */}
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full shrink-0 flex items-center justify-center bg-amber-500/10 text-amber-400 border border-amber-400/25 shadow-[0_0_14px_rgba(251,191,36,0.15)] mt-0.5">
-              <Zap size={19} strokeWidth={2.2} />
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[12px] sm:text-[12.5px] font-semibold text-amber-300/90 tracking-wide uppercase">
-                  จุดขัดแย้งในใจ
-                </span>
-                <span className="text-[10px] text-white/35 font-mono">
-                  THE CONFLICT
-                </span>
               </div>
 
-              {isEditing ? (
+              <div>
+                <label className="text-[10px] font-medium text-amber-300/90 uppercase tracking-wider mb-0.5 block">
+                  จุดขัดแย้งในใจ (The Conflict)
+                </label>
                 <textarea
                   rows={2}
                   value={coreConflict}
                   onChange={(e) => setCoreConflict(e.target.value)}
-                  className="w-full bg-black/40 border border-white/15 focus:border-amber-400 rounded-lg px-2.5 py-1.5 text-[12px] sm:text-[12.5px] text-[#EDEDED] outline-none leading-relaxed resize-none"
-                  placeholder="ระบุการต่อสู้ระหว่างสองขั้ว หรือชนวนที่ทำให้หน้ากากแตกสลาย..."
+                  className="w-full bg-black/40 border border-white/15 focus:border-amber-400 rounded-lg p-1.5 text-[11px] text-[#EDEDED] outline-none leading-relaxed resize-none"
+                  placeholder="การต่อสู้ระหว่างสองขั้ว หรือชนวนแตกหัก..."
                 />
-              ) : (
-                <p className="text-[12.5px] sm:text-[13px] text-[#EDEDED] leading-relaxed font-normal">
-                  {coreConflict}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* ===================================================================== */}
-          {/* TIER 3: ❤️ THE CORE (ธาตุแท้ใต้หน้ากาก)                                 */}
-          {/* ===================================================================== */}
-          <div className="p-3 sm:p-3.5 rounded-[20px] bg-black/35 hover:bg-black/45 backdrop-blur-xl border border-white/[0.07] transition-all flex items-start gap-3 sm:gap-4 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
-            {/* Tactile Icon Orb: Heart */}
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full shrink-0 flex items-center justify-center bg-[#EF264C]/10 text-[#EF264C] border border-[#EF264C]/25 shadow-[0_0_14px_rgba(239,38,76,0.20)] mt-0.5">
-              <Heart size={19} strokeWidth={2.2} fill="currentColor" fillOpacity={0.15} />
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[12px] sm:text-[12.5px] font-semibold text-rose-400 tracking-wide uppercase">
-                  ธาตุแท้ใต้หน้ากาก
-                </span>
-                <span className="text-[10px] text-white/35 font-mono">
-                  THE CORE
-                </span>
               </div>
 
-              {isEditing ? (
+              <div>
+                <label className="text-[10px] font-medium text-rose-300/90 uppercase tracking-wider mb-0.5 block">
+                  ธาตุแท้ใต้หน้ากาก (The Core)
+                </label>
                 <textarea
                   rows={2}
                   value={theCore}
                   onChange={(e) => setTheCore(e.target.value)}
-                  className="w-full bg-black/40 border border-white/15 focus:border-[#EF264C] rounded-lg px-2.5 py-1.5 text-[12px] sm:text-[12.5px] text-[#EDEDED] outline-none leading-relaxed resize-none"
-                  placeholder="ระบุตัวตนเนื้อแท้ กิเลส และสัญชาตญาณดิบที่ซ่อนอยู่..."
+                  className="w-full bg-black/40 border border-white/15 focus:border-[#EF264C] rounded-lg p-1.5 text-[11px] text-[#EDEDED] outline-none leading-relaxed resize-none"
+                  placeholder="ตัวตนเนื้อแท้และสัญชาตญาณดิบ..."
                 />
-              ) : (
-                <p className="text-[12.5px] sm:text-[13px] text-[#EDEDED] leading-relaxed font-normal">
-                  {theCore}
-                </p>
-              )}
+              </div>
             </div>
-          </div>
+          ) : (
+            /* ================================================================= */
+            /* ✦ READING MODE: SLEEK SMOKED CRYSTAL TRAY (3 COMPACT TIERS)       */
+            /* ================================================================= */
+            <div className="flex-1 p-2.5 rounded-[20px] bg-black/35 backdrop-blur-xl border border-white/[0.06] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)] flex flex-col justify-between overflow-hidden">
+              {/* TIER 1: 🛡️ THE MASK (หน้ากากทางสังคม) */}
+              <div className="flex items-start gap-2.5 py-0.5">
+                {/* Cyan Orb */}
+                <div className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center bg-cyan-500/10 text-cyan-400 border border-cyan-400/25 shadow-[0_0_10px_rgba(34,211,238,0.15)] mt-0.5">
+                  <Shield size={14} strokeWidth={2.2} />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-baseline gap-1.5 mb-0.5">
+                    <span className="text-[11.5px] font-semibold text-cyan-300 tracking-wide">
+                      หน้ากากทางสังคม
+                    </span>
+                    <span className="text-[9px] text-white/30 font-mono">
+                      THE MASK
+                    </span>
+                  </div>
+                  <p className="text-[11.5px] text-[#EDEDED] leading-[17px] line-clamp-2 font-normal">
+                    {socialMask}
+                  </p>
+                </div>
+              </div>
+
+              {/* Delicate 1px Hairline */}
+              <div className="w-full h-[1px] bg-white/[0.05]" />
+
+              {/* TIER 2: ⚡ THE CONFLICT (จุดขัดแย้งในใจ) */}
+              <div className="flex items-start gap-2.5 py-0.5">
+                {/* Amber Orb */}
+                <div className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center bg-amber-500/10 text-amber-400 border border-amber-400/25 shadow-[0_0_10px_rgba(251,191,36,0.15)] mt-0.5">
+                  <Zap size={14} strokeWidth={2.2} />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-baseline gap-1.5 mb-0.5">
+                    <span className="text-[11.5px] font-semibold text-amber-300 tracking-wide">
+                      จุดขัดแย้งในใจ
+                    </span>
+                    <span className="text-[9px] text-white/30 font-mono">
+                      THE CONFLICT
+                    </span>
+                  </div>
+                  <p className="text-[11.5px] text-[#EDEDED] leading-[17px] line-clamp-2 font-normal">
+                    {coreConflict}
+                  </p>
+                </div>
+              </div>
+
+              {/* Delicate 1px Hairline */}
+              <div className="w-full h-[1px] bg-white/[0.05]" />
+
+              {/* TIER 3: ❤️ THE CORE (ธาตุแท้ใต้หน้ากาก) */}
+              <div className="flex items-start gap-2.5 py-0.5">
+                {/* Pink Orb */}
+                <div className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center bg-rose-500/10 text-rose-400 border border-rose-400/25 shadow-[0_0_10px_rgba(244,63,94,0.18)] mt-0.5">
+                  <Heart size={14} strokeWidth={2.2} fill="currentColor" fillOpacity={0.15} />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-baseline gap-1.5 mb-0.5">
+                    <span className="text-[11.5px] font-semibold text-rose-300 tracking-wide">
+                      ธาตุแท้ใต้หน้ากาก
+                    </span>
+                    <span className="text-[9px] text-white/30 font-mono">
+                      THE CORE
+                    </span>
+                  </div>
+                  <p className="text-[11.5px] text-[#EDEDED] leading-[17px] line-clamp-2 font-normal">
+                    {theCore}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

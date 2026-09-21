@@ -12,6 +12,8 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  MapPin,
+  AlertTriangle,
 } from 'lucide-react';
 import type { WorldScene, WorldBeat, WorldLocationsMap, PlayerTriggerAction } from '../../types';
 import { getCleanSceneTitle, SCENE_STEP_X } from './RailroadCableOverlay';
@@ -24,11 +26,13 @@ interface SceneNodeCardProps {
   hasIncomingCable?: boolean;
   hasOutgoingCable?: boolean;
   isDropTarget?: boolean;
+  isLocationDropTarget?: boolean;
   onUpdateScene: (updated: WorldScene) => void;
   onDeleteScene: () => void;
   onStartDrag: (e: MouseEvent, sceneId: string) => void;
   onStartDragWire?: (e: MouseEvent, sceneId: string) => void;
   onStartDetachIncoming?: (e: MouseEvent, sceneId: string) => void;
+  onDetachLocation?: (sceneId: string) => void;
   isEditable?: boolean;
 }
 
@@ -46,11 +50,13 @@ export default function SceneNodeCard({
   hasIncomingCable = false,
   hasOutgoingCable = false,
   isDropTarget = false,
+  isLocationDropTarget = false,
   onUpdateScene,
   onDeleteScene,
   onStartDrag,
   onStartDragWire,
   onStartDetachIncoming,
+  onDetachLocation,
   isEditable = true,
 }: SceneNodeCardProps) {
   const [activeBeatIndex, setActiveBeatIndex] = useState(0);
@@ -199,15 +205,53 @@ export default function SceneNodeCard({
       className={`absolute w-[346px] rounded-[24px] bg-[#141419]/95 backdrop-blur-2xl border p-4 flex flex-col justify-between transition-all select-none group/node ${
         isDropTarget
           ? 'border-[#EF264C] ring-2 ring-[#EF264C]/40 shadow-[0_8px_32px_rgba(239,38,76,0.3)] z-30'
+          : isLocationDropTarget
+          ? 'border-emerald-500 ring-2 ring-emerald-500/40 shadow-[0_8px_32px_rgba(16,185,129,0.3)] z-30'
           : 'border-white/10 hover:border-white/18 shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.10)]'
       } ${isExpandedCard || isEditing ? 'min-h-[346px] h-auto pb-6 z-20' : 'h-[346px]'}`}
       style={{
         left: `${scene.position?.x ?? 80 + index * SCENE_STEP_X}px`,
-        top: `${scene.position?.y ?? 100}px`,
+        top: `${scene.position?.y ?? 170}px`,
       }}
     >
       {/* ✦ AMBIENT CORNER GLOW */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-[#EF264C]/[0.05] rounded-full blur-2xl pointer-events-none" />
+
+      {/* ✦ TOP LOCATION CONNECTOR SOCKET (VERTICAL ORTHOGONAL PORT) */}
+      {scene.location_key ? (
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            if (isEditable && onDetachLocation) {
+              onDetachLocation(scene.scene_id);
+            }
+          }}
+          className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#14141E]/95 border border-emerald-500/60 hover:border-[#EF264C]/70 text-emerald-400 hover:text-[#EF264C] transition-all z-30 cursor-pointer shadow-[0_0_10px_rgba(16,185,129,0.3)] group/locsock backdrop-blur-md select-none"
+          title="คลิกเพื่อตัดการเชื่อมต่อสถานที่ (Click to disconnect location)"
+        >
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 group-hover/locsock:bg-[#EF264C] shadow-[0_0_6px_rgba(16,185,129,0.8)] transition-colors" />
+          <MapPin size={10} strokeWidth={2.2} className="shrink-0" />
+          <span className="text-[10px] sm:text-[10.5px] font-medium max-w-[130px] truncate text-white/90 group-hover/locsock:text-white">
+            {scene.location_key}
+          </span>
+          <X size={10} strokeWidth={2.4} className="opacity-0 group-hover/locsock:opacity-100 transition-opacity ml-0.5" />
+        </div>
+      ) : (
+        <div
+          className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1 px-2.5 py-0.5 rounded-full border border-dashed transition-all z-30 backdrop-blur-md select-none ${
+            isLocationDropTarget
+              ? 'border-emerald-400 bg-emerald-500/20 text-emerald-300 scale-110 shadow-[0_0_12px_rgba(16,185,129,0.5)] ring-2 ring-emerald-400/40'
+              : 'border-amber-400/80 bg-amber-500/10 text-amber-300 hover:border-amber-300 hover:bg-amber-500/20 shadow-sm animate-pulse'
+          }`}
+          title="ฉากนี้ยังไม่มีสถานที่: คลิกลากสายสีเขียวจากโหนดสถานที่ด้านบนมาเชื่อมต่อที่นี่"
+        >
+          <AlertTriangle size={10} className={isLocationDropTarget ? 'hidden' : 'text-amber-400 shrink-0'} />
+          <MapPin size={10} className={isLocationDropTarget ? 'text-emerald-400 shrink-0' : 'text-amber-400 shrink-0'} />
+          <span className="text-[10px] font-medium tracking-wide">
+            {isLocationDropTarget ? '✦ ปล่อยเพื่อเชื่อมต่อ' : 'ขาดสถานที่'}
+          </span>
+        </div>
+      )}
 
       {/* ✦ RAIL CONNECTOR PORTS (BLENDER NODE STYLE) */}
       {/* Input Port (Left) */}

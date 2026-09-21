@@ -8,17 +8,21 @@ import {
   RotateCcw,
   Layers,
   AlignHorizontalDistributeCenter,
+  MapPin,
 } from 'lucide-react';
 import type { VaultDraft, WorldScene, WorldScenario } from '../../types';
 import { DEFAULT_BOTANICAL_LOCATIONS } from '../../defaultWorldLocations';
 import SceneNodeCard from './SceneNodeCard';
+import LocationPillNode, { LOC_PILL_HEIGHT } from './LocationPillNode';
 import RailroadCableOverlay, {
   type DraggingWireState,
+  type DraggingLocationWireState,
   resolveNextSceneId,
   computeSceneChainOrder,
   SCENE_WIDTH,
   SCENE_STEP_X,
   PORT_Y_OFFSET,
+  LOC_PILL_WIDTH,
 } from './RailroadCableOverlay';
 
 interface RailroadCanvasProps {
@@ -33,7 +37,7 @@ const DEFAULT_SCENES: WorldScene[] = [
     scene_id: 'scene_1',
     title: 'ห้องโถงเสื่อทาทามิเรียวกัง',
     location_key: 'ห้องโถงเสื่อทาทามิเรียวกัง',
-    position: { x: 80, y: 100 },
+    position: { x: 80, y: 170 },
     next_scene_id: 'scene_2',
     scene_objective: "พา [PLAYER] เดินทางขึ้นเขาไปเก็บสมุนไพร 'เฟิร์นหมอกอัคคี' และหลบเข้าซอกถ้ำร้าง",
     forced_chaos_level: 'low',
@@ -105,7 +109,7 @@ const DEFAULT_SCENES: WorldScene[] = [
     scene_id: 'scene_2',
     title: 'ซอกถ้ำหินแกรนิตร้าง',
     location_key: 'ซอกถ้ำหินแกรนิตร้าง',
-    position: { x: 540, y: 100 },
+    position: { x: 540, y: 170 },
     next_scene_id: 'scene_3',
     scene_objective: "[ACTOR] ต้องการชำระล้างคราบโคลนและบรรเทาอาการร้อนรุ่มจากพิษพฤกษศาสตร์ที่ซึมเข้าผิวด้วย 'โอสถน้ำมังกร' ของ [PLAYER]",
     forced_chaos_level: 'medium',
@@ -177,7 +181,7 @@ const DEFAULT_SCENES: WorldScene[] = [
     scene_id: 'scene_3',
     title: 'เส้นทางป่าทึบขากลับ',
     location_key: 'เส้นทางป่าทึบขากลับ',
-    position: { x: 1000, y: 100 },
+    position: { x: 1000, y: 170 },
     scene_objective: '[ACTOR] ต้องบังคับให้ [PLAYER] ประคองช่วยดับพิษ โดยไม่ให้เพื่อนชมรมจับได้',
     forced_chaos_level: 'high',
     event_mood: 'สุ่มเสี่ยง ตื่นเต้น ป่าทึบ เปียกปอน ไร้ทางถอย',
@@ -275,6 +279,22 @@ export default function RailroadCanvas({
   const [draggingWire, setDraggingWire] = useState<DraggingWireState | null>(null);
   const [hoveredTargetSceneId, setHoveredTargetSceneId] = useState<string | null>(null);
 
+  // Custom Location Node Positions (overrides auto-aligned positions)
+  const [customLocationPositions, setCustomLocationPositions] = useState<Record<string, { x: number; y: number }>>({});
+
+  // Location Pill Dragging State
+  const [draggingLocationKey, setDraggingLocationKey] = useState<string | null>(null);
+  const dragLocationStartPosRef = useRef<{ mouseX: number; mouseY: number; pillX: number; pillY: number }>({
+    mouseX: 0,
+    mouseY: 0,
+    pillX: 0,
+    pillY: 0,
+  });
+
+  // Location Wire Dragging State (Green wire from location pill bottom port)
+  const [draggingLocationWire, setDraggingLocationWire] = useState<DraggingLocationWireState | null>(null);
+  const [hoveredTargetSceneForLocId, setHoveredTargetSceneForLocId] = useState<string | null>(null);
+
   // Current Scenario Scenes
   const scenario: WorldScenario = draft.scenario || {
     id: 'botanical_scenario_01',
@@ -292,6 +312,53 @@ export default function RailroadCanvas({
     draft.real_locations && Object.keys(draft.real_locations).length > 0
       ? draft.real_locations
       : DEFAULT_BOTANICAL_LOCATIONS;
+
+  const allLocationKeys = useMemo(() => {
+    const keys = new Set<string>(Object.keys(availableLocations));
+    scenes.forEach((s) => {
+      if (s.location_key) keys.add(s.location_key);
+    });
+    return Array.from(keys);
+  }, [availableLocations, scenes]);
+
+  // Coordinate conversion of location pills
+  const getLocationPosition = useCallback(
+    (locKey: string): { x: number; y: number } => {
+      if (customLocationPositions[locKey]) {
+        return customLocationPositions[locKey];
+      }
+      // Check if attached to a scene
+      const boundScene = scenes.find((s) => s.location_key === locKey);
+      if (boundScene) {
+        const sceneIdx = scenes.findIndex((s) => s.scene_id === boundScene.scene_id);
+        const sx = boundScene.position?.x ?? (80 + sceneIdx * SCENE_STEP_X);
+        return {
+          x: sx + SCENE_WIDTH / 2 - LOC_PILL_WIDTH / 2,
+          y: 40,
+        };
+      }
+      // Unassigned locations parked in Row 1 to the right
+      const unassigned = allLocationKeys.filter((k) => !scenes.some((s) => s.location_key === k));
+      const uIdx = unassigned.indexOf(locKey);
+      const maxX = scenes.reduce((max, s, idx) => {
+        const sx = s.position?.x ?? (80 + idx * SCENE_STEP_X);
+        return Math.max(max, sx);
+      }, 0);
+      return {
+        x: (scenes.length > 0 ? maxX + SCENE_WIDTH + 60 : 80) + Math.max(0, uIdx) * 220,
+        y: 40,
+      };
+    },
+    [customLocationPositions, scenes, allLocationKeys]
+  );
+
+  const resolvedLocationPositions = useMemo(() => {
+    const map: Record<string, { x: number; y: number }> = {};
+    allLocationKeys.forEach((k) => {
+      map[k] = getLocationPosition(k);
+    });
+    return map;
+  }, [allLocationKeys, getLocationPosition]);
 
   // Coordinate Conversion (Screen clientX/Y to Canvas world coordinates)
   const getCanvasCoords = useCallback(
@@ -351,7 +418,7 @@ export default function RailroadCanvas({
       mouseX: e.clientX,
       mouseY: e.clientY,
       nodeX: targetScene.position?.x ?? 80,
-      nodeY: targetScene.position?.y ?? 100,
+      nodeY: targetScene.position?.y ?? 170,
     };
   };
 
@@ -363,7 +430,7 @@ export default function RailroadCanvas({
 
     const sourceIdx = scenes.findIndex((s) => s.scene_id === fromSceneId);
     const startX = (sourceScene.position?.x ?? 80 + sourceIdx * SCENE_STEP_X) + SCENE_WIDTH;
-    const startY = (sourceScene.position?.y ?? 100) + PORT_Y_OFFSET;
+    const startY = (sourceScene.position?.y ?? 170) + PORT_Y_OFFSET;
     const coords = getCanvasCoords(e.clientX, e.clientY);
 
     setDraggingWire({
@@ -386,7 +453,7 @@ export default function RailroadCanvas({
 
     const sourceIdx = scenes.findIndex((s) => s.scene_id === sourceScene.scene_id);
     const startX = (sourceScene.position?.x ?? 80 + sourceIdx * SCENE_STEP_X) + SCENE_WIDTH;
-    const startY = (sourceScene.position?.y ?? 100) + PORT_Y_OFFSET;
+    const startY = (sourceScene.position?.y ?? 170) + PORT_Y_OFFSET;
     const coords = getCanvasCoords(e.clientX, e.clientY);
 
     setDraggingWire({
@@ -396,6 +463,90 @@ export default function RailroadCanvas({
       currentX: coords.x,
       currentY: coords.y,
     });
+  };
+
+  // 4.5 LOCATION PILL & WIRE DRAG HANDLERS (SPATIAL ORTHOGONAL SYSTEM)
+  const handleStartDragPill = (e: React.MouseEvent, locationKey: string) => {
+    e.stopPropagation();
+    const curPos = getLocationPosition(locationKey);
+    setDraggingLocationKey(locationKey);
+    dragLocationStartPosRef.current = {
+      mouseX: e.clientX,
+      mouseY: e.clientY,
+      pillX: curPos.x,
+      pillY: curPos.y,
+    };
+  };
+
+  const handleStartDragLocationWire = (e: React.MouseEvent, locationKey: string) => {
+    e.stopPropagation();
+    const curPos = getLocationPosition(locationKey);
+    const startX = curPos.x + LOC_PILL_WIDTH / 2;
+    const startY = curPos.y + LOC_PILL_HEIGHT;
+    const coords = getCanvasCoords(e.clientX, e.clientY);
+    setDraggingLocationWire({
+      fromLocationKey: locationKey,
+      startX,
+      startY,
+      currentX: coords.x,
+      currentY: coords.y,
+    });
+    setHoveredTargetSceneForLocId(null);
+  };
+
+  // Connect location to scene (Strict 1:1 rule: each scene has 1 location, each location connects to 1 scene)
+  const handleConnectLocation = useCallback(
+    (locationKey: string, targetSceneId: string) => {
+      const updated = scenes.map((s) => {
+        if (s.scene_id === targetSceneId) {
+          return { ...s, location_key: locationKey };
+        }
+        if (s.location_key === locationKey) {
+          // Unlink previous scene if it had this location
+          return { ...s, location_key: undefined };
+        }
+        return s;
+      });
+      handleUpdateScenes(updated);
+    },
+    [scenes, handleUpdateScenes]
+  );
+
+  // Disconnect location from scene
+  const handleDisconnectLocation = useCallback(
+    (sceneId: string) => {
+      const updated = scenes.map((s) => {
+        if (s.scene_id === sceneId) {
+          return { ...s, location_key: undefined };
+        }
+        return s;
+      });
+      handleUpdateScenes(updated);
+    },
+    [scenes, handleUpdateScenes]
+  );
+
+  // Add new location to draft
+  const handleAddNewLocation = () => {
+    const newIndex = allLocationKeys.length + 1;
+    const newLocKey = `สถานที่ใหม่ ${newIndex}`;
+    if (onUpdateDraft) {
+      onUpdateDraft({
+        real_locations: {
+          ...availableLocations,
+          [newLocKey]: {
+            base_mood: 'บรรยากาศสถานที่ใหม่',
+            choke_points: 'ทางเข้าออกหลัก',
+            key_furniture: 'เฟอร์นิเจอร์หลัก',
+            spatial_layout: 'โครงสร้างพื้นที่...',
+            anchor_points: 'จุดสำคัญในสถานที่...',
+            sensory_cues: {
+              ambient_cues: ['เสียงบรรยากาศ', 'กลิ่นไอธรรมชาติ'],
+            },
+          },
+        },
+      });
+    }
   };
 
   // Connect two scenes
@@ -452,6 +603,16 @@ export default function RailroadCanvas({
           return s;
         });
         handleUpdateScenes(updatedScenes);
+      } else if (draggingLocationKey) {
+        const dx = (e.clientX - dragLocationStartPosRef.current.mouseX) / zoom;
+        const dy = (e.clientY - dragLocationStartPosRef.current.mouseY) / zoom;
+        setCustomLocationPositions((prev) => ({
+          ...prev,
+          [draggingLocationKey]: {
+            x: Math.round(dragLocationStartPosRef.current.pillX + dx),
+            y: Math.round(dragLocationStartPosRef.current.pillY + dy),
+          },
+        }));
       } else if (draggingWire) {
         const coords = getCanvasCoords(e.clientX, e.clientY);
         setDraggingWire((prev) => (prev ? { ...prev, currentX: coords.x, currentY: coords.y } : null));
@@ -461,7 +622,7 @@ export default function RailroadCanvas({
         for (const s of scenes) {
           if (s.scene_id === draggingWire.fromSceneId) continue;
           const sx = s.position?.x ?? 80;
-          const sy = s.position?.y ?? 100;
+          const sy = s.position?.y ?? 170;
           if (
             coords.x >= sx - 30 &&
             coords.x <= sx + SCENE_WIDTH + 30 &&
@@ -473,6 +634,26 @@ export default function RailroadCanvas({
           }
         }
         setHoveredTargetSceneId(targetId);
+      } else if (draggingLocationWire) {
+        const coords = getCanvasCoords(e.clientX, e.clientY);
+        setDraggingLocationWire((prev) => (prev ? { ...prev, currentX: coords.x, currentY: coords.y } : null));
+
+        // Magnetic snap: search for scene card target under cursor
+        let targetLocSceneId: string | null = null;
+        for (const s of scenes) {
+          const sx = s.position?.x ?? 80;
+          const sy = s.position?.y ?? 170;
+          if (
+            coords.x >= sx - 40 &&
+            coords.x <= sx + SCENE_WIDTH + 40 &&
+            coords.y >= sy - 40 &&
+            coords.y <= sy + 380
+          ) {
+            targetLocSceneId = s.scene_id;
+            break;
+          }
+        }
+        setHoveredTargetSceneForLocId(targetLocSceneId);
       }
     };
 
@@ -483,6 +664,9 @@ export default function RailroadCanvas({
       if (draggingSceneId) {
         setDraggingSceneId(null);
       }
+      if (draggingLocationKey) {
+        setDraggingLocationKey(null);
+      }
       if (draggingWire) {
         if (hoveredTargetSceneId) {
           handleConnectScenes(draggingWire.fromSceneId, hoveredTargetSceneId);
@@ -492,6 +676,13 @@ export default function RailroadCanvas({
         }
         setDraggingWire(null);
         setHoveredTargetSceneId(null);
+      }
+      if (draggingLocationWire) {
+        if (hoveredTargetSceneForLocId) {
+          handleConnectLocation(draggingLocationWire.fromLocationKey, hoveredTargetSceneForLocId);
+        }
+        setDraggingLocationWire(null);
+        setHoveredTargetSceneForLocId(null);
       }
     };
 
@@ -504,14 +695,18 @@ export default function RailroadCanvas({
   }, [
     isPanning,
     draggingSceneId,
+    draggingLocationKey,
     draggingWire,
     hoveredTargetSceneId,
+    draggingLocationWire,
+    hoveredTargetSceneForLocId,
     zoom,
     scenes,
     getCanvasCoords,
     handleUpdateScenes,
     handleConnectScenes,
     handleDisconnectScene,
+    handleConnectLocation,
   ]);
 
   // 5. SCENE ACTIONS (UPDATE, DELETE, INSERT, ADD)
@@ -541,12 +736,12 @@ export default function RailroadCanvas({
   const handleAddSceneEnd = () => {
     const lastScene = scenes[scenes.length - 1];
     const newX = lastScene?.position?.x ? lastScene.position.x + SCENE_STEP_X : 80;
-    const newY = lastScene?.position?.y ? lastScene.position.y : 100;
+    const newY = lastScene?.position?.y ? lastScene.position.y : 170;
 
     const newScene: WorldScene = {
       scene_id: `scene_${Date.now()}`,
       title: 'สถานการณ์ใหม่',
-      location_key: Object.keys(availableLocations)[0] || 'ห้องสกัดสมุนไพร ณ เรือนพักปีกใน',
+      location_key: undefined, // Initially unassigned to demonstrate missing location warning
       position: { x: newX, y: newY },
       next_scene_id: null,
       scene_objective: 'เป้าหมายหลักในฉากนี้...',
@@ -585,6 +780,9 @@ export default function RailroadCanvas({
   const handleAutoAlignScenes = useCallback(() => {
     if (scenes.length === 0) return;
 
+    // Reset any custom dragged location positions so they snap back directly above scenes
+    setCustomLocationPositions({});
+
     // 1. Calculate dynamic narrative chain order (1, 2, 3...)
     const sceneOrderMap = computeSceneChainOrder(scenes);
     const hasAnyConnected = sceneOrderMap.size > 0;
@@ -592,12 +790,12 @@ export default function RailroadCanvas({
     let updated: WorldScene[];
 
     if (!hasAnyConnected) {
-      // If all scenes are disconnected, align them all horizontally in row 1
+      // If all scenes are disconnected, align them all horizontally in row 2
       updated = scenes.map((scene, idx) => ({
         ...scene,
         position: {
           x: 80 + idx * SCENE_STEP_X,
-          y: 100,
+          y: 170,
         },
       }));
     } else {
@@ -611,7 +809,7 @@ export default function RailroadCanvas({
             ...scene,
             position: {
               x: 80 + (order - 1) * SCENE_STEP_X,
-              y: 100,
+              y: 170,
             },
           };
         }
@@ -620,7 +818,7 @@ export default function RailroadCanvas({
           ...scene,
           position: {
             x: 80 + (uIdx >= 0 ? uIdx : 0) * SCENE_STEP_X,
-            y: 520,
+            y: 560,
           },
         };
       });
@@ -649,13 +847,13 @@ export default function RailroadCanvas({
     const posY =
       sceneA?.position && sceneB?.position
         ? Math.round((sceneA.position.y + sceneB.position.y) / 2)
-        : 100;
+        : 170;
 
     const newSceneId = `scene_mid_${Date.now()}`;
     const insertedScene: WorldScene = {
       scene_id: newSceneId,
       title: 'จังหวะเปลี่ยนผ่าน',
-      location_key: sceneA?.location_key || Object.keys(availableLocations)[0],
+      location_key: undefined, // Starts without location to prompt creator
       position: { x: posX, y: posY },
       next_scene_id: sceneB ? sceneB.scene_id : null,
       scene_objective: 'ฉากคั่นกลางเพื่อชะลอหรือเร่งจังหวะเรื่องราว...',
@@ -715,15 +913,43 @@ export default function RailroadCanvas({
           minHeight: '4000px',
         }}
       >
-        {/* SVG Bezier Railroad Cable Overlay */}
+        {/* SVG Bezier Railroad Cable Overlay (Red Story Cables + Emerald Location Cables) */}
         <RailroadCableOverlay
           scenes={scenes}
+          locationPositions={resolvedLocationPositions}
           onInsertSceneBetween={handleInsertSceneBetween}
           onDisconnectScene={handleDisconnectScene}
+          onDisconnectLocation={handleDisconnectLocation}
           draggingWire={draggingWire}
           hoveredTargetSceneId={hoveredTargetSceneId}
+          draggingLocationWire={draggingLocationWire}
+          hoveredTargetSceneForLocationId={hoveredTargetSceneForLocId}
           isEditable={isEditable}
         />
+
+        {/* ✦ 1.5 LOCATION PILL NODES (ROW 1 - MODULAR SPATIAL PILLS) */}
+        {allLocationKeys.map((locKey) => {
+          const locPos = resolvedLocationPositions[locKey] || { x: 80, y: 40 };
+          const boundScene = scenes.find((s) => s.location_key === locKey);
+          const boundSceneOrder = boundScene ? sceneOrderMap.get(boundScene.scene_id) : null;
+          const isDraggingThisWire = draggingLocationWire?.fromLocationKey === locKey;
+
+          return (
+            <LocationPillNode
+              key={`loc-pill-${locKey}`}
+              locationKey={locKey}
+              locationData={availableLocations[locKey]}
+              position={locPos}
+              assignedSceneId={boundScene?.scene_id || null}
+              assignedSceneOrder={boundSceneOrder ?? null}
+              assignedSceneTitle={boundScene?.title || null}
+              isDraggingWire={isDraggingThisWire}
+              isEditable={isEditable}
+              onStartDragPill={handleStartDragPill}
+              onStartDragWire={handleStartDragLocationWire}
+            />
+          );
+        })}
 
         {/* Render Each Scene Node Card */}
         {scenes.map((scene, idx) => {
@@ -744,11 +970,13 @@ export default function RailroadCanvas({
               hasIncomingCable={hasIncoming}
               hasOutgoingCable={hasOutgoing}
               isDropTarget={isTarget}
+              isLocationDropTarget={hoveredTargetSceneForLocId === scene.scene_id}
               onUpdateScene={(updated) => handleUpdateScene(idx, updated)}
               onDeleteScene={() => handleDeleteScene(idx)}
               onStartDrag={handleStartDragNode}
               onStartDragWire={handleStartDragWire}
               onStartDetachIncoming={handleStartDetachIncoming}
+              onDetachLocation={handleDisconnectLocation}
               isEditable={isEditable}
             />
           );
@@ -782,6 +1010,25 @@ export default function RailroadCanvas({
             {/* Apple Frosted Tooltip */}
             <div className="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-full bg-[#181820]/95 backdrop-blur-xl border border-white/15 text-[11px] font-medium text-white/90 whitespace-nowrap shadow-[0_4px_16px_rgba(0,0,0,0.6)] pointer-events-none opacity-0 group-hover/dock:opacity-100 -translate-y-1 group-hover/dock:translate-y-0 transition-all duration-200 z-50">
               เพิ่มฉากใหม่
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#181820] border-r border-b border-white/15 rotate-45" />
+            </div>
+          </div>
+        )}
+
+        {/* Add Location Pill Button (Apple Iconic Emerald Pill) */}
+        {isEditable && (
+          <div className="relative group/dock flex items-center justify-center">
+            <button
+              type="button"
+              onClick={handleAddNewLocation}
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-500/15 hover:bg-emerald-500/30 border border-emerald-500/40 hover:border-emerald-500/70 text-emerald-300 flex items-center justify-center shadow-[0_2px_8px_rgba(16,185,129,0.25)] active:scale-95 transition-all cursor-pointer select-none"
+              aria-label="เพิ่มสถานที่ใหม่"
+            >
+              <MapPin size={14} strokeWidth={2.4} />
+            </button>
+            {/* Apple Frosted Tooltip */}
+            <div className="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-full bg-[#181820]/95 backdrop-blur-xl border border-white/15 text-[11px] font-medium text-white/90 whitespace-nowrap shadow-[0_4px_16px_rgba(0,0,0,0.6)] pointer-events-none opacity-0 group-hover/dock:opacity-100 -translate-y-1 group-hover/dock:translate-y-0 transition-all duration-200 z-50">
+              เพิ่มสถานที่ ({allLocationKeys.length} แห่ง)
               <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#181820] border-r border-b border-white/15 rotate-45" />
             </div>
           </div>
@@ -873,7 +1120,7 @@ export default function RailroadCanvas({
       {showTip && (
         <div className="absolute top-4 left-6 flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#16161E]/90 hover:bg-[#1A1A24] backdrop-blur-2xl border border-white/[0.12] shadow-[0_8px_24px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.10)] text-[11.5px] text-white/75 pointer-events-auto z-20 select-none animate-in fade-in duration-200">
           <Lightbulb size={13} className="text-amber-400 shrink-0 fill-amber-400/20" />
-          <span>ลากเมาส์เลื่อนแคนวาส • หมุนลูกกลิ้งเพื่อซูม • ลากพอร์ตแดงเชื่อมโยง Node • ชี้ที่เส้นเพื่อตัด/แทรกฉาก</span>
+          <span>ลากเมาส์เลื่อนแคนวาส • หมุนลูกกลิ้งซูม • ลากสายแดงเชื่อมฉาก • ลากสายเขียวเชื่อมสถานที่จากด้านบน</span>
           <button
             type="button"
             onClick={() => setShowTip(false)}

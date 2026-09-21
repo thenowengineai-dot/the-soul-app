@@ -6,7 +6,7 @@ import {
   Sparkles,
   RotateCcw,
   Layers,
-  Workflow,
+  AlignHorizontalDistributeCenter,
 } from 'lucide-react';
 import type { VaultDraft, WorldScene, WorldScenario } from '../../types';
 import { DEFAULT_BOTANICAL_LOCATIONS } from '../../defaultWorldLocations';
@@ -104,7 +104,7 @@ const DEFAULT_SCENES: WorldScene[] = [
     scene_id: 'scene_2',
     title: 'ซอกถ้ำหินแกรนิตร้าง',
     location_key: 'ซอกถ้ำหินแกรนิตร้าง',
-    position: { x: 620, y: 100 },
+    position: { x: 500, y: 100 },
     next_scene_id: 'scene_3',
     scene_objective: "[ACTOR] ต้องการชำระล้างคราบโคลนและบรรเทาอาการร้อนรุ่มจากพิษพฤกษศาสตร์ที่ซึมเข้าผิวด้วย 'โอสถน้ำมังกร' ของ [PLAYER]",
     forced_chaos_level: 'medium',
@@ -176,7 +176,7 @@ const DEFAULT_SCENES: WorldScene[] = [
     scene_id: 'scene_3',
     title: 'เส้นทางป่าทึบขากลับ',
     location_key: 'เส้นทางป่าทึบขากลับ',
-    position: { x: 1160, y: 100 },
+    position: { x: 920, y: 100 },
     scene_objective: '[ACTOR] ต้องบังคับให้ [PLAYER] ประคองช่วยดับพิษ โดยไม่ให้เพื่อนชมรมจับได้',
     forced_chaos_level: 'high',
     event_mood: 'สุ่มเสี่ยง ตื่นเต้น ป่าทึบ เปียกปอน ไร้ทางถอย',
@@ -625,7 +625,7 @@ export default function RailroadCanvas({
     handleUpdateScenes(updated);
 
     // Smooth reset zoom & pan to show pristine railroad
-    setZoom(0.85);
+    setZoom(0.95);
     setPan({ x: 50, y: 40 });
   }, [scenes, handleUpdateScenes]);
 
@@ -751,75 +751,117 @@ export default function RailroadCanvas({
         })}
       </div>
 
-      {/* ✦ 2. FLOATING HUD TOOLBAR (APPLE TACTILE DOCK) */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 p-1.5 rounded-full bg-[#16161E]/90 backdrop-blur-2xl border border-white/12 shadow-[0_12px_32px_rgba(0,0,0,0.65),inset_0_1px_0_rgba(255,255,255,0.12)] z-30 pointer-events-auto">
-        {/* Scene & Beat Counter Badge */}
-        <div className="flex items-center gap-1.5 px-3 py-1 text-[11.5px] font-medium text-white/75 border-r border-white/10">
-          <Layers size={13} className="text-[#EF264C]" />
-          <span>{scenes.length} ฉาก</span>
-          <span className="text-white/25">•</span>
-          <span>{totalBeats} บีต</span>
+      {/* ✦ 2. FLOATING HUD TOOLBAR (APPLE TACTILE ICON DOCK) */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1.5 p-1.5 rounded-full bg-[#16161E]/90 backdrop-blur-2xl border border-white/12 shadow-[0_12px_32px_rgba(0,0,0,0.65),inset_0_1px_0_rgba(255,255,255,0.12)] z-30 pointer-events-auto">
+        {/* Scene & Beat Counter (Apple Iconic Pill with Hover Tooltip) */}
+        <div className="relative group/dock flex items-center gap-1.5 px-2.5 py-1 text-white/75 border-r border-white/10 cursor-default select-none">
+          <Layers size={14} className="text-[#EF264C]" />
+          <span className="text-[11.5px] font-mono font-medium text-white/85">{scenes.length}</span>
+          {/* Apple Frosted Tooltip */}
+          <div className="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-full bg-[#181820]/95 backdrop-blur-xl border border-white/15 text-[11px] font-medium text-white/90 whitespace-nowrap shadow-[0_4px_16px_rgba(0,0,0,0.6)] pointer-events-none opacity-0 group-hover/dock:opacity-100 -translate-y-1 group-hover/dock:translate-y-0 transition-all duration-200 z-50">
+            {scenes.length} ฉาก • {totalBeats} บีต
+            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#181820] border-r border-b border-white/15 rotate-45" />
+          </div>
         </div>
 
-        {/* Add Scene Button */}
+        {/* Add Scene Button (Apple Iconic Carmine Pill) */}
         {isEditable && (
-          <button
-            type="button"
-            onClick={handleAddSceneEnd}
-            className="px-3.5 py-1.5 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white text-[12px] font-semibold flex items-center gap-1.5 shadow-[0_2px_10px_rgba(239,38,76,0.35)] active:scale-95 transition-all cursor-pointer select-none"
-          >
-            <Plus size={13} strokeWidth={2.4} />
-            <span>เพิ่มฉากใหม่</span>
-          </button>
+          <div className="relative group/dock flex items-center justify-center">
+            <button
+              type="button"
+              onClick={handleAddSceneEnd}
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#EF264C] hover:bg-[#d91d40] text-white flex items-center justify-center shadow-[0_2px_10px_rgba(239,38,76,0.35)] active:scale-95 transition-all cursor-pointer select-none"
+              aria-label="เพิ่มฉากใหม่"
+            >
+              <Plus size={15} strokeWidth={2.4} />
+            </button>
+            {/* Apple Frosted Tooltip */}
+            <div className="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-full bg-[#181820]/95 backdrop-blur-xl border border-white/15 text-[11px] font-medium text-white/90 whitespace-nowrap shadow-[0_4px_16px_rgba(0,0,0,0.6)] pointer-events-none opacity-0 group-hover/dock:opacity-100 -translate-y-1 group-hover/dock:translate-y-0 transition-all duration-200 z-50">
+              เพิ่มฉากใหม่
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#181820] border-r border-b border-white/15 rotate-45" />
+            </div>
+          </div>
         )}
 
-        {/* Auto-Align Scenes Button */}
+        {/* Auto-Align Scenes Button (Apple Iconic Distribute Pill) */}
         {isEditable && (
-          <button
-            type="button"
-            onClick={handleAutoAlignScenes}
-            className="px-3.5 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] backdrop-blur-xl border border-white/[0.10] hover:border-white/20 text-white/80 hover:text-white text-[12px] font-medium flex items-center gap-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] active:scale-95 transition-all cursor-pointer select-none"
-            title="จัดระเบียบเรียงฉากเป็นเส้นตรงตามลำดับเรื่องราวอัตโนมัติ"
-          >
-            <Workflow size={13} className="text-[#EF264C]" strokeWidth={2.2} />
-            <span>จัดระเบียบฉาก</span>
-          </button>
+          <div className="relative group/dock flex items-center justify-center">
+            <button
+              type="button"
+              onClick={handleAutoAlignScenes}
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 hover:border-white/20 text-white/80 hover:text-white flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] active:scale-95 transition-all cursor-pointer select-none"
+              aria-label="จัดระเบียบฉากอัตโนมัติ"
+            >
+              <AlignHorizontalDistributeCenter size={14} className="text-[#EF264C]" strokeWidth={2.2} />
+            </button>
+            {/* Apple Frosted Tooltip */}
+            <div className="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-full bg-[#181820]/95 backdrop-blur-xl border border-white/15 text-[11px] font-medium text-white/90 whitespace-nowrap shadow-[0_4px_16px_rgba(0,0,0,0.6)] pointer-events-none opacity-0 group-hover/dock:opacity-100 -translate-y-1 group-hover/dock:translate-y-0 transition-all duration-200 z-50">
+              จัดระเบียบฉากอัตโนมัติ
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#181820] border-r border-b border-white/15 rotate-45" />
+            </div>
+          </div>
         )}
 
-        {/* Zoom Controls */}
+        {/* Zoom Controls (Apple Iconic Controls with Tooltips) */}
         <div className="flex items-center gap-1 pl-1">
-          <button
-            type="button"
-            onClick={() => setZoom((z) => Math.max(Number((z - 0.1).toFixed(2)), 0.4))}
-            className="w-7 h-7 rounded-full bg-white/[0.04] hover:bg-white/[0.12] text-white/60 hover:text-white flex items-center justify-center transition-all cursor-pointer"
-            title="ซูมออก (-)"
-          >
-            <ZoomOut size={12} strokeWidth={2.2} />
-          </button>
-          <span className="text-[11px] font-mono text-white/60 w-10 text-center select-none">
+          {/* Zoom Out */}
+          <div className="relative group/dock flex items-center justify-center">
+            <button
+              type="button"
+              onClick={() => setZoom((z) => Math.max(Number((z - 0.1).toFixed(2)), 0.4))}
+              className="w-7 h-7 rounded-full bg-white/[0.04] hover:bg-white/[0.12] text-white/60 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+              aria-label="ซูมออก (-)"
+            >
+              <ZoomOut size={12} strokeWidth={2.2} />
+            </button>
+            {/* Apple Frosted Tooltip */}
+            <div className="absolute -top-9 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-[#181820]/95 backdrop-blur-xl border border-white/15 text-[10.5px] font-medium text-white/90 whitespace-nowrap shadow-[0_4px_16px_rgba(0,0,0,0.6)] pointer-events-none opacity-0 group-hover/dock:opacity-100 -translate-y-1 group-hover/dock:translate-y-0 transition-all duration-200 z-50">
+              ซูมออก (-)
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#181820] border-r border-b border-white/15 rotate-45" />
+            </div>
+          </div>
+
+          {/* Zoom Percentage */}
+          <span className="text-[11px] font-mono text-white/60 w-9 text-center select-none">
             {Math.round(zoom * 100)}%
           </span>
-          <button
-            type="button"
-            onClick={() => setZoom((z) => Math.min(Number((z + 0.1).toFixed(2)), 1.5))}
-            className="w-7 h-7 rounded-full bg-white/[0.04] hover:bg-white/[0.12] text-white/60 hover:text-white flex items-center justify-center transition-all cursor-pointer"
-            title="ซูมเข้า (+)"
-          >
-            <ZoomIn size={12} strokeWidth={2.2} />
-          </button>
+
+          {/* Zoom In */}
+          <div className="relative group/dock flex items-center justify-center">
+            <button
+              type="button"
+              onClick={() => setZoom((z) => Math.min(Number((z + 0.1).toFixed(2)), 1.5))}
+              className="w-7 h-7 rounded-full bg-white/[0.04] hover:bg-white/[0.12] text-white/60 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+              aria-label="ซูมเข้า (+)"
+            >
+              <ZoomIn size={12} strokeWidth={2.2} />
+            </button>
+            {/* Apple Frosted Tooltip */}
+            <div className="absolute -top-9 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-[#181820]/95 backdrop-blur-xl border border-white/15 text-[10.5px] font-medium text-white/90 whitespace-nowrap shadow-[0_4px_16px_rgba(0,0,0,0.6)] pointer-events-none opacity-0 group-hover/dock:opacity-100 -translate-y-1 group-hover/dock:translate-y-0 transition-all duration-200 z-50">
+              ซูมเข้า (+)
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#181820] border-r border-b border-white/15 rotate-45" />
+            </div>
+          </div>
 
           {/* Reset Zoom / Center Button */}
-          <button
-            type="button"
-            onClick={() => {
-              setZoom(0.9);
-              setPan({ x: 40, y: 30 });
-            }}
-            className="w-7 h-7 rounded-full bg-white/[0.04] hover:bg-white/[0.12] text-white/60 hover:text-white flex items-center justify-center transition-all cursor-pointer ml-0.5"
-            title="จัดกึ่งกลางมุมมอง"
-          >
-            <RotateCcw size={11} strokeWidth={2.2} />
-          </button>
+          <div className="relative group/dock flex items-center justify-center ml-0.5">
+            <button
+              type="button"
+              onClick={() => {
+                setZoom(0.95);
+                setPan({ x: 40, y: 30 });
+              }}
+              className="w-7 h-7 rounded-full bg-white/[0.04] hover:bg-white/[0.12] text-white/60 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+              aria-label="จัดกึ่งกลางมุมมอง"
+            >
+              <RotateCcw size={11} strokeWidth={2.2} />
+            </button>
+            {/* Apple Frosted Tooltip */}
+            <div className="absolute -top-9 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-[#181820]/95 backdrop-blur-xl border border-white/15 text-[10.5px] font-medium text-white/90 whitespace-nowrap shadow-[0_4px_16px_rgba(0,0,0,0.6)] pointer-events-none opacity-0 group-hover/dock:opacity-100 -translate-y-1 group-hover/dock:translate-y-0 transition-all duration-200 z-50">
+              จัดกึ่งกลางมุมมอง
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#181820] border-r border-b border-white/15 rotate-45" />
+            </div>
+          </div>
         </div>
       </div>
 

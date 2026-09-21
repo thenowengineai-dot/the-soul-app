@@ -10,10 +10,6 @@ import {
   Wind,
   Flame,
   Feather,
-  ChevronRight,
-  ChevronLeft,
-  ArrowLeft,
-  X,
   Sparkles,
 } from 'lucide-react';
 import type { VaultDraft } from '../../types';
@@ -225,20 +221,8 @@ export default function IdentityVisualCard({
   const [sceneLocation, setSceneLocation] = useState(draft.starting_state?.location || 'ห้อง VIP บาร์หรู');
   const [playerStance, setPlayerStance] = useState(draft.starting_state?.initial_p_pos || 'นั่งเอนตัวจิบเครื่องดื่ม');
 
-  // 6. In-Card Focus State for Anatomy & Traits
-  const [focusedFeatureKey, setFocusedFeatureKey] = useState<string | null>(null);
-
-  // Close focused inspection on ESC key
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && focusedFeatureKey) {
-        setFocusedFeatureKey(null);
-        e.stopPropagation();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [focusedFeatureKey]);
+  // 6. Active Anatomy Key for Tactile Sensory Tray (Wardrobe Model)
+  const [activeAnatomyKey, setActiveAnatomyKey] = useState<string>('eyes');
 
   // External draft sync
   useEffect(() => {
@@ -446,6 +430,9 @@ export default function IdentityVisualCard({
       isCore: false,
     })),
   ];
+
+  const currentActiveAnatomy =
+    allAnatomyItems.find((item) => item.id === activeAnatomyKey) || allAnatomyItems[0];
 
   // ✦ APPLE SUBTLE WHITE FROSTED GLASS RECIPE (SAME AS COIN, HUD & CHATLIST BUTTONS)
   // Zero harsh drop-shadow! Clean 1px translucent border + top inner highlight.
@@ -789,319 +776,258 @@ export default function IdentityVisualCard({
         </div>
 
         {/* ======================================================================= */}
-        {/* 👓 WIDGET 3: ANATOMY & PHYSIQUE (2x2 -> 346px × 346px - IN-CARD FOCUS) */}
+        {/* 👓 WIDGET 3: ANATOMY & PHYSIQUE (2x2 -> 346px × 346px - TACTILE TRAY SYSTEM) */}
         {/* ======================================================================= */}
         <div
-          className="col-span-2 row-span-2 rounded-[28px] p-4 bg-white/[0.06] hover:bg-white/[0.09] backdrop-blur-2xl border border-white/[0.10] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-all flex flex-col justify-between relative overflow-hidden"
+          className={`col-span-2 row-span-2 rounded-[28px] p-4 ${frostedCardClass}`}
           style={{ width: '346px', height: '346px' }}
         >
+          {/* Header Row: Pure Thai Label + Trait Counter + Quick Add */}
+          <div className="flex items-center justify-between gap-1 mb-2 shrink-0">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-[16px] sm:text-[17px] font-semibold text-[#F1F1F1] tracking-tight">
+                สรีระและจุดเด่น
+              </span>
+              <span className="text-[11px] font-normal text-white/45">
+                (4 ส่วนหลัก{customTraits.length > 0 ? ` + ${customTraits.length} จุดเด่น` : ''})
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleAddCustomTrait}
+              className="px-2 py-0.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 hover:border-white/25 text-white/70 hover:text-white flex items-center gap-1 text-[10.5px] font-medium transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] active:scale-95 shrink-0"
+              title="เพิ่มจุดเด่นหรือเสน่ห์เฉพาะตัว"
+            >
+              <Plus size={10} strokeWidth={2.4} />
+              <span>เพิ่มจุดเด่น</span>
+            </button>
+          </div>
+
           {isEditing ? (
             /* ================================================================= */
             /* ✦ EDITING MODE: EDIT CORE PILLARS & CUSTOM CHARMS                 */
             /* ================================================================= */
-            <div className="flex-1 flex flex-col h-full overflow-hidden">
-              <div className="flex items-center justify-between gap-1 mb-2 shrink-0">
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-[16px] sm:text-[17px] font-semibold text-[#F1F1F1] tracking-tight">
-                    สรีระและจุดเด่น
-                  </span>
-                  <span className="text-[11px] font-normal text-white/45">
-                    (4 ส่วนหลัก{customTraits.length > 0 ? ` + ${customTraits.length} จุดเด่น` : ''})
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleAddCustomTrait}
-                  className="px-2 py-0.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 hover:border-white/25 text-white/70 hover:text-white flex items-center gap-1 text-[10.5px] font-medium transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] active:scale-95 shrink-0"
-                  title="เพิ่มจุดเด่นหรือเสน่ห์เฉพาะตัว"
-                >
-                  <Plus size={10} strokeWidth={2.4} />
-                  <span>เพิ่มจุดเด่น</span>
-                </button>
-              </div>
-
-              {/* Editing inputs */}
-              <div className="flex-1 flex flex-col gap-2.5 overflow-y-auto no-scrollbar pr-0.5">
-                {/* Core Pillars Inputs */}
-                <div className="space-y-2">
-                  <div className="text-[11px] font-semibold text-[#F1F1F1] flex items-center gap-1">
-                    <span className="text-[#EF264C]">✦</span>
-                    <span>4 สัดส่วนหลักของร่างกาย</span>
-                  </div>
-
-                  {corePillars.map((pillar) => (
-                    <div
-                      key={pillar.key}
-                      className="p-2 rounded-[14px] bg-black/30 border border-white/10 space-y-1"
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-white/70">{pillar.icon}</span>
-                        <span className="text-[11px] font-semibold text-white/80">
-                          {pillar.category}
-                        </span>
-                      </div>
-                      <input
-                        type="text"
-                        value={coreAnatomy[pillar.key].title}
-                        onChange={(e) =>
-                          setCoreAnatomy({
-                            ...coreAnatomy,
-                            [pillar.key]: {
-                              ...coreAnatomy[pillar.key],
-                              title: e.target.value,
-                            },
-                          })
-                        }
-                        className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-0.5 text-[11px] font-semibold text-white outline-none"
-                        placeholder="หัวข้อสั้น เช่น ตาดำขลับใต้แว่น..."
-                      />
-                      <textarea
-                        rows={2}
-                        value={coreAnatomy[pillar.key].detail}
-                        onChange={(e) =>
-                          setCoreAnatomy({
-                            ...coreAnatomy,
-                            [pillar.key]: {
-                              ...coreAnatomy[pillar.key],
-                              detail: e.target.value,
-                            },
-                          })
-                        }
-                        className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-1 text-[11px] text-[#EDEDED] outline-none leading-relaxed resize-none"
-                        placeholder="คำบรรยายสรีระแบบเต็ม..."
-                      />
-                    </div>
-                  ))}
+            <div className="flex-1 flex flex-col gap-2.5 overflow-y-auto no-scrollbar pr-0.5">
+              {/* Core Pillars Inputs */}
+              <div className="space-y-2">
+                <div className="text-[11px] font-semibold text-[#F1F1F1] flex items-center gap-1">
+                  <span className="text-[#EF264C]">✦</span>
+                  <span>4 สัดส่วนหลักของร่างกาย</span>
                 </div>
 
-                {/* Custom Nuances Inputs */}
-                <div className="space-y-2 pt-1 border-t border-white/10">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-semibold text-[#F1F1F1] flex items-center gap-1">
-                      <span className="text-[#EF264C]">✦</span>
-                      <span>จุดเด่นและเสน่ห์เฉพาะตัว ({customTraits.length})</span>
-                    </span>
-                    <button
-                      type="button"
-                      onClick={handleAddCustomTrait}
-                      className="text-[10px] text-[#EF264C] hover:underline flex items-center gap-0.5 font-semibold cursor-pointer"
-                    >
-                      <Plus size={10} /> เพิ่มจุดเด่น
-                    </button>
-                  </div>
-
-                  {customTraits.map((trait, idx) => (
-                    <div
-                      key={trait.id}
-                      className="p-2 rounded-[14px] bg-black/30 border border-white/10 space-y-1"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <input
-                          type="text"
-                          value={trait.title}
-                          onChange={(e) => {
-                            const updated = [...customTraits];
-                            updated[idx].title = e.target.value;
-                            setCustomTraits(updated);
-                          }}
-                          className="bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-0.5 text-[11px] font-semibold text-white outline-none flex-1"
-                          placeholder="ชื่อจุดเด่น..."
-                        />
-                        {customTraits.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveCustomTrait(trait.id)}
-                            className="text-white/40 hover:text-red-400 p-0.5 cursor-pointer"
-                            title="ลบจุดเด่นนี้"
-                          >
-                            <Trash2 size={11} />
-                          </button>
-                        )}
-                      </div>
-                      <textarea
-                        rows={2}
-                        value={trait.detail}
-                        onChange={(e) => {
-                          const updated = [...customTraits];
-                          updated[idx].detail = e.target.value;
-                          setCustomTraits(updated);
-                        }}
-                        className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-1 text-[11px] text-[#EDEDED] outline-none leading-relaxed resize-none"
-                        placeholder="คำบรรยายจุดเด่น..."
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ) : focusedFeatureKey ? (
-            /* ================================================================= */
-            /* ✦ IN-CARD INTIMATE FOCUS VIEW (APPLE HERO INSPECTION TRANSITION)  */
-            /* ================================================================= */
-            (() => {
-              const focusedItem =
-                allAnatomyItems.find((item) => item.id === focusedFeatureKey) ||
-                allAnatomyItems[0];
-              const focusedIndex = allAnatomyItems.findIndex(
-                (item) => item.id === focusedFeatureKey
-              );
-
-              return (
-                <div className="flex-1 flex flex-col justify-between animate-fade-in-scale h-full">
-                  {/* Top Bar: Icon + Category + Navigation + Close Button */}
-                  <div className="flex items-center justify-between pb-2 border-b border-white/[0.08] shrink-0">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div
-                        className={`w-6 h-6 rounded-[8px] ${focusedItem.colorClass} border flex items-center justify-center shrink-0`}
-                      >
-                        {focusedItem.icon}
-                      </div>
-                      <span className="text-[12px] font-semibold text-white/85 truncate">
-                        {focusedItem.category}
+                {corePillars.map((pillar) => (
+                  <div
+                    key={pillar.key}
+                    className="p-2 rounded-[14px] bg-black/30 border border-white/10 space-y-1"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-white/70">{pillar.icon}</span>
+                      <span className="text-[11px] font-semibold text-white/80">
+                        {pillar.category}
                       </span>
                     </div>
-
-                    <div className="flex items-center gap-1 shrink-0">
-                      {/* Prev Button */}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const prevIdx =
-                            (focusedIndex - 1 + allAnatomyItems.length) %
-                            allAnatomyItems.length;
-                          setFocusedFeatureKey(allAnatomyItems[prevIdx].id);
-                        }}
-                        className="w-6 h-6 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer"
-                        title="ส่วนก่อนหน้า"
-                      >
-                        <ChevronLeft size={12} strokeWidth={2.2} />
-                      </button>
-
-                      {/* Next Button */}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const nextIdx =
-                            (focusedIndex + 1) % allAnatomyItems.length;
-                          setFocusedFeatureKey(allAnatomyItems[nextIdx].id);
-                        }}
-                        className="w-6 h-6 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer"
-                        title="ส่วนถัดไป"
-                      >
-                        <ChevronRight size={12} strokeWidth={2.2} />
-                      </button>
-
-                      {/* Close button (✕) */}
-                      <button
-                        type="button"
-                        onClick={() => setFocusedFeatureKey(null)}
-                        className="w-6 h-6 rounded-full bg-white/[0.08] hover:bg-white/[0.20] border border-white/15 text-white/80 hover:text-white flex items-center justify-center transition-all cursor-pointer ml-1 active:scale-95"
-                        title="กลับสู่หน้ารวม (ESC)"
-                      >
-                        <X size={12} strokeWidth={2.4} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Body: Large Headline + Hairline Divider + Full Literary Prose */}
-                  <div className="flex-1 py-3 flex flex-col justify-start overflow-hidden">
-                    <h3 className="text-[17px] sm:text-[18px] font-bold text-[#F1F1F1] tracking-tight leading-snug">
-                      {focusedItem.title}
-                    </h3>
-
-                    <div className="w-10 h-[1px] bg-white/15 my-2.5 shrink-0" />
-
-                    <p className="text-[13px] sm:text-[13.5px] text-[#EDEDED] leading-relaxed font-normal overflow-y-auto no-scrollbar pr-0.5">
-                      {focusedItem.detail}
-                    </p>
-                  </div>
-
-                  {/* Bottom Bar: Back Pill + Counter */}
-                  <div className="pt-2 border-t border-white/[0.06] flex items-center justify-between shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => setFocusedFeatureKey(null)}
-                      className="text-[11px] font-medium text-white/50 hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
-                    >
-                      <ArrowLeft size={11} />
-                      <span>กลับสู่หน้ารวม</span>
-                    </button>
-                    <span className="text-[10px] text-white/35 font-mono">
-                      {focusedIndex + 1} / {allAnatomyItems.length}
-                    </span>
-                  </div>
-                </div>
-              );
-            })()
-          ) : (
-            /* ================================================================= */
-            /* ✦ UNIFIED LIVING CONSTELLATION (MINIMAL OVERVIEW WITH SENSORY AURAS) */
-            /* ================================================================= */
-            <div className="flex-1 flex flex-col justify-between animate-fade-in-scale h-full">
-              {/* Header: Pure Thai Label + Trait Counter + Quick Add */}
-              <div className="flex items-center justify-between gap-1 mb-1.5 shrink-0">
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-[16px] sm:text-[17px] font-semibold text-[#F1F1F1] tracking-tight">
-                    สรีระและจุดเด่น
-                  </span>
-                  <span className="text-[11px] font-normal text-white/45">
-                    (4 ส่วนหลัก{customTraits.length > 0 ? ` + ${customTraits.length} จุดเด่น` : ''})
-                  </span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleAddCustomTrait}
-                  className="px-2 py-0.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 hover:border-white/25 text-white/70 hover:text-white flex items-center gap-1 text-[10.5px] font-medium transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] active:scale-95 shrink-0"
-                  title="เพิ่มจุดเด่นหรือเสน่ห์เฉพาะตัว"
-                >
-                  <Plus size={10} strokeWidth={2.4} />
-                  <span>เพิ่มจุดเด่น</span>
-                </button>
-              </div>
-
-              {/* Minimal Organic Stream of Anatomical Features */}
-              <div className="flex-1 flex flex-col justify-start gap-1 py-0.5 overflow-y-auto no-scrollbar pr-0.5">
-                {allAnatomyItems.map((item) => (
-                  <div
-                    key={item.id}
-                    onClick={() => setFocusedFeatureKey(item.id)}
-                    className="group px-2.5 py-1.5 rounded-[14px] hover:bg-white/[0.06] active:bg-white/[0.10] flex items-center justify-between transition-all duration-150 cursor-pointer select-none"
-                    title={`คลิกเพื่อดูรายละเอียด: ${item.category}`}
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      {/* Sensory Color Aura Icon */}
-                      <div
-                        className={`w-7 h-7 rounded-[10px] ${item.colorClass} border flex items-center justify-center shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] group-hover:scale-105 transition-transform`}
-                      >
-                        {item.icon}
-                      </div>
-
-                      {/* Item Labels */}
-                      <div className="min-w-0 flex flex-col">
-                        <span className="text-[9.5px] font-medium text-white/45 leading-none mb-0.5 truncate">
-                          {item.category}
-                        </span>
-                        <span className="text-[12.5px] sm:text-[13px] font-medium text-[#F1F1F1] group-hover:text-white leading-tight truncate">
-                          {item.title}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Subtle click prompt */}
-                    <div className="flex items-center gap-0.5 shrink-0 text-white/25 group-hover:text-white/70 group-hover:translate-x-0.5 transition-all">
-                      <ChevronRight size={13} strokeWidth={2} />
-                    </div>
+                    <input
+                      type="text"
+                      value={coreAnatomy[pillar.key].title}
+                      onChange={(e) =>
+                        setCoreAnatomy({
+                          ...coreAnatomy,
+                          [pillar.key]: {
+                            ...coreAnatomy[pillar.key],
+                            title: e.target.value,
+                          },
+                        })
+                      }
+                      className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-0.5 text-[11px] font-semibold text-white outline-none"
+                      placeholder="หัวข้อสั้น เช่น ตาดำขลับใต้แว่น..."
+                    />
+                    <textarea
+                      rows={2}
+                      value={coreAnatomy[pillar.key].detail}
+                      onChange={(e) =>
+                        setCoreAnatomy({
+                          ...coreAnatomy,
+                          [pillar.key]: {
+                            ...coreAnatomy[pillar.key],
+                            detail: e.target.value,
+                          },
+                        })
+                      }
+                      className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-1 text-[11px] text-[#EDEDED] outline-none leading-relaxed resize-none"
+                      placeholder="คำบรรยายสรีระแบบเต็ม..."
+                    />
                   </div>
                 ))}
               </div>
 
-              {/* Subtle footer tip */}
-              <div className="pt-1.5 border-t border-white/[0.04] flex items-center justify-between text-[10px] text-white/30 shrink-0 px-1">
-                <span>แตะส่วนใดก็ได้เพื่ออ่านคำบรรยาย</span>
-                <span className="text-[#EF264C]/70">✦ {allAnatomyItems.length} ส่วน</span>
+              {/* Custom Nuances Inputs */}
+              <div className="space-y-2 pt-1 border-t border-white/10">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-[#F1F1F1] flex items-center gap-1">
+                    <span className="text-[#EF264C]">✦</span>
+                    <span>จุดเด่นและเสน่ห์เฉพาะตัว ({customTraits.length})</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleAddCustomTrait}
+                    className="text-[10px] text-[#EF264C] hover:underline flex items-center gap-0.5 font-semibold cursor-pointer"
+                  >
+                    <Plus size={10} /> เพิ่มจุดเด่น
+                  </button>
+                </div>
+
+                {customTraits.map((trait, idx) => (
+                  <div
+                    key={trait.id}
+                    className="p-2 rounded-[14px] bg-black/30 border border-white/10 space-y-1"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <input
+                        type="text"
+                        value={trait.title}
+                        onChange={(e) => {
+                          const updated = [...customTraits];
+                          updated[idx].title = e.target.value;
+                          setCustomTraits(updated);
+                        }}
+                        className="bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-0.5 text-[11px] font-semibold text-white outline-none flex-1"
+                        placeholder="ชื่อจุดเด่น..."
+                      />
+                      {customTraits.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCustomTrait(trait.id)}
+                          className="text-white/40 hover:text-red-400 p-0.5 cursor-pointer"
+                          title="ลบจุดเด่นนี้"
+                        >
+                          <Trash2 size={11} />
+                        </button>
+                      )}
+                    </div>
+                    <textarea
+                      rows={2}
+                      value={trait.detail}
+                      onChange={(e) => {
+                        const updated = [...customTraits];
+                        updated[idx].detail = e.target.value;
+                        setCustomTraits(updated);
+                      }}
+                      className="w-full bg-black/30 border border-white/15 focus:border-[#EF264C] rounded px-2 py-1 text-[11px] text-[#EDEDED] outline-none leading-relaxed resize-none"
+                      placeholder="คำบรรยายจุดเด่น..."
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            /* ================================================================= */
+            /* ✦ READING MODE: 4 PILLARS (2 COLS) + HAIRLINE + CUSTOM + TACTILE TRAY */
+            /* ================================================================= */
+            <div className="flex-1 flex flex-col justify-between overflow-hidden">
+              {/* Top Section: 4 Core Foundations in 2 Columns */}
+              <div className="grid grid-cols-2 gap-1.5 shrink-0">
+                {corePillars.map((pillar) => {
+                  const isActive = activeAnatomyKey === pillar.key;
+                  return (
+                    <button
+                      key={pillar.key}
+                      type="button"
+                      onClick={() => setActiveAnatomyKey(pillar.key)}
+                      className={`px-2.5 py-1.5 rounded-[13px] flex items-center gap-2 transition-all cursor-pointer text-left select-none ${
+                        isActive
+                          ? 'bg-white/[0.14] border border-white/30 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] font-medium'
+                          : 'bg-black/35 hover:bg-white/[0.06] border border-white/[0.07] hover:border-white/15 text-white/70 hover:text-white'
+                      }`}
+                    >
+                      <span
+                        className="shrink-0 transition-colors"
+                        style={{ color: isActive ? '#FFFFFF' : pillar.accentColor }}
+                      >
+                        {pillar.icon}
+                      </span>
+                      <span className="text-[11.5px] truncate leading-none">
+                        {pillar.category}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Subtle 1px Hairline Divider */}
+              <div className="w-full h-[1px] bg-white/[0.06] my-1 shrink-0" />
+
+              {/* Custom Traits Row (Seamless Continuation) */}
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 select-none shrink-0">
+                {customTraits.map((trait) => {
+                  const isActive = activeAnatomyKey === trait.id;
+                  return (
+                    <button
+                      key={trait.id}
+                      type="button"
+                      onClick={() => setActiveAnatomyKey(trait.id)}
+                      className={`px-2.5 py-1 rounded-[11px] text-[11px] flex items-center gap-1.5 transition-all shrink-0 cursor-pointer ${
+                        isActive
+                          ? 'bg-white/[0.14] border border-white/30 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] font-medium'
+                          : 'bg-black/35 hover:bg-white/[0.06] border border-white/[0.07] hover:border-white/15 text-white/65 hover:text-white'
+                      }`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                          isActive ? 'bg-[#EF264C]' : 'bg-white/30'
+                        }`}
+                      />
+                      <span className="whitespace-nowrap">{trait.title}</span>
+                    </button>
+                  );
+                })}
+
+                {/* Quick Add Pill on Track */}
+                <button
+                  type="button"
+                  onClick={handleAddCustomTrait}
+                  className="px-2 py-1 rounded-[11px] border border-dashed border-white/20 hover:border-white/40 bg-white/[0.02] hover:bg-white/[0.08] text-white/50 hover:text-white flex items-center gap-1 text-[10.5px] transition-all cursor-pointer shrink-0"
+                  title="เพิ่มจุดเด่นใหม่"
+                >
+                  <Plus size={9} strokeWidth={2.4} />
+                  <span>เพิ่มจุดเด่น</span>
+                </button>
+              </div>
+
+              {/* ===================================================================== */}
+              {/* ✦ THE TACTILE SENSORY TRAY (ถาดสัมผัสเนื้อหาสไตล์เดียวกับตู้เสื้อผ้า)       */}
+              {/* ===================================================================== */}
+              <div className="flex-1 p-3 rounded-[18px] bg-black/40 backdrop-blur-xl border border-white/[0.06] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)] flex flex-col justify-between overflow-hidden mt-1.5">
+                <div
+                  key={currentActiveAnatomy.id}
+                  className="flex-1 flex flex-col justify-between overflow-hidden animate-fade-in-scale"
+                >
+                  {/* Tray Top Bar: Category + Headline */}
+                  <div className="flex items-center justify-between gap-2 shrink-0">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span
+                        className="shrink-0"
+                        style={{ color: currentActiveAnatomy.accentColor || '#EF264C' }}
+                      >
+                        {currentActiveAnatomy.icon}
+                      </span>
+                      <span className="text-[11.5px] font-semibold text-white/90 truncate">
+                        {currentActiveAnatomy.category}
+                      </span>
+                    </div>
+
+                    <span className="text-[12px] font-medium text-[#F1F1F1] truncate max-w-[170px] text-right">
+                      {currentActiveAnatomy.title}
+                    </span>
+                  </div>
+
+                  <div className="w-full h-[1px] bg-white/[0.06] my-1 shrink-0" />
+
+                  {/* Full Literary Prose Description */}
+                  <p className="text-[12.5px] sm:text-[13px] text-[#D6D6DC] leading-relaxed font-normal line-clamp-4 overflow-y-auto no-scrollbar pr-0.5">
+                    {currentActiveAnatomy.detail}
+                  </p>
+                </div>
               </div>
             </div>
           )}

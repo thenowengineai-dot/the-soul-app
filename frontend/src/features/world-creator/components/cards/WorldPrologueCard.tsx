@@ -49,11 +49,11 @@ export default function WorldPrologueCard({
 
   return (
     <div
-      className={`col-span-1 row-span-2 rounded-[28px] p-4 ${frostedCardClass}`}
-      style={{ width: '165px', height: '346px' }}
+      className={`col-span-2 row-span-1 rounded-[28px] p-4 ${frostedCardClass}`}
+      style={{ width: '346px', height: '165px' }}
     >
       {/* 1. Header Row: Clean "บทนำ" Title + Circular Edit Button (Strict Apple Consistency) */}
-      <div className="flex items-center justify-between shrink-0 mb-3 px-0.5">
+      <div className="flex items-center justify-between shrink-0 mb-1.5 px-0.5">
         <span className="text-[16px] sm:text-[17px] font-semibold text-[#F1F1F1] tracking-tight">
           บทนำ
         </span>
@@ -86,30 +86,29 @@ export default function WorldPrologueCard({
       {/* 2. Body Stage: Display vs Edit Mode (Pure Apple Subtractive Design - No Hairlines, No Footer Meta) */}
       <div className="flex-1 overflow-hidden flex flex-col min-h-0">
         {!isEditing ? (
-          <div className="flex-1 flex flex-col min-h-0 relative">
-            {/* Ambient Literary Watermark Quote Mark (Jony Ive Distance Silhouette: มองไกลๆ รู้ทันทีว่าเป็นบทความ/เรื่องเล่า) */}
-            <span
-              className="text-[34px] font-serif text-white/[0.10] select-none pointer-events-none leading-none -mb-2 block shrink-0"
-              aria-hidden="true"
-            >
-              “
-            </span>
-
-            {/* Cinematic Prologue Premise (Smooth Scrollable Editorial Column) */}
-            <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar min-h-0 pt-0.5 pb-2">
-              <p className="text-[12px] sm:text-[12.5px] text-[#EDEDED] font-normal leading-[21px] tracking-tight select-text text-left">
+          <div className="flex-1 overflow-y-auto pr-1.5 custom-scrollbar min-h-0 pt-0.5">
+            {/* Ambient Literary Quote Mark + Prose Flow (Jony Ive Distance Silhouette) */}
+            <div className="flex items-start gap-1.5 select-text">
+              <span
+                className="text-[24px] font-serif text-white/25 select-none pointer-events-none leading-none -mt-0.5 shrink-0"
+                aria-hidden="true"
+              >
+                “
+              </span>
+              <p className="text-[12.5px] sm:text-[13px] text-[#EDEDED] font-normal leading-[22px] tracking-tight text-left">
                 {premise}
               </p>
             </div>
           </div>
         ) : (
           /* Edit Mode Form */
-          <div className="flex-1 overflow-y-auto pr-1 space-y-2 custom-scrollbar py-1 flex flex-col min-h-0">
+          <div className="flex-1 overflow-hidden flex flex-col min-h-0 pt-1">
             <textarea
               value={premise}
               onChange={(e) => setPremise(e.target.value)}
               placeholder="พิมพ์บทบรรยายเปิดโลก..."
-              className="w-full flex-1 p-2.5 rounded-xl bg-white/[0.06] border border-white/10 text-[12px] text-white placeholder-white/30 focus:outline-none focus:border-white/30 resize-none leading-relaxed min-h-[220px]"
+              rows={3}
+              className="w-full h-full p-2 rounded-xl bg-white/[0.06] border border-white/10 text-[12px] text-white placeholder-white/30 focus:outline-none focus:border-white/30 resize-none leading-relaxed"
             />
           </div>
         )}

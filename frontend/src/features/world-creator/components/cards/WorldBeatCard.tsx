@@ -550,78 +550,97 @@ export default function WorldBeatCard({
             </p>
           </div>
 
-          {/* Organ 2: 🎯 ถ้าผู้เล่นทำแบบนี้ (เรื่องจะไปต่อทันที) - Pill Button & Trailing Action */}
+          {/* Organ 2: 🎯 2. ถ้าผู้เล่นทำแบบนี้ (เรื่องจะไปต่อทันที) */}
           <div className="rounded-[14px] bg-white/[0.03] border border-white/[0.06] px-3.5 py-2 flex flex-col gap-1.5">
-            {/* Header: Title + Trailing Action Badge (→ ไปต่อ / ↺ อยู่ที่เดิม) */}
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5 text-emerald-400 min-w-0">
-                <Target size={13} className="shrink-0" />
-                <span className="text-[11.5px] sm:text-[12px] font-semibold text-[#F1F1F1] tracking-tight truncate">
-                  2. ถ้าผู้เล่นทำแบบนี้ (เรื่องจะไปต่อทันที)
-                </span>
-              </div>
-              {triggerEntries.length > 0 && (
-                <span
-                  className={`text-[9.5px] sm:text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${
-                    triggerEntries[0][1].action_result === 'loop' ||
-                    (triggerEntries[0][1].action_result as string) === 'chaos_escalation'
-                      ? 'text-amber-300 bg-amber-500/15 border border-amber-500/30'
-                      : 'text-[#EF264C] bg-[#EF264C]/15 border border-[#EF264C]/30'
-                  }`}
-                >
-                  {triggerEntries[0][1].action_result === 'loop' ||
-                  (triggerEntries[0][1].action_result as string) === 'chaos_escalation'
-                    ? '↺ อยู่ที่เดิม'
-                    : '→ ไปต่อ'}
-                </span>
-              )}
+            {/* Header: Clean title without action badge */}
+            <div className="flex items-center gap-1.5 text-emerald-400">
+              <Target size={13} className="shrink-0" />
+              <span className="text-[11.5px] sm:text-[12px] font-semibold text-[#F1F1F1] tracking-tight">
+                2. ถ้าผู้เล่นทำแบบนี้ (เรื่องจะไปต่อทันที)
+              </span>
             </div>
 
-            {/* List of Triggers: Pill Button + Feedback Text */}
-            <div className="space-y-1.5">
-              {triggerEntries.length > 0 ? (
-                (isExpandedCard ? triggerEntries : triggerEntries.slice(0, 1)).map(([key, val], tIdx) => {
-                  const isLoop =
-                    val.action_result === 'loop' ||
-                    (val.action_result as string) === 'chaos_escalation';
-                  return (
-                    <div
-                      key={key}
-                      className="flex items-center justify-between gap-2 min-w-0"
-                    >
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        {/* Interactive Pill Button for Player Action */}
-                        <span className="px-2.5 py-0.5 rounded-full bg-white/[0.08] border border-white/15 text-[11px] sm:text-[11.5px] font-medium text-white shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
-                          {key}
-                        </span>
-                        {/* Feedback text */}
-                        {val.feedback && (
-                          <span className="text-[11.5px] sm:text-[12px] text-white/70 italic truncate">
-                            ➔ {val.feedback}
-                          </span>
-                        )}
-                      </div>
-                      {/* In expanded view, if there are multiple triggers beyond the first, show their individual action badges */}
-                      {isExpandedCard && tIdx > 0 && (
-                        <span
-                          className={`text-[9.5px] sm:text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${
-                            isLoop
-                              ? 'text-amber-300 bg-amber-500/15 border border-amber-500/30'
-                              : 'text-[#EF264C] bg-[#EF264C]/15 border border-[#EF264C]/30'
-                          }`}
-                        >
-                          {isLoop ? '↺ อยู่ที่เดิม' : '→ ไปต่อ'}
-                        </span>
-                      )}
-                    </div>
-                  );
-                })
+            {/* ✦ 1. ตอนหด (Collapsed): ดีไซน์เดิม 100% บรรทัดเดียว มีปุ่มไปต่อ/อยู่ที่เดิมอยู่หลังการกระทำข้อนั้น */}
+            {!isExpandedCard ? (
+              triggerEntries.length > 0 ? (
+                <div className="flex items-center justify-between gap-2 min-w-0">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    {/* Interactive Pill Button */}
+                    <span className="px-2.5 py-0.5 rounded-full bg-white/[0.08] border border-white/15 text-[11px] sm:text-[11.5px] font-medium text-white shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+                      {triggerEntries[0][0]}
+                    </span>
+                    {/* Feedback text */}
+                    {triggerEntries[0][1].feedback && (
+                      <span className="text-[11.5px] sm:text-[12px] text-white/70 italic truncate">
+                        ➔ {triggerEntries[0][1].feedback}
+                      </span>
+                    )}
+                  </div>
+                  {/* ปุ่มไปต่อ/อยู่ที่เดิม อยู่ตรงขวาสุดของการกระทำข้อนั้นโดยตรง */}
+                  <span
+                    className={`text-[9.5px] sm:text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${
+                      triggerEntries[0][1].action_result === 'loop' ||
+                      (triggerEntries[0][1].action_result as string) === 'chaos_escalation'
+                        ? 'text-amber-300 bg-amber-500/15 border border-amber-500/30'
+                        : 'text-[#EF264C] bg-[#EF264C]/15 border border-[#EF264C]/30'
+                    }`}
+                  >
+                    {triggerEntries[0][1].action_result === 'loop' ||
+                    (triggerEntries[0][1].action_result as string) === 'chaos_escalation'
+                      ? '↺ อยู่ที่เดิม'
+                      : '→ ไปต่อ'}
+                  </span>
+                </div>
               ) : (
                 <div className="text-[11.5px] text-white/40 italic">
                   ยังไม่ได้กำหนดทางเลือก
                 </div>
-              )}
-            </div>
+              )
+            ) : (
+              /* ✦ 2. ตอนขยาย (Expanded): เห็นเต็ม 100% ทุกตัวอักษร + ปุ่มอยู่หลังของแต่ละอัน */
+              <div className="space-y-2 pt-0.5">
+                {triggerEntries.length > 0 ? (
+                  triggerEntries.map(([key, val]) => {
+                    const isLoop =
+                      val.action_result === 'loop' ||
+                      (val.action_result as string) === 'chaos_escalation';
+                    return (
+                      <div
+                        key={key}
+                        className="rounded-[12px] bg-white/[0.03] border border-white/[0.06] p-2.5 flex flex-col gap-1.5"
+                      >
+                        {/* แถวบน: ปุ่ม Pill ซ้าย <---------------> ปุ่มไปต่อ/อยู่ที่เดิม ขวาสุดของแต่ละอัน */}
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="px-2.5 py-0.5 rounded-full bg-white/[0.08] border border-white/15 text-[11px] sm:text-[11.5px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+                            {key}
+                          </span>
+                          <span
+                            className={`text-[9.5px] sm:text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${
+                              isLoop
+                                ? 'text-amber-300 bg-amber-500/15 border border-amber-500/30'
+                                : 'text-[#EF264C] bg-[#EF264C]/15 border border-[#EF264C]/30'
+                            }`}
+                          >
+                            {isLoop ? '↺ อยู่ที่เดิม' : '→ ไปต่อ'}
+                          </span>
+                        </div>
+
+                        {/* แถวล่าง: ข้อความตอบสนองแบบเต็มพื้นที่ 100% ไม่มีตัดคำ */}
+                        {val.feedback && (
+                          <p className="text-[11.5px] sm:text-[12px] text-white/75 italic leading-[18px]">
+                            ➔ {val.feedback}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-[11.5px] text-white/40 italic">
+                    ยังไม่ได้กำหนดทางเลือก
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Organ 3: ⏳ ถ้าผู้เล่นไม่ทำอะไร (คุยครบ X รอบ เรื่องจะเดินต่อเองว่า) */}

@@ -1,13 +1,16 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   X,
   Sparkles,
+  User,
+  Globe,
 } from 'lucide-react';
 import type { VaultDraft } from '../types';
 import IdentityVisualCard from './cards/IdentityVisualCard';
 import MindShadowCard from './cards/MindShadowCard';
 import DynamicsCharismaCard from './cards/DynamicsCharismaCard';
 import LoreBackgroundCard from './cards/LoreBackgroundCard';
+import WorldPrologueCard from './cards/WorldPrologueCard';
 
 interface StudioCardCanvasModalProps {
   isOpen: boolean;
@@ -24,6 +27,8 @@ export default function StudioCardCanvasModal({
   onUpdateDraft,
   onTalkAboutCard: _onTalkAboutCard,
 }: StudioCardCanvasModalProps) {
+  const [activeStudioTab, setActiveStudioTab] = useState<'character' | 'world'>('character');
+
   // ESC key to close
   useEffect(() => {
     if (!isOpen) return;
@@ -56,21 +61,43 @@ export default function StudioCardCanvasModal({
             </span>
             <span className="text-white/20 text-[12px]">/</span>
             <span className="text-[13px] text-[#AAAAAA]">
-              โหมดการ์ดเต็มจอ (Full Canvas)
+              {activeStudioTab === 'character' ? 'ตัวละคร' : 'โลกและสถานการณ์'}
             </span>
             <span className="text-white/20 text-[12px]">/</span>
-            <span className="text-[13px] text-[#F1F1F1] font-medium">
-              {draft.title || 'ตัวละคร'}
+            <span className="text-[13px] text-[#F1F1F1] font-medium truncate max-w-[200px]">
+              {activeStudioTab === 'character'
+                ? draft.title || 'ตัวละคร'
+                : draft.thai_name || draft.worldTitle || 'โลกและสถานการณ์'}
             </span>
           </div>
         </div>
 
-        {/* Center: Completion Pill */}
-        <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-          <span className="w-2 h-2 rounded-full bg-[#EF264C] animate-pulse" />
-          <span className="text-[12px] font-medium text-[#F1F1F1]">
-            พิมพ์เขียวตัวละคร: 2 / 4 หมวดหลักสร้างแล้ว
-          </span>
+        {/* Center: Apple Tactile Segmented Studio Switcher */}
+        <div className="flex items-center p-1 rounded-full bg-white/[0.04] border border-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+          <button
+            type="button"
+            onClick={() => setActiveStudioTab('character')}
+            className={`px-3.5 sm:px-4 py-1.5 rounded-full text-[12px] font-medium transition-all cursor-pointer flex items-center gap-1.5 select-none ${
+              activeStudioTab === 'character'
+                ? 'bg-white/10 text-[#F1F1F1] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] border border-white/10'
+                : 'text-white/45 hover:text-white/80 border border-transparent'
+            }`}
+          >
+            <User size={13} strokeWidth={2.2} />
+            <span>ตัวละคร (Character)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveStudioTab('world')}
+            className={`px-3.5 sm:px-4 py-1.5 rounded-full text-[12px] font-medium transition-all cursor-pointer flex items-center gap-1.5 select-none ${
+              activeStudioTab === 'world'
+                ? 'bg-white/10 text-[#F1F1F1] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] border border-white/10'
+                : 'text-white/45 hover:text-white/80 border border-transparent'
+            }`}
+          >
+            <Globe size={13} strokeWidth={2.2} />
+            <span>โลกและสถานการณ์ (World)</span>
+          </button>
         </div>
 
         {/* Right: Close Action */}
@@ -105,26 +132,40 @@ export default function StudioCardCanvasModal({
               maxWidth: '1440px',
             }}
           >
-            <IdentityVisualCard
-              draft={draft}
-              onUpdateDraft={onUpdateDraft}
-              isEditable={true}
-            />
-            <MindShadowCard
-              draft={draft}
-              onUpdateDraft={onUpdateDraft}
-              isEditable={true}
-            />
-            <DynamicsCharismaCard
-              draft={draft}
-              onUpdateDraft={onUpdateDraft}
-              isEditable={true}
-            />
-            <LoreBackgroundCard
-              draft={draft}
-              onUpdateDraft={onUpdateDraft}
-              isEditable={true}
-            />
+            {activeStudioTab === 'character' ? (
+              /* Character Studio Bento Suite (8 Cards in 4 Components) */
+              <>
+                <IdentityVisualCard
+                  draft={draft}
+                  onUpdateDraft={onUpdateDraft}
+                  isEditable={true}
+                />
+                <MindShadowCard
+                  draft={draft}
+                  onUpdateDraft={onUpdateDraft}
+                  isEditable={true}
+                />
+                <DynamicsCharismaCard
+                  draft={draft}
+                  onUpdateDraft={onUpdateDraft}
+                  isEditable={true}
+                />
+                <LoreBackgroundCard
+                  draft={draft}
+                  onUpdateDraft={onUpdateDraft}
+                  isEditable={true}
+                />
+              </>
+            ) : (
+              /* World & Scenario Bento Suite (Starting with Card W1) */
+              <>
+                <WorldPrologueCard
+                  draft={draft}
+                  onUpdateDraft={onUpdateDraft}
+                  isEditable={true}
+                />
+              </>
+            )}
           </div>
         </div>
       </main>

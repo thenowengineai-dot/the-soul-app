@@ -402,7 +402,42 @@ flowchart LR
 
 ---
 
-### 11.6 สิ่งที่ต้องหลีกเลี่ยงโดยเด็ดขาด (Anti-Patterns Checklist)
+---
+
+## 12. สถาปัตยกรรมสตูดิโอสร้างโลกและสถานการณ์ (World Studio Architecture)
+
+เพื่อให้กระบวนการสร้างโลก (World Building) มีความลื่นไหลและเชื่อมโยงกับตัวละครอย่างกลมกลืน Creator Studio จึงใช้สถาปัตยกรรม **Dual-Tab Canvas System** บนผืนผ้าใบ Master Bento Grid เดียวกัน:
+
+### 12.1 Apple Tactile Segmented Studio Switcher (แถบสลับมิติสตูดิโอ)
+- จัดวางที่กึ่งกลางของ Top Header Bar ใน `StudioCardCanvasModal.tsx`:
+  - **`[ 👤 ตัวละคร (Character) ]`** ⟷ **`[ 🌍 โลกและสถานการณ์ (World) ]`**
+- **สุนทรียศาสตร์:** ใช้ Apple Subtle Frosted Glass ทรงแคปซูลมนเต็ม พร้อมไอคอนนำสายตา `User` และ `Globe`
+- **Zero Mental Friction:** ผู้สร้างสามารถสลับไปมาระหว่างตรวจสอบการ์ดตัวละครกับการ์ดของโลกได้ทันทีโดยไม่ต้องปิดหน้าต่างหรือโหลดหน้าใหม่
+
+---
+
+### 12.2 World Bento Cards Suite (ชุดการ์ดจำลองโลก 2x2 Bento Format)
+
+#### 🎬 Card W1: ปฐมบทภาพยนตร์ (Cinematic Prologue Plaque) — 2x2 (`346px × 346px`)
+- **Distance Silhouette:** **"The Cinematic Masthead Plaque" (แผ่นป้ายจารึกเปิดฉากภาพยนตร์ ขนาบด้วยเส้นขอบฟ้าคู่ Hairline Gradient)**
+  - สมองมองปราดเดียวรู้ทันทีว่านี่คือป้ายประกาศบทนำจำลองฉากภาพยนตร์ ไม่ซ้ำกับการ์ดสเตตัสหรือการ์ดสรีระ
+- **Layout & Visual Hierarchy:**
+  - **Category Badge:** แถบหัวข้อบนสุด `ปฐมบทภาพยนตร์` พร้อมจุดสถานะสีแดงคาร์ไมน์ `#EF264C`
+  - **Masthead Dual-Language Title:**
+    - ชื่อภาษาไทย: ขนาด `text-[17px] sm:text-[18px]` หนาคมชัด `font-bold` สีขาวนวลตา `#F1F1F1`
+    - ชื่อภาษาอังกฤษ: ขนาด `text-[11px] sm:text-[11.5px]` สีเงินอ่อน `#A1A1A8`
+  - **Double Horizon Hairline Gradient (เส้นขอบฟ้าคู่):** 
+    - ขนาบหัวและท้ายข้อความด้วยเส้นคั่นโปร่งแสง 1px: `bg-gradient-to-r from-transparent via-white/[0.16] to-transparent` ละลายสายตานุ่มนวล
+  - **Cinematic Prologue Premise (บทบรรยายเปิดโลกกึ่งกลางจอ):**
+    - ฟอนต์ตัวตรง ไม่เอียง (Monochromatic Cinematic Clarity), สีเงินแสงจันทร์ `#D6D6DC`, จัดกึ่งกลาง `text-center`, ขนาด `text-[12.5px] sm:text-[13px]`, ระยะบรรทัด `leading-[21px]`
+    - **No Decisive Question (ตัดคำถามชี้ชะตาออกตามคำสั่ง):** คืนพื้นที่ Breathing Space 100% ให้ข้อความบทนำฉากยามบ่าย ณ เรียวกังออนเซ็น แสดงผลได้เต็มอิ่ม ไม่แออัด
+  - **Subtle Footer Meta:** ไอคอน `Clapperboard` นำทางบทนำจำลองสถานการณ์ พร้อมรหัสฉาก `SCENE 01 SETUP` แบบ Monospace
+- **Direct Manipulation / In-Place Edit Mode:**
+  - ปุ่มดินสอกระจกฝ้าขวาบน แตะเพื่อเปิดฟอร์มแก้ไขชื่อไทย, ชื่ออังกฤษ, และบทบรรยายเปิดโลก แล้วกดเซฟอัปเดตลง `draft` ทันที
+
+---
+
+### 12.3 สิ่งที่ต้องหลีกเลี่ยงโดยเด็ดขาด (Anti-Patterns Checklist)
 ❌ **ห้ามใช้ Popover / Hover Card ลอยมาบัง:** เพราะจะหลุดขอบ ชน Z-index และทำให้ผู้ใช้รู้สึกใช้งานยาก  
 ❌ **ห้ามสลับหน้า (Multi-Page Flipping):** การกดดูดีเทลแล้วการ์ดหายไปทั้งใบกลายเป็นหน้าอื่น จะทำลาย Mental Model ของการดูภาพรวมตัวละคร  
 ❌ **ห้ามใส่เฉลยในปุ่มเลือก:** ปุ่มเลือกต้องทำหน้าที่เป็นเพียง Navigation Anchor ที่สวยงามและโปร่งตา  
@@ -412,3 +447,4 @@ flowchart LR
 ---
 
 *เอกสารฉบับนี้ถือเป็นพิมพ์เขียวหลัก (Authoritative Blueprint) สำหรับการพัฒนา UI/UX และ Component Architecture ของ The Soul Creator Studio สืบไป*
+

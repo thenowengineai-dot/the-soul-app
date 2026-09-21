@@ -8,6 +8,10 @@ import {
   Target,
   Clock,
   ChevronDown,
+  ChevronUp,
+  ChevronLeft,
+  ChevronRight,
+  X,
 } from 'lucide-react';
 import type { VaultDraft, WorldScene, WorldBeat, PlayerTriggerAction } from '../../types';
 
@@ -17,7 +21,14 @@ interface WorldBeatCardProps {
   isEditable?: boolean;
 }
 
-// Sample fallback scenes if draft.scenario has no scenes yet
+interface EditTriggerItem {
+  id: string;
+  key: string;
+  feedback: string;
+  action: PlayerTriggerAction;
+}
+
+// Sample fallback scene if draft.scenario has no scenes yet
 const FALLBACK_DEFAULT_SCENE: WorldScene = {
   scene_id: 'scene_01_herbal_chamber',
   title: 'ฉากที่ 1: บททดสอบในห้องสกัดสมุนไพร',
@@ -34,6 +45,7 @@ const FALLBACK_DEFAULT_SCENE: WorldScene = {
       actor_state: 'นั่งก้มหน้านิ่งใช้นิ้วดันดั้งแว่นด้วยความประหม่า เสื้อเชิ้ตขาวบางเปียกชื้นแนบเนื้อ',
       hidden_evaluation_criteria: {
         'เข้าใกล้': { action_result: 'progress', feedback: 'เธอสะดุ้งเล็กน้อยแต่ไม่ขยับหนี' },
+        'ยืนมองเฉยๆ': { action_result: 'loop', feedback: 'เธอแอบชำเลืองมองก่อนจะก้มหน้าเงียบ' },
       },
       pacing_control: {
         max_turns: 3,
@@ -69,6 +81,7 @@ export default function WorldBeatCard({
   const [selectedSceneIndex, setSelectedSceneIndex] = useState(0);
   const [selectedBeatIndex, setSelectedBeatIndex] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
+  const [isExpandedCard, setIsExpandedCard] = useState(false);
   const [isSelectingScene, setIsSelectingScene] = useState(false);
 
   // Safe scene and beat references
@@ -88,16 +101,20 @@ export default function WorldBeatCard({
     },
   };
 
-  // Form edit states
+  // Edit form states
   const [editBeatId, setEditBeatId] = useState(currentBeat.beat_id || '');
   const [editActorState, setEditActorState] = useState(currentBeat.actor_state || '');
-  const [editTriggerKey, setEditTriggerKey] = useState(() => {
-    const keys = Object.keys(currentBeat.hidden_evaluation_criteria || {});
-    return keys[0] || 'เข้าใกล้';
-  });
-  const [editTriggerFeedback, setEditTriggerFeedback] = useState(() => {
-    const keys = Object.keys(currentBeat.hidden_evaluation_criteria || {});
-    return keys[0] ? currentBeat.hidden_evaluation_criteria[keys[0]]?.feedback || '' : '';
+  const [editTriggers, setEditTriggers] = useState<EditTriggerItem[]>(() => {
+    const entries = Object.entries(currentBeat.hidden_evaluation_criteria || {});
+    if (entries.length === 0) {
+      return [{ id: 'trg_0', key: 'เข้าใกล้', feedback: 'เธอสะดุ้งแต่ไม่ขยับหนี', action: 'progress' }];
+    }
+    return entries.map(([k, v], idx) => ({
+      id: `trg_${idx}`,
+      key: k,
+      feedback: v.feedback || '',
+      action: v.action_result || 'progress',
+    }));
   });
   const [editMaxTurns, setEditMaxTurns] = useState(currentBeat.pacing_control?.max_turns || 3);
   const [editConsequence, setEditConsequence] = useState(
@@ -123,12 +140,73 @@ export default function WorldBeatCard({
     if (targetBeat) {
       setEditBeatId(targetBeat.beat_id || '');
       setEditActorState(targetBeat.actor_state || '');
-      const keys = Object.keys(targetBeat.hidden_evaluation_criteria || {});
-      setEditTriggerKey(keys[0] || 'เข้าใกล้');
-      setEditTriggerFeedback(keys[0] ? targetBeat.hidden_evaluation_criteria[keys[0]]?.feedback || '' : '');
+      const entries = Object.entries(targetBeat.hidden_evaluation_criteria || {});
+      setEditTriggers(
+        entries.length > 0
+          ? entries.map(([k, v], i) => ({
+              id: `trg_${i}`,
+              key: k,
+              feedback: v.feedback || '',
+              action: v.action_result || 'progress',
+            }))
+          : [{ id: 'trg_0', key: 'เข้าใกล้', feedback: '', action: 'progress' }]
+      );
       setEditMaxTurns(targetBeat.pacing_control?.max_turns || 3);
       setEditConsequence(targetBeat.pacing_control?.inevitable_consequence || '');
     }
+  };
+
+  // Reorder beats: Move Left
+  const handleMoveBeatLeft = (idx: number) => {
+    if (idx <= 0) return;
+    const updatedBeats = [...beats];
+    const temp = updatedBeats[idx];
+    updatedBeats[idx] = updatedBeats[idx - 1];
+    updatedBeats[idx - 1] = temp;
+    const updatedScenes = [...scenes];
+    updatedScenes[selectedSceneIndex] = { ...currentScene, beats: updatedBeats };
+    commitScenes(updatedScenes);
+    setSelectedBeatIndex(idx - 1);
+  };
+
+  // Reorder beats: Move Right
+  const handleMoveBeatRight = (idx: number) => {
+    if (idx >= beats.length - 1) return;
+    const updatedBeats = [...beats];
+    const temp = updatedBeats[idx];
+    updatedBeats[idx] = updatedBeats[idx + 1];
+    updatedBeats[idx + 1] = temp;
+    const updatedScenes = [...scenes];
+    updatedScenes[selectedSceneIndex] = { ...currentScene, beats: updatedBeats };
+    commitScenes(updatedScenes);
+    setSelectedBeatIndex(idx + 1);
+  };
+
+  // Insert beat right after specified index
+  const handleInsertBeatAfter = (afterIdx: number) => {
+    const newBeatNumber = beats.length + 1;
+    const newBeat: WorldBeat = {
+      beat_id: `Beat 0${newBeatNumber}: จังหวะแทรกใหม่`,
+      actor_state: 'ตัวละครมีท่าทางตอบสนองต่อเหตุการณ์ใหม่...',
+      hidden_evaluation_criteria: {
+        'สบตา': { action_result: 'progress', feedback: 'เธอเบือนหน้าหลบแต่ไม่ขยับหนี' },
+      },
+      pacing_control: {
+        max_turns: 3,
+        action_result: 'progress',
+        inevitable_consequence: 'เรื่องราวดำเนินสู่จุดสำคัญต่อไป',
+      },
+    };
+
+    const updatedBeats = [...beats];
+    updatedBeats.splice(afterIdx + 1, 0, newBeat);
+    const updatedScenes = [...scenes];
+    updatedScenes[selectedSceneIndex] = {
+      ...currentScene,
+      beats: updatedBeats,
+    };
+    commitScenes(updatedScenes);
+    setSelectedBeatIndex(afterIdx + 1);
   };
 
   // Start edit
@@ -136,9 +214,17 @@ export default function WorldBeatCard({
     setIsEditing(true);
     setEditBeatId(currentBeat.beat_id || '');
     setEditActorState(currentBeat.actor_state || '');
-    const keys = Object.keys(currentBeat.hidden_evaluation_criteria || {});
-    setEditTriggerKey(keys[0] || 'เข้าใกล้');
-    setEditTriggerFeedback(keys[0] ? currentBeat.hidden_evaluation_criteria[keys[0]]?.feedback || '' : '');
+    const entries = Object.entries(currentBeat.hidden_evaluation_criteria || {});
+    setEditTriggers(
+      entries.length > 0
+        ? entries.map(([k, v], i) => ({
+            id: `trg_${i}_${Date.now()}`,
+            key: k,
+            feedback: v.feedback || '',
+            action: v.action_result || 'progress',
+          }))
+        : [{ id: 'trg_0', key: 'เข้าใกล้', feedback: '', action: 'progress' }]
+    );
     setEditMaxTurns(currentBeat.pacing_control?.max_turns || 3);
     setEditConsequence(currentBeat.pacing_control?.inevitable_consequence || '');
   };
@@ -148,12 +234,15 @@ export default function WorldBeatCard({
     setIsEditing(false);
     const updatedBeats = [...beats];
     const triggerObj: Record<string, { action_result: PlayerTriggerAction; feedback?: string }> = {};
-    if (editTriggerKey.trim()) {
-      triggerObj[editTriggerKey.trim()] = {
-        action_result: 'progress',
-        feedback: editTriggerFeedback.trim() || undefined,
-      };
-    }
+    editTriggers.forEach((trg) => {
+      const cleanKey = trg.key.trim();
+      if (cleanKey) {
+        triggerObj[cleanKey] = {
+          action_result: trg.action || 'progress',
+          feedback: trg.feedback.trim() || undefined,
+        };
+      }
+    });
 
     updatedBeats[safeBeatIndex] = {
       ...currentBeat,
@@ -175,29 +264,27 @@ export default function WorldBeatCard({
     commitScenes(updatedScenes);
   };
 
-  // Add new beat to current scene
-  const handleAddBeat = () => {
-    const newBeatNumber = beats.length + 1;
-    const newBeat: WorldBeat = {
-      beat_id: `Beat 0${newBeatNumber}: จังหวะที่ ${newBeatNumber}`,
-      actor_state: 'ตัวละครมีท่าทางตอบสนองต่อเหตุการณ์ใหม่...',
-      hidden_evaluation_criteria: {
-        'สบตา': { action_result: 'progress', feedback: 'เธอเบือนหน้าหลบแต่ไม่ขยับหนี' },
+  // Add new trigger row in edit mode
+  const handleAddEditTrigger = () => {
+    setEditTriggers((prev) => [
+      ...prev,
+      {
+        id: `trg_${Date.now()}`,
+        key: '',
+        feedback: '',
+        action: 'progress',
       },
-      pacing_control: {
-        max_turns: 3,
-        action_result: 'progress',
-        inevitable_consequence: 'เรื่องราวดำเนินสู่จุดสำคัญต่อไป',
-      },
-    };
+    ]);
+  };
 
-    const updatedScenes = [...scenes];
-    updatedScenes[selectedSceneIndex] = {
-      ...currentScene,
-      beats: [...beats, newBeat],
-    };
-    commitScenes(updatedScenes);
-    setSelectedBeatIndex(beats.length);
+  // Remove trigger row in edit mode
+  const handleRemoveEditTrigger = (id: string) => {
+    setEditTriggers((prev) => (prev.length > 1 ? prev.filter((t) => t.id !== id) : prev));
+  };
+
+  // Add new beat at the end
+  const handleAddBeatEnd = () => {
+    handleInsertBeatAfter(beats.length - 1);
   };
 
   // Delete current beat
@@ -213,17 +300,15 @@ export default function WorldBeatCard({
     setSelectedBeatIndex(Math.max(0, safeBeatIndex - 1));
   };
 
-  // Extract first trigger for display
-  const triggerKeys = Object.keys(currentBeat.hidden_evaluation_criteria || {});
-  const displayTriggerKey = triggerKeys[0] || 'การกระทำสำคัญ';
-  const displayTriggerFeedback = triggerKeys[0]
-    ? currentBeat.hidden_evaluation_criteria[triggerKeys[0]]?.feedback
-    : null;
+  // Triggers for display
+  const triggerEntries = Object.entries(currentBeat.hidden_evaluation_criteria || {});
   const maxTurns = currentBeat.pacing_control?.max_turns ?? 3;
 
   return (
     <div
-      className="col-span-2 row-span-2 w-[346px] h-[346px] rounded-[24px] bg-[#141419]/95 backdrop-blur-2xl border border-white/10 hover:border-white/18 shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.10)] p-4 flex flex-col justify-between transition-all select-none relative group overflow-hidden"
+      className={`col-span-2 ${
+        isExpandedCard ? 'row-span-auto min-h-[346px] h-auto pb-6 z-20' : 'row-span-2 h-[346px]'
+      } w-[346px] rounded-[24px] bg-[#141419]/95 backdrop-blur-2xl border border-white/10 hover:border-white/18 shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.10)] p-4 flex flex-col justify-between transition-all select-none relative group`}
     >
       {/* ✦ AMBIENT CORNER GLOW */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-[#EF264C]/[0.05] rounded-full blur-2xl pointer-events-none" />
@@ -334,28 +419,75 @@ export default function WorldBeatCard({
           )}
         </div>
 
-        {/* Beat Selector Pill Dock */}
+        {/* ✦ BEAT SELECTOR PILL DOCK WITH REORDERING ARROWS & MID-INSERTION */}
         <div className="flex items-center gap-1 overflow-x-auto custom-scrollbar pb-0.5">
           {beats.map((b, bIdx) => (
-            <button
-              key={b.beat_id || bIdx}
-              type="button"
-              onClick={() => handleSelectBeat(bIdx)}
-              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-all shrink-0 cursor-pointer flex items-center gap-1 ${
-                bIdx === safeBeatIndex
-                  ? 'bg-white/12 text-white border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] font-semibold'
-                  : 'bg-white/[0.03] text-white/45 hover:text-white/80 border border-transparent'
-              }`}
-            >
-              <span className="text-[#EF264C] text-[9px] font-mono">✦</span>
-              <span>บีต {bIdx + 1}</span>
-            </button>
+            <div key={b.beat_id || bIdx} className="flex items-center gap-1 shrink-0">
+              {/* Mid-Pill Insertion Button (Before Beat if not first) */}
+              {isEditable && bIdx > 0 && (
+                <button
+                  type="button"
+                  onClick={() => handleInsertBeatAfter(bIdx - 1)}
+                  className="w-3.5 h-3.5 rounded-full bg-white/[0.04] hover:bg-[#EF264C]/30 text-white/30 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                  title={`แทรกบีตคั่นกลางระหว่างบีต ${bIdx} และ ${bIdx + 1}`}
+                >
+                  <Plus size={8} strokeWidth={2.5} />
+                </button>
+              )}
+
+              {/* Beat Pill with Reorder Controls when active */}
+              <div
+                onClick={() => handleSelectBeat(bIdx)}
+                className={`px-2 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer flex items-center gap-1 ${
+                  bIdx === safeBeatIndex
+                    ? 'bg-white/12 text-white border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] font-semibold'
+                    : 'bg-white/[0.03] text-white/45 hover:text-white/80 border border-transparent'
+                }`}
+              >
+                {/* Move Left Arrow on Active Beat */}
+                {isEditable && bIdx === safeBeatIndex && beats.length > 1 && (
+                  <button
+                    type="button"
+                    disabled={bIdx === 0}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMoveBeatLeft(bIdx);
+                    }}
+                    className="w-3.5 h-3.5 rounded hover:bg-white/20 flex items-center justify-center disabled:opacity-20 cursor-pointer transition-colors"
+                    title="เลื่อนบีตนี้ไปทางซ้าย"
+                  >
+                    <ChevronLeft size={9} strokeWidth={2.4} />
+                  </button>
+                )}
+
+                <span className="text-[#EF264C] text-[9px] font-mono">✦</span>
+                <span>บีต {bIdx + 1}</span>
+
+                {/* Move Right Arrow on Active Beat */}
+                {isEditable && bIdx === safeBeatIndex && beats.length > 1 && (
+                  <button
+                    type="button"
+                    disabled={bIdx === beats.length - 1}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMoveBeatRight(bIdx);
+                    }}
+                    className="w-3.5 h-3.5 rounded hover:bg-white/20 flex items-center justify-center disabled:opacity-20 cursor-pointer transition-colors"
+                    title="เลื่อนบีตนี้ไปทางขวา"
+                  >
+                    <ChevronRight size={9} strokeWidth={2.4} />
+                  </button>
+                )}
+              </div>
+            </div>
           ))}
+
+          {/* Add Beat at End Button */}
           {isEditable && (
             <button
               type="button"
-              onClick={handleAddBeat}
-              className="w-6 h-6 rounded-full bg-white/[0.03] hover:bg-white/[0.10] border border-dashed border-white/20 text-white/50 hover:text-white flex items-center justify-center cursor-pointer shrink-0 transition-all"
+              onClick={handleAddBeatEnd}
+              className="w-6 h-6 rounded-full bg-white/[0.03] hover:bg-white/[0.10] border border-dashed border-white/20 text-white/50 hover:text-white flex items-center justify-center cursor-pointer shrink-0 transition-all ml-0.5"
               title="เพิ่มบีตใหม่ต่อท้าย"
             >
               <Plus size={11} strokeWidth={2.2} />
@@ -368,7 +500,7 @@ export default function WorldBeatCard({
       {/* 2. BODY: THE 3 CORE ORGANS (APPROACH 1: ถ้าทำ... ถ้าไม่ทำ...)           */}
       {/* ===================================================================== */}
       {!isEditing ? (
-        <div className="flex-1 flex flex-col justify-between py-1.5 gap-2 overflow-hidden">
+        <div className="flex-1 flex flex-col justify-between py-1.5 gap-2">
           {/* Organ 1: 🎭 ตัวละครกำลังทำอะไร (What character does) */}
           <div className="rounded-[16px] bg-white/[0.03] border border-white/[0.07] px-3 py-2 flex flex-col gap-1 transition-colors hover:border-white/12">
             <div className="flex items-center gap-1.5 text-white/50">
@@ -377,32 +509,68 @@ export default function WorldBeatCard({
                 1. ตัวละครกำลังทำอะไร
               </span>
             </div>
-            <p className="text-[11.5px] text-[#EDEDED] leading-[18px] line-clamp-3">
+            <p
+              className={`text-[11.5px] text-[#EDEDED] leading-[18px] ${
+                isExpandedCard ? '' : 'line-clamp-3'
+              }`}
+            >
               {currentBeat.actor_state || 'ยังไม่ได้ระบุท่าทางตัวละคร...'}
             </p>
           </div>
 
           {/* Organ 2: 🎯 ถ้าผู้เล่นทำแบบนี้ (เรื่องจะไปต่อทันที) */}
-          <div className="rounded-[14px] bg-white/[0.03] border border-white/[0.07] px-3 py-1.5 flex flex-col gap-1">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-emerald-400">
-                <Target size={11} />
-                <span className="text-[10px] font-semibold text-[#F1F1F1] tracking-tight">
-                  2. ถ้าผู้เล่นทำแบบนี้ (เรื่องจะไปต่อทันที)
-                </span>
-              </div>
-              <span className="text-[9px] font-mono uppercase tracking-wider text-[#EF264C] bg-[#EF264C]/15 border border-[#EF264C]/25 px-1.5 py-0.2 rounded-full">
-                → ไปต่อ
+          <div className="rounded-[14px] bg-white/[0.03] border border-white/[0.07] px-3 py-1.5 flex flex-col gap-1.5">
+            <div className="flex items-center gap-1.5 text-emerald-400">
+              <Target size={11} />
+              <span className="text-[10px] font-semibold text-[#F1F1F1] tracking-tight">
+                {isExpandedCard
+                  ? '2. ถ้าผู้เล่นทำแบบนี้ (เรื่องจะไปต่อทันที)'
+                  : '2. ถ้าผู้เล่นทำแบบนี้...'}
               </span>
             </div>
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="px-2 py-0.5 rounded-full bg-white/[0.07] border border-white/10 text-[10.5px] font-medium text-white shrink-0">
-                {displayTriggerKey}
-              </span>
-              {displayTriggerFeedback && (
-                <span className="text-[10.5px] text-white/60 italic truncate">
-                  ➔ {displayTriggerFeedback}
-                </span>
+
+            {/* List of Triggers */}
+            <div className="space-y-1">
+              {triggerEntries.length > 0 ? (
+                (isExpandedCard ? triggerEntries : triggerEntries.slice(0, 1)).map(([key, val]) => {
+                  const isLoop = val.action_result === 'loop';
+                  return (
+                    <div
+                      key={key}
+                      className="flex items-center justify-between gap-1.5 text-[10.5px] min-w-0"
+                    >
+                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                        <span className="px-2 py-0.5 rounded-full bg-white/[0.07] border border-white/10 font-medium text-white shrink-0">
+                          {key}
+                        </span>
+                        {val.feedback && (
+                          <span className="text-white/60 italic truncate">
+                            ➔ {val.feedback}
+                          </span>
+                        )}
+                      </div>
+                      {/* Action Result Badge: ไปต่อ vs อยู่ที่เดิม */}
+                      <span
+                        className={`text-[9px] font-mono px-1.5 py-0.2 rounded-full shrink-0 ${
+                          isLoop
+                            ? 'text-amber-300 bg-amber-500/15 border border-amber-500/30'
+                            : 'text-[#EF264C] bg-[#EF264C]/15 border border-[#EF264C]/30'
+                        }`}
+                      >
+                        {isLoop ? '↺ อยู่ที่เดิม' : '→ ไปต่อ'}
+                      </span>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-[10.5px] text-white/40 italic">
+                  ยังไม่ได้กำหนดทางเลือก
+                </div>
+              )}
+              {!isExpandedCard && triggerEntries.length > 1 && (
+                <div className="text-[9.5px] text-white/35 italic pt-0.5">
+                  + อีก {triggerEntries.length - 1} ทางเลือก (แตะลูกศรแดงเพื่อดูทั้งหมด)
+                </div>
               )}
             </div>
           </div>
@@ -412,11 +580,18 @@ export default function WorldBeatCard({
             <div className="flex items-center gap-1.5 text-amber-400">
               <Clock size={11} />
               <span className="text-[10px] font-semibold text-amber-300 tracking-tight">
-                3. ถ้าผู้เล่นไม่ทำอะไร (คุยครบ {maxTurns} รอบ เรื่องจะเดินต่อเองว่า)
+                {isExpandedCard
+                  ? `3. ถ้าผู้เล่นไม่ทำอะไร (คุยครบ ${maxTurns} รอบ เรื่องจะเดินต่อเองว่า)`
+                  : '3. ถ้าผู้เล่นไม่ทำอะไร...'}
               </span>
             </div>
-            <p className="text-[11px] text-[#EDEDED] leading-[17px] line-clamp-2">
-              {currentBeat.pacing_control?.inevitable_consequence || 'เรื่องราวดำเนินสู่ขั้นถัดไปอัตโนมัติ'}
+            <p
+              className={`text-[11px] text-[#EDEDED] leading-[17px] ${
+                isExpandedCard ? '' : 'line-clamp-2'
+              }`}
+            >
+              {currentBeat.pacing_control?.inevitable_consequence ||
+                'เรื่องราวดำเนินสู่ขั้นถัดไปอัตโนมัติ'}
             </p>
           </div>
         </div>
@@ -424,7 +599,7 @@ export default function WorldBeatCard({
         /* =================================================================== */
         /* IN-PLACE INLINE EDIT MODE                                           */
         /* =================================================================== */
-        <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 py-1 pr-1">
+        <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2.5 py-1 pr-1">
           {/* Edit Beat Title & Turns */}
           <div className="flex gap-2">
             <div className="flex-1">
@@ -469,27 +644,79 @@ export default function WorldBeatCard({
             />
           </div>
 
-          {/* Edit 2: ถ้าผู้เล่นทำแบบนี้ */}
-          <div>
-            <label className="text-[9.5px] font-semibold text-emerald-400 flex items-center gap-1 mb-0.5">
-              <Target size={10} />
-              2. ถ้าผู้เล่นทำแบบนี้ (เรื่องจะไปต่อทันที)
-            </label>
-            <div className="flex gap-1.5">
-              <input
-                type="text"
-                value={editTriggerKey}
-                onChange={(e) => setEditTriggerKey(e.target.value)}
-                placeholder="การกระทำของผู้เล่น (เช่น เข้าใกล้)"
-                className="w-[120px] bg-black/40 border border-white/15 rounded-[8px] px-2 py-1 text-[11px] text-white outline-none focus:border-emerald-400"
-              />
-              <input
-                type="text"
-                value={editTriggerFeedback}
-                onChange={(e) => setEditTriggerFeedback(e.target.value)}
-                placeholder="ผลลัพธ์ย่อย (เช่น เธอสะดุ้งแต่ไม่หนี)"
-                className="flex-1 bg-black/40 border border-white/15 rounded-[8px] px-2 py-1 text-[11px] text-white outline-none focus:border-emerald-400"
-              />
+          {/* Edit 2: ทางเลือกของผู้เล่น (เพิ่มได้ไม่จำกัด + Dropdown 'ไปต่อ' vs 'อยู่ที่เดิม') */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-[9.5px] font-semibold text-emerald-400 flex items-center gap-1">
+                <Target size={10} />
+                2. ถ้าผู้เล่นทำแบบนี้ (กำหนดทางเลือก)
+              </label>
+              <button
+                type="button"
+                onClick={handleAddEditTrigger}
+                className="text-[9.5px] text-[#EF264C] hover:text-white flex items-center gap-0.5 cursor-pointer"
+              >
+                <Plus size={10} />
+                <span>เพิ่มทางเลือก</span>
+              </button>
+            </div>
+
+            <div className="space-y-1.5">
+              {editTriggers.map((trg) => (
+                <div key={trg.id} className="flex items-center gap-1 bg-black/30 p-1.5 rounded-[8px] border border-white/10">
+                  <input
+                    type="text"
+                    value={trg.key}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEditTriggers((prev) =>
+                        prev.map((t) => (t.id === trg.id ? { ...t, key: val } : t))
+                      );
+                    }}
+                    placeholder="คำทำ (เช่น เข้าใกล้)"
+                    className="w-[90px] bg-black/40 border border-white/15 rounded px-1.5 py-0.5 text-[10.5px] text-white outline-none focus:border-emerald-400"
+                  />
+                  <input
+                    type="text"
+                    value={trg.feedback}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEditTriggers((prev) =>
+                        prev.map((t) => (t.id === trg.id ? { ...t, feedback: val } : t))
+                      );
+                    }}
+                    placeholder="ผลตอบสนอง..."
+                    className="flex-1 min-w-0 bg-black/40 border border-white/15 rounded px-1.5 py-0.5 text-[10.5px] text-white outline-none focus:border-emerald-400"
+                  />
+                  {/* Dropdown: ไปต่อ vs อยู่ที่เดิม */}
+                  <select
+                    value={trg.action}
+                    onChange={(e) => {
+                      const val = e.target.value as PlayerTriggerAction;
+                      setEditTriggers((prev) =>
+                        prev.map((t) => (t.id === trg.id ? { ...t, action: val } : t))
+                      );
+                    }}
+                    className={`text-[9.5px] font-mono rounded px-1 py-0.5 border outline-none cursor-pointer bg-[#181820] ${
+                      trg.action === 'loop'
+                        ? 'text-amber-300 border-amber-500/30'
+                        : 'text-[#EF264C] border-[#EF264C]/30'
+                    }`}
+                  >
+                    <option value="progress">→ ไปต่อ</option>
+                    <option value="loop">↺ อยู่ที่เดิม</option>
+                  </select>
+                  {editTriggers.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveEditTrigger(trg.id)}
+                      className="text-white/30 hover:text-red-400 p-0.5 cursor-pointer"
+                    >
+                      <X size={10} />
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
 
@@ -514,8 +741,28 @@ export default function WorldBeatCard({
       {/* 3. CARD FOOTER: BEAT STATUS                                           */}
       {/* ===================================================================== */}
       <div className="shrink-0 pt-2 border-t border-white/[0.06] flex items-center justify-between text-[10px] text-white/35 font-mono">
-        <span>บีต {safeBeatIndex + 1} จาก {beats.length}</span>
+        <span>
+          บีต {safeBeatIndex + 1} จาก {beats.length}
+        </span>
         <span className="text-[#EF264C]/70">W4: THE CINEMATIC BEAT</span>
+      </div>
+
+      {/* ===================================================================== */}
+      {/* 4. THE RED EXPAND ORB (ปุ่มลูกศรลงสีแดงทรงกลมยืดการ์ดอ่านเต็มความยาว)      */}
+      {/* ===================================================================== */}
+      <div className="absolute -bottom-3.5 left-1/2 -translate-x-1/2 z-30">
+        <button
+          type="button"
+          onClick={() => setIsExpandedCard(!isExpandedCard)}
+          className="w-7 h-7 rounded-full bg-[#141419] border-2 border-[#EF264C] text-[#EF264C] hover:bg-[#EF264C] hover:text-white shadow-[0_2px_12px_rgba(239,38,76,0.45)] flex items-center justify-center transition-all cursor-pointer active:scale-90"
+          title={isExpandedCard ? 'พับเก็บการ์ดสู่ขนาดกะทัดรัด' : 'ยืดการ์ดอ่านเต็มความยาวจริง'}
+        >
+          {isExpandedCard ? (
+            <ChevronUp size={13} strokeWidth={2.8} />
+          ) : (
+            <ChevronDown size={13} strokeWidth={2.8} />
+          )}
+        </button>
       </div>
     </div>
   );

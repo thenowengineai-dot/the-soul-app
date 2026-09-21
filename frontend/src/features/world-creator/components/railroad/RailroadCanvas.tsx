@@ -463,6 +463,14 @@ export default function RailroadCanvas({
       className={`relative w-full h-full min-h-[640px] flex-1 overflow-hidden select-none cursor-grab active:cursor-grabbing bg-app-bg ${
         isPanning ? 'cursor-grabbing' : ''
       }`}
+      style={{
+        backgroundImage: `
+          linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px)
+        `,
+        backgroundSize: `${48 * zoom}px ${48 * zoom}px`,
+        backgroundPosition: `${pan.x}px ${pan.y}px`,
+      }}
     >
       {/* ✦ 1. WORLD CANVAS TRANSFORM CONTAINER (SCALED & PANNED) */}
       <div

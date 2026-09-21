@@ -123,7 +123,7 @@ export default function StudioCardCanvasModal({
                 2. จิตวิทยาและตัวตนเบื้องลึก
               </h2>
               <span className="text-[12px] text-white/40 font-normal ml-1 hidden sm:inline">
-                (กระจกทวิภาวะ: หน้ากากสังคม vs เงามืด, แรงขับปรารถนา & จุดเปราะบาง)
+                (หน้ากากทางสังคม, จุดขัดแย้งในใจ, ธาตุแท้ใต้หน้ากาก)
               </span>
             </div>
             <MindShadowCard

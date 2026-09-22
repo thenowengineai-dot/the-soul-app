@@ -469,8 +469,8 @@ export default function SceneNodeCard({
           <div className="flex flex-col gap-1 px-1 py-0.5">
             <div className="flex items-center gap-1.5">
               <span className="text-[#FF375F] text-[10px] font-mono">✦</span>
-              <span className="text-[11px] font-medium text-white/50 tracking-wide uppercase">
-                การกระทำของตัวละคร
+              <span className="text-[11px] font-medium text-white/50 tracking-wide">
+                1. ตัวละครกำลังทำอะไร
               </span>
             </div>
             <p
@@ -487,7 +487,7 @@ export default function SceneNodeCard({
             <div className="flex items-center gap-1.5 text-[#30D158]">
               <Target size={11.5} className="shrink-0" />
               <span className="text-[11px] font-semibold text-white/80 tracking-tight">
-                ทางเลือกผู้เล่น
+                2. ถ้าผู้เล่นทำแบบนี้
               </span>
             </div>
 
@@ -574,28 +574,40 @@ export default function SceneNodeCard({
             )}
           </div>
 
-          {/* Layer 3: ⏱ The Pacing Footnote Strip (แถบสรุปจังหวะบางๆ ชิดล่าง) */}
-          <div className="rounded-[10px] bg-white/[0.02] border border-white/[0.05] px-2.5 py-1.5 flex items-center gap-2">
-            <div className="flex items-center gap-1 shrink-0 text-[#FF9F0A]">
-              <Clock size={11} strokeWidth={2.2} />
-              <span className="text-[10px] sm:text-[10.5px] font-mono text-[#FF9F0A]/85">
-                ครบ {displayTurns} รอบ
-              </span>
+          {/* Layer 3: ⏱ The Pacing Footnote Strip (ตอนย่อกระชับ / ตอนขยายแสดงเต็ม) */}
+          {!isExpandedCard ? (
+            <div className="rounded-[10px] bg-white/[0.02] border border-white/[0.05] px-2.5 py-1.5 flex items-center gap-2">
+              <div className="flex items-center gap-1 shrink-0 text-[#FF9F0A]">
+                <Clock size={11} strokeWidth={2.2} />
+                <span className="text-[10px] sm:text-[10.5px] font-mono text-[#FF9F0A]/85">
+                  ครบ {displayTurns} รอบ
+                </span>
+              </div>
+              <p
+                className="text-[11px] sm:text-[11.5px] text-white/60 font-normal leading-[16px] tracking-tight min-w-0 flex-1 truncate"
+                title={
+                  currentBeat?.pacing_control?.inevitable_consequence ||
+                  'เรื่องราวดำเนินสู่ขั้นถัดไปอัตโนมัติ'
+                }
+              >
+                <span className="text-white/30 mr-1 font-mono">➔</span>
+                {currentBeat?.pacing_control?.inevitable_consequence ||
+                  'เรื่องราวดำเนินสู่ขั้นถัดไปอัตโนมัติ'}
+              </p>
             </div>
-            <p
-              className={`text-[11px] sm:text-[11.5px] text-white/60 font-normal leading-[16px] tracking-tight min-w-0 flex-1 ${
-                isExpandedCard ? 'leading-relaxed' : 'truncate'
-              }`}
-              title={
-                currentBeat?.pacing_control?.inevitable_consequence ||
-                'เรื่องราวดำเนินสู่ขั้นถัดไปอัตโนมัติ'
-              }
-            >
-              <span className="text-white/30 mr-1 font-mono">➔</span>
-              {currentBeat?.pacing_control?.inevitable_consequence ||
-                'เรื่องราวดำเนินสู่ขั้นถัดไปอัตโนมัติ'}
-            </p>
-          </div>
+          ) : (
+            <div className="rounded-[12px] bg-white/[0.03] border border-white/[0.06] p-2.5 flex flex-col gap-1.5">
+              <div className="flex items-center gap-1.5 text-[#FF9F0A]">
+                <Clock size={11.5} strokeWidth={2.2} className="shrink-0" />
+                <span className="text-[11px] font-semibold text-white/80 tracking-tight">
+                  3. ถ้าผู้เล่นไม่ทำอะไร (คุยครบ {displayTurns} รอบ เรื่องจะเดินต่อเองว่า)
+                </span>
+              </div>
+              <p className="text-[11.5px] sm:text-[12px] text-white/75 font-normal leading-relaxed pl-1">
+                ➔ {currentBeat?.pacing_control?.inevitable_consequence || 'เรื่องราวดำเนินสู่ขั้นถัดไปอัตโนมัติ'}
+              </p>
+            </div>
+          )}
         </div>
       ) : (
         /* ===================================================================== */

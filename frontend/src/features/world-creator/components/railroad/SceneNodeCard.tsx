@@ -329,26 +329,15 @@ export default function SceneNodeCard({
             )}
           </div>
 
-          {/* Turn Quota Dot Badge */}
+          {/* Turn Quota Apple Watch Monochrome Capsule */}
           <div
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] shrink-0"
+            className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/10 shrink-0 select-none"
             title={`โควตาคุยเล่น: ${displayTurns} รอบ`}
           >
-            <span className="text-[11px] font-medium text-white/60">
-              โควตา: {displayTurns} รอบ
+            <Clock size={10} className="text-white/40" />
+            <span className="text-[10.5px] font-mono text-white/60">
+              {displayTurns} รอบ
             </span>
-            <div className="flex items-center gap-0.5">
-              {Array.from({ length: Math.min(5, displayTurns) }).map((_, dotIdx) => (
-                <div
-                  key={dotIdx}
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    dotIdx < 2
-                      ? 'bg-[#EF264C] shadow-[0_0_4px_rgba(239,38,76,0.6)]'
-                      : 'bg-white/30'
-                  }`}
-                />
-              ))}
-            </div>
           </div>
 
           {/* Edit / Save / Delete Buttons */}

@@ -111,7 +111,7 @@ const DEFAULT_SCENES: WorldScene[] = [
     scene_id: 'scene_2',
     title: 'ซอกถ้ำหินแกรนิตร้าง',
     location_key: 'ซอกถ้ำหินแกรนิตร้าง',
-    position: { x: 540, y: DEFAULT_SCENE_Y },
+    position: { x: 600, y: DEFAULT_SCENE_Y },
     next_scene_id: 'scene_3',
     scene_objective: "[ACTOR] ต้องการชำระล้างคราบโคลนและบรรเทาอาการร้อนรุ่มจากพิษพฤกษศาสตร์ที่ซึมเข้าผิวด้วย 'โอสถน้ำมังกร' ของ [PLAYER]",
     forced_chaos_level: 'medium',
@@ -183,7 +183,7 @@ const DEFAULT_SCENES: WorldScene[] = [
     scene_id: 'scene_3',
     title: 'เส้นทางป่าทึบขากลับ',
     location_key: 'เส้นทางป่าทึบขากลับ',
-    position: { x: 1000, y: DEFAULT_SCENE_Y },
+    position: { x: 1120, y: DEFAULT_SCENE_Y },
     scene_objective: '[ACTOR] ต้องบังคับให้ [PLAYER] ประคองช่วยดับพิษ โดยไม่ให้เพื่อนชมรมจับได้',
     forced_chaos_level: 'high',
     event_mood: 'สุ่มเสี่ยง ตื่นเต้น ป่าทึบ เปียกปอน ไร้ทางถอย',
@@ -351,9 +351,10 @@ export default function RailroadCanvas({
       if (boundScene) {
         const sceneIdx = scenes.findIndex((s) => s.scene_id === boundScene.scene_id);
         const sx = boundScene.position?.x ?? (80 + sceneIdx * SCENE_STEP_X);
+        const sy = boundScene.position?.y ?? DEFAULT_SCENE_Y;
         return {
-          x: sx + 50,
-          y: 135,
+          x: sx - 65,
+          y: sy - 62,
         };
       }
       // Unassigned locations parked in Row 1 to the right
@@ -365,7 +366,7 @@ export default function RailroadCanvas({
       }, 0);
       return {
         x: (scenes.length > 0 ? maxX + SCENE_WIDTH + 80 : 80) + Math.max(0, uIdx) * 200,
-        y: 135,
+        y: 158,
       };
     },
     [customLocationPositions, scenes, allLocationKeys]
@@ -387,9 +388,10 @@ export default function RailroadCanvas({
       }
       const sceneIdx = scenes.findIndex((s) => s.scene_id === sceneId);
       const sx = scenes[sceneIdx]?.position?.x ?? (80 + Math.max(0, sceneIdx) * SCENE_STEP_X);
+      const sy = scenes[sceneIdx]?.position?.y ?? DEFAULT_SCENE_Y;
       return {
-        x: sx + 130,
-        y: 25,
+        x: sx + 33,
+        y: sy - 168,
       };
     },
     [customDirectorPositions, scenes]

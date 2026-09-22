@@ -45,8 +45,8 @@ interface RailroadCableOverlayProps {
 }
 
 export const SCENE_WIDTH = 346;
-export const SCENE_STEP_X = 460;
-export const DEFAULT_SCENE_Y = 230;
+export const SCENE_STEP_X = 520;
+export const DEFAULT_SCENE_Y = 220;
 export const PORT_Y_OFFSET = 24;
 export const LOC_PORT_X_OFFSET = 36;
 export const DIRECTOR_PORT_X_OFFSET = 36;
@@ -360,8 +360,8 @@ export default function RailroadCableOverlay({
         const sceneY = scene.position?.y ?? DEFAULT_SCENE_Y;
 
         // Start from Location Pill bottom center port
-        const x1 = locPos ? locPos.x : sceneX + 50;
-        const y1 = locPos ? locPos.y + LOC_PILL_HEIGHT : 135 + LOC_PILL_HEIGHT;
+        const x1 = locPos ? locPos.x : sceneX - 65;
+        const y1 = locPos ? locPos.y + LOC_PILL_HEIGHT : DEFAULT_SCENE_Y - 28;
 
         // End at Scene Card top-left shoulder socket
         const x2 = sceneX + LOC_PORT_X_OFFSET;
@@ -462,8 +462,8 @@ export default function RailroadCableOverlay({
         const slatePos = directorPositions?.[scene.scene_id];
 
         // Start from Director Slate bottom center port
-        const x1 = slatePos ? slatePos.x + SLATE_WIDTH / 2 : sceneX + 130 + SLATE_WIDTH / 2;
-        const y1 = slatePos ? slatePos.y + SLATE_COMPACT_HEIGHT : 25 + SLATE_COMPACT_HEIGHT;
+        const x1 = slatePos ? slatePos.x + SLATE_WIDTH / 2 : sceneX + 33 + SLATE_WIDTH / 2;
+        const y1 = slatePos ? slatePos.y + SLATE_COMPACT_HEIGHT : DEFAULT_SCENE_Y - 28;
 
         // End at Scene Card top-right shoulder socket
         const x2 = sceneX + SCENE_WIDTH - DIRECTOR_PORT_X_OFFSET;

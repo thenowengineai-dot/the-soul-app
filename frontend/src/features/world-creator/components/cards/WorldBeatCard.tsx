@@ -478,7 +478,7 @@ export default function WorldBeatCard({
                 <button
                   type="button"
                   onClick={() => handleInsertBeatAfter(bIdx - 1)}
-                  className="w-4 h-4 rounded-full bg-white/[0.04] hover:bg-[#EF264C]/30 text-white/30 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                  className="w-4 h-4 rounded-full bg-white/[0.04] hover:bg-white/12 text-white/30 hover:text-white flex items-center justify-center transition-all cursor-pointer"
                   title={`แทรกบีตคั่นกลางระหว่างบีต ${bIdx} และ ${bIdx + 1}`}
                 >
                   <Plus size={9} strokeWidth={2.5} />
@@ -510,7 +510,6 @@ export default function WorldBeatCard({
                   </button>
                 )}
 
-                <span className="text-[#EF264C] text-[10px] font-mono">✦</span>
                 <span>บีต {bIdx + 1}</span>
 
                 {/* Move Right Arrow on Active Beat */}

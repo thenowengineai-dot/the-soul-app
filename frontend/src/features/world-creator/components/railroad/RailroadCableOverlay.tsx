@@ -28,6 +28,7 @@ export interface DraggingDirectorWireState {
 
 interface RailroadCableOverlayProps {
   scenes: WorldScene[];
+  genesisPosition?: { x: number; y: number };
   locationPositions?: Record<string, { x: number; y: number }>;
   directorPositions?: Record<string, { x: number; y: number }>;
   detachedDirectorSceneIds?: Set<string>;
@@ -153,6 +154,7 @@ export function computeSceneChainOrder(scenes: WorldScene[]): Map<string, number
 
 export default function RailroadCableOverlay({
   scenes,
+  genesisPosition,
   locationPositions,
   directorPositions,
   detachedDirectorSceneIds,
@@ -227,7 +229,58 @@ export default function RailroadCableOverlay({
         >
           <path d="M 1 2 L 6 5 L 1 8 z" fill="#FF9F0A" />
         </marker>
+
+        {/* Subtle gradient for Genesis ignition line: White/Starlight to Electric Rose */}
+        <linearGradient id="genesis-cable-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.85" />
+          <stop offset="100%" stopColor="#FF375F" stopOpacity="1" />
+        </linearGradient>
       </defs>
+
+      {/* =================================================================== */}
+      {/* 0. GENESIS IGNITION CABLE (FRAME 0 -> SCENE 1)                      */}
+      {/* =================================================================== */}
+      {(() => {
+        if (!genesisPosition || scenes.length === 0) return null;
+        // Find Scene 1 (the root scene with order 1 or first scene)
+        const sceneOrderMap = computeSceneChainOrder(scenes);
+        let rootScene = scenes.find((s) => sceneOrderMap.get(s.scene_id) === 1);
+        if (!rootScene) rootScene = scenes[0];
+        if (!rootScene) return null;
+
+        const x1 = genesisPosition.x + SCENE_WIDTH;
+        const y1 = genesisPosition.y + PORT_Y_OFFSET;
+
+        const rootIdx = scenes.findIndex((s) => s.scene_id === rootScene.scene_id);
+        const x2 = rootScene.position?.x ?? (80 + (rootIdx >= 0 ? rootIdx * SCENE_STEP_X : 0));
+        const y2 = (rootScene.position?.y ?? DEFAULT_SCENE_Y) + PORT_Y_OFFSET;
+
+        const dx = Math.abs(x2 - x1);
+        const curvature = Math.max(dx * 0.45, 40);
+        const pathData = `M ${x1} ${y1} C ${x1 + curvature} ${y1}, ${x2 - curvature} ${y2}, ${x2} ${y2}`;
+
+        return (
+          <g key="genesis-ignition-cable" className="group/genesis-cable">
+            {/* Ambient Halo */}
+            <path
+              d={pathData}
+              fill="none"
+              stroke="#FF375F"
+              strokeOpacity="0.10"
+              strokeWidth="3.5"
+            />
+            {/* Primary Gradient Ignition Line */}
+            <path
+              d={pathData}
+              fill="none"
+              stroke="url(#genesis-cable-grad)"
+              strokeWidth="1.6"
+              markerEnd="url(#cable-arrow)"
+              className="transition-all group-hover/genesis-cable:stroke-width-[2px]"
+            />
+          </g>
+        );
+      })()}
 
       {/* =================================================================== */}
       {/* 1. EXISTING CONNECTED ELECTRIC ROSE STORY CABLES                    */}

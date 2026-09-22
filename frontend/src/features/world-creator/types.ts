@@ -190,6 +190,9 @@ export interface WorldStartingState {
   initial_a_pos: string;
   initial_p_pos: string;
   initial_outfit_key: string;
+  first_spark?: string;
+  psychological_tension?: string;
+  position?: { x: number; y: number };
 }
 
 export interface WorldLocationSensoryCues {

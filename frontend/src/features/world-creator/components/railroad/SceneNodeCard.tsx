@@ -200,7 +200,7 @@ export default function SceneNodeCard({
 
   return (
     <div
-      className={`absolute w-[346px] rounded-[24px] bg-[#141419]/95 backdrop-blur-2xl border p-4 flex flex-col justify-between transition-all select-none group/node ${
+      className={`absolute w-[346px] rounded-[24px] bg-[#18181F]/95 backdrop-blur-2xl border p-4 flex flex-col justify-between transition-all select-none group/node ${
         isDropTarget
           ? 'border-[#EF264C] ring-2 ring-[#EF264C]/40 shadow-[0_8px_32px_rgba(239,38,76,0.3)] z-30'
           : isLocationDropTarget

@@ -894,14 +894,9 @@ export default function RailroadCanvas({
       ref={containerRef}
       onMouseDown={handleMouseDownCanvas}
       onWheel={handleWheel}
-      className={`relative w-full h-full min-h-[640px] flex-1 overflow-hidden select-none cursor-grab active:cursor-grabbing bg-[#0B0B0E] ${
+      className={`relative w-full h-full min-h-[640px] flex-1 overflow-hidden select-none cursor-grab active:cursor-grabbing bg-transparent ${
         isPanning ? 'cursor-grabbing' : ''
       }`}
-      style={{
-        backgroundImage: 'radial-gradient(circle, rgba(255, 255, 255, 0.12) 1px, transparent 1px)',
-        backgroundSize: `${24 * zoom}px ${24 * zoom}px`,
-        backgroundPosition: `${pan.x}px ${pan.y}px`,
-      }}
     >
       {/* ✦ 1. WORLD CANVAS TRANSFORM CONTAINER (SCALED & PANNED) */}
       <div

@@ -205,15 +205,13 @@ export default function SceneNodeCard({
           ? 'border-[#EF264C] ring-2 ring-[#EF264C]/40 shadow-[0_8px_32px_rgba(239,38,76,0.3),inset_0_1px_0_rgba(255,255,255,0.12)] z-30'
           : isLocationDropTarget
           ? 'border-[#528A7A] ring-2 ring-[#528A7A]/40 shadow-[0_8px_32px_rgba(82,138,122,0.25),inset_0_1px_0_rgba(255,255,255,0.12)] z-30'
-          : 'border-white/[0.10] hover:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.12)]'
+          : 'border-white/[0.10] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]'
       } ${isExpandedCard || isEditing ? 'min-h-[346px] h-auto pb-6 z-20' : 'h-[346px]'}`}
       style={{
         left: `${scene.position?.x ?? 80 + index * SCENE_STEP_X}px`,
         top: `${scene.position?.y ?? 170}px`,
       }}
     >
-      {/* ✦ AMBIENT CORNER GLOW */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-[#EF264C]/[0.05] rounded-full blur-2xl pointer-events-none" />
 
       {/* ✦ TOP LOCATION CONNECTOR SOCKET (DOT-TO-DOT PRECISION RECEPTACLE) */}
       <div

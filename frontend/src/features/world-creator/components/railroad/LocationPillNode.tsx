@@ -29,7 +29,7 @@ export default function LocationPillNode({
       }}
       className={`absolute h-[34px] rounded-full px-3.5 -translate-x-1/2 flex items-center gap-2 select-none z-20 cursor-grab active:cursor-grabbing backdrop-blur-2xl transition-all duration-200 group/pill ${
         isDraggingWire
-          ? 'bg-white/[0.12] border border-[#528A7A] ring-2 ring-[#528A7A]/30 shadow-[0_4px_20px_rgba(0,0,0,0.6)]'
+          ? 'bg-white/[0.12] border border-[#528A7A] ring-2 ring-[#528A7A]/30 shadow-[0_4px_20px_rgba(82,138,122,0.35),inset_0_1px_0_rgba(255,255,255,0.12)]'
           : 'bg-white/[0.06] hover:bg-white/[0.10] border border-white/[0.10] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]'
       }`}
       style={{

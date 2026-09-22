@@ -48,16 +48,16 @@ export default function LocationPillNode({
         {locationKey}
       </span>
 
-      {/* ✦ 3. BOTTOM PRECISION SOCKET (DOT-TO-DOT RECEPTACLE) */}
+      {/* ✦ 3. BOTTOM PRECISION SOCKET (PRECISION MICRO-JEWEL) */}
       <div
         onMouseDown={(e) => {
           e.stopPropagation();
           if (isEditable) onStartDragWire(e, locationKey);
         }}
-        className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-[14px] h-[14px] rounded-full bg-[#121216] border border-[#30D158]/80 hover:border-white hover:scale-125 transition-all z-30 flex items-center justify-center cursor-crosshair shadow-[0_0_6px_rgba(48,209,88,0.35)] group/locport"
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-[11px] h-[11px] rounded-full bg-[#121216] border border-white/25 hover:border-[#30D158] hover:scale-125 transition-all z-30 flex items-center justify-center cursor-crosshair group/locport"
         title="พอร์ตสถานที่: คลิกลากสายเพื่อเชื่อมต่อกับฉาก (Drag to connect)"
       >
-        <div className="w-1.5 h-1.5 rounded-full bg-[#30D158] group-hover/locport:bg-white group-hover/locport:scale-110 transition-all" />
+        <div className="w-1 h-1 rounded-full bg-[#30D158] group-hover/locport:scale-125 transition-transform" />
       </div>
     </div>
   );

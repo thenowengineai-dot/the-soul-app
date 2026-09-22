@@ -213,7 +213,7 @@ export default function SceneNodeCard({
       }}
     >
 
-      {/* ✦ TOP LOCATION CONNECTOR SOCKET (DOT-TO-DOT PRECISION RECEPTACLE) */}
+      {/* ✦ TOP LOCATION CONNECTOR SOCKET (PRECISION MICRO-JEWEL) */}
       <div
         onClick={(e) => {
           if (scene.location_key && isEditable && onDetachLocation) {
@@ -221,12 +221,12 @@ export default function SceneNodeCard({
             onDetachLocation(scene.scene_id);
           }
         }}
-        className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[16px] h-[16px] rounded-full bg-[#141419] transition-all z-30 flex items-center justify-center select-none ${
+        className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[11px] h-[11px] rounded-full bg-[#141419] transition-all z-30 flex items-center justify-center select-none ${
           isLocationDropTarget
-            ? 'scale-150 border-2 border-[#30D158] ring-4 ring-[#30D158]/35 bg-[#30D158]/30 shadow-[0_0_12px_rgba(48,209,88,0.5)]'
+            ? 'scale-150 border border-[#30D158] ring-2 ring-[#30D158]/35 bg-[#30D158]/30'
             : scene.location_key
-            ? 'border border-[#30D158]/85 hover:border-[#FF375F]/90 hover:scale-125 cursor-pointer shadow-[0_0_6px_rgba(48,209,88,0.4)] group/locsock'
-            : 'border border-dashed border-white/25 hover:border-white/50 hover:scale-110 cursor-default'
+            ? 'border border-white/20 hover:border-[#30D158] hover:scale-125 cursor-pointer group/locsock'
+            : 'border border-dashed border-white/20 hover:border-white/40 cursor-default'
         }`}
         title={
           scene.location_key
@@ -237,15 +237,15 @@ export default function SceneNodeCard({
         <div
           className={`rounded-full transition-all ${
             isLocationDropTarget
-              ? 'w-2 h-2 bg-white'
+              ? 'w-1.5 h-1.5 bg-white'
               : scene.location_key
-              ? 'w-1.5 h-1.5 bg-[#30D158] group-hover/locsock:bg-[#FF375F] shadow-[0_0_4px_rgba(48,209,88,0.6)]'
-              : 'w-1 h-1 bg-white/20'
+              ? 'w-1 h-1 bg-[#30D158] group-hover/locsock:bg-[#FF375F]'
+              : 'w-0.5 h-0.5 bg-white/30'
           }`}
         />
       </div>
 
-      {/* ✦ RAIL CONNECTOR PORTS (BLENDER NODE STYLE) */}
+      {/* ✦ RAIL CONNECTOR PORTS (PRECISION MICRO-JEWEL) */}
       {/* Input Port (Left) */}
       <div
         onMouseDown={(e) => {
@@ -253,12 +253,12 @@ export default function SceneNodeCard({
             onStartDetachIncoming(e, scene.scene_id);
           }
         }}
-        className={`absolute -left-[8px] top-[24px] -translate-y-1/2 w-[16px] h-[16px] rounded-full bg-[#141419] border transition-all z-30 flex items-center justify-center ${
+        className={`absolute -left-[5.5px] top-[24px] -translate-y-1/2 w-[11px] h-[11px] rounded-full bg-[#141419] border transition-all z-30 flex items-center justify-center ${
           isDropTarget
-            ? 'scale-150 border-[#FF375F] ring-4 ring-[#FF375F]/40 bg-[#FF375F]/25'
+            ? 'scale-150 border-[#FF375F] ring-2 ring-[#FF375F]/40 bg-[#FF375F]/25'
             : hasIncomingCable
-            ? 'border-[#FF375F]/80 cursor-grab active:cursor-grabbing hover:scale-125'
-            : 'border-white/30'
+            ? 'border-white/20 hover:border-[#FF375F] cursor-grab active:cursor-grabbing hover:scale-125'
+            : 'border-white/20'
         }`}
         title={
           hasIncomingCable
@@ -269,10 +269,10 @@ export default function SceneNodeCard({
         <div
           className={`rounded-full transition-all ${
             isDropTarget
-              ? 'w-2 h-2 bg-white'
+              ? 'w-1.5 h-1.5 bg-white'
               : hasIncomingCable
-              ? 'w-1.5 h-1.5 bg-[#FF375F] shadow-[0_0_6px_rgba(255,55,95,0.6)]'
-              : 'w-1 h-1 bg-white/40'
+              ? 'w-1 h-1 bg-[#FF375F]'
+              : 'w-0.5 h-0.5 bg-white/30'
           }`}
         />
       </div>
@@ -284,14 +284,14 @@ export default function SceneNodeCard({
             onStartDragWire(e, scene.scene_id);
           }
         }}
-        className="absolute -right-[8px] top-[24px] -translate-y-1/2 w-[16px] h-[16px] rounded-full bg-[#141419] border border-[#FF375F]/90 hover:border-white hover:scale-125 transition-all z-30 flex items-center justify-center cursor-crosshair group/port shadow-[0_0_8px_rgba(255,55,95,0.4)]"
+        className="absolute -right-[5.5px] top-[24px] -translate-y-1/2 w-[11px] h-[11px] rounded-full bg-[#141419] border border-white/25 hover:border-[#FF375F] hover:scale-125 transition-all z-30 flex items-center justify-center cursor-crosshair group/port"
         title={
           hasOutgoingCable
             ? 'พอร์ตส่งสัญญาณ: คลิกลากเพื่อเปลี่ยนเส้นเชื่อมต่อไปยังฉากอื่น (Drag to Reconnect)'
             : 'พอร์ตส่งสัญญาณ: คลิกลากเส้นเชื่อมต่อไปยังฉากอื่น (Drag to Connect)'
         }
       >
-        <div className="w-1.5 h-1.5 rounded-full bg-[#FF375F] group-hover/port:scale-125 transition-transform" />
+        <div className="w-1 h-1 rounded-full bg-[#FF375F] group-hover/port:scale-125 transition-transform" />
       </div>
 
       {/* ===================================================================== */}

@@ -1,4 +1,4 @@
-import { Plus, Scissors, MapPin } from 'lucide-react';
+import { Plus, Scissors } from 'lucide-react';
 import type { WorldScene } from '../../types';
 
 export interface DraggingWireState {
@@ -261,12 +261,12 @@ export default function RailroadCableOverlay({
                 className="overflow-visible pointer-events-auto"
               >
                 <div className="w-full h-full flex items-center justify-center">
-                  {/* RESTING STATE: Subtle Apple Frosted Micro-Node (เล็กๆ ไม่กวนสายตา) */}
+                  {/* RESTING STATE: Subtle Apple Frosted Micro-Node */}
                   <div
-                    className="group-hover/cable:hidden flex items-center justify-center w-[18px] h-[18px] rounded-full bg-[#181822]/90 border border-white/15 shadow-sm backdrop-blur-md text-white/50 hover:text-white transition-all cursor-pointer"
+                    className="group-hover/cable:hidden flex items-center justify-center w-[12px] h-[12px] rounded-full bg-[#181822] border border-white/20 shadow-sm text-white/50 hover:scale-125 transition-all cursor-pointer"
                     title="ชี้เพื่อตัดเส้นหรือแทรกฉาก"
                   >
-                    <Plus size={9} strokeWidth={2.4} />
+                    <div className="w-[3px] h-[3px] rounded-full bg-[#FF375F]" />
                   </div>
 
                   {/* HOVER / ACTIVE STATE: Expanded Full Action Dock (✂ ตัดเส้น | + แทรก) */}
@@ -381,10 +381,10 @@ export default function RailroadCableOverlay({
                 <div className="w-full h-full flex items-center justify-center">
                   {/* RESTING STATE: Subtle Apple Frosted Mint Micro-Node */}
                   <div
-                    className="group-hover/loccable:hidden flex items-center justify-center w-[18px] h-[18px] rounded-full bg-[#14141E]/90 border border-[#30D158]/30 shadow-sm backdrop-blur-md text-[#30D158]/80 hover:text-white transition-all cursor-pointer"
+                    className="group-hover/loccable:hidden flex items-center justify-center w-[12px] h-[12px] rounded-full bg-[#14141E] border border-white/20 shadow-sm text-white/50 hover:scale-125 transition-all cursor-pointer"
                     title="ชี้เพื่อตัดการเชื่อมต่อสถานที่"
                   >
-                    <MapPin size={9} strokeWidth={2.4} />
+                    <div className="w-[3px] h-[3px] rounded-full bg-[#30D158]" />
                   </div>
 
                   {/* HOVER / ACTIVE STATE: Expanded Cut Button */}

@@ -14,7 +14,7 @@ import {
   X,
 } from 'lucide-react';
 import type { WorldScene, WorldBeat, WorldLocationsMap, PlayerTriggerAction } from '../../types';
-import { getCleanSceneTitle, SCENE_STEP_X } from './RailroadCableOverlay';
+import { getCleanSceneTitle, SCENE_STEP_X, DEFAULT_SCENE_Y } from './RailroadCableOverlay';
 
 interface SceneNodeCardProps {
   scene: WorldScene;
@@ -238,7 +238,7 @@ export default function SceneNodeCard({
       } ${isExpandedCard ? 'min-h-[346px] h-auto pb-9 z-20' : isEditing ? 'min-h-[346px] h-auto pb-6 z-20' : 'h-[346px] pb-9 sm:pb-9'}`}
       style={{
         left: `${scene.position?.x ?? 80 + index * SCENE_STEP_X}px`,
-        top: `${scene.position?.y ?? 170}px`,
+        top: `${scene.position?.y ?? DEFAULT_SCENE_Y}px`,
       }}
     >
 

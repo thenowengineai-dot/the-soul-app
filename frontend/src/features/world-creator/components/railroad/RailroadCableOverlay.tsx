@@ -46,6 +46,7 @@ interface RailroadCableOverlayProps {
 
 export const SCENE_WIDTH = 346;
 export const SCENE_STEP_X = 460;
+export const DEFAULT_SCENE_Y = 230;
 export const PORT_Y_OFFSET = 24;
 export const LOC_PORT_X_OFFSET = 36;
 export const DIRECTOR_PORT_X_OFFSET = 36;
@@ -240,12 +241,12 @@ export default function RailroadCableOverlay({
 
         // Start from source scene output socket (Right)
         const x1 = (scene.position?.x ?? 80 + idx * SCENE_STEP_X) + SCENE_WIDTH;
-        const y1 = (scene.position?.y ?? 170) + PORT_Y_OFFSET;
+        const y1 = (scene.position?.y ?? DEFAULT_SCENE_Y) + PORT_Y_OFFSET;
 
         // End at target scene input socket (Left)
         const targetIdx = scenes.findIndex((s) => s.scene_id === targetScene.scene_id);
         const x2 = targetScene.position?.x ?? 80 + (targetIdx >= 0 ? targetIdx * SCENE_STEP_X : 0);
-        const y2 = (targetScene.position?.y ?? 170) + PORT_Y_OFFSET;
+        const y2 = (targetScene.position?.y ?? DEFAULT_SCENE_Y) + PORT_Y_OFFSET;
 
         // Bezier Curvature Calculation
         const dx = Math.abs(x2 - x1);
@@ -356,11 +357,11 @@ export default function RailroadCableOverlay({
 
         const locPos = locationPositions?.[scene.location_key];
         const sceneX = scene.position?.x ?? 80 + idx * SCENE_STEP_X;
-        const sceneY = scene.position?.y ?? 170;
+        const sceneY = scene.position?.y ?? DEFAULT_SCENE_Y;
 
         // Start from Location Pill bottom center port
-        const x1 = locPos ? locPos.x : sceneX + SCENE_WIDTH / 2;
-        const y1 = locPos ? locPos.y + LOC_PILL_HEIGHT : 40 + LOC_PILL_HEIGHT;
+        const x1 = locPos ? locPos.x : sceneX + 50;
+        const y1 = locPos ? locPos.y + LOC_PILL_HEIGHT : 135 + LOC_PILL_HEIGHT;
 
         // End at Scene Card top-left shoulder socket
         const x2 = sceneX + LOC_PORT_X_OFFSET;
@@ -457,11 +458,11 @@ export default function RailroadCableOverlay({
         if (detachedDirectorSceneIds?.has(scene.scene_id)) return null;
 
         const sceneX = scene.position?.x ?? 80 + idx * SCENE_STEP_X;
-        const sceneY = scene.position?.y ?? 170;
+        const sceneY = scene.position?.y ?? DEFAULT_SCENE_Y;
         const slatePos = directorPositions?.[scene.scene_id];
 
         // Start from Director Slate bottom center port
-        const x1 = slatePos ? slatePos.x + SLATE_WIDTH / 2 : sceneX + 180 + SLATE_WIDTH / 2;
+        const x1 = slatePos ? slatePos.x + SLATE_WIDTH / 2 : sceneX + 130 + SLATE_WIDTH / 2;
         const y1 = slatePos ? slatePos.y + SLATE_COMPACT_HEIGHT : 25 + SLATE_COMPACT_HEIGHT;
 
         // End at Scene Card top-right shoulder socket
@@ -565,7 +566,7 @@ export default function RailroadCableOverlay({
               ? (snappedTargetScene.position?.x ?? 80)
               : draggingWire.currentX;
             const y2 = snappedTargetScene
-              ? (snappedTargetScene.position?.y ?? 170) + PORT_Y_OFFSET
+              ? (snappedTargetScene.position?.y ?? DEFAULT_SCENE_Y) + PORT_Y_OFFSET
               : draggingWire.currentY;
 
             const dx = Math.abs(x2 - x1);
@@ -622,7 +623,7 @@ export default function RailroadCableOverlay({
               ? (snappedTargetSceneForLoc.position?.x ?? 80) + LOC_PORT_X_OFFSET
               : draggingLocationWire.currentX;
             const y2 = snappedTargetSceneForLoc
-              ? (snappedTargetSceneForLoc.position?.y ?? 170)
+              ? (snappedTargetSceneForLoc.position?.y ?? DEFAULT_SCENE_Y)
               : draggingLocationWire.currentY;
 
             const dy = Math.abs(y2 - y1);
@@ -679,7 +680,7 @@ export default function RailroadCableOverlay({
               ? (snappedTargetSceneForDir.position?.x ?? 80) + SCENE_WIDTH - DIRECTOR_PORT_X_OFFSET
               : draggingDirectorWire.currentX;
             const y2 = snappedTargetSceneForDir
-              ? (snappedTargetSceneForDir.position?.y ?? 170)
+              ? (snappedTargetSceneForDir.position?.y ?? DEFAULT_SCENE_Y)
               : draggingDirectorWire.currentY;
 
             const dy = Math.abs(y2 - y1);

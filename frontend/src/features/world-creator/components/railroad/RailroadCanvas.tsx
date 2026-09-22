@@ -23,6 +23,7 @@ import RailroadCableOverlay, {
   computeSceneChainOrder,
   SCENE_WIDTH,
   SCENE_STEP_X,
+  DEFAULT_SCENE_Y,
   PORT_Y_OFFSET,
 } from './RailroadCableOverlay';
 
@@ -38,7 +39,7 @@ const DEFAULT_SCENES: WorldScene[] = [
     scene_id: 'scene_1',
     title: 'ห้องโถงเสื่อทาทามิเรียวกัง',
     location_key: 'ห้องโถงเสื่อทาทามิเรียวกัง',
-    position: { x: 80, y: 170 },
+    position: { x: 80, y: DEFAULT_SCENE_Y },
     next_scene_id: 'scene_2',
     scene_objective: "พา [PLAYER] เดินทางขึ้นเขาไปเก็บสมุนไพร 'เฟิร์นหมอกอัคคี' และหลบเข้าซอกถ้ำร้าง",
     forced_chaos_level: 'low',
@@ -110,7 +111,7 @@ const DEFAULT_SCENES: WorldScene[] = [
     scene_id: 'scene_2',
     title: 'ซอกถ้ำหินแกรนิตร้าง',
     location_key: 'ซอกถ้ำหินแกรนิตร้าง',
-    position: { x: 540, y: 170 },
+    position: { x: 540, y: DEFAULT_SCENE_Y },
     next_scene_id: 'scene_3',
     scene_objective: "[ACTOR] ต้องการชำระล้างคราบโคลนและบรรเทาอาการร้อนรุ่มจากพิษพฤกษศาสตร์ที่ซึมเข้าผิวด้วย 'โอสถน้ำมังกร' ของ [PLAYER]",
     forced_chaos_level: 'medium',
@@ -182,7 +183,7 @@ const DEFAULT_SCENES: WorldScene[] = [
     scene_id: 'scene_3',
     title: 'เส้นทางป่าทึบขากลับ',
     location_key: 'เส้นทางป่าทึบขากลับ',
-    position: { x: 1000, y: 170 },
+    position: { x: 1000, y: DEFAULT_SCENE_Y },
     scene_objective: '[ACTOR] ต้องบังคับให้ [PLAYER] ประคองช่วยดับพิษ โดยไม่ให้เพื่อนชมรมจับได้',
     forced_chaos_level: 'high',
     event_mood: 'สุ่มเสี่ยง ตื่นเต้น ป่าทึบ เปียกปอน ไร้ทางถอย',
@@ -351,8 +352,8 @@ export default function RailroadCanvas({
         const sceneIdx = scenes.findIndex((s) => s.scene_id === boundScene.scene_id);
         const sx = boundScene.position?.x ?? (80 + sceneIdx * SCENE_STEP_X);
         return {
-          x: sx + 36,
-          y: 40,
+          x: sx + 50,
+          y: 135,
         };
       }
       // Unassigned locations parked in Row 1 to the right
@@ -364,7 +365,7 @@ export default function RailroadCanvas({
       }, 0);
       return {
         x: (scenes.length > 0 ? maxX + SCENE_WIDTH + 80 : 80) + Math.max(0, uIdx) * 200,
-        y: 40,
+        y: 135,
       };
     },
     [customLocationPositions, scenes, allLocationKeys]
@@ -387,8 +388,8 @@ export default function RailroadCanvas({
       const sceneIdx = scenes.findIndex((s) => s.scene_id === sceneId);
       const sx = scenes[sceneIdx]?.position?.x ?? (80 + Math.max(0, sceneIdx) * SCENE_STEP_X);
       return {
-        x: sx + 66,
-        y: 20,
+        x: sx + 130,
+        y: 25,
       };
     },
     [customDirectorPositions, scenes]
@@ -460,7 +461,7 @@ export default function RailroadCanvas({
       mouseX: e.clientX,
       mouseY: e.clientY,
       nodeX: targetScene.position?.x ?? 80,
-      nodeY: targetScene.position?.y ?? 170,
+      nodeY: targetScene.position?.y ?? DEFAULT_SCENE_Y,
     };
   };
 
@@ -472,7 +473,7 @@ export default function RailroadCanvas({
 
     const sourceIdx = scenes.findIndex((s) => s.scene_id === fromSceneId);
     const startX = (sourceScene.position?.x ?? 80 + sourceIdx * SCENE_STEP_X) + SCENE_WIDTH;
-    const startY = (sourceScene.position?.y ?? 170) + PORT_Y_OFFSET;
+    const startY = (sourceScene.position?.y ?? DEFAULT_SCENE_Y) + PORT_Y_OFFSET;
     const coords = getCanvasCoords(e.clientX, e.clientY);
 
     setDraggingWire({
@@ -495,7 +496,7 @@ export default function RailroadCanvas({
 
     const sourceIdx = scenes.findIndex((s) => s.scene_id === sourceScene.scene_id);
     const startX = (sourceScene.position?.x ?? 80 + sourceIdx * SCENE_STEP_X) + SCENE_WIDTH;
-    const startY = (sourceScene.position?.y ?? 170) + PORT_Y_OFFSET;
+    const startY = (sourceScene.position?.y ?? DEFAULT_SCENE_Y) + PORT_Y_OFFSET;
     const coords = getCanvasCoords(e.clientX, e.clientY);
 
     setDraggingWire({
@@ -752,7 +753,7 @@ export default function RailroadCanvas({
         for (const s of scenes) {
           if (s.scene_id === draggingWire.fromSceneId) continue;
           const sx = s.position?.x ?? 80;
-          const sy = s.position?.y ?? 170;
+          const sy = s.position?.y ?? DEFAULT_SCENE_Y;
           if (
             coords.x >= sx - 30 &&
             coords.x <= sx + SCENE_WIDTH + 30 &&
@@ -772,7 +773,7 @@ export default function RailroadCanvas({
         let targetLocSceneId: string | null = null;
         for (const s of scenes) {
           const sx = s.position?.x ?? 80;
-          const sy = s.position?.y ?? 170;
+          const sy = s.position?.y ?? DEFAULT_SCENE_Y;
           if (
             coords.x >= sx - 40 &&
             coords.x <= sx + SCENE_WIDTH + 40 &&
@@ -802,7 +803,7 @@ export default function RailroadCanvas({
         let targetDirSceneId: string | null = null;
         for (const s of scenes) {
           const sx = s.position?.x ?? 80;
-          const sy = s.position?.y ?? 170;
+          const sy = s.position?.y ?? DEFAULT_SCENE_Y;
           if (
             coords.x >= sx - 40 &&
             coords.x <= sx + SCENE_WIDTH + 40 &&
@@ -910,7 +911,7 @@ export default function RailroadCanvas({
   const handleAddSceneEnd = () => {
     const lastScene = scenes[scenes.length - 1];
     const newX = lastScene?.position?.x ? lastScene.position.x + SCENE_STEP_X : 80;
-    const newY = lastScene?.position?.y ? lastScene.position.y : 170;
+    const newY = lastScene?.position?.y ? lastScene.position.y : DEFAULT_SCENE_Y;
 
     const newScene: WorldScene = {
       scene_id: `scene_${Date.now()}`,
@@ -954,8 +955,9 @@ export default function RailroadCanvas({
   const handleAutoAlignScenes = useCallback(() => {
     if (scenes.length === 0) return;
 
-    // Reset any custom dragged location positions so they snap back directly above scenes
+    // Reset any custom dragged location and director positions so they snap back directly into golden ratio layout
     setCustomLocationPositions({});
+    setCustomDirectorPositions({});
 
     // 1. Calculate dynamic narrative chain order (1, 2, 3...)
     const sceneOrderMap = computeSceneChainOrder(scenes);
@@ -969,7 +971,7 @@ export default function RailroadCanvas({
         ...scene,
         position: {
           x: 80 + idx * SCENE_STEP_X,
-          y: 170,
+          y: DEFAULT_SCENE_Y,
         },
       }));
     } else {
@@ -983,7 +985,7 @@ export default function RailroadCanvas({
             ...scene,
             position: {
               x: 80 + (order - 1) * SCENE_STEP_X,
-              y: 170,
+              y: DEFAULT_SCENE_Y,
             },
           };
         }
@@ -992,7 +994,7 @@ export default function RailroadCanvas({
           ...scene,
           position: {
             x: 80 + (uIdx >= 0 ? uIdx : 0) * SCENE_STEP_X,
-            y: 560,
+            y: 640,
           },
         };
       });
@@ -1021,7 +1023,7 @@ export default function RailroadCanvas({
     const posY =
       sceneA?.position && sceneB?.position
         ? Math.round((sceneA.position.y + sceneB.position.y) / 2)
-        : 170;
+        : DEFAULT_SCENE_Y;
 
     const newSceneId = `scene_mid_${Date.now()}`;
     const insertedScene: WorldScene = {

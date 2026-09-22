@@ -194,8 +194,29 @@ export default function SceneNodeCard({
   const displayTurns = currentBeat?.pacing_control?.max_turns || 3;
 
   const cleanTitle = getCleanSceneTitle(scene.title);
-  const displayTitle = sceneOrder
-    ? `ฉากที่ ${sceneOrder}: ${cleanTitle || 'สถานการณ์'}`
+  const rawLocation = scene.location_key ? scene.location_key.trim() : '';
+  const isRedundantWithLocation =
+    Boolean(
+      rawLocation &&
+        cleanTitle &&
+        (cleanTitle.toLowerCase() === rawLocation.toLowerCase() ||
+          cleanTitle.includes(rawLocation) ||
+          rawLocation.includes(cleanTitle))
+    ) ||
+    cleanTitle === 'สถานการณ์' ||
+    cleanTitle === 'ฉาก' ||
+    cleanTitle === 'ฉากใหม่' ||
+    cleanTitle === 'ฉากอิสระ' ||
+    cleanTitle === '';
+
+  const customPremise = !isRedundantWithLocation ? cleanTitle : null;
+
+  const fullTitleTooltip = sceneOrder
+    ? customPremise
+      ? `ฉากที่ ${sceneOrder} · ${customPremise}`
+      : `ฉากที่ ${sceneOrder}`
+    : customPremise
+    ? `ฉากอิสระ · ${customPremise}`
     : cleanTitle || 'ฉากอิสระ';
 
   return (
@@ -305,25 +326,34 @@ export default function SceneNodeCard({
           }}
           className="flex items-center justify-between gap-1.5 cursor-grab active:cursor-grabbing"
         >
-          {/* Scene Title (Matches WorldBeatCard exactly) */}
-          <div className="min-w-0 flex-1 flex items-center gap-1.5">
+          {/* Scene Title (Smart Deduplication & Large Apple Typography) */}
+          <div className="min-w-0 flex-1 flex items-center gap-1">
             <span
-              className="truncate block font-medium text-[12px] sm:text-[12.5px] text-white/80"
-              title={displayTitle}
+              className="font-semibold text-[15px] sm:text-[16px] text-white tracking-tight shrink-0"
+              title={fullTitleTooltip}
             >
-              {displayTitle}
+              {sceneOrder ? `ฉากที่ ${sceneOrder}` : 'ฉากอิสระ'}
             </span>
+
+            {customPremise && (
+              <span
+                className="text-[12px] sm:text-[12.5px] text-white/45 font-normal truncate"
+                title={customPremise}
+              >
+                · {customPremise}
+              </span>
+            )}
 
             {/* Free Unlinked Node Badge (When unlinked from chain) */}
             {!sceneOrder && (
-              <span className="px-1.5 py-0.2 rounded-full bg-white/[0.04] border border-white/10 text-[9px] font-mono text-white/40 shrink-0">
+              <span className="px-1.5 py-0.2 rounded-full bg-white/[0.04] border border-white/10 text-[9px] font-mono text-white/40 shrink-0 ml-0.5">
                 อิสระ
               </span>
             )}
 
             {/* Target Drop Hover Badge */}
             {isDropTarget && (
-              <span className="px-2 py-0.2 rounded-full bg-[#FF375F]/20 border border-[#FF375F]/40 text-[9.5px] font-medium text-[#FF375F] shrink-0 animate-pulse">
+              <span className="px-2 py-0.2 rounded-full bg-[#FF375F]/20 border border-[#FF375F]/40 text-[9.5px] font-medium text-[#FF375F] shrink-0 animate-pulse ml-0.5">
                 ✦ ปล่อยเพื่อเชื่อม
               </span>
             )}

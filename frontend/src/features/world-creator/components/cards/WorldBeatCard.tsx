@@ -124,8 +124,29 @@ export default function WorldBeatCard({
   const sceneOrderMap = useMemo(() => computeSceneChainOrder(scenes), [scenes]);
   const currentOrder = sceneOrderMap.get(currentScene?.scene_id) ?? null;
   const currentCleanTitle = getCleanSceneTitle(currentScene?.title);
-  const currentDisplayTitle = currentOrder
-    ? `ฉากที่ ${currentOrder}: ${currentCleanTitle || 'สถานการณ์'}`
+  const currentRawLocation = currentScene?.location_key ? currentScene.location_key.trim() : '';
+  const isRedundantWithLocation =
+    Boolean(
+      currentRawLocation &&
+        currentCleanTitle &&
+        (currentCleanTitle.toLowerCase() === currentRawLocation.toLowerCase() ||
+          currentCleanTitle.includes(currentRawLocation) ||
+          currentRawLocation.includes(currentCleanTitle))
+    ) ||
+    currentCleanTitle === 'สถานการณ์' ||
+    currentCleanTitle === 'ฉาก' ||
+    currentCleanTitle === 'ฉากใหม่' ||
+    currentCleanTitle === 'ฉากอิสระ' ||
+    currentCleanTitle === '';
+
+  const currentPremise = !isRedundantWithLocation ? currentCleanTitle : null;
+
+  const currentFullTitleTooltip = currentOrder
+    ? currentPremise
+      ? `ฉากที่ ${currentOrder} · ${currentPremise}`
+      : `ฉากที่ ${currentOrder}`
+    : currentPremise
+    ? `ฉากอิสระ · ${currentPremise}`
     : currentCleanTitle || 'ฉากอิสระ';
 
   const beats = currentScene?.beats || [];
@@ -366,26 +387,51 @@ export default function WorldBeatCard({
             <button
               type="button"
               onClick={() => setIsSelectingScene(!isSelectingScene)}
-              className="text-left flex items-center gap-1.5 text-[12px] sm:text-[12.5px] text-white/60 hover:text-white transition-colors truncate cursor-pointer group/scn"
+              className="text-left flex items-center gap-1 text-white/80 hover:text-white transition-colors truncate cursor-pointer group/scn max-w-full"
+              title={currentFullTitleTooltip}
             >
-              <span className="truncate max-w-[130px] font-medium text-white/80 group-hover/scn:text-white">
-                {currentDisplayTitle}
+              <span className="font-semibold text-[15px] sm:text-[16px] text-white tracking-tight shrink-0 group-hover/scn:text-white">
+                {currentOrder ? `ฉากที่ ${currentOrder}` : 'ฉากอิสระ'}
               </span>
-              <ChevronDown size={12} className="text-white/40 shrink-0" />
+              {currentPremise && (
+                <span className="text-[12px] sm:text-[12.5px] text-white/45 font-normal truncate">
+                  · {currentPremise}
+                </span>
+              )}
+              <ChevronDown size={12} className="text-white/40 shrink-0 ml-0.5" />
             </button>
 
             {/* Scene Selector Popup */}
             {isSelectingScene && (
-              <div className="absolute left-0 top-full mt-1 w-[220px] rounded-[14px] bg-[#181820] border border-white/15 shadow-[0_12px_36px_rgba(0,0,0,0.85)] p-1 z-30 space-y-0.5 animate-in fade-in zoom-in-95 duration-100">
+              <div className="absolute left-0 top-full mt-1 w-[240px] rounded-[14px] bg-[#181820] border border-white/15 shadow-[0_12px_36px_rgba(0,0,0,0.85)] p-1 z-30 space-y-0.5 animate-in fade-in zoom-in-95 duration-100">
                 <div className="text-[10px] uppercase font-mono text-white/40 px-2 py-1">
                   เลือกฉาก
                 </div>
                 {scenes.map((sc, scIdx) => {
                   const scOrder = sceneOrderMap.get(sc.scene_id) ?? null;
                   const scClean = getCleanSceneTitle(sc.title);
+                  const scLoc = sc.location_key ? sc.location_key.trim() : '';
+                  const isScRedundant =
+                    Boolean(
+                      scLoc &&
+                        scClean &&
+                        (scClean.toLowerCase() === scLoc.toLowerCase() ||
+                          scClean.includes(scLoc) ||
+                          scLoc.includes(scClean))
+                    ) ||
+                    scClean === 'สถานการณ์' ||
+                    scClean === 'ฉาก' ||
+                    scClean === 'ฉากใหม่' ||
+                    scClean === 'ฉากอิสระ' ||
+                    scClean === '';
+                  const scPremise = !isScRedundant ? scClean : null;
                   const scDisplay = scOrder
-                    ? `ฉากที่ ${scOrder}: ${scClean || 'สถานการณ์'}`
-                    : `${scClean || 'ฉากอิสระ'} (อิสระ)`;
+                    ? scPremise
+                      ? `ฉากที่ ${scOrder} · ${scPremise}`
+                      : `ฉากที่ ${scOrder}`
+                    : scPremise
+                    ? `ฉากอิสระ · ${scPremise}`
+                    : scClean || 'ฉากอิสระ';
 
                   return (
                     <button
@@ -397,13 +443,18 @@ export default function WorldBeatCard({
                         setIsSelectingScene(false);
                         setIsEditing(false);
                       }}
-                      className={`w-full text-left px-2 py-1 rounded-[8px] text-[11.5px] transition-colors truncate cursor-pointer ${
+                      className={`w-full text-left px-2 py-1.5 rounded-[8px] text-[12px] transition-colors truncate cursor-pointer flex items-center justify-between ${
                         scIdx === selectedSceneIndex
                           ? 'bg-[#EF264C]/20 text-white font-medium'
                           : 'text-white/70 hover:bg-white/[0.08] hover:text-white'
                       }`}
                     >
-                      {scDisplay}
+                      <span className="truncate">{scDisplay}</span>
+                      {scOrder && (
+                        <span className="text-[9.5px] font-mono text-white/30 ml-1 shrink-0">
+                          #{scOrder}
+                        </span>
+                      )}
                     </button>
                   );
                 })}

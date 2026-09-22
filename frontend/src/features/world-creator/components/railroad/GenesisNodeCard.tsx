@@ -5,7 +5,7 @@ import { PORT_Y_OFFSET } from './RailroadCableOverlay';
 
 export const GENESIS_WIDTH = 346;
 export const GENESIS_HEIGHT = 346;
-export const DEFAULT_GENESIS_X = -320;
+export const DEFAULT_GENESIS_X = -440; // Exact SCENE_STEP_X (520px) step before Scene 1 (80 - 520 = -440), leaving identical 174px gap matching Scene 1 -> Scene 2
 export const DEFAULT_GENESIS_Y = 220;
 
 interface WardrobeOption {
@@ -19,8 +19,10 @@ interface GenesisNodeCardProps {
   draft?: VaultDraft;
   startingState?: WorldStartingState;
   position?: { x: number; y: number };
+  hasOutgoingCable?: boolean;
   onUpdateStartingState?: (updated: WorldStartingState) => void;
   onStartDrag?: (e: MouseEvent) => void;
+  onStartDragWire?: (e: MouseEvent) => void;
   isEditable?: boolean;
 }
 
@@ -28,8 +30,10 @@ export default function GenesisNodeCard({
   draft,
   startingState,
   position = { x: DEFAULT_GENESIS_X, y: DEFAULT_GENESIS_Y },
+  hasOutgoingCable = true,
   onUpdateStartingState,
   onStartDrag,
+  onStartDragWire,
   isEditable = true,
 }: GenesisNodeCardProps) {
   const [isEditing, setIsEditing] = useState(false);
@@ -385,12 +389,27 @@ export default function GenesisNodeCard({
 
       {/* ✦ 3. RIGHT OUTPUT SOCKET (PRECISION MICRO-JEWEL PORT FOR IGNITING SCENE 1) */}
       <div
-        className="absolute -right-[5.5px] -translate-y-1/2 w-[11px] h-[11px] rounded-full bg-[#141419] border border-white/25 hover:border-[#FF375F] hover:scale-125 transition-all z-30 flex items-center justify-center cursor-pointer group/port"
+        onMouseDown={(e) => {
+          if (isEditable && onStartDragWire) {
+            onStartDragWire(e);
+          }
+        }}
+        className="absolute -right-[5.5px] -translate-y-1/2 w-[11px] h-[11px] rounded-full bg-[#141419] border border-white/25 hover:border-[#FF375F] hover:scale-125 transition-all z-30 flex items-center justify-center cursor-crosshair group/port"
         style={{ top: `${PORT_Y_OFFSET}px` }}
-        title="จุดเชื่อมต่อชนวนเปิดฉากสู่ฉากที่ 1"
-        aria-label="จุดเชื่อมต่อชนวนเปิดฉากสู่ฉากที่ 1"
+        title={
+          hasOutgoingCable
+            ? 'พอร์ตส่งสัญญาณ: คลิกลากเพื่อเปลี่ยนเส้นเชื่อมต่อไปยังฉากอื่น (Drag to Reconnect)'
+            : 'พอร์ตส่งสัญญาณ: คลิกลากเส้นเชื่อมต่อไปยังฉากอื่น (Drag to Connect)'
+        }
+        aria-label="พอร์ตส่งสัญญาณจุดเริ่มต้น"
       >
-        <div className="w-1 h-1 rounded-full bg-[#FF375F] group-hover/port:scale-125 transition-transform" />
+        <div
+          className={`rounded-full transition-all ${
+            hasOutgoingCable
+              ? 'w-1 h-1 bg-[#FF375F] group-hover/port:scale-125'
+              : 'w-0.5 h-0.5 bg-white/40 group-hover/port:bg-[#FF375F] group-hover/port:scale-125'
+          }`}
+        />
       </div>
     </div>
   );

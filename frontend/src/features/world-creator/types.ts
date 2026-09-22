@@ -193,6 +193,7 @@ export interface WorldStartingState {
   first_spark?: string;
   psychological_tension?: string;
   position?: { x: number; y: number };
+  target_scene_id?: string | null;
 }
 
 export interface WorldLocationSensoryCues {

@@ -258,7 +258,7 @@ export default function RailroadCanvas({
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   // Viewport Transform (Pan & Zoom)
-  const [pan, setPan] = useState<{ x: number; y: number }>({ x: 380, y: 40 });
+  const [pan, setPan] = useState<{ x: number; y: number }>({ x: 480, y: 40 });
   const [zoom, setZoom] = useState<number>(0.95);
   const [isPanning, setIsPanning] = useState<boolean>(false);
   const startPanRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -322,11 +322,37 @@ export default function RailroadCanvas({
     genY: DEFAULT_SCENE_Y,
   });
 
+  // Current Scenario Scenes
+  const scenario: WorldScenario = draft.scenario || {
+    id: 'botanical_scenario_01',
+    name: draft.worldTitle || 'Scenario Flow',
+    scenes: DEFAULT_SCENES,
+  };
+  const scenes: WorldScene[] =
+    scenario.scenes && scenario.scenes.length > 0 ? scenario.scenes : DEFAULT_SCENES;
+
+  const handleUpdateStartingState = useCallback(
+    (updated: Partial<WorldStartingState>) => {
+      if (onUpdateDraft) {
+        onUpdateDraft({
+          starting_state: {
+            ...(draft.starting_state || {}),
+            ...updated,
+          } as WorldStartingState,
+        });
+      }
+    },
+    [onUpdateDraft, draft.starting_state]
+  );
+
   const resolvedGenesisPosition = useMemo(() => {
     if (customGenesisPosition) return customGenesisPosition;
     if (draft?.starting_state?.position) return draft.starting_state.position;
-    return { x: DEFAULT_GENESIS_X, y: DEFAULT_SCENE_Y };
-  }, [customGenesisPosition, draft?.starting_state?.position]);
+    // Exactly SCENE_STEP_X (520px) before Scene 1, leaving identical 174px gap
+    const rootX = scenes[0]?.position?.x ?? 80;
+    const rootY = scenes[0]?.position?.y ?? DEFAULT_SCENE_Y;
+    return { x: rootX - SCENE_STEP_X, y: rootY };
+  }, [customGenesisPosition, draft?.starting_state?.position, scenes]);
 
   const handleStartDragGenesis = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -339,29 +365,48 @@ export default function RailroadCanvas({
     };
   };
 
-  const handleUpdateStartingState = useCallback(
-    (updated: WorldStartingState) => {
-      if (onUpdateDraft) {
-        onUpdateDraft({
-          starting_state: {
-            ...(draft.starting_state || {}),
-            ...updated,
-          },
-        });
-      }
+  // ✦ TARGET SCENE FOR GENESIS IGNITION
+  const targetSceneForGenesis = useMemo(() => {
+    if (draft?.starting_state?.target_scene_id === null) return null;
+    if (draft?.starting_state?.target_scene_id) {
+      const found = scenes.find((s) => s.scene_id === draft.starting_state?.target_scene_id);
+      if (found) return found;
+    }
+    const sceneOrderMap = computeSceneChainOrder(scenes);
+    return scenes.find((s) => sceneOrderMap.get(s.scene_id) === 1) || scenes[0] || null;
+  }, [draft?.starting_state?.target_scene_id, scenes]);
+
+  const isGenesisConnected = Boolean(targetSceneForGenesis);
+
+  const handleDisconnectGenesis = useCallback(() => {
+    handleUpdateStartingState({
+      target_scene_id: null,
+    });
+  }, [handleUpdateStartingState]);
+
+  const handleConnectGenesis = useCallback(
+    (targetSceneId: string) => {
+      handleUpdateStartingState({
+        target_scene_id: targetSceneId,
+      });
     },
-    [onUpdateDraft, draft.starting_state]
+    [handleUpdateStartingState]
   );
 
-  // Current Scenario Scenes
-  const scenario: WorldScenario = draft.scenario || {
-    id: 'botanical_scenario_01',
-    name: draft.worldTitle || 'Scenario Flow',
-    scenes: DEFAULT_SCENES,
-  };
+  const handleStartDragGenesisWire = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const startX = resolvedGenesisPosition.x + SCENE_WIDTH;
+    const startY = resolvedGenesisPosition.y + PORT_Y_OFFSET;
+    const coords = getCanvasCoords(e.clientX, e.clientY);
 
-  const scenes: WorldScene[] =
-    scenario.scenes && scenario.scenes.length > 0 ? scenario.scenes : DEFAULT_SCENES;
+    setDraggingWire({
+      fromSceneId: '__genesis__',
+      startX,
+      startY,
+      currentX: coords.x,
+      currentY: coords.y,
+    });
+  };
 
   // Dynamic Sequential Scene Order Map (Recalculated on connection changes)
   const sceneOrderMap = useMemo(() => computeSceneChainOrder(scenes), [scenes]);
@@ -529,6 +574,13 @@ export default function RailroadCanvas({
   // Blender Unplug: detach incoming wire from target scene input port
   const handleStartDetachIncoming = (e: React.MouseEvent, toSceneId: string) => {
     e.stopPropagation();
+
+    // Check if incoming wire is from Genesis
+    if (isGenesisConnected && targetSceneForGenesis?.scene_id === toSceneId) {
+      handleStartDragGenesisWire(e);
+      return;
+    }
+
     const sourceScene = scenes.find((s, sIdx) => {
       const nextId = resolveNextSceneId(s, sIdx, scenes);
       return nextId === toSceneId;
@@ -860,11 +912,19 @@ export default function RailroadCanvas({
         setIsDraggingGenesis(false);
       }
       if (draggingWire) {
-        if (hoveredTargetSceneId) {
-          handleConnectScenes(draggingWire.fromSceneId, hoveredTargetSceneId);
+        if (draggingWire.fromSceneId === '__genesis__') {
+          if (hoveredTargetSceneId) {
+            handleConnectGenesis(hoveredTargetSceneId);
+          } else {
+            handleDisconnectGenesis();
+          }
         } else {
-          // Dragged wire dropped into empty canvas = Disconnect / Unplug node
-          handleDisconnectScene(draggingWire.fromSceneId);
+          if (hoveredTargetSceneId) {
+            handleConnectScenes(draggingWire.fromSceneId, hoveredTargetSceneId);
+          } else {
+            // Dragged wire dropped into empty canvas = Disconnect / Unplug node
+            handleDisconnectScene(draggingWire.fromSceneId);
+          }
         }
         setDraggingWire(null);
         setHoveredTargetSceneId(null);
@@ -908,6 +968,8 @@ export default function RailroadCanvas({
     handleUpdateScenes,
     handleConnectScenes,
     handleDisconnectScene,
+    handleConnectGenesis,
+    handleDisconnectGenesis,
     handleConnectLocation,
     handleConnectDirector,
   ]);
@@ -1033,7 +1095,7 @@ export default function RailroadCanvas({
 
     // Smooth reset zoom & pan to show pristine railroad
     setZoom(0.95);
-    setPan({ x: 380, y: 40 });
+    setPan({ x: 480, y: 40 });
   }, [scenes, handleUpdateScenes]);
 
   const handleInsertSceneBetween = (fromSceneId: string) => {
@@ -1120,6 +1182,8 @@ export default function RailroadCanvas({
         <RailroadCableOverlay
           scenes={scenes}
           genesisPosition={resolvedGenesisPosition}
+          targetSceneForGenesis={targetSceneForGenesis}
+          onDisconnectGenesis={handleDisconnectGenesis}
           locationPositions={resolvedLocationPositions}
           directorPositions={resolvedDirectorPositions}
           detachedDirectorSceneIds={detachedDirectorSceneIds}
@@ -1141,8 +1205,10 @@ export default function RailroadCanvas({
           draft={draft}
           startingState={draft?.starting_state}
           position={resolvedGenesisPosition}
+          hasOutgoingCable={isGenesisConnected}
           onUpdateStartingState={handleUpdateStartingState}
           onStartDrag={handleStartDragGenesis}
+          onStartDragWire={handleStartDragGenesisWire}
           isEditable={isEditable}
         />
 
@@ -1188,9 +1254,10 @@ export default function RailroadCanvas({
 
         {/* Render Each Scene Node Card */}
         {scenes.map((scene, idx) => {
-          const hasIncoming = scenes.some(
-            (s, sIdx) => resolveNextSceneId(s, sIdx, scenes) === scene.scene_id
-          );
+          const isTargetOfGenesis = isGenesisConnected && targetSceneForGenesis?.scene_id === scene.scene_id;
+          const hasIncoming =
+            isTargetOfGenesis ||
+            scenes.some((s, sIdx) => resolveNextSceneId(s, sIdx, scenes) === scene.scene_id);
           const hasOutgoing = Boolean(resolveNextSceneId(scene, idx, scenes));
           const isTarget = hoveredTargetSceneId === scene.scene_id;
           const sceneOrder = sceneOrderMap.get(scene.scene_id) ?? null;
@@ -1279,7 +1346,7 @@ export default function RailroadCanvas({
             type="button"
             onClick={() => {
               setZoom(0.95);
-              setPan({ x: 380, y: 40 });
+              setPan({ x: 480, y: 40 });
             }}
             className="px-1.5 py-0.5 text-[11px] font-mono text-white/75 hover:text-white transition-all cursor-pointer select-none active:scale-95"
             title="คลิกเพื่อจัดมุมมองกึ่งกลาง (100%)"
@@ -1306,7 +1373,7 @@ export default function RailroadCanvas({
             type="button"
             onClick={() => {
               setZoom(0.95);
-              setPan({ x: 380, y: 40 });
+              setPan({ x: 480, y: 40 });
             }}
             className="w-5 h-5 rounded-full hover:bg-white/10 text-white/60 hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-90"
             aria-label="จัดกึ่งกลางมุมมอง"

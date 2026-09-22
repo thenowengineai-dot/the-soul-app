@@ -29,11 +29,13 @@ export interface DraggingDirectorWireState {
 interface RailroadCableOverlayProps {
   scenes: WorldScene[];
   genesisPosition?: { x: number; y: number };
+  targetSceneForGenesis?: WorldScene | null;
   locationPositions?: Record<string, { x: number; y: number }>;
   directorPositions?: Record<string, { x: number; y: number }>;
   detachedDirectorSceneIds?: Set<string>;
   onInsertSceneBetween: (fromSceneId: string) => void;
   onDisconnectScene?: (fromSceneId: string) => void;
+  onDisconnectGenesis?: () => void;
   onDisconnectLocation?: (sceneId: string) => void;
   onDisconnectDirector?: (sceneId: string) => void;
   draggingWire?: DraggingWireState | null;
@@ -155,11 +157,13 @@ export function computeSceneChainOrder(scenes: WorldScene[]): Map<string, number
 export default function RailroadCableOverlay({
   scenes,
   genesisPosition,
+  targetSceneForGenesis,
   locationPositions,
   directorPositions,
   detachedDirectorSceneIds,
   onInsertSceneBetween,
   onDisconnectScene,
+  onDisconnectGenesis,
   onDisconnectLocation,
   onDisconnectDirector,
   draggingWire,
@@ -242,34 +246,55 @@ export default function RailroadCableOverlay({
       {/* =================================================================== */}
       {(() => {
         if (!genesisPosition || scenes.length === 0) return null;
-        // Find Scene 1 (the root scene with order 1 or first scene)
-        const sceneOrderMap = computeSceneChainOrder(scenes);
-        let rootScene = scenes.find((s) => sceneOrderMap.get(s.scene_id) === 1);
-        if (!rootScene) rootScene = scenes[0];
-        if (!rootScene) return null;
+
+        // Resolve target scene: if explicitly set to null/undefined or found
+        const targetScene =
+          targetSceneForGenesis !== undefined
+            ? targetSceneForGenesis
+            : (() => {
+                const sceneOrderMap = computeSceneChainOrder(scenes);
+                return scenes.find((s) => sceneOrderMap.get(s.scene_id) === 1) || scenes[0];
+              })();
+
+        if (!targetScene) return null;
 
         const x1 = genesisPosition.x + SCENE_WIDTH;
         const y1 = genesisPosition.y + PORT_Y_OFFSET;
 
-        const rootIdx = scenes.findIndex((s) => s.scene_id === rootScene.scene_id);
-        const x2 = rootScene.position?.x ?? (80 + (rootIdx >= 0 ? rootIdx * SCENE_STEP_X : 0));
-        const y2 = (rootScene.position?.y ?? DEFAULT_SCENE_Y) + PORT_Y_OFFSET;
+        const targetIdx = scenes.findIndex((s) => s.scene_id === targetScene.scene_id);
+        const x2 = targetScene.position?.x ?? (80 + (targetIdx >= 0 ? targetIdx * SCENE_STEP_X : 0));
+        const y2 = (targetScene.position?.y ?? DEFAULT_SCENE_Y) + PORT_Y_OFFSET;
 
         const dx = Math.abs(x2 - x1);
-        const curvature = Math.max(dx * 0.45, 40);
+        const curvature = Math.max(dx * 0.45, 60);
         const pathData = `M ${x1} ${y1} C ${x1 + curvature} ${y1}, ${x2 - curvature} ${y2}, ${x2} ${y2}`;
+
+        // Midpoint for Apple Frosted Quick Action Capsule
+        const midX = (x1 + x2) / 2;
+        const midY = (y1 + y2) / 2;
 
         return (
           <g key="genesis-ignition-cable" className="group/genesis-cable">
-            {/* Ambient Halo */}
+            {/* ✦ 1. WIDE TRANSPARENT HOVER CAPTURE PATH */}
+            <path
+              d={pathData}
+              fill="none"
+              stroke="transparent"
+              strokeWidth="24"
+              className="pointer-events-auto cursor-pointer"
+            />
+
+            {/* ✦ 2. AMBIENT HALO (Zero-Glow Philosophy - Clean Edge 1px Depth) */}
             <path
               d={pathData}
               fill="none"
               stroke="#FF375F"
               strokeOpacity="0.10"
               strokeWidth="3.5"
+              className="transition-opacity group-hover/genesis-cable:stroke-opacity-25"
             />
-            {/* Primary Gradient Ignition Line */}
+
+            {/* ✦ 3. PRIMARY GRADIENT IGNITION LINE */}
             <path
               d={pathData}
               fill="none"
@@ -278,6 +303,43 @@ export default function RailroadCableOverlay({
               markerEnd="url(#cable-arrow)"
               className="transition-all group-hover/genesis-cable:stroke-width-[2px]"
             />
+
+            {/* ✦ 4. MIDPOINT FLOATING ACTION DOCK (APPLE FROSTED MICRO-NODE -> EXPANDS TO CUT ON HOVER) */}
+            {isEditable && onDisconnectGenesis && (
+              <foreignObject
+                x={midX - 45}
+                y={midY - 14}
+                width={90}
+                height={28}
+                className="overflow-visible pointer-events-auto"
+              >
+                <div className="w-full h-full flex items-center justify-center">
+                  {/* RESTING STATE: Subtle Apple Frosted Micro-Node with Starlight Silver Core */}
+                  <div
+                    className="group-hover/genesis-cable:hidden flex items-center justify-center w-[12px] h-[12px] rounded-full bg-[#181822] border border-white/20 shadow-sm text-white/50 hover:scale-125 transition-all cursor-pointer"
+                    title="ชี้เพื่อตัดเส้นเชื่อมต่อจุดเริ่มต้น"
+                  >
+                    <div className="w-[3px] h-[3px] rounded-full bg-[#FFFFFF]" />
+                  </div>
+
+                  {/* HOVER / ACTIVE STATE: Expanded Cut Button */}
+                  <div className="hidden group-hover/genesis-cable:flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#16161E]/95 hover:bg-[#1C1C26] border border-white/25 backdrop-blur-xl shadow-[0_4px_16px_rgba(0,0,0,0.7)] select-none">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDisconnectGenesis();
+                      }}
+                      className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium text-white/85 hover:text-[#FF375F] hover:bg-[#FF375F]/15 transition-all cursor-pointer active:scale-95"
+                      title="ตัดเส้นเชื่อมต่อจุดเริ่มต้นนี้ (Disconnect)"
+                    >
+                      <Scissors size={10} strokeWidth={2.4} />
+                      <span>ตัดเส้น</span>
+                    </button>
+                  </div>
+                </div>
+              </foreignObject>
+            )}
           </g>
         );
       })()}
@@ -641,8 +703,8 @@ export default function RailroadCableOverlay({
                 <path
                   d={dragPathData}
                   fill="none"
-                  stroke="#FF375F"
-                  strokeWidth="1.4"
+                  stroke={draggingWire.fromSceneId === '__genesis__' ? 'url(#genesis-cable-grad)' : '#FF375F'}
+                  strokeWidth="1.6"
                   strokeDasharray="5 3"
                   markerEnd="url(#cable-arrow)"
                 />
@@ -652,8 +714,8 @@ export default function RailroadCableOverlay({
                   cx={x2}
                   cy={y2}
                   r={snappedTargetScene ? 6 : 4}
-                  fill="#FF375F"
-                  stroke="#FFFFFF"
+                  fill={draggingWire.fromSceneId === '__genesis__' ? '#FFFFFF' : '#FF375F'}
+                  stroke={draggingWire.fromSceneId === '__genesis__' ? '#FF375F' : '#FFFFFF'}
                   strokeWidth={snappedTargetScene ? 2 : 1.5}
                 />
               </>

@@ -465,18 +465,16 @@ export default function SceneNodeCard({
       {/* ===================================================================== */}
       {!isEditing ? (
         <div className="flex-1 flex flex-col justify-between gap-2 py-1 overflow-hidden">
-          {/* Organ 1: 🎭 1. ตัวละครกำลังทำอะไร (สูงสุด 2 บรรทัด) */}
-          <div className="rounded-[12px] bg-white/[0.03] border border-white/[0.06] px-3 py-2 flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <div className="w-[18px] h-[18px] rounded-[5px] bg-[#FF375F]/15 border border-[#FF375F]/30 text-[#FF375F] flex items-center justify-center shrink-0">
-                <Sparkles size={10} strokeWidth={2.2} />
-              </div>
-              <span className="text-[11.5px] sm:text-[12px] font-semibold text-white/90 tracking-tight whitespace-nowrap truncate">
-                1. ตัวละครกำลังทำอะไร
+          {/* Layer 1: 🎭 The Open Stage Direction (ผืนเรื่องเล่าแบบเปิด ไร้กรอบขัง) */}
+          <div className="flex flex-col gap-1 px-1 py-0.5">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[#FF375F] text-[10px] font-mono">✦</span>
+              <span className="text-[11px] font-medium text-white/50 tracking-wide uppercase">
+                การกระทำของตัวละคร
               </span>
             </div>
             <p
-              className={`text-[11.5px] sm:text-[12px] text-white/80 font-normal leading-[18px] tracking-tight ${
+              className={`text-[12px] sm:text-[12.5px] text-[#F1F1F4] font-normal leading-[19px] tracking-tight ${
                 isExpandedCard ? 'leading-relaxed' : 'line-clamp-2'
               }`}
             >
@@ -484,15 +482,12 @@ export default function SceneNodeCard({
             </p>
           </div>
 
-          {/* Organ 2: 🎯 2. ถ้าผู้เล่นทำแบบนี้ (เรื่องจะไปต่อทันที) */}
-          <div className="rounded-[12px] bg-white/[0.03] border border-white/[0.06] px-3 py-2 flex flex-col gap-1.5">
-            {/* Header: Strictly 1 line */}
-            <div className="flex items-center gap-2">
-              <div className="w-[18px] h-[18px] rounded-[5px] bg-[#30D158]/15 border border-[#30D158]/30 text-[#30D158] flex items-center justify-center shrink-0">
-                <Target size={10.5} strokeWidth={2.2} />
-              </div>
-              <span className="text-[11.5px] sm:text-[12px] font-semibold text-[#F1F1F1] tracking-tight whitespace-nowrap truncate">
-                2. ถ้าผู้เล่นทำแบบนี้ (เรื่องจะไปต่อทันที)
+          {/* Layer 2: 🎯 The Choice Dock (ถาดทรงแคปซูลทางเลือก มีรูปทรงปุ่มชอยส์) */}
+          <div className="rounded-[14px] bg-white/[0.04] border border-white/[0.08] p-2.5 flex flex-col gap-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+            <div className="flex items-center gap-1.5 text-[#30D158]">
+              <Target size={11.5} className="shrink-0" />
+              <span className="text-[11px] font-semibold text-white/80 tracking-tight">
+                ทางเลือกผู้เล่น
               </span>
             </div>
 
@@ -507,7 +502,7 @@ export default function SceneNodeCard({
                     </span>
                     {/* Feedback text: 1 line with truncate */}
                     {triggerEntries[0][1].feedback && (
-                      <span className="text-[11px] sm:text-[11.5px] text-white/70 italic truncate">
+                      <span className="text-[11px] sm:text-[11.5px] text-white/65 italic truncate">
                         ➔ {triggerEntries[0][1].feedback}
                       </span>
                     )}
@@ -579,21 +574,24 @@ export default function SceneNodeCard({
             )}
           </div>
 
-          {/* Organ 3: ⏳ 3. ถ้าผู้เล่นไม่ทำอะไร */}
-          <div className="rounded-[12px] bg-white/[0.03] border border-white/[0.06] px-3 py-2 flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <div className="w-[18px] h-[18px] rounded-[5px] bg-[#FF9F0A]/15 border border-[#FF9F0A]/30 text-[#FF9F0A] flex items-center justify-center shrink-0">
-                <Clock size={10} strokeWidth={2.2} />
-              </div>
-              <span className="text-[11.5px] sm:text-[12px] font-semibold text-white/90 tracking-tight whitespace-nowrap truncate">
-                3. ถ้าผู้เล่นไม่ทำอะไร (คุยครบ {displayTurns} รอบ เรื่องจะเดินต่อเองว่า)
+          {/* Layer 3: ⏱ The Pacing Footnote Strip (แถบสรุปจังหวะบางๆ ชิดล่าง) */}
+          <div className="rounded-[10px] bg-white/[0.02] border border-white/[0.05] px-2.5 py-1.5 flex items-center gap-2">
+            <div className="flex items-center gap-1 shrink-0 text-[#FF9F0A]">
+              <Clock size={11} strokeWidth={2.2} />
+              <span className="text-[10px] sm:text-[10.5px] font-mono text-[#FF9F0A]/85">
+                ครบ {displayTurns} รอบ
               </span>
             </div>
             <p
-              className={`text-[11px] sm:text-[11.5px] text-[#EDEDED] font-normal leading-[17px] tracking-tight ${
+              className={`text-[11px] sm:text-[11.5px] text-white/60 font-normal leading-[16px] tracking-tight min-w-0 flex-1 ${
                 isExpandedCard ? 'leading-relaxed' : 'truncate'
               }`}
+              title={
+                currentBeat?.pacing_control?.inevitable_consequence ||
+                'เรื่องราวดำเนินสู่ขั้นถัดไปอัตโนมัติ'
+              }
             >
+              <span className="text-white/30 mr-1 font-mono">➔</span>
               {currentBeat?.pacing_control?.inevitable_consequence ||
                 'เรื่องราวดำเนินสู่ขั้นถัดไปอัตโนมัติ'}
             </p>

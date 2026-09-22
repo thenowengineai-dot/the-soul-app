@@ -206,7 +206,7 @@ export default function SceneNodeCard({
           : isLocationDropTarget
           ? 'border-[#30D158] ring-2 ring-[#30D158]/40 shadow-[0_8px_32px_rgba(48,209,88,0.25),inset_0_1px_0_rgba(255,255,255,0.12)] z-30'
           : 'border-white/[0.10] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]'
-      } ${isExpandedCard || isEditing ? 'min-h-[346px] h-auto pb-6 z-20' : 'h-[346px]'}`}
+      } ${isExpandedCard ? 'min-h-[346px] h-auto pb-9 z-20' : isEditing ? 'min-h-[346px] h-auto pb-6 z-20' : 'h-[346px] pb-9 sm:pb-9'}`}
       style={{
         left: `${scene.position?.x ?? 80 + index * SCENE_STEP_X}px`,
         top: `${scene.position?.y ?? 170}px`,
@@ -760,22 +760,24 @@ export default function SceneNodeCard({
         </div>
       )}
 
-      {/* ✦ 4. THE RED EXPAND ORB (ปุ่มลูกศรแดงยืดการ์ดอ่านเต็มความยาว) */}
+      {/* ✦ 4. CARD EXPAND / COLLAPSE BUTTON (ปุ่มกลมๆ สไตล์เดียวกับปุ่มดินสอ อยู่มุมขวาล่างบนตัวการ์ด ไม่ยื่นออกนอกการ์ด) */}
       {!isEditing && (
-        <div className="absolute -bottom-3.5 left-1/2 -translate-x-1/2 z-20 pointer-events-auto">
-          <button
-            type="button"
-            onClick={() => setIsExpandedCard(!isExpandedCard)}
-            className="w-7 h-7 rounded-full bg-[#181822] hover:bg-[#EF264C] border border-[#EF264C]/60 hover:border-white text-white/85 hover:text-white flex items-center justify-center shadow-[0_4px_14px_rgba(239,38,76,0.4),inset_0_1px_0_rgba(255,255,255,0.2)] hover:scale-110 active:scale-95 transition-all cursor-pointer group"
-            title={isExpandedCard ? 'ย่อการ์ดกลับขนาดเดิม' : 'ยืดการ์ดเพื่ออ่านข้อความเต็มทั้งหมด'}
-          >
-            {isExpandedCard ? (
-              <ChevronUp size={14} strokeWidth={2.6} className="text-[#EF264C] group-hover:text-white" />
-            ) : (
-              <ChevronDown size={14} strokeWidth={2.6} className="text-[#EF264C] group-hover:text-white" />
-            )}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsExpandedCard(!isExpandedCard);
+          }}
+          onMouseDown={(e) => e.stopPropagation()}
+          className="absolute bottom-3 right-3 sm:bottom-3.5 sm:right-3.5 w-6 h-6 rounded-full bg-white/[0.04] hover:bg-white/[0.12] border border-white/10 hover:border-white/20 text-white/60 hover:text-white flex items-center justify-center cursor-pointer transition-all active:scale-95 z-20"
+          title={isExpandedCard ? 'ย่อการ์ดกลับขนาดเดิม' : 'ขยายการ์ดเพื่ออ่านเต็ม'}
+        >
+          {isExpandedCard ? (
+            <ChevronUp size={11} strokeWidth={2.2} />
+          ) : (
+            <ChevronDown size={11} strokeWidth={2.2} />
+          )}
+        </button>
       )}
     </div>
   );

@@ -1138,6 +1138,7 @@ export default function RailroadCanvas({
 
         {/* ✦ 1.4 GENESIS STARTING ANCHOR NODE (FRAME 0) */}
         <GenesisNodeCard
+          draft={draft}
           startingState={draft?.starting_state}
           position={resolvedGenesisPosition}
           onUpdateStartingState={handleUpdateStartingState}

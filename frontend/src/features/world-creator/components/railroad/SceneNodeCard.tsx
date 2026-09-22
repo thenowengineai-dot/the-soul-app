@@ -467,8 +467,10 @@ export default function SceneNodeCard({
         <div className="flex-1 flex flex-col justify-between gap-2 py-1 overflow-hidden">
           {/* Organ 1: 🎭 1. ตัวละครกำลังทำอะไร (สูงสุด 2 บรรทัด) */}
           <div className="rounded-[12px] bg-white/[0.03] border border-white/[0.06] px-3 py-2 flex flex-col gap-1">
-            <div className="flex items-center gap-1.5 text-[#EF264C]">
-              <Sparkles size={12.5} className="shrink-0" />
+            <div className="flex items-center gap-2">
+              <div className="w-[18px] h-[18px] rounded-[5px] bg-[#FF375F]/15 border border-[#FF375F]/30 text-[#FF375F] flex items-center justify-center shrink-0">
+                <Sparkles size={10} strokeWidth={2.2} />
+              </div>
               <span className="text-[11.5px] sm:text-[12px] font-semibold text-white/90 tracking-tight whitespace-nowrap truncate">
                 1. ตัวละครกำลังทำอะไร
               </span>
@@ -485,8 +487,10 @@ export default function SceneNodeCard({
           {/* Organ 2: 🎯 2. ถ้าผู้เล่นทำแบบนี้ (เรื่องจะไปต่อทันที) */}
           <div className="rounded-[12px] bg-white/[0.03] border border-white/[0.06] px-3 py-2 flex flex-col gap-1.5">
             {/* Header: Strictly 1 line */}
-            <div className="flex items-center gap-1.5 text-emerald-400">
-              <Target size={12.5} className="shrink-0" />
+            <div className="flex items-center gap-2">
+              <div className="w-[18px] h-[18px] rounded-[5px] bg-[#30D158]/15 border border-[#30D158]/30 text-[#30D158] flex items-center justify-center shrink-0">
+                <Target size={10.5} strokeWidth={2.2} />
+              </div>
               <span className="text-[11.5px] sm:text-[12px] font-semibold text-[#F1F1F1] tracking-tight whitespace-nowrap truncate">
                 2. ถ้าผู้เล่นทำแบบนี้ (เรื่องจะไปต่อทันที)
               </span>
@@ -513,8 +517,8 @@ export default function SceneNodeCard({
                     className={`text-[9.5px] sm:text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${
                       triggerEntries[0][1].action_result === 'loop' ||
                       (triggerEntries[0][1].action_result as string) === 'chaos_escalation'
-                        ? 'text-amber-300 bg-amber-500/15 border border-amber-500/30'
-                        : 'text-[#EF264C] bg-[#EF264C]/15 border border-[#EF264C]/30'
+                        ? 'text-[#FF9F0A] bg-[#FF9F0A]/12 border border-[#FF9F0A]/25'
+                        : 'text-[#FF375F] bg-[#FF375F]/12 border border-[#FF375F]/25'
                     }`}
                   >
                     {triggerEntries[0][1].action_result === 'loop' ||
@@ -549,8 +553,8 @@ export default function SceneNodeCard({
                           <span
                             className={`text-[9.5px] sm:text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${
                               isLoop
-                                ? 'text-amber-300 bg-amber-500/15 border border-amber-500/30'
-                                : 'text-[#EF264C] bg-[#EF264C]/15 border border-[#EF264C]/30'
+                                ? 'text-[#FF9F0A] bg-[#FF9F0A]/12 border border-[#FF9F0A]/25'
+                                : 'text-[#FF375F] bg-[#FF375F]/12 border border-[#FF375F]/25'
                             }`}
                           >
                             {isLoop ? '↺ อยู่ที่เดิม' : '→ ไปต่อ'}
@@ -576,10 +580,12 @@ export default function SceneNodeCard({
           </div>
 
           {/* Organ 3: ⏳ 3. ถ้าผู้เล่นไม่ทำอะไร */}
-          <div className="rounded-[12px] bg-amber-500/[0.03] border border-amber-500/20 px-3 py-2 flex flex-col gap-1">
-            <div className="flex items-center gap-1.5 text-amber-400">
-              <Clock size={12.5} className="shrink-0" />
-              <span className="text-[11.5px] sm:text-[12px] font-semibold text-amber-300 tracking-tight whitespace-nowrap truncate">
+          <div className="rounded-[12px] bg-white/[0.03] border border-white/[0.06] px-3 py-2 flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <div className="w-[18px] h-[18px] rounded-[5px] bg-[#FF9F0A]/15 border border-[#FF9F0A]/30 text-[#FF9F0A] flex items-center justify-center shrink-0">
+                <Clock size={10} strokeWidth={2.2} />
+              </div>
+              <span className="text-[11.5px] sm:text-[12px] font-semibold text-white/90 tracking-tight whitespace-nowrap truncate">
                 3. ถ้าผู้เล่นไม่ทำอะไร (คุยครบ {displayTurns} รอบ เรื่องจะเดินต่อเองว่า)
               </span>
             </div>

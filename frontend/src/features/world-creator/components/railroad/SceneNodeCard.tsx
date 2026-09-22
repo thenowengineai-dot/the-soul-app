@@ -202,9 +202,9 @@ export default function SceneNodeCard({
     <div
       className={`absolute w-[346px] rounded-[28px] bg-white/[0.06] hover:bg-white/[0.09] backdrop-blur-2xl border p-4 sm:p-5 flex flex-col justify-between transition-all select-none group/node ${
         isDropTarget
-          ? 'border-[#EF264C] ring-2 ring-[#EF264C]/40 shadow-[0_8px_32px_rgba(239,38,76,0.3),inset_0_1px_0_rgba(255,255,255,0.12)] z-30'
+          ? 'border-[#FF375F] ring-2 ring-[#FF375F]/40 shadow-[0_8px_32px_rgba(255,55,95,0.3),inset_0_1px_0_rgba(255,255,255,0.12)] z-30'
           : isLocationDropTarget
-          ? 'border-[#528A7A] ring-2 ring-[#528A7A]/40 shadow-[0_8px_32px_rgba(82,138,122,0.25),inset_0_1px_0_rgba(255,255,255,0.12)] z-30'
+          ? 'border-[#30D158] ring-2 ring-[#30D158]/40 shadow-[0_8px_32px_rgba(48,209,88,0.25),inset_0_1px_0_rgba(255,255,255,0.12)] z-30'
           : 'border-white/[0.10] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]'
       } ${isExpandedCard || isEditing ? 'min-h-[346px] h-auto pb-6 z-20' : 'h-[346px]'}`}
       style={{
@@ -223,9 +223,9 @@ export default function SceneNodeCard({
         }}
         className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[16px] h-[16px] rounded-full bg-[#141419] transition-all z-30 flex items-center justify-center select-none ${
           isLocationDropTarget
-            ? 'scale-150 border-2 border-[#528A7A] ring-4 ring-[#528A7A]/35 bg-[#528A7A]/30 shadow-[0_0_12px_rgba(82,138,122,0.5)]'
+            ? 'scale-150 border-2 border-[#30D158] ring-4 ring-[#30D158]/35 bg-[#30D158]/30 shadow-[0_0_12px_rgba(48,209,88,0.5)]'
             : scene.location_key
-            ? 'border border-[#528A7A]/85 hover:border-[#EF264C]/90 hover:scale-125 cursor-pointer shadow-[0_0_6px_rgba(82,138,122,0.4)] group/locsock'
+            ? 'border border-[#30D158]/85 hover:border-[#FF375F]/90 hover:scale-125 cursor-pointer shadow-[0_0_6px_rgba(48,209,88,0.4)] group/locsock'
             : 'border border-dashed border-white/25 hover:border-white/50 hover:scale-110 cursor-default'
         }`}
         title={
@@ -239,7 +239,7 @@ export default function SceneNodeCard({
             isLocationDropTarget
               ? 'w-2 h-2 bg-white'
               : scene.location_key
-              ? 'w-1.5 h-1.5 bg-[#528A7A] group-hover/locsock:bg-[#EF264C] shadow-[0_0_4px_rgba(82,138,122,0.6)]'
+              ? 'w-1.5 h-1.5 bg-[#30D158] group-hover/locsock:bg-[#FF375F] shadow-[0_0_4px_rgba(48,209,88,0.6)]'
               : 'w-1 h-1 bg-white/20'
           }`}
         />
@@ -255,9 +255,9 @@ export default function SceneNodeCard({
         }}
         className={`absolute -left-[8px] top-[24px] -translate-y-1/2 w-[16px] h-[16px] rounded-full bg-[#141419] border transition-all z-30 flex items-center justify-center ${
           isDropTarget
-            ? 'scale-150 border-[#EF264C] ring-4 ring-[#EF264C]/40 bg-[#EF264C]/25'
+            ? 'scale-150 border-[#FF375F] ring-4 ring-[#FF375F]/40 bg-[#FF375F]/25'
             : hasIncomingCable
-            ? 'border-[#EF264C]/80 cursor-grab active:cursor-grabbing hover:scale-125'
+            ? 'border-[#FF375F]/80 cursor-grab active:cursor-grabbing hover:scale-125'
             : 'border-white/30'
         }`}
         title={
@@ -271,7 +271,7 @@ export default function SceneNodeCard({
             isDropTarget
               ? 'w-2 h-2 bg-white'
               : hasIncomingCable
-              ? 'w-1.5 h-1.5 bg-[#EF264C] shadow-[0_0_6px_rgba(239,38,76,0.6)]'
+              ? 'w-1.5 h-1.5 bg-[#FF375F] shadow-[0_0_6px_rgba(255,55,95,0.6)]'
               : 'w-1 h-1 bg-white/40'
           }`}
         />
@@ -284,14 +284,14 @@ export default function SceneNodeCard({
             onStartDragWire(e, scene.scene_id);
           }
         }}
-        className="absolute -right-[8px] top-[24px] -translate-y-1/2 w-[16px] h-[16px] rounded-full bg-[#141419] border border-[#EF264C]/90 hover:border-white hover:scale-125 transition-all z-30 flex items-center justify-center cursor-crosshair group/port shadow-[0_0_8px_rgba(239,38,76,0.4)]"
+        className="absolute -right-[8px] top-[24px] -translate-y-1/2 w-[16px] h-[16px] rounded-full bg-[#141419] border border-[#FF375F]/90 hover:border-white hover:scale-125 transition-all z-30 flex items-center justify-center cursor-crosshair group/port shadow-[0_0_8px_rgba(255,55,95,0.4)]"
         title={
           hasOutgoingCable
             ? 'พอร์ตส่งสัญญาณ: คลิกลากเพื่อเปลี่ยนเส้นเชื่อมต่อไปยังฉากอื่น (Drag to Reconnect)'
             : 'พอร์ตส่งสัญญาณ: คลิกลากเส้นเชื่อมต่อไปยังฉากอื่น (Drag to Connect)'
         }
       >
-        <div className="w-1.5 h-1.5 rounded-full bg-[#EF264C] group-hover/port:scale-125 transition-transform" />
+        <div className="w-1.5 h-1.5 rounded-full bg-[#FF375F] group-hover/port:scale-125 transition-transform" />
       </div>
 
       {/* ===================================================================== */}
@@ -323,7 +323,7 @@ export default function SceneNodeCard({
 
             {/* Target Drop Hover Badge */}
             {isDropTarget && (
-              <span className="px-2 py-0.2 rounded-full bg-[#EF264C]/20 border border-[#EF264C]/40 text-[9.5px] font-medium text-[#EF264C] shrink-0 animate-pulse">
+              <span className="px-2 py-0.2 rounded-full bg-[#FF375F]/20 border border-[#FF375F]/40 text-[9.5px] font-medium text-[#FF375F] shrink-0 animate-pulse">
                 ✦ ปล่อยเพื่อเชื่อม
               </span>
             )}

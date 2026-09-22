@@ -434,6 +434,7 @@ export default function SceneNodeCard({
                   </button>
                 )}
 
+                <span className="text-[#EF264C] text-[10px] font-mono">✦</span>
                 <span>บีต {bIdx + 1}</span>
 
                 {/* Move Right Arrow on Active Beat */}

@@ -1,5 +1,5 @@
-import { useState, useMemo, type MouseEvent } from 'react';
-import { Pencil, Check } from 'lucide-react';
+import { useState, useMemo, type MouseEvent, type WheelEvent } from 'react';
+import { Pencil, Check, Zap } from 'lucide-react';
 import type { WorldStartingState, VaultDraft } from '../../types';
 import { PORT_Y_OFFSET } from './RailroadCableOverlay';
 
@@ -130,16 +130,22 @@ export default function GenesisNodeCard({
     setIsEditing(false);
   };
 
+  const handleRailWheel = (e: WheelEvent<HTMLDivElement>) => {
+    if (e.deltaY !== 0) {
+      e.currentTarget.scrollLeft += e.deltaY;
+    }
+  };
+
   return (
     <div
-      className="absolute w-[346px] h-[346px] rounded-[28px] bg-white/[0.06] hover:bg-white/[0.09] backdrop-blur-2xl border border-white/[0.10] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] p-5 flex flex-col justify-between select-none group/node transition-all overflow-hidden"
+      className="absolute w-[346px] h-[346px] rounded-[28px] bg-white/[0.06] hover:bg-white/[0.09] backdrop-blur-2xl border border-white/[0.10] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] p-4 sm:p-4.5 flex flex-col justify-between select-none group/node transition-all overflow-hidden"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
       }}
     >
-      {/* ✦ 1. HEADER ROW: PURE UNCLUTTERED TITLE + CIRCULAR EDIT BUTTON */}
-      <div className="flex items-center justify-between gap-1.5 shrink-0 pb-2 border-b border-white/[0.08]">
+      {/* ✦ 1. HEADER ROW: PURE TITLE + CIRCULAR FROSTED EDIT BUTTON */}
+      <div className="flex items-center justify-between gap-1.5 shrink-0 pb-1.5 border-b border-white/[0.08]">
         <div
           onMouseDown={(e) => {
             if (isEditable && onStartDrag) {
@@ -175,117 +181,153 @@ export default function GenesisNodeCard({
 
       {/* ✦ 2. CARD BODY: VIEW MODE VS EDIT MODE */}
       {!isEditing ? (
-        <div className="flex flex-col justify-between flex-1 pt-2.5 overflow-hidden">
-          {/* ───────────────────────────────────────────────────────────────── */}
-          {/* SECTION 1: WARDROBE INTEGRATION (ชุดที่สวมใส่ - ซิงก์ตู้เสื้อผ้า)   */}
-          {/* ───────────────────────────────────────────────────────────────── */}
-          <div className="shrink-0 space-y-1.5">
+        <div className="flex flex-col justify-between flex-1 pt-1.5 overflow-hidden gap-1.5">
+          {/* ================================================================= */}
+          {/* 1. CLOTHES RAIL WITH REALISTIC HANGERS (ชุดเริ่มต้น - หยิบจากตู้)  */}
+          {/* ================================================================= */}
+          <div className="shrink-0 space-y-1">
+            {/* Section Header */}
             <div className="flex items-center justify-between text-[11px] font-medium text-white/50">
               <div className="flex items-center gap-1.5">
                 <span className="text-[#EF264C] text-[10px] font-mono">✦</span>
-                <span>ชุดที่สวมใส่</span>
+                <span>ชุดเริ่มต้น</span>
+                <span className="text-white/40 font-normal text-[10px]">(หยิบจากตู้)</span>
               </div>
-              <span className="text-[10.5px] text-white/35 font-mono">
+              <span className="text-[10px] text-white/35 font-mono">
                 {wardrobeList.length} ชุดในตู้
               </span>
             </div>
 
-            {/* Clothes Hanger Selection Track (เหมือนหยิบจากในตู้มาใส่) */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-              {wardrobeList.map((item) => {
-                const isSelected = selectedOutfitKey === item.key;
-                return (
-                  <button
-                    key={item.key}
-                    type="button"
-                    onClick={() => handleSelectOutfit(item)}
-                    className={`px-2.5 py-1 rounded-full text-[11px] font-medium flex items-center gap-1.5 transition-all cursor-pointer shrink-0 select-none ${
-                      isSelected
-                        ? 'bg-white/15 text-white border border-white/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]'
-                        : 'bg-white/[0.04] text-white/50 hover:text-white/80 border border-white/[0.06] hover:bg-white/[0.08]'
-                    }`}
-                  >
-                    <span
-                      className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                        isSelected ? 'bg-[#EF264C]' : 'bg-white/25'
+            {/* Realistic Slideable Clothes Rail with Metallic Hangers */}
+            <div className="relative w-full shrink-0 py-0.5">
+              {/* Metallic Clothes Rail Bar */}
+              <div className="absolute top-[17px] left-0 right-0 h-[2px] rounded-full bg-gradient-to-r from-white/15 via-white/35 to-white/15 shadow-[0_1px_3px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.3)] pointer-events-none" />
+              {/* Left & Right Metallic Mount Brackets */}
+              <div className="absolute top-[14px] left-0 w-1.5 h-[7px] rounded-l-sm bg-gradient-to-b from-white/40 to-white/20 shadow-sm pointer-events-none" />
+              <div className="absolute top-[14px] right-0 w-1.5 h-[7px] rounded-r-sm bg-gradient-to-b from-white/40 to-white/20 shadow-sm pointer-events-none" />
+
+              {/* Slideable Hanger Track */}
+              <div
+                onWheel={handleRailWheel}
+                className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth px-1.5 py-0.5 cursor-grab active:cursor-grabbing select-none relative z-10"
+                style={{
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none',
+                }}
+              >
+                {wardrobeList.map((item) => {
+                  const isSelected = selectedOutfitKey === item.key;
+                  return (
+                    <div
+                      key={item.key}
+                      onClick={() => handleSelectOutfit(item)}
+                      className={`group/hanger flex flex-col items-center shrink-0 cursor-pointer transition-all duration-200 ${
+                        isSelected ? '-translate-y-0.5' : 'hover:-translate-y-0.5 opacity-70 hover:opacity-100'
                       }`}
-                    />
-                    <span>{item.badgeLabel}</span>
-                  </button>
-                );
-              })}
+                      title={item.name}
+                    >
+                      {/* Realistic Metallic Hanger Hook */}
+                      <div className="flex flex-col items-center justify-end h-[9px] w-full">
+                        <div
+                          className={`w-2.5 h-2 rounded-t-full border-t-2 border-l-2 border-r-2 transition-colors ${
+                            isSelected
+                              ? 'border-[#EF264C]'
+                              : 'border-white/40 group-hover/hanger:border-white/70'
+                          }`}
+                        />
+                      </div>
+
+                      {/* Hanger Label Tag / Capsule */}
+                      <div
+                        className={`px-2 py-0.5 rounded-[10px] text-[10.5px] font-medium flex items-center gap-1.5 transition-all ${
+                          isSelected
+                            ? 'bg-white/20 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_2px_8px_rgba(0,0,0,0.4)] border border-white/30 font-semibold'
+                            : 'bg-black/50 text-white/60 hover:text-white border border-white/[0.08] hover:border-white/20'
+                        }`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                            isSelected ? 'bg-[#EF264C]' : 'bg-white/30 group-hover/hanger:bg-white/60'
+                          }`}
+                        />
+                        <span className="truncate max-w-[105px]">{item.badgeLabel}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Selected Outfit Texture Description */}
-            <p className="text-[11.5px] text-white/60 font-light line-clamp-1 leading-snug">
+            {/* Selected Outfit Texture Description (1-Line Preview) */}
+            <p className="text-[11px] text-white/55 font-light line-clamp-1 truncate pt-0.5">
               {activeOutfit?.desc}
             </p>
           </div>
 
-          {/* Hairline Divider with Breathing Space */}
-          <div className="w-full h-[1px] bg-white/[0.07] my-1" />
-
-          {/* ───────────────────────────────────────────────────────────────── */}
-          {/* SECTION 2: EMBODIED PHYSICAL PRESENCE (เวทีเผชิญหน้า ไร้กล่องบุ๋ม)  */}
-          {/* ───────────────────────────────────────────────────────────────── */}
-          <div className="grid grid-cols-[1fr_1px_1fr] items-stretch gap-2.5 shrink-0 py-0.5">
-            {/* Left: ท่าทางตัวละคร */}
-            <div className="space-y-1">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[#FF375F] text-[10px] font-mono">✦</span>
-                <span className="text-[11px] font-medium text-white/50">
-                  ท่าทางตัวละคร
-                </span>
+          {/* ================================================================= */}
+          {/* 2. EMBODIED PHYSICAL TRAY (ถาดสรีระและท่าทางสองฝ่าย - พื้นหลังบุ๋ม)   */}
+          {/* ================================================================= */}
+          <div className="rounded-[16px] bg-black/40 backdrop-blur-xl border border-white/[0.06] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.35)] p-2.5 sm:p-3 shrink-0">
+            <div className="grid grid-cols-[1fr_1px_1fr] items-stretch gap-2.5">
+              {/* Left Column: ท่าทางตัวละคร (สีชมพู) */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[#FF375F] text-[10px] font-mono select-none">✦</span>
+                  <span className="text-[10.5px] sm:text-[11px] font-medium text-white/60">
+                    ท่าทางตัวละคร
+                  </span>
+                </div>
+                <p className="text-[11px] sm:text-[11.5px] text-[#F1F1F4] font-normal leading-[17px] line-clamp-3">
+                  {actorPose}
+                </p>
               </div>
-              <p className="text-[11.5px] sm:text-[12px] text-[#F1F1F4] font-normal leading-[18px] line-clamp-3">
-                {actorPose}
-              </p>
-            </div>
 
-            {/* Vertical Center Hairline */}
-            <div className="w-[1px] h-full bg-white/[0.07]" />
+              {/* Vertical Center Hairline */}
+              <div className="w-[1px] h-full bg-white/[0.08]" />
 
-            {/* Right: ท่าทางผู้เล่น */}
-            <div className="space-y-1 pl-0.5">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[#0A84FF] text-[10px] font-mono">✦</span>
-                <span className="text-[11px] font-medium text-white/50">
-                  ท่าทางผู้เล่น
-                </span>
+              {/* Right Column: ท่าทางผู้เล่น (สีฟ้า) */}
+              <div className="space-y-1 pl-0.5">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[#0A84FF] text-[10px] font-mono select-none">✦</span>
+                  <span className="text-[10.5px] sm:text-[11px] font-medium text-white/60">
+                    ท่าทางผู้เล่น
+                  </span>
+                </div>
+                <p className="text-[11px] sm:text-[11.5px] text-[#F1F1F4] font-normal leading-[17px] line-clamp-3">
+                  {playerPose}
+                </p>
               </div>
-              <p className="text-[11.5px] sm:text-[12px] text-[#F1F1F4] font-normal leading-[18px] line-clamp-3">
-                {playerPose}
-              </p>
             </div>
           </div>
 
-          {/* Hairline Divider with Breathing Space */}
-          <div className="w-full h-[1px] bg-white/[0.07] my-1" />
-
-          {/* ───────────────────────────────────────────────────────────────── */}
-          {/* SECTION 3: INCITING SPARK & TENSION (ชนวนเปิดฉาก & อารมณ์ในใจ)     */}
-          {/* ───────────────────────────────────────────────────────────────── */}
-          <div className="shrink-0 space-y-1.5 pb-0.5">
-            <div className="flex items-center justify-between text-[11px]">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[#FF9F0A] text-[10px] font-mono">✦</span>
-                <span className="font-medium text-white/50">ชนวนเปิดฉาก</span>
+          {/* ================================================================= */}
+          {/* 3. INCITING SPARK STRIP (แถบกระจกยกบางๆ คล้าย "ครบ 3 รอบ" + Zap)    */}
+          {/* ================================================================= */}
+          <div className="rounded-[12px] bg-white/[0.035] hover:bg-white/[0.06] border border-white/[0.08] px-2.5 py-1.5 sm:py-2 flex flex-col gap-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-all shrink-0">
+            {/* Header row with Zap and tension pill */}
+            <div className="flex items-center justify-between gap-1 text-[11px]">
+              <div className="flex items-center gap-1.5 text-amber-400">
+                <Zap size={11} strokeWidth={2.4} className="shrink-0" />
+                <span className="text-[10.5px] sm:text-[11px] font-medium text-white/75">
+                  ชนวนเปิดฉาก
+                </span>
               </div>
               {tension && (
-                <span className="px-2 py-0.5 rounded-full bg-white/[0.05] border border-white/[0.08] text-[10.5px] text-white/70 font-normal">
+                <span className="px-2 py-0.2 rounded-full bg-white/[0.06] border border-white/10 text-[9.5px] sm:text-[10px] text-white/75 font-normal">
                   {tension}
                 </span>
               )}
             </div>
 
-            <p className="text-[11.5px] sm:text-[12px] text-[#D6D6DC] italic font-light leading-relaxed line-clamp-2">
+            {/* Spark Literary Prose */}
+            <p className="text-[11px] sm:text-[11.5px] text-[#D6D6DC] italic font-light leading-snug line-clamp-2">
               "{spark}"
             </p>
           </div>
         </div>
       ) : (
-        /* EDIT MODE: CLEAN AIRY INSET INPUTS */
-        <div className="flex flex-col justify-between flex-1 gap-2 pt-2 overflow-y-auto no-scrollbar">
+        /* EDIT MODE: CLEAN IN-PLACE FORM */
+        <div className="flex flex-col justify-between flex-1 gap-2 pt-1.5 overflow-y-auto no-scrollbar">
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-[11px] font-medium text-white/50 block mb-1">

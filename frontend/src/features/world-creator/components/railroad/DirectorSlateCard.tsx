@@ -13,7 +13,7 @@ import {
 import type { WorldScene } from '../../types';
 
 export const SLATE_WIDTH = 280;
-export const SLATE_COMPACT_HEIGHT = 110;
+export const SLATE_COMPACT_HEIGHT = 140;
 
 interface DirectorSlateCardProps {
   scene: WorldScene;
@@ -91,7 +91,7 @@ export default function DirectorSlateCard({
         if (!isEditing && isEditable) onStartDragCard(e, scene.scene_id);
       }}
       className={`absolute w-[280px] rounded-[22px] p-3 sm:p-3.5 select-none transition-all duration-200 group/slate ${
-        isExpanded || isEditing ? 'h-auto pb-8 z-30' : 'h-[110px] z-20'
+        isExpanded || isEditing ? 'h-auto pb-4 z-30' : 'h-auto z-20'
       } ${
         isDraggingWire
           ? 'bg-[#181822]/95 border border-[#FF9F0A] ring-2 ring-[#FF9F0A]/35 shadow-[0_4px_24px_rgba(255,159,10,0.3),inset_0_1px_0_rgba(255,255,255,0.12)]'
@@ -118,7 +118,7 @@ export default function DirectorSlateCard({
           )}
         </div>
 
-        {/* Header Actions: Edit / Save / Cancel */}
+        {/* Header Actions: Edit / Save / Cancel & Expand Chevron */}
         <div
           className="flex items-center gap-1 shrink-0"
           onMouseDown={(e) => e.stopPropagation()}
@@ -156,6 +156,25 @@ export default function DirectorSlateCard({
               )}
             </>
           )}
+
+          {/* Expand/Collapse Chevron Button (Safely in Header) */}
+          {!isEditing && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsExpanded((prev) => !prev);
+              }}
+              className="w-5 h-5 rounded-full bg-white/[0.04] hover:bg-white/[0.12] border border-white/10 hover:border-white/20 text-white/60 hover:text-white flex items-center justify-center cursor-pointer transition-all active:scale-95 ml-0.5 shadow-sm"
+              title={isExpanded ? 'ย่อการ์ดบรีฟ' : 'ขยายการ์ดอ่านเต็ม'}
+            >
+              {isExpanded ? (
+                <ChevronUp size={11} strokeWidth={2.2} />
+              ) : (
+                <ChevronDown size={11} strokeWidth={2.2} />
+              )}
+            </button>
+          )}
         </div>
       </div>
 
@@ -164,12 +183,7 @@ export default function DirectorSlateCard({
       {/* =================================================================== */}
       {!isExpanded && !isEditing ? (
         /* ✦ 2A. COLLAPSED PREVIEW (COMPACT SLATE) */
-        <div className="pt-2 space-y-1.5">
-          <div className="flex items-center gap-1 text-[9px] font-semibold text-[#FF9F0A]/90 uppercase tracking-wide">
-            <Clapperboard size={9.5} className="text-[#FF9F0A] shrink-0" />
-            <span>DIRECTOR&apos;S BRIEF</span>
-          </div>
-
+        <div className="pt-2">
           <p
             className="text-[12px] text-[#F2F2F5] font-normal leading-[17px] line-clamp-2"
             title={briefText}
@@ -348,28 +362,7 @@ export default function DirectorSlateCard({
       </div>
 
       {/* =================================================================== */}
-      {/* 4. FROSTED CIRCULAR EXPAND BUTTON (MATCHING SCENENODECARD)          */}
-      {/* =================================================================== */}
-      {!isEditing && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsExpanded((prev) => !prev);
-          }}
-          className="absolute bottom-2.5 right-2.5 w-6 h-6 rounded-full bg-white/[0.04] hover:bg-white/[0.12] border border-white/10 hover:border-white/20 text-white/60 hover:text-white flex items-center justify-center cursor-pointer transition-all active:scale-95 shadow-sm"
-          title={isExpanded ? 'ย่อการ์ดบรีฟ' : 'ขยายการ์ดอ่านเต็ม'}
-        >
-          {isExpanded ? (
-            <ChevronUp size={11} strokeWidth={2.2} />
-          ) : (
-            <ChevronDown size={11} strokeWidth={2.2} />
-          )}
-        </button>
-      )}
-
-      {/* =================================================================== */}
-      {/* 5. BOTTOM PRECISION MICRO-JEWEL PORT (AMBER WIRE CONNECTOR)         */}
+      {/* 4. BOTTOM PRECISION MICRO-JEWEL PORT (AMBER WIRE CONNECTOR)         */}
       {/* =================================================================== */}
       <div
         onMouseDown={(e) => {

@@ -1,11 +1,5 @@
 import { useState, useMemo, type MouseEvent } from 'react';
-import {
-  Pencil,
-  Check,
-  Shirt,
-  User,
-  Zap,
-} from 'lucide-react';
+import { Pencil, Check } from 'lucide-react';
 import type { WorldStartingState, VaultDraft } from '../../types';
 import { PORT_Y_OFFSET } from './RailroadCableOverlay';
 
@@ -40,7 +34,7 @@ export default function GenesisNodeCard({
 }: GenesisNodeCardProps) {
   const [isEditing, setIsEditing] = useState(false);
 
-  // 1. Extract and sync wardrobe list directly from character appearance
+  // 1. Extract wardrobe collection from character appearance
   const wardrobeList: WardrobeOption[] = useMemo(() => {
     const w = (draft?.appearance?.wardrobe || {}) as Record<string, string[] | undefined>;
     const list: WardrobeOption[] = [];
@@ -59,7 +53,6 @@ export default function GenesisNodeCard({
     const o2Badge = w.outfit_2?.[3] || 'เชิ้ตขาวเปียกฝน';
     list.push({ key: 'outfit_2', badgeLabel: o2Badge, name: o2Name, desc: o2Desc });
 
-    // Additional custom outfits
     Object.keys(w).forEach((k) => {
       if (k !== 'outfit_1' && k !== 'outfit_2' && Array.isArray(w[k]) && w[k]!.length > 0) {
         const item = w[k]!;
@@ -75,7 +68,7 @@ export default function GenesisNodeCard({
     return list;
   }, [draft?.appearance?.wardrobe]);
 
-  // Current active outfit
+  // Selected outfit tracking
   const [selectedOutfitKey, setSelectedOutfitKey] = useState<string>(() => {
     const rawKey = startingState?.initial_outfit_key;
     const matched = wardrobeList.find(
@@ -88,19 +81,19 @@ export default function GenesisNodeCard({
     return wardrobeList.find((w) => w.key === selectedOutfitKey) || wardrobeList[0];
   }, [wardrobeList, selectedOutfitKey]);
 
-  // Form states for inline editing
-  const [aPos, setAPos] = useState(
-    startingState?.initial_a_pos || 'นั่งก้มหน้านิ่งใช้นิ้วดันดั้งแว่นด้วยความประหม่า'
+  // Form states for natural Thai parameters
+  const [actorPose, setActorPose] = useState(
+    startingState?.initial_a_pos || 'นั่งก้มหน้านิ่ง ใช้นิ้วดันดั้งแว่นด้วยความประหม่า'
   );
-  const [pPos, setPPos] = useState(
+  const [playerPose, setPlayerPose] = useState(
     startingState?.initial_p_pos || 'ยืนสะพายกระเป๋าอุปกรณ์พฤกษศาสตร์ใบโต'
   );
   const [spark, setSpark] = useState(
     startingState?.first_spark ||
-      'ไอน้ำชาเขียวอบอุ่นในห้องโถงเสื่อทาทามิถูกขัดจังหวะด้วยข้ออ้างการเกี่ยงงานของสมาชิกคนอื่น จนเหลือเราสองคนเผชิญหน้ากัน'
+      'ไอน้ำชาเขียวอบอุ่นในห้องโถงเสื่อทาทามิถูกขัดจังหวะด้วยข้ออ้างการเกี่ยงงานของสมาชิกคนอื่น จนเหลือเพียงเราสองคนที่ต้องเผชิญหน้ากัน'
   );
   const [tension, setTension] = useState(
-    startingState?.psychological_tension || 'อึดอัด ประหม่า แอบหวาดหวั่นป่าฝน'
+    startingState?.psychological_tension || 'อึดอัด • ประหม่า'
   );
 
   const handleSelectOutfit = (item: WardrobeOption) => {
@@ -112,8 +105,8 @@ export default function GenesisNodeCard({
         location: startingState?.location || 'ห้องโถงเสื่อทาทามิเรียวกัง',
         ...startingState,
         initial_outfit_key: item.badgeLabel,
-        initial_a_pos: aPos.trim(),
-        initial_p_pos: pPos.trim(),
+        initial_a_pos: actorPose.trim(),
+        initial_p_pos: playerPose.trim(),
         first_spark: spark.trim(),
         psychological_tension: tension.trim(),
       });
@@ -128,8 +121,8 @@ export default function GenesisNodeCard({
         location: startingState?.location || 'ห้องโถงเสื่อทาทามิเรียวกัง',
         ...startingState,
         initial_outfit_key: activeOutfit?.badgeLabel || wardrobeList[0]?.badgeLabel || 'ยูกาตะตัวโคร่ง',
-        initial_a_pos: aPos.trim(),
-        initial_p_pos: pPos.trim(),
+        initial_a_pos: actorPose.trim(),
+        initial_p_pos: playerPose.trim(),
         first_spark: spark.trim(),
         psychological_tension: tension.trim(),
       });
@@ -139,27 +132,24 @@ export default function GenesisNodeCard({
 
   return (
     <div
-      className="absolute w-[346px] h-[346px] rounded-[28px] bg-white/[0.06] hover:bg-white/[0.09] backdrop-blur-2xl border border-white/[0.10] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] p-4 flex flex-col justify-between select-none group/node transition-all overflow-hidden"
+      className="absolute w-[346px] h-[346px] rounded-[28px] bg-white/[0.06] hover:bg-white/[0.09] backdrop-blur-2xl border border-white/[0.10] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] p-5 flex flex-col justify-between select-none group/node transition-all overflow-hidden"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
       }}
     >
-      {/* ✦ TOP BAR: HEADER STANDARDIZED (EXACTLY MATCHING OTHER 2x2 CARDS) */}
-      <div className="flex items-center justify-between gap-1 mb-1 shrink-0">
+      {/* ✦ 1. HEADER ROW: PURE UNCLUTTERED TITLE + CIRCULAR EDIT BUTTON */}
+      <div className="flex items-center justify-between gap-1.5 shrink-0 pb-2 border-b border-white/[0.08]">
         <div
           onMouseDown={(e) => {
             if (isEditable && onStartDrag) {
               onStartDrag(e);
             }
           }}
-          className="flex items-baseline gap-1.5 cursor-grab active:cursor-grabbing select-none"
+          className="flex items-center cursor-grab active:cursor-grabbing select-none"
         >
           <span className="text-[16px] sm:text-[17px] font-semibold text-[#F1F1F1] tracking-tight">
-            จุดปล่อยตัว
-          </span>
-          <span className="text-[11.5px] font-normal text-white/45">
-            (สมอเปิดฉาก)
+            จุดเริ่มต้น
           </span>
         </div>
 
@@ -171,30 +161,36 @@ export default function GenesisNodeCard({
               else setIsEditing(true);
             }}
             className="w-7 h-7 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 text-white/60 hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
-            title={isEditing ? 'บันทึก' : 'แก้ไขจุดปล่อยตัว'}
-            aria-label={isEditing ? 'บันทึก' : 'แก้ไขจุดปล่อยตัว'}
+            title={isEditing ? 'บันทึกจุดเริ่มต้น' : 'แก้ไขจุดเริ่มต้น'}
+            aria-label={isEditing ? 'บันทึกจุดเริ่มต้น' : 'แก้ไขจุดเริ่มต้น'}
           >
-            {isEditing ? <Check size={13} className="text-white" strokeWidth={2.4} /> : <Pencil size={12} strokeWidth={2.2} />}
+            {isEditing ? (
+              <Check size={13} className="text-white" strokeWidth={2.4} />
+            ) : (
+              <Pencil size={12} strokeWidth={2.2} />
+            )}
           </button>
         )}
       </div>
 
-      {/* ✦ BODY CONTENT: VIEW MODE VS EDIT MODE */}
+      {/* ✦ 2. CARD BODY: VIEW MODE VS EDIT MODE */}
       {!isEditing ? (
-        <div className="flex flex-col justify-between flex-1 gap-1.5 pt-0.5 overflow-hidden">
-          {/* =================================================================== */}
-          {/* 1. WARDROBE CLOSET SELECTOR (หยิบจากตู้เสื้อผ้าจริง ซิงก์ 100%)       */}
-          {/* =================================================================== */}
-          <div className="bg-black/25 rounded-[16px] p-2.5 border border-white/[0.05] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] shrink-0">
-            <div className="flex items-center justify-between text-[10.5px] font-mono text-white/45 mb-1.5">
-              <span className="flex items-center gap-1">
-                <Shirt size={10} className="text-white/50" />
-                <span>ชุดเปิดฉาก (หยิบจากตู้)</span>
+        <div className="flex flex-col justify-between flex-1 pt-2.5 overflow-hidden">
+          {/* ───────────────────────────────────────────────────────────────── */}
+          {/* SECTION 1: WARDROBE INTEGRATION (ชุดที่สวมใส่ - ซิงก์ตู้เสื้อผ้า)   */}
+          {/* ───────────────────────────────────────────────────────────────── */}
+          <div className="shrink-0 space-y-1.5">
+            <div className="flex items-center justify-between text-[11px] font-medium text-white/50">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[#EF264C] text-[10px] font-mono">✦</span>
+                <span>ชุดที่สวมใส่</span>
+              </div>
+              <span className="text-[10.5px] text-white/35 font-mono">
+                {wardrobeList.length} ชุดในตู้
               </span>
-              <span className="text-[10px] text-white/35">เลือกชุด</span>
             </div>
 
-            {/* Slideable Hanger Chips */}
+            {/* Clothes Hanger Selection Track (เหมือนหยิบจากในตู้มาใส่) */}
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
               {wardrobeList.map((item) => {
                 const isSelected = selectedOutfitKey === item.key;
@@ -203,136 +199,156 @@ export default function GenesisNodeCard({
                     key={item.key}
                     type="button"
                     onClick={() => handleSelectOutfit(item)}
-                    className={`px-2.5 py-1 rounded-full text-[10.5px] font-medium flex items-center gap-1.5 transition-all cursor-pointer shrink-0 select-none ${
+                    className={`px-2.5 py-1 rounded-full text-[11px] font-medium flex items-center gap-1.5 transition-all cursor-pointer shrink-0 select-none ${
                       isSelected
-                        ? 'bg-white/15 text-white border border-white/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]'
-                        : 'bg-white/[0.04] text-white/55 hover:text-white/85 border border-white/[0.06] hover:bg-white/[0.08]'
+                        ? 'bg-white/15 text-white border border-white/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]'
+                        : 'bg-white/[0.04] text-white/50 hover:text-white/80 border border-white/[0.06] hover:bg-white/[0.08]'
                     }`}
                   >
-                    <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-[#EF264C]' : 'bg-white/25'}`} />
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                        isSelected ? 'bg-[#EF264C]' : 'bg-white/25'
+                      }`}
+                    />
                     <span>{item.badgeLabel}</span>
                   </button>
                 );
               })}
             </div>
-            <p className="text-[10.5px] text-white/70 line-clamp-1 mt-1.5 italic font-light">
+
+            {/* Selected Outfit Texture Description */}
+            <p className="text-[11.5px] text-white/60 font-light line-clamp-1 leading-snug">
               {activeOutfit?.desc}
             </p>
           </div>
 
-          {/* =================================================================== */}
-          {/* 2. THE STAGE MARKS (50/50 DUAL SILHOUETTE: AI VS PLAYER)           */}
-          {/* =================================================================== */}
-          <div className="grid grid-cols-2 gap-1.5 shrink-0">
-            {/* Left: AI Posture Mark */}
-            <div className="bg-black/25 rounded-[16px] p-2.5 border border-white/[0.05] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-              <div className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider text-white/45 mb-1">
-                <span>🎭 A_POS (AI)</span>
+          {/* Hairline Divider with Breathing Space */}
+          <div className="w-full h-[1px] bg-white/[0.07] my-1" />
+
+          {/* ───────────────────────────────────────────────────────────────── */}
+          {/* SECTION 2: EMBODIED PHYSICAL PRESENCE (เวทีเผชิญหน้า ไร้กล่องบุ๋ม)  */}
+          {/* ───────────────────────────────────────────────────────────────── */}
+          <div className="grid grid-cols-[1fr_1px_1fr] items-stretch gap-2.5 shrink-0 py-0.5">
+            {/* Left: ท่าทางตัวละคร */}
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[#FF375F] text-[10px] font-mono">✦</span>
+                <span className="text-[11px] font-medium text-white/50">
+                  ท่าทางตัวละคร
+                </span>
               </div>
-              <p className="text-[11px] text-white/85 leading-snug line-clamp-3">
-                {aPos}
+              <p className="text-[11.5px] sm:text-[12px] text-[#F1F1F4] font-normal leading-[18px] line-clamp-3">
+                {actorPose}
               </p>
             </div>
 
-            {/* Right: Player Stance Mark */}
-            <div className="bg-black/25 rounded-[16px] p-2.5 border border-white/[0.05] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-              <div className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider text-white/45 mb-1">
-                <User size={10} className="text-white/50" />
-                <span>👤 P_POS (ผู้เล่น)</span>
+            {/* Vertical Center Hairline */}
+            <div className="w-[1px] h-full bg-white/[0.07]" />
+
+            {/* Right: ท่าทางผู้เล่น */}
+            <div className="space-y-1 pl-0.5">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[#0A84FF] text-[10px] font-mono">✦</span>
+                <span className="text-[11px] font-medium text-white/50">
+                  ท่าทางผู้เล่น
+                </span>
               </div>
-              <p className="text-[11px] text-white/85 leading-snug line-clamp-3">
-                {pPos}
+              <p className="text-[11.5px] sm:text-[12px] text-[#F1F1F4] font-normal leading-[18px] line-clamp-3">
+                {playerPose}
               </p>
             </div>
           </div>
 
-          {/* =================================================================== */}
-          {/* 3. INCITING SPARK & TENSION (ชนวนเหตุการณ์และแรงเสียดทานในใจ)           */}
-          {/* =================================================================== */}
-          <div className="bg-black/25 rounded-[16px] p-2.5 border border-white/[0.05] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] shrink-0">
-            <div className="flex items-center justify-between mb-1">
-              <span className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider text-white/45">
-                <Zap size={10} className="text-amber-400/80" />
-                <span>FIRST SPARK</span>
-              </span>
-              <span className="px-2 py-0.5 rounded-full bg-white/[0.06] border border-white/10 text-[10px] text-white/80 font-medium">
-                {tension}
-              </span>
+          {/* Hairline Divider with Breathing Space */}
+          <div className="w-full h-[1px] bg-white/[0.07] my-1" />
+
+          {/* ───────────────────────────────────────────────────────────────── */}
+          {/* SECTION 3: INCITING SPARK & TENSION (ชนวนเปิดฉาก & อารมณ์ในใจ)     */}
+          {/* ───────────────────────────────────────────────────────────────── */}
+          <div className="shrink-0 space-y-1.5 pb-0.5">
+            <div className="flex items-center justify-between text-[11px]">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[#FF9F0A] text-[10px] font-mono">✦</span>
+                <span className="font-medium text-white/50">ชนวนเปิดฉาก</span>
+              </div>
+              {tension && (
+                <span className="px-2 py-0.5 rounded-full bg-white/[0.05] border border-white/[0.08] text-[10.5px] text-white/70 font-normal">
+                  {tension}
+                </span>
+              )}
             </div>
-            <p className="text-[11px] text-white/85 italic leading-snug line-clamp-2">
+
+            <p className="text-[11.5px] sm:text-[12px] text-[#D6D6DC] italic font-light leading-relaxed line-clamp-2">
               "{spark}"
             </p>
           </div>
         </div>
       ) : (
-        /* EDIT MODE (IN-PLACE INSET FORMS) */
-        <div className="flex flex-col justify-between flex-1 gap-2 pt-1 overflow-y-auto no-scrollbar">
+        /* EDIT MODE: CLEAN AIRY INSET INPUTS */
+        <div className="flex flex-col justify-between flex-1 gap-2 pt-2 overflow-y-auto no-scrollbar">
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-[10px] font-mono uppercase tracking-wider text-white/50 block mb-1">
-                🎭 ภาษากาย AI (A_POS)
+              <label className="text-[11px] font-medium text-white/50 block mb-1">
+                ท่าทางตัวละคร
               </label>
               <textarea
-                value={aPos}
-                onChange={(e) => setAPos(e.target.value)}
+                value={actorPose}
+                onChange={(e) => setActorPose(e.target.value)}
                 rows={3}
-                className="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-[11px] text-white outline-none focus:border-white/30 resize-none leading-normal"
+                className="w-full bg-white/[0.04] border border-white/10 rounded-xl p-2 text-[11.5px] text-white outline-none focus:border-white/30 resize-none leading-normal"
                 placeholder="นั่งก้มหน้านิ่ง..."
               />
             </div>
             <div>
-              <label className="text-[10px] font-mono uppercase tracking-wider text-white/50 block mb-1">
-                👤 ท่าทางผู้เล่น (P_POS)
+              <label className="text-[11px] font-medium text-white/50 block mb-1">
+                ท่าทางผู้เล่น
               </label>
               <textarea
-                value={pPos}
-                onChange={(e) => setPPos(e.target.value)}
+                value={playerPose}
+                onChange={(e) => setPlayerPose(e.target.value)}
                 rows={3}
-                className="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-[11px] text-white outline-none focus:border-white/30 resize-none leading-normal"
+                className="w-full bg-white/[0.04] border border-white/10 rounded-xl p-2 text-[11.5px] text-white outline-none focus:border-white/30 resize-none leading-normal"
                 placeholder="ยืนสะพายกระเป๋า..."
               />
             </div>
           </div>
 
           <div>
-            <label className="text-[10px] font-mono uppercase tracking-wider text-white/50 block mb-1">
-              ⚡ ชนวนเปิดฉาก (FIRST SPARK)
+            <label className="text-[11px] font-medium text-white/50 block mb-1">
+              ชนวนเปิดฉาก (เหตุการณ์เสี้ยววินาทีก่อนหน้า)
             </label>
             <textarea
               value={spark}
               onChange={(e) => setSpark(e.target.value)}
               rows={2}
-              className="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-[11px] text-white outline-none focus:border-white/30 resize-none leading-normal"
+              className="w-full bg-white/[0.04] border border-white/10 rounded-xl p-2 text-[11.5px] text-white outline-none focus:border-white/30 resize-none leading-normal"
               placeholder="ไอน้ำชาเขียวอบอุ่นในห้องโถง..."
             />
           </div>
 
           <div>
-            <label className="text-[10px] font-mono uppercase tracking-wider text-white/50 block mb-1">
-              💭 สภาวะอารมณ์ (TENSION)
+            <label className="text-[11px] font-medium text-white/50 block mb-1">
+              สภาวะอารมณ์ในใจ
             </label>
             <input
               type="text"
               value={tension}
               onChange={(e) => setTension(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded-xl px-2.5 py-1.5 text-[11px] text-white outline-none focus:border-white/30"
-              placeholder="อึดอัด ประหม่า..."
+              className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-2.5 py-1.5 text-[11.5px] text-white outline-none focus:border-white/30"
+              placeholder="อึดอัด • ประหม่า..."
             />
           </div>
         </div>
       )}
 
-      {/* ✦ RIGHT OUTPUT SOCKET (PORT FOR IGNITING SCENE 1) */}
+      {/* ✦ 3. RIGHT OUTPUT SOCKET (PRECISION MICRO-JEWEL PORT FOR IGNITING SCENE 1) */}
       <div
-        className="absolute -right-[11px] w-[22px] h-[22px] rounded-full bg-[#181822] border-2 border-[#FF375F] hover:border-white flex items-center justify-center cursor-pointer shadow-[0_0_10px_rgba(255,55,95,0.4)] transition-all z-20 group/port"
+        className="absolute -right-[5.5px] -translate-y-1/2 w-[11px] h-[11px] rounded-full bg-[#141419] border border-white/25 hover:border-[#FF375F] hover:scale-125 transition-all z-30 flex items-center justify-center cursor-pointer group/port"
         style={{ top: `${PORT_Y_OFFSET}px` }}
-        title="จุดเชื่อมโยงชนวนเข้าสู่ฉากที่ 1"
-        aria-label="จุดเชื่อมโยงชนวนเข้าสู่ฉากที่ 1"
+        title="จุดเชื่อมต่อชนวนเปิดฉากสู่ฉากที่ 1"
+        aria-label="จุดเชื่อมต่อชนวนเปิดฉากสู่ฉากที่ 1"
       >
-        <div className="w-2 h-2 rounded-full bg-[#FF375F] group-hover/port:scale-125 transition-transform" />
-        <div className="absolute left-7 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-full bg-[#181820]/95 backdrop-blur-xl border border-white/15 text-[10.5px] font-medium text-white/90 whitespace-nowrap shadow-[0_4px_16px_rgba(0,0,0,0.5)] pointer-events-none opacity-0 group-hover/port:opacity-100 transition-all duration-200 z-50">
-          IGNITE SCENE 1 →
-        </div>
+        <div className="w-1 h-1 rounded-full bg-[#FF375F] group-hover/port:scale-125 transition-transform" />
       </div>
     </div>
   );

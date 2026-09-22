@@ -25,12 +25,15 @@ interface SceneNodeCardProps {
   hasOutgoingCable?: boolean;
   isDropTarget?: boolean;
   isLocationDropTarget?: boolean;
+  hasDirectorBriefing?: boolean;
+  isDirectorDropTarget?: boolean;
   onUpdateScene: (updated: WorldScene) => void;
   onDeleteScene: () => void;
   onStartDrag: (e: MouseEvent, sceneId: string) => void;
   onStartDragWire?: (e: MouseEvent, sceneId: string) => void;
   onStartDetachIncoming?: (e: MouseEvent, sceneId: string) => void;
   onDetachLocation?: (sceneId: string) => void;
+  onDetachDirector?: (sceneId: string) => void;
   isEditable?: boolean;
 }
 
@@ -49,12 +52,15 @@ export default function SceneNodeCard({
   hasOutgoingCable = false,
   isDropTarget = false,
   isLocationDropTarget = false,
+  hasDirectorBriefing = false,
+  isDirectorDropTarget = false,
   onUpdateScene,
   onDeleteScene,
   onStartDrag,
   onStartDragWire,
   onStartDetachIncoming,
   onDetachLocation,
+  onDetachDirector,
   isEditable = true,
 }: SceneNodeCardProps) {
   const [activeBeatIndex, setActiveBeatIndex] = useState(0);
@@ -226,6 +232,8 @@ export default function SceneNodeCard({
           ? 'border-[#FF375F] ring-2 ring-[#FF375F]/40 shadow-[0_8px_32px_rgba(255,55,95,0.3),inset_0_1px_0_rgba(255,255,255,0.12)] z-30'
           : isLocationDropTarget
           ? 'border-[#0A84FF] ring-2 ring-[#0A84FF]/40 shadow-[0_8px_32px_rgba(10,132,255,0.25),inset_0_1px_0_rgba(255,255,255,0.12)] z-30'
+          : isDirectorDropTarget
+          ? 'border-[#FF9F0A] ring-2 ring-[#FF9F0A]/40 shadow-[0_8px_32px_rgba(255,159,10,0.25),inset_0_1px_0_rgba(255,255,255,0.12)] z-30'
           : 'border-white/[0.10] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]'
       } ${isExpandedCard ? 'min-h-[346px] h-auto pb-9 z-20' : isEditing ? 'min-h-[346px] h-auto pb-6 z-20' : 'h-[346px] pb-9 sm:pb-9'}`}
       style={{
@@ -261,6 +269,38 @@ export default function SceneNodeCard({
               ? 'w-1.5 h-1.5 bg-white'
               : scene.location_key
               ? 'w-1 h-1 bg-[#0A84FF] group-hover/locsock:bg-[#FF375F]'
+              : 'w-0.5 h-0.5 bg-white/30'
+          }`}
+        />
+      </div>
+
+      {/* ✦ TOP-RIGHT SHOULDER DIRECTOR SLATE CONNECTOR SOCKET (ORGANIC S-CURVE) */}
+      <div
+        onClick={(e) => {
+          if (hasDirectorBriefing && isEditable && onDetachDirector) {
+            e.stopPropagation();
+            onDetachDirector(scene.scene_id);
+          }
+        }}
+        className={`absolute top-0 right-[36px] translate-x-1/2 -translate-y-1/2 w-[11px] h-[11px] rounded-full bg-[#141419] transition-all z-30 flex items-center justify-center select-none ${
+          isDirectorDropTarget
+            ? 'scale-150 border border-[#FF9F0A] ring-2 ring-[#FF9F0A]/40 bg-[#FF9F0A]/30'
+            : hasDirectorBriefing
+            ? 'border border-white/20 hover:border-[#FF9F0A] hover:scale-125 cursor-pointer group/dirsock'
+            : 'border border-dashed border-white/20 hover:border-white/40 cursor-default'
+        }`}
+        title={
+          hasDirectorBriefing
+            ? 'บรีฟผู้กำกับ: เชื่อมต่อแล้ว (คลิกเพื่อถอดสายผู้กำกับ)'
+            : 'พอร์ตผู้กำกับว่าง: ลากสายจาก Director Slate มาเสียบที่นี่'
+        }
+      >
+        <div
+          className={`rounded-full transition-all ${
+            isDirectorDropTarget
+              ? 'w-1.5 h-1.5 bg-white'
+              : hasDirectorBriefing
+              ? 'w-1 h-1 bg-[#FF9F0A] group-hover/dirsock:bg-[#FF375F]'
               : 'w-0.5 h-0.5 bg-white/30'
           }`}
         />
@@ -362,6 +402,13 @@ export default function SceneNodeCard({
             {isLocationDropTarget && (
               <span className="px-2 py-0.2 rounded-full bg-[#0A84FF]/20 border border-[#0A84FF]/40 text-[9.5px] font-medium text-[#0A84FF] shrink-0 animate-pulse ml-0.5">
                 ✦ ปล่อยเพื่อตั้งสถานที่
+              </span>
+            )}
+
+            {/* Director Drop Target Hover Badge */}
+            {isDirectorDropTarget && (
+              <span className="px-2 py-0.2 rounded-full bg-[#FF9F0A]/20 border border-[#FF9F0A]/40 text-[9.5px] font-medium text-[#FF9F0A] shrink-0 animate-pulse ml-0.5">
+                ✦ ปล่อยเพื่อเชื่อมบรีฟ
               </span>
             )}
           </div>

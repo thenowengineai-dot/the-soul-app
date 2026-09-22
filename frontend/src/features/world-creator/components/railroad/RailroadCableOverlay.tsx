@@ -1,5 +1,6 @@
 import { Plus, Scissors } from 'lucide-react';
 import type { WorldScene } from '../../types';
+import { SLATE_WIDTH, SLATE_COMPACT_HEIGHT } from './DirectorSlateCard';
 
 export interface DraggingWireState {
   fromSceneId: string;
@@ -17,16 +18,29 @@ export interface DraggingLocationWireState {
   currentY: number;
 }
 
+export interface DraggingDirectorWireState {
+  fromSceneId: string;
+  startX: number;
+  startY: number;
+  currentX: number;
+  currentY: number;
+}
+
 interface RailroadCableOverlayProps {
   scenes: WorldScene[];
   locationPositions?: Record<string, { x: number; y: number }>;
+  directorPositions?: Record<string, { x: number; y: number }>;
+  detachedDirectorSceneIds?: Set<string>;
   onInsertSceneBetween: (fromSceneId: string) => void;
   onDisconnectScene?: (fromSceneId: string) => void;
   onDisconnectLocation?: (sceneId: string) => void;
+  onDisconnectDirector?: (sceneId: string) => void;
   draggingWire?: DraggingWireState | null;
   hoveredTargetSceneId?: string | null;
   draggingLocationWire?: DraggingLocationWireState | null;
   hoveredTargetSceneForLocationId?: string | null;
+  draggingDirectorWire?: DraggingDirectorWireState | null;
+  hoveredTargetSceneForDirectorId?: string | null;
   isEditable?: boolean;
 }
 
@@ -34,6 +48,7 @@ export const SCENE_WIDTH = 346;
 export const SCENE_STEP_X = 460;
 export const PORT_Y_OFFSET = 24;
 export const LOC_PORT_X_OFFSET = 36;
+export const DIRECTOR_PORT_X_OFFSET = 36;
 export const LOC_PILL_WIDTH = 180;
 export const LOC_PILL_HEIGHT = 34;
 
@@ -138,13 +153,18 @@ export function computeSceneChainOrder(scenes: WorldScene[]): Map<string, number
 export default function RailroadCableOverlay({
   scenes,
   locationPositions,
+  directorPositions,
+  detachedDirectorSceneIds,
   onInsertSceneBetween,
   onDisconnectScene,
   onDisconnectLocation,
+  onDisconnectDirector,
   draggingWire,
   hoveredTargetSceneId,
   draggingLocationWire,
   hoveredTargetSceneForLocationId,
+  draggingDirectorWire,
+  hoveredTargetSceneForDirectorId,
   isEditable = true,
 }: RailroadCableOverlayProps) {
   // Find target scene for dragging story wire snap
@@ -155,6 +175,11 @@ export default function RailroadCableOverlay({
   // Find target scene for dragging location wire snap
   const snappedTargetSceneForLoc = hoveredTargetSceneForLocationId
     ? scenes.find((s) => s.scene_id === hoveredTargetSceneForLocationId)
+    : null;
+
+  // Find target scene for dragging director wire snap
+  const snappedTargetSceneForDir = hoveredTargetSceneForDirectorId
+    ? scenes.find((s) => s.scene_id === hoveredTargetSceneForDirectorId)
     : null;
 
   return (
@@ -187,6 +212,19 @@ export default function RailroadCableOverlay({
           orient="auto"
         >
           <path d="M 1 2 L 6 5 L 1 8 z" fill="#0A84FF" />
+        </marker>
+
+        {/* Subtle marker for Apple Amber Director Briefing line */}
+        <marker
+          id="dir-cable-arrow"
+          viewBox="0 0 10 10"
+          refX="6"
+          refY="5"
+          markerWidth="5"
+          markerHeight="5"
+          orient="auto"
+        >
+          <path d="M 1 2 L 6 5 L 1 8 z" fill="#FF9F0A" />
         </marker>
       </defs>
 
@@ -412,6 +450,108 @@ export default function RailroadCableOverlay({
       })}
 
       {/* =================================================================== */}
+      {/* 2.5. APPLE AMBER DIRECTOR SLATE CABLES (ORGANIC S-CURVE)           */}
+      {/* =================================================================== */}
+      {scenes.map((scene, idx) => {
+        // If this scene's director briefing was detached, do not draw the cable
+        if (detachedDirectorSceneIds?.has(scene.scene_id)) return null;
+
+        const sceneX = scene.position?.x ?? 80 + idx * SCENE_STEP_X;
+        const sceneY = scene.position?.y ?? 170;
+        const slatePos = directorPositions?.[scene.scene_id];
+
+        // Start from Director Slate bottom center port
+        const x1 = slatePos ? slatePos.x + SLATE_WIDTH / 2 : sceneX + 180 + SLATE_WIDTH / 2;
+        const y1 = slatePos ? slatePos.y + SLATE_COMPACT_HEIGHT : 25 + SLATE_COMPACT_HEIGHT;
+
+        // End at Scene Card top-right shoulder socket
+        const x2 = sceneX + SCENE_WIDTH - DIRECTOR_PORT_X_OFFSET;
+        const y2 = sceneY;
+
+        // Organic Bezier S-Curve Calculation (Fluid studio cable)
+        const dy = Math.abs(y2 - y1);
+        const verticalCurvature = Math.max(dy * 0.55, 35);
+        const sCurvePathData = `M ${x1} ${y1} C ${x1} ${y1 + verticalCurvature}, ${x2} ${y2 - verticalCurvature}, ${x2} ${y2}`;
+
+        // Midpoint along the S-Curve (t = 0.5)
+        const midX = (x1 + x2) / 2;
+        const midY = (y1 + y2) / 2;
+
+        return (
+          <g
+            key={`dir-cable-${scene.scene_id}`}
+            className="group/dircable"
+          >
+            {/* ✦ 1. WIDE TRANSPARENT HOVER CAPTURE PATH */}
+            <path
+              d={sCurvePathData}
+              fill="none"
+              stroke="transparent"
+              strokeWidth="24"
+              className="pointer-events-auto cursor-pointer"
+            />
+
+            {/* ✦ 2. SUBTLE APPLE AMBER AMBIENT HALO (Zero-Glow Philosophy) */}
+            <path
+              d={sCurvePathData}
+              fill="none"
+              stroke="#FF9F0A"
+              strokeOpacity="0.10"
+              strokeWidth="3.5"
+              className="transition-opacity group-hover/dircable:stroke-opacity-25"
+            />
+
+            {/* ✦ 3. PRIMARY APPLE AMBER SHOULDER CABLE (#FF9F0A - HAIRLINE 1.4PX) */}
+            <path
+              d={sCurvePathData}
+              fill="none"
+              stroke="#FF9F0A"
+              strokeWidth="1.4"
+              markerEnd="url(#dir-cable-arrow)"
+              className="transition-all group-hover/dircable:stroke-width-[1.8px]"
+            />
+
+            {/* ✦ 4. MIDPOINT FLOATING ACTION DOCK (Apple Frosted Quick Cut Pill) */}
+            {isEditable && (
+              <foreignObject
+                x={midX - 45}
+                y={midY - 14}
+                width={90}
+                height={28}
+                className="overflow-visible pointer-events-auto"
+              >
+                <div className="w-full h-full flex items-center justify-center">
+                  {/* RESTING STATE: Subtle Apple Frosted Amber Micro-Node */}
+                  <div
+                    className="group-hover/dircable:hidden flex items-center justify-center w-[12px] h-[12px] rounded-full bg-[#14141E] border border-white/20 shadow-sm text-white/50 hover:scale-125 transition-all cursor-pointer"
+                    title="ชี้เพื่อตัดการเชื่อมต่อบรีฟผู้กำกับ"
+                  >
+                    <div className="w-[3px] h-[3px] rounded-full bg-[#FF9F0A]" />
+                  </div>
+
+                  {/* HOVER / ACTIVE STATE: Expanded Cut Button */}
+                  <div className="hidden group-hover/dircable:flex items-center px-2 py-0.5 rounded-full bg-[#16161E]/95 hover:bg-[#1C1C26] border border-white/20 backdrop-blur-xl shadow-[0_4px_16px_rgba(0,0,0,0.7)] select-none">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDisconnectDirector?.(scene.scene_id);
+                      }}
+                      className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium text-white/85 hover:text-[#FF375F] hover:bg-[#FF375F]/15 transition-all cursor-pointer active:scale-95"
+                      title="ตัดสายบรีฟผู้กำกับนี้ออกจากฉาก"
+                    >
+                      <Scissors size={10} strokeWidth={2.4} />
+                      <span>ตัดบรีฟ</span>
+                    </button>
+                  </div>
+                </div>
+              </foreignObject>
+            )}
+          </g>
+        );
+      })}
+
+      {/* =================================================================== */}
       {/* 3. ACTIVE LIVE DRAGGING STORY WIRE (ELECTRIC ROSE)                  */}
       {/* =================================================================== */}
       {draggingWire && (
@@ -518,6 +658,63 @@ export default function RailroadCableOverlay({
                   fill="#0A84FF"
                   stroke="#FFFFFF"
                   strokeWidth={snappedTargetSceneForLoc ? 2 : 1.5}
+                />
+              </>
+            );
+          })()}
+        </g>
+      )}
+
+      {/* =================================================================== */}
+      {/* 5. ACTIVE LIVE DRAGGING DIRECTOR WIRE (APPLE AMBER)                 */}
+      {/* =================================================================== */}
+      {draggingDirectorWire && (
+        <g className="pointer-events-none">
+          {(() => {
+            const x1 = draggingDirectorWire.startX;
+            const y1 = draggingDirectorWire.startY;
+
+            // If snapped to a hovered target scene, magnetically lock onto target top-right shoulder socket
+            const x2 = snappedTargetSceneForDir
+              ? (snappedTargetSceneForDir.position?.x ?? 80) + SCENE_WIDTH - DIRECTOR_PORT_X_OFFSET
+              : draggingDirectorWire.currentX;
+            const y2 = snappedTargetSceneForDir
+              ? (snappedTargetSceneForDir.position?.y ?? 170)
+              : draggingDirectorWire.currentY;
+
+            const dy = Math.abs(y2 - y1);
+            const verticalCurvature = Math.max(dy * 0.55, 35);
+            const dragPathData = `M ${x1} ${y1} C ${x1} ${y1 + verticalCurvature}, ${x2} ${y2 - verticalCurvature}, ${x2} ${y2}`;
+
+            return (
+              <>
+                {/* Dragging Director Wire Ambient Halo */}
+                <path
+                  d={dragPathData}
+                  fill="none"
+                  stroke="#FF9F0A"
+                  strokeOpacity="0.15"
+                  strokeWidth="3.5"
+                />
+
+                {/* Dragging Director Wire Active Pulsing Dashed Line */}
+                <path
+                  d={dragPathData}
+                  fill="none"
+                  stroke="#FF9F0A"
+                  strokeWidth="1.4"
+                  strokeDasharray="5 3"
+                  markerEnd="url(#dir-cable-arrow)"
+                />
+
+                {/* Target Snap Ring / Tip Dot */}
+                <circle
+                  cx={x2}
+                  cy={y2}
+                  r={snappedTargetSceneForDir ? 6 : 4}
+                  fill="#FF9F0A"
+                  stroke="#FFFFFF"
+                  strokeWidth={snappedTargetSceneForDir ? 2 : 1.5}
                 />
               </>
             );

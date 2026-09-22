@@ -14,9 +14,11 @@ import type { VaultDraft, WorldScene, WorldScenario } from '../../types';
 import { DEFAULT_BOTANICAL_LOCATIONS } from '../../defaultWorldLocations';
 import SceneNodeCard from './SceneNodeCard';
 import LocationPillNode, { LOC_PILL_HEIGHT } from './LocationPillNode';
+import DirectorSlateCard from './DirectorSlateCard';
 import RailroadCableOverlay, {
   type DraggingWireState,
   type DraggingLocationWireState,
+  type DraggingDirectorWireState,
   resolveNextSceneId,
   computeSceneChainOrder,
   SCENE_WIDTH,
@@ -294,6 +296,23 @@ export default function RailroadCanvas({
   const [draggingLocationWire, setDraggingLocationWire] = useState<DraggingLocationWireState | null>(null);
   const [hoveredTargetSceneForLocId, setHoveredTargetSceneForLocId] = useState<string | null>(null);
 
+  // Director Slate Custom Positions & Detached State
+  const [customDirectorPositions, setCustomDirectorPositions] = useState<Record<string, { x: number; y: number }>>({});
+  const [detachedDirectorSceneIds, setDetachedDirectorSceneIds] = useState<Set<string>>(new Set());
+
+  // Director Slate Card Dragging State
+  const [draggingDirectorSlateId, setDraggingDirectorSlateId] = useState<string | null>(null);
+  const dragDirectorStartPosRef = useRef<{ mouseX: number; mouseY: number; slateX: number; slateY: number }>({
+    mouseX: 0,
+    mouseY: 0,
+    slateX: 0,
+    slateY: 0,
+  });
+
+  // Director Wire Dragging State (Amber wire from director slate bottom port)
+  const [draggingDirectorWire, setDraggingDirectorWire] = useState<DraggingDirectorWireState | null>(null);
+  const [hoveredTargetSceneForDirId, setHoveredTargetSceneForDirId] = useState<string | null>(null);
+
   // Current Scenario Scenes
   const scenario: WorldScenario = draft.scenario || {
     id: 'botanical_scenario_01',
@@ -332,7 +351,7 @@ export default function RailroadCanvas({
         const sceneIdx = scenes.findIndex((s) => s.scene_id === boundScene.scene_id);
         const sx = boundScene.position?.x ?? (80 + sceneIdx * SCENE_STEP_X);
         return {
-          x: sx + SCENE_WIDTH / 2,
+          x: sx + 36,
           y: 40,
         };
       }
@@ -358,6 +377,30 @@ export default function RailroadCanvas({
     });
     return map;
   }, [allLocationKeys, getLocationPosition]);
+
+  // Coordinate conversion of director briefing slate cards
+  const getDirectorPosition = useCallback(
+    (sceneId: string): { x: number; y: number } => {
+      if (customDirectorPositions[sceneId]) {
+        return customDirectorPositions[sceneId];
+      }
+      const sceneIdx = scenes.findIndex((s) => s.scene_id === sceneId);
+      const sx = scenes[sceneIdx]?.position?.x ?? (80 + Math.max(0, sceneIdx) * SCENE_STEP_X);
+      return {
+        x: sx + 66,
+        y: 20,
+      };
+    },
+    [customDirectorPositions, scenes]
+  );
+
+  const resolvedDirectorPositions = useMemo(() => {
+    const map: Record<string, { x: number; y: number }> = {};
+    scenes.forEach((s) => {
+      map[s.scene_id] = getDirectorPosition(s.scene_id);
+    });
+    return map;
+  }, [scenes, getDirectorPosition]);
 
   // Coordinate Conversion (Screen clientX/Y to Canvas world coordinates)
   const getCanvasCoords = useCallback(
@@ -525,6 +568,94 @@ export default function RailroadCanvas({
     [scenes, handleUpdateScenes]
   );
 
+  // Start dragging director slate card itself
+  const handleStartDragDirectorCard = (e: React.MouseEvent, sceneId: string) => {
+    e.stopPropagation();
+    setDraggingDirectorSlateId(sceneId);
+    const slatePos = resolvedDirectorPositions[sceneId] || { x: 80, y: 20 };
+    dragDirectorStartPosRef.current = {
+      mouseX: e.clientX,
+      mouseY: e.clientY,
+      slateX: slatePos.x,
+      slateY: slatePos.y,
+    };
+  };
+
+  // Start dragging director wire from slate bottom port
+  const handleStartDragDirectorWire = (e: React.MouseEvent, sceneId: string) => {
+    e.stopPropagation();
+    const slatePos = resolvedDirectorPositions[sceneId] || { x: 80, y: 20 };
+    // Start at bottom center of the slate (width 280, compact height 110)
+    const startX = slatePos.x + 140;
+    const startY = slatePos.y + 110;
+    const coords = getCanvasCoords(e.clientX, e.clientY);
+    setDraggingDirectorWire({
+      fromSceneId: sceneId,
+      startX,
+      startY,
+      currentX: coords.x,
+      currentY: coords.y,
+    });
+    setHoveredTargetSceneForDirId(null);
+  };
+
+  // Connect director briefing to target scene
+  const handleConnectDirector = useCallback(
+    (fromSceneId: string, targetSceneId: string) => {
+      setDetachedDirectorSceneIds((prev) => {
+        const next = new Set(prev);
+        next.delete(targetSceneId);
+        return next;
+      });
+
+      // If dragged from one scene to another, copy briefing directives
+      if (fromSceneId !== targetSceneId) {
+        const sourceScene = scenes.find((s) => s.scene_id === fromSceneId);
+        if (sourceScene) {
+          const updated = scenes.map((s) => {
+            if (s.scene_id === targetSceneId) {
+              return {
+                ...s,
+                scene_objective: sourceScene.scene_objective,
+                director_setup: sourceScene.director_setup,
+                premise: sourceScene.premise,
+                forced_chaos_level: sourceScene.forced_chaos_level,
+                event_mood: sourceScene.event_mood,
+                director_vision: sourceScene.director_vision,
+              };
+            }
+            return s;
+          });
+          handleUpdateScenes(updated);
+        }
+      }
+    },
+    [scenes, handleUpdateScenes]
+  );
+
+  // Disconnect director briefing from scene
+  const handleDisconnectDirector = useCallback((sceneId: string) => {
+    setDetachedDirectorSceneIds((prev) => {
+      const next = new Set(prev);
+      next.add(sceneId);
+      return next;
+    });
+  }, []);
+
+  // Update director briefing fields on a scene
+  const handleUpdateBriefing = useCallback(
+    (sceneId: string, updatedFields: Partial<WorldScene>) => {
+      const updated = scenes.map((s) => {
+        if (s.scene_id === sceneId) {
+          return { ...s, ...updatedFields };
+        }
+        return s;
+      });
+      handleUpdateScenes(updated);
+    },
+    [scenes, handleUpdateScenes]
+  );
+
   // Add new location to draft
   const handleAddNewLocation = () => {
     const newIndex = allLocationKeys.length + 1;
@@ -653,6 +784,36 @@ export default function RailroadCanvas({
           }
         }
         setHoveredTargetSceneForLocId(targetLocSceneId);
+      } else if (draggingDirectorSlateId) {
+        const dx = (e.clientX - dragDirectorStartPosRef.current.mouseX) / zoom;
+        const dy = (e.clientY - dragDirectorStartPosRef.current.mouseY) / zoom;
+        setCustomDirectorPositions((prev) => ({
+          ...prev,
+          [draggingDirectorSlateId]: {
+            x: Math.round(dragDirectorStartPosRef.current.slateX + dx),
+            y: Math.round(dragDirectorStartPosRef.current.slateY + dy),
+          },
+        }));
+      } else if (draggingDirectorWire) {
+        const coords = getCanvasCoords(e.clientX, e.clientY);
+        setDraggingDirectorWire((prev) => (prev ? { ...prev, currentX: coords.x, currentY: coords.y } : null));
+
+        // Magnetic snap: search for scene card target under cursor
+        let targetDirSceneId: string | null = null;
+        for (const s of scenes) {
+          const sx = s.position?.x ?? 80;
+          const sy = s.position?.y ?? 170;
+          if (
+            coords.x >= sx - 40 &&
+            coords.x <= sx + SCENE_WIDTH + 40 &&
+            coords.y >= sy - 40 &&
+            coords.y <= sy + 380
+          ) {
+            targetDirSceneId = s.scene_id;
+            break;
+          }
+        }
+        setHoveredTargetSceneForDirId(targetDirSceneId);
       }
     };
 
@@ -665,6 +826,9 @@ export default function RailroadCanvas({
       }
       if (draggingLocationKey) {
         setDraggingLocationKey(null);
+      }
+      if (draggingDirectorSlateId) {
+        setDraggingDirectorSlateId(null);
       }
       if (draggingWire) {
         if (hoveredTargetSceneId) {
@@ -683,6 +847,13 @@ export default function RailroadCanvas({
         setDraggingLocationWire(null);
         setHoveredTargetSceneForLocId(null);
       }
+      if (draggingDirectorWire) {
+        if (hoveredTargetSceneForDirId) {
+          handleConnectDirector(draggingDirectorWire.fromSceneId, hoveredTargetSceneForDirId);
+        }
+        setDraggingDirectorWire(null);
+        setHoveredTargetSceneForDirId(null);
+      }
     };
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -695,10 +866,13 @@ export default function RailroadCanvas({
     isPanning,
     draggingSceneId,
     draggingLocationKey,
+    draggingDirectorSlateId,
     draggingWire,
     hoveredTargetSceneId,
     draggingLocationWire,
     hoveredTargetSceneForLocId,
+    draggingDirectorWire,
+    hoveredTargetSceneForDirId,
     zoom,
     scenes,
     getCanvasCoords,
@@ -706,6 +880,7 @@ export default function RailroadCanvas({
     handleConnectScenes,
     handleDisconnectScene,
     handleConnectLocation,
+    handleConnectDirector,
   ]);
 
   // 5. SCENE ACTIONS (UPDATE, DELETE, INSERT, ADD)
@@ -912,17 +1087,22 @@ export default function RailroadCanvas({
           minHeight: '4000px',
         }}
       >
-        {/* SVG Bezier Railroad Cable Overlay (Red Story Cables + Emerald Location Cables) */}
+        {/* SVG Bezier Railroad Cable Overlay (Red Story Cables + Blue Location Cables + Amber Director Cables) */}
         <RailroadCableOverlay
           scenes={scenes}
           locationPositions={resolvedLocationPositions}
+          directorPositions={resolvedDirectorPositions}
+          detachedDirectorSceneIds={detachedDirectorSceneIds}
           onInsertSceneBetween={handleInsertSceneBetween}
           onDisconnectScene={handleDisconnectScene}
           onDisconnectLocation={handleDisconnectLocation}
+          onDisconnectDirector={handleDisconnectDirector}
           draggingWire={draggingWire}
           hoveredTargetSceneId={hoveredTargetSceneId}
           draggingLocationWire={draggingLocationWire}
           hoveredTargetSceneForLocationId={hoveredTargetSceneForLocId}
+          draggingDirectorWire={draggingDirectorWire}
+          hoveredTargetSceneForDirectorId={hoveredTargetSceneForDirId}
           isEditable={isEditable}
         />
 
@@ -941,6 +1121,27 @@ export default function RailroadCanvas({
               isEditable={isEditable}
               onStartDragPill={handleStartDragPill}
               onStartDragWire={handleStartDragLocationWire}
+            />
+          );
+        })}
+
+        {/* ✦ 1.7 DIRECTOR'S BRIEFING SLATE NODES (ROW 1 - THE CINEMA SLATE) */}
+        {scenes.map((scene) => {
+          const slatePos = resolvedDirectorPositions[scene.scene_id] || { x: 80, y: 20 };
+          const isDraggingThisWire = draggingDirectorWire?.fromSceneId === scene.scene_id;
+          const sceneOrder = sceneOrderMap.get(scene.scene_id) ?? null;
+
+          return (
+            <DirectorSlateCard
+              key={`dir-slate-${scene.scene_id}`}
+              scene={scene}
+              sceneOrder={sceneOrder}
+              position={slatePos}
+              isDraggingWire={isDraggingThisWire}
+              isEditable={isEditable}
+              onStartDragCard={handleStartDragDirectorCard}
+              onStartDragWire={handleStartDragDirectorWire}
+              onUpdateBriefing={handleUpdateBriefing}
             />
           );
         })}
@@ -965,12 +1166,15 @@ export default function RailroadCanvas({
               hasOutgoingCable={hasOutgoing}
               isDropTarget={isTarget}
               isLocationDropTarget={hoveredTargetSceneForLocId === scene.scene_id}
+              hasDirectorBriefing={!detachedDirectorSceneIds.has(scene.scene_id)}
+              isDirectorDropTarget={hoveredTargetSceneForDirId === scene.scene_id}
               onUpdateScene={(updated) => handleUpdateScene(idx, updated)}
               onDeleteScene={() => handleDeleteScene(idx)}
               onStartDrag={handleStartDragNode}
               onStartDragWire={handleStartDragWire}
               onStartDetachIncoming={handleStartDetachIncoming}
               onDetachLocation={handleDisconnectLocation}
+              onDetachDirector={handleDisconnectDirector}
               isEditable={isEditable}
             />
           );

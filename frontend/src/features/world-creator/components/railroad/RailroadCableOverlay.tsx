@@ -136,10 +136,8 @@ export function computeSceneChainOrder(scenes: WorldScene[]): Map<string, number
 
 export default function RailroadCableOverlay({
   scenes,
-  locationPositions,
   onInsertSceneBetween,
   onDisconnectScene,
-  onDisconnectLocation,
   draggingWire,
   hoveredTargetSceneId,
   draggingLocationWire,
@@ -175,7 +173,7 @@ export default function RailroadCableOverlay({
           <path d="M 1 2 L 6 5 L 1 8 z" fill="#FF375F" />
         </marker>
 
-        {/* Subtle marker for Luminous Mint location line */}
+        {/* Subtle marker for Apple System Blue location line */}
         <marker
           id="loc-cable-arrow"
           viewBox="0 0 10 10"
@@ -185,7 +183,7 @@ export default function RailroadCableOverlay({
           markerHeight="5"
           orient="auto"
         >
-          <path d="M 1 2 L 6 5 L 1 8 z" fill="#30D158" />
+          <path d="M 1 2 L 6 5 L 1 8 z" fill="#0A84FF" />
         </marker>
       </defs>
 
@@ -310,104 +308,9 @@ export default function RailroadCableOverlay({
       })}
 
       {/* =================================================================== */}
-      {/* 2. LUMINOUS MINT VERTICAL LOCATION CABLES (SPATIAL ORTHOGONAL)       */}
+      {/* 2. DIRECT SURFACE DROP: STATIC VERTICAL LOCATION WIRES ELIMINATED   */}
+      {/* (Locations now live directly on the scene cards as sleek pills)     */}
       {/* =================================================================== */}
-      {scenes.map((scene, idx) => {
-        if (!scene.location_key) return null;
-
-        const locPos = locationPositions?.[scene.location_key];
-        const sceneX = scene.position?.x ?? 80 + idx * SCENE_STEP_X;
-        const sceneY = scene.position?.y ?? 170;
-
-        // Start from Location Pill bottom center port (locPos.x is already centered via -translate-x-1/2)
-        const x1 = locPos ? locPos.x : sceneX + SCENE_WIDTH / 2;
-        const y1 = locPos ? locPos.y + LOC_PILL_HEIGHT : 40 + LOC_PILL_HEIGHT;
-
-        // End at Scene Card top center socket
-        const x2 = sceneX + SCENE_WIDTH / 2;
-        const y2 = sceneY;
-
-        // Vertical Bezier Calculation (Plumb line when x1 === x2)
-        const dy = Math.abs(y2 - y1);
-        const curvature = Math.max(dy * 0.5, 25);
-        const mintPathData = `M ${x1} ${y1} C ${x1} ${y1 + curvature}, ${x2} ${y2 - curvature}, ${x2} ${y2}`;
-
-        const midX = (x1 + x2) / 2;
-        const midY = (y1 + y2) / 2;
-
-        return (
-          <g
-            key={`loc-cable-${scene.scene_id}-${scene.location_key}`}
-            className="group/loccable"
-          >
-            {/* ✦ 1. WIDE TRANSPARENT HOVER CAPTURE PATH */}
-            <path
-              d={mintPathData}
-              fill="none"
-              stroke="transparent"
-              strokeWidth="24"
-              className="pointer-events-auto cursor-pointer"
-            />
-
-            {/* ✦ 2. SUBTLE LUMINOUS MINT AMBIENT HALO (Zero-Glow Philosophy) */}
-            <path
-              d={mintPathData}
-              fill="none"
-              stroke="#30D158"
-              strokeOpacity="0.10"
-              strokeWidth="3.5"
-              className="transition-opacity group-hover/loccable:stroke-opacity-25"
-            />
-
-            {/* ✦ 3. PRIMARY LUMINOUS MINT CABLE (#30D158 - HAIRLINE 1.4PX) */}
-            <path
-              d={mintPathData}
-              fill="none"
-              stroke="#30D158"
-              strokeWidth="1.4"
-              markerEnd="url(#loc-cable-arrow)"
-              className="transition-all group-hover/loccable:stroke-width-[1.8px]"
-            />
-
-            {/* ✦ 4. MIDPOINT FLOATING ACTION DOCK (Apple Frosted Quick Cut Pill) */}
-            {isEditable && (
-              <foreignObject
-                x={midX - 45}
-                y={midY - 14}
-                width={90}
-                height={28}
-                className="overflow-visible pointer-events-auto"
-              >
-                <div className="w-full h-full flex items-center justify-center">
-                  {/* RESTING STATE: Subtle Apple Frosted Mint Micro-Node */}
-                  <div
-                    className="group-hover/loccable:hidden flex items-center justify-center w-[12px] h-[12px] rounded-full bg-[#14141E] border border-white/20 shadow-sm text-white/50 hover:scale-125 transition-all cursor-pointer"
-                    title="ชี้เพื่อตัดการเชื่อมต่อสถานที่"
-                  >
-                    <div className="w-[3px] h-[3px] rounded-full bg-[#30D158]" />
-                  </div>
-
-                  {/* HOVER / ACTIVE STATE: Expanded Cut Button */}
-                  <div className="hidden group-hover/loccable:flex items-center px-2 py-0.5 rounded-full bg-[#16161E]/95 hover:bg-[#1C1C26] border border-white/20 backdrop-blur-xl shadow-[0_4px_16px_rgba(0,0,0,0.7)] select-none">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDisconnectLocation?.(scene.scene_id);
-                      }}
-                      className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium text-white/85 hover:text-[#FF375F] hover:bg-[#FF375F]/15 transition-all cursor-pointer active:scale-95"
-                      title="ตัดสายสถานที่นี้ออกจากฉาก"
-                    >
-                      <Scissors size={10} strokeWidth={2.4} />
-                      <span>ตัดสถานที่</span>
-                    </button>
-                  </div>
-                </div>
-              </foreignObject>
-            )}
-          </g>
-        );
-      })}
 
       {/* =================================================================== */}
       {/* 3. ACTIVE LIVE DRAGGING STORY WIRE (ELECTRIC ROSE)                  */}
@@ -467,7 +370,7 @@ export default function RailroadCableOverlay({
       )}
 
       {/* =================================================================== */}
-      {/* 4. ACTIVE LIVE DRAGGING LOCATION WIRE (LUMINOUS MINT)               */}
+      {/* 4. ACTIVE LIVE DRAGGING LOCATION WIRE (APPLE SYSTEM BLUE)           */}
       {/* =================================================================== */}
       {draggingLocationWire && (
         <g className="pointer-events-none">
@@ -475,7 +378,7 @@ export default function RailroadCableOverlay({
             const x1 = draggingLocationWire.startX;
             const y1 = draggingLocationWire.startY;
 
-            // If snapped to a hovered target scene, magnetically lock onto target top socket
+            // If snapped to a hovered target scene, magnetically lock onto target card top
             const x2 = snappedTargetSceneForLoc
               ? (snappedTargetSceneForLoc.position?.x ?? 80) + SCENE_WIDTH / 2
               : draggingLocationWire.currentX;
@@ -493,8 +396,8 @@ export default function RailroadCableOverlay({
                 <path
                   d={dragPathData}
                   fill="none"
-                  stroke="#30D158"
-                  strokeOpacity="0.12"
+                  stroke="#0A84FF"
+                  strokeOpacity="0.15"
                   strokeWidth="3.5"
                 />
 
@@ -502,7 +405,7 @@ export default function RailroadCableOverlay({
                 <path
                   d={dragPathData}
                   fill="none"
-                  stroke="#30D158"
+                  stroke="#0A84FF"
                   strokeWidth="1.4"
                   strokeDasharray="5 3"
                   markerEnd="url(#loc-cable-arrow)"
@@ -513,7 +416,7 @@ export default function RailroadCableOverlay({
                   cx={x2}
                   cy={y2}
                   r={snappedTargetSceneForLoc ? 6 : 4}
-                  fill="#30D158"
+                  fill="#0A84FF"
                   stroke="#FFFFFF"
                   strokeWidth={snappedTargetSceneForLoc ? 2 : 1.5}
                 />

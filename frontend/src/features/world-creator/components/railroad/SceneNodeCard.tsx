@@ -11,6 +11,7 @@ import {
   ChevronUp,
   ChevronLeft,
   ChevronRight,
+  MapPin,
   X,
 } from 'lucide-react';
 import type { WorldScene, WorldBeat, WorldLocationsMap, PlayerTriggerAction } from '../../types';
@@ -225,7 +226,7 @@ export default function SceneNodeCard({
         isDropTarget
           ? 'border-[#FF375F] ring-2 ring-[#FF375F]/40 shadow-[0_8px_32px_rgba(255,55,95,0.3),inset_0_1px_0_rgba(255,255,255,0.12)] z-30'
           : isLocationDropTarget
-          ? 'border-[#30D158] ring-2 ring-[#30D158]/40 shadow-[0_8px_32px_rgba(48,209,88,0.25),inset_0_1px_0_rgba(255,255,255,0.12)] z-30'
+          ? 'border-[#0A84FF] ring-2 ring-[#0A84FF]/40 shadow-[0_8px_32px_rgba(10,132,255,0.25),inset_0_1px_0_rgba(255,255,255,0.12)] z-30'
           : 'border-white/[0.10] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]'
       } ${isExpandedCard ? 'min-h-[346px] h-auto pb-9 z-20' : isEditing ? 'min-h-[346px] h-auto pb-6 z-20' : 'h-[346px] pb-9 sm:pb-9'}`}
       style={{
@@ -233,38 +234,6 @@ export default function SceneNodeCard({
         top: `${scene.position?.y ?? 170}px`,
       }}
     >
-
-      {/* ✦ TOP LOCATION CONNECTOR SOCKET (PRECISION MICRO-JEWEL) */}
-      <div
-        onClick={(e) => {
-          if (scene.location_key && isEditable && onDetachLocation) {
-            e.stopPropagation();
-            onDetachLocation(scene.scene_id);
-          }
-        }}
-        className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[11px] h-[11px] rounded-full bg-[#141419] transition-all z-30 flex items-center justify-center select-none ${
-          isLocationDropTarget
-            ? 'scale-150 border border-[#30D158] ring-2 ring-[#30D158]/35 bg-[#30D158]/30'
-            : scene.location_key
-            ? 'border border-white/20 hover:border-[#30D158] hover:scale-125 cursor-pointer group/locsock'
-            : 'border border-dashed border-white/20 hover:border-white/40 cursor-default'
-        }`}
-        title={
-          scene.location_key
-            ? `สถานที่: ${scene.location_key} (คลิกเพื่อถอดสายสถานที่)`
-            : 'พอร์ตสถานที่ว่าง: ลากสายสถานที่จากด้านบนมาเสียบที่นี่'
-        }
-      >
-        <div
-          className={`rounded-full transition-all ${
-            isLocationDropTarget
-              ? 'w-1.5 h-1.5 bg-white'
-              : scene.location_key
-              ? 'w-1 h-1 bg-[#30D158] group-hover/locsock:bg-[#FF375F]'
-              : 'w-0.5 h-0.5 bg-white/30'
-          }`}
-        />
-      </div>
 
       {/* ✦ RAIL CONNECTOR PORTS (PRECISION MICRO-JEWEL) */}
       {/* Input Port (Left) */}
@@ -357,45 +326,81 @@ export default function SceneNodeCard({
                 ✦ ปล่อยเพื่อเชื่อม
               </span>
             )}
+
+            {/* Location Drop Target Hover Badge */}
+            {isLocationDropTarget && (
+              <span className="px-2 py-0.2 rounded-full bg-[#0A84FF]/20 border border-[#0A84FF]/40 text-[9.5px] font-medium text-[#0A84FF] shrink-0 animate-pulse ml-0.5">
+                ✦ ปล่อยเพื่อตั้งสถานที่
+              </span>
+            )}
           </div>
 
-          {/* Edit / Save / Delete Buttons */}
-          {isEditable && (
-            <div
-              className="flex items-center gap-1 shrink-0"
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              {isEditing ? (
-                <button
-                  type="button"
-                  onClick={handleSaveEdit}
-                  className="w-6 h-6 rounded-full bg-[#EF264C] text-white flex items-center justify-center cursor-pointer shadow-[0_2px_8px_rgba(239,38,76,0.4)] active:scale-95 transition-all"
-                  title="บันทึกบีต"
-                >
-                  <Check size={11} strokeWidth={2.4} />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleStartEdit}
-                  className="w-6 h-6 rounded-full bg-white/[0.04] hover:bg-white/[0.12] border border-white/10 text-white/60 hover:text-white flex items-center justify-center cursor-pointer transition-all active:scale-95"
-                  title="แก้ไขข้อมูลบีตนี้"
-                >
-                  <Pencil size={10} strokeWidth={2} />
-                </button>
-              )}
-              {!isEditing && (
-                <button
-                  type="button"
-                  onClick={handleDeleteCurrentBeat}
-                  className="w-6 h-6 rounded-full bg-white/[0.04] hover:bg-red-500/20 border border-white/10 hover:border-red-500/30 text-white/40 hover:text-red-300 flex items-center justify-center cursor-pointer transition-all active:scale-95"
-                  title={beats.length > 1 ? 'ลบบีตนี้' : 'ลบฉากนี้'}
-                >
-                  <Trash2 size={10} strokeWidth={2} />
-                </button>
-              )}
-            </div>
-          )}
+          {/* Right Controls: Bound Location Pill & Edit / Delete Buttons */}
+          <div
+            className="flex items-center gap-1.5 shrink-0"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            {/* Bound Location Pill (Direct Surface Drop) */}
+            {scene.location_key && (
+              <div
+                onClick={(e) => {
+                  if (isEditable && onDetachLocation) {
+                    e.stopPropagation();
+                    onDetachLocation(scene.scene_id);
+                  }
+                }}
+                className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#0A84FF]/10 hover:bg-[#0A84FF]/20 border border-[#0A84FF]/25 hover:border-[#0A84FF]/45 text-[#0A84FF] transition-all cursor-pointer group/locpill max-w-[125px] sm:max-w-[145px]"
+                title={`สถานที่: ${scene.location_key} (คลิกเพื่อถอด)`}
+              >
+                <MapPin size={10} strokeWidth={2.2} className="shrink-0 text-[#0A84FF]" />
+                <span className="text-[10.5px] font-medium text-[#0A84FF]/90 group-hover/locpill:text-white truncate">
+                  {scene.location_key}
+                </span>
+                {isEditable && (
+                  <X
+                    size={9}
+                    strokeWidth={2.4}
+                    className="opacity-40 group-hover/locpill:opacity-100 text-white hover:text-red-400 transition-opacity shrink-0"
+                  />
+                )}
+              </div>
+            )}
+
+            {/* Edit / Save / Delete Buttons */}
+            {isEditable && (
+              <div className="flex items-center gap-1 shrink-0">
+                {isEditing ? (
+                  <button
+                    type="button"
+                    onClick={handleSaveEdit}
+                    className="w-6 h-6 rounded-full bg-[#EF264C] text-white flex items-center justify-center cursor-pointer shadow-[0_2px_8px_rgba(239,38,76,0.4)] active:scale-95 transition-all"
+                    title="บันทึกบีต"
+                  >
+                    <Check size={11} strokeWidth={2.4} />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleStartEdit}
+                    className="w-6 h-6 rounded-full bg-white/[0.04] hover:bg-white/[0.12] border border-white/10 text-white/60 hover:text-white flex items-center justify-center cursor-pointer transition-all active:scale-95"
+                    title="แก้ไขข้อมูลบีตนี้"
+                  >
+                    <Pencil size={10} strokeWidth={2} />
+                  </button>
+                )}
+                {!isEditing && (
+                  <button
+                    type="button"
+                    onClick={handleDeleteCurrentBeat}
+                    className="w-6 h-6 rounded-full bg-white/[0.04] hover:bg-red-500/20 border border-white/10 hover:border-red-500/30 text-white/40 hover:text-red-300 flex items-center justify-center cursor-pointer transition-all active:scale-95"
+                    title={beats.length > 1 ? 'ลบบีตนี้' : 'ลบฉากนี้'}
+                  >
+                    <Trash2 size={10} strokeWidth={2} />
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* ✦ BEAT SELECTOR PILL DOCK WITH REORDERING ARROWS & MID-INSERTION */}

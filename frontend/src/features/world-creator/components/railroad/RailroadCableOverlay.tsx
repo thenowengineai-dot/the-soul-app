@@ -33,6 +33,7 @@ interface RailroadCableOverlayProps {
 export const SCENE_WIDTH = 346;
 export const SCENE_STEP_X = 460;
 export const PORT_Y_OFFSET = 24;
+export const LOC_PORT_X_OFFSET = 36;
 export const LOC_PILL_WIDTH = 180;
 export const LOC_PILL_HEIGHT = 34;
 
@@ -136,8 +137,10 @@ export function computeSceneChainOrder(scenes: WorldScene[]): Map<string, number
 
 export default function RailroadCableOverlay({
   scenes,
+  locationPositions,
   onInsertSceneBetween,
   onDisconnectScene,
+  onDisconnectLocation,
   draggingWire,
   hoveredTargetSceneId,
   draggingLocationWire,
@@ -308,9 +311,105 @@ export default function RailroadCableOverlay({
       })}
 
       {/* =================================================================== */}
-      {/* 2. DIRECT SURFACE DROP: STATIC VERTICAL LOCATION WIRES ELIMINATED   */}
-      {/* (Locations now live directly on the scene cards as sleek pills)     */}
+      {/* 2. APPLE SYSTEM BLUE SHOULDER CABLES (ORGANIC S-CURVE)             */}
       {/* =================================================================== */}
+      {scenes.map((scene, idx) => {
+        if (!scene.location_key) return null;
+
+        const locPos = locationPositions?.[scene.location_key];
+        const sceneX = scene.position?.x ?? 80 + idx * SCENE_STEP_X;
+        const sceneY = scene.position?.y ?? 170;
+
+        // Start from Location Pill bottom center port
+        const x1 = locPos ? locPos.x : sceneX + SCENE_WIDTH / 2;
+        const y1 = locPos ? locPos.y + LOC_PILL_HEIGHT : 40 + LOC_PILL_HEIGHT;
+
+        // End at Scene Card top-left shoulder socket
+        const x2 = sceneX + LOC_PORT_X_OFFSET;
+        const y2 = sceneY;
+
+        // Organic Bezier S-Curve Calculation (Fluid studio cable)
+        const dy = Math.abs(y2 - y1);
+        const verticalCurvature = Math.max(dy * 0.55, 35);
+        const sCurvePathData = `M ${x1} ${y1} C ${x1} ${y1 + verticalCurvature}, ${x2} ${y2 - verticalCurvature}, ${x2} ${y2}`;
+
+        // Midpoint along the S-Curve (t = 0.5)
+        const midX = (x1 + x2) / 2;
+        const midY = (y1 + y2) / 2;
+
+        return (
+          <g
+            key={`loc-cable-${scene.scene_id}-${scene.location_key}`}
+            className="group/loccable"
+          >
+            {/* ✦ 1. WIDE TRANSPARENT HOVER CAPTURE PATH */}
+            <path
+              d={sCurvePathData}
+              fill="none"
+              stroke="transparent"
+              strokeWidth="24"
+              className="pointer-events-auto cursor-pointer"
+            />
+
+            {/* ✦ 2. SUBTLE APPLE BLUE AMBIENT HALO (Zero-Glow Philosophy) */}
+            <path
+              d={sCurvePathData}
+              fill="none"
+              stroke="#0A84FF"
+              strokeOpacity="0.10"
+              strokeWidth="3.5"
+              className="transition-opacity group-hover/loccable:stroke-opacity-25"
+            />
+
+            {/* ✦ 3. PRIMARY APPLE BLUE SHOULDER CABLE (#0A84FF - HAIRLINE 1.4PX) */}
+            <path
+              d={sCurvePathData}
+              fill="none"
+              stroke="#0A84FF"
+              strokeWidth="1.4"
+              markerEnd="url(#loc-cable-arrow)"
+              className="transition-all group-hover/loccable:stroke-width-[1.8px]"
+            />
+
+            {/* ✦ 4. MIDPOINT FLOATING ACTION DOCK (Apple Frosted Quick Cut Pill) */}
+            {isEditable && (
+              <foreignObject
+                x={midX - 45}
+                y={midY - 14}
+                width={90}
+                height={28}
+                className="overflow-visible pointer-events-auto"
+              >
+                <div className="w-full h-full flex items-center justify-center">
+                  {/* RESTING STATE: Subtle Apple Frosted Blue Micro-Node */}
+                  <div
+                    className="group-hover/loccable:hidden flex items-center justify-center w-[12px] h-[12px] rounded-full bg-[#14141E] border border-white/20 shadow-sm text-white/50 hover:scale-125 transition-all cursor-pointer"
+                    title="ชี้เพื่อตัดการเชื่อมต่อสถานที่"
+                  >
+                    <div className="w-[3px] h-[3px] rounded-full bg-[#0A84FF]" />
+                  </div>
+
+                  {/* HOVER / ACTIVE STATE: Expanded Cut Button */}
+                  <div className="hidden group-hover/loccable:flex items-center px-2 py-0.5 rounded-full bg-[#16161E]/95 hover:bg-[#1C1C26] border border-white/20 backdrop-blur-xl shadow-[0_4px_16px_rgba(0,0,0,0.7)] select-none">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDisconnectLocation?.(scene.scene_id);
+                      }}
+                      className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium text-white/85 hover:text-[#FF375F] hover:bg-[#FF375F]/15 transition-all cursor-pointer active:scale-95"
+                      title="ตัดสายสถานที่นี้ออกจากฉาก"
+                    >
+                      <Scissors size={10} strokeWidth={2.4} />
+                      <span>ตัดสถานที่</span>
+                    </button>
+                  </div>
+                </div>
+              </foreignObject>
+            )}
+          </g>
+        );
+      })}
 
       {/* =================================================================== */}
       {/* 3. ACTIVE LIVE DRAGGING STORY WIRE (ELECTRIC ROSE)                  */}
@@ -378,16 +477,16 @@ export default function RailroadCableOverlay({
             const x1 = draggingLocationWire.startX;
             const y1 = draggingLocationWire.startY;
 
-            // If snapped to a hovered target scene, magnetically lock onto target card top
+            // If snapped to a hovered target scene, magnetically lock onto target top-left shoulder socket
             const x2 = snappedTargetSceneForLoc
-              ? (snappedTargetSceneForLoc.position?.x ?? 80) + SCENE_WIDTH / 2
+              ? (snappedTargetSceneForLoc.position?.x ?? 80) + LOC_PORT_X_OFFSET
               : draggingLocationWire.currentX;
             const y2 = snappedTargetSceneForLoc
               ? (snappedTargetSceneForLoc.position?.y ?? 170)
               : draggingLocationWire.currentY;
 
             const dy = Math.abs(y2 - y1);
-            const verticalCurvature = Math.max(dy * 0.5, 30);
+            const verticalCurvature = Math.max(dy * 0.55, 35);
             const dragPathData = `M ${x1} ${y1} C ${x1} ${y1 + verticalCurvature}, ${x2} ${y2 - verticalCurvature}, ${x2} ${y2}`;
 
             return (

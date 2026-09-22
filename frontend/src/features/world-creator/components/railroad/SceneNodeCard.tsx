@@ -11,7 +11,6 @@ import {
   ChevronUp,
   ChevronLeft,
   ChevronRight,
-  MapPin,
   X,
 } from 'lucide-react';
 import type { WorldScene, WorldBeat, WorldLocationsMap, PlayerTriggerAction } from '../../types';
@@ -235,6 +234,38 @@ export default function SceneNodeCard({
       }}
     >
 
+      {/* ✦ TOP-LEFT SHOULDER LOCATION CONNECTOR SOCKET (ORGANIC S-CURVE) */}
+      <div
+        onClick={(e) => {
+          if (scene.location_key && isEditable && onDetachLocation) {
+            e.stopPropagation();
+            onDetachLocation(scene.scene_id);
+          }
+        }}
+        className={`absolute top-0 left-[36px] -translate-x-1/2 -translate-y-1/2 w-[11px] h-[11px] rounded-full bg-[#141419] transition-all z-30 flex items-center justify-center select-none ${
+          isLocationDropTarget
+            ? 'scale-150 border border-[#0A84FF] ring-2 ring-[#0A84FF]/40 bg-[#0A84FF]/30'
+            : scene.location_key
+            ? 'border border-white/20 hover:border-[#0A84FF] hover:scale-125 cursor-pointer group/locsock'
+            : 'border border-dashed border-white/20 hover:border-white/40 cursor-default'
+        }`}
+        title={
+          scene.location_key
+            ? `สถานที่: ${scene.location_key} (คลิกเพื่อถอดสายสถานที่)`
+            : 'พอร์ตสถานที่ว่าง: ลากสายสถานที่จากด้านบนมาเสียบที่นี่'
+        }
+      >
+        <div
+          className={`rounded-full transition-all ${
+            isLocationDropTarget
+              ? 'w-1.5 h-1.5 bg-white'
+              : scene.location_key
+              ? 'w-1 h-1 bg-[#0A84FF] group-hover/locsock:bg-[#FF375F]'
+              : 'w-0.5 h-0.5 bg-white/30'
+          }`}
+        />
+      </div>
+
       {/* ✦ RAIL CONNECTOR PORTS (PRECISION MICRO-JEWEL) */}
       {/* Input Port (Left) */}
       <div
@@ -335,37 +366,11 @@ export default function SceneNodeCard({
             )}
           </div>
 
-          {/* Right Controls: Bound Location Pill & Edit / Delete Buttons */}
+          {/* Right Controls: Edit / Save / Delete Buttons */}
           <div
             className="flex items-center gap-1.5 shrink-0"
             onMouseDown={(e) => e.stopPropagation()}
           >
-            {/* Bound Location Pill (Direct Surface Drop) */}
-            {scene.location_key && (
-              <div
-                onClick={(e) => {
-                  if (isEditable && onDetachLocation) {
-                    e.stopPropagation();
-                    onDetachLocation(scene.scene_id);
-                  }
-                }}
-                className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#0A84FF]/10 hover:bg-[#0A84FF]/20 border border-[#0A84FF]/25 hover:border-[#0A84FF]/45 text-[#0A84FF] transition-all cursor-pointer group/locpill max-w-[125px] sm:max-w-[145px]"
-                title={`สถานที่: ${scene.location_key} (คลิกเพื่อถอด)`}
-              >
-                <MapPin size={10} strokeWidth={2.2} className="shrink-0 text-[#0A84FF]" />
-                <span className="text-[10.5px] font-medium text-[#0A84FF]/90 group-hover/locpill:text-white truncate">
-                  {scene.location_key}
-                </span>
-                {isEditable && (
-                  <X
-                    size={9}
-                    strokeWidth={2.4}
-                    className="opacity-40 group-hover/locpill:opacity-100 text-white hover:text-red-400 transition-opacity shrink-0"
-                  />
-                )}
-              </div>
-            )}
-
             {/* Edit / Save / Delete Buttons */}
             {isEditable && (
               <div className="flex items-center gap-1 shrink-0">

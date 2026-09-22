@@ -236,7 +236,7 @@ export default function RailroadCableOverlay({
 
         {/* Subtle gradient for Genesis ignition line: White/Starlight to Electric Rose */}
         <linearGradient id="genesis-cable-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.85" />
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="1" />
           <stop offset="100%" stopColor="#FF375F" stopOpacity="1" />
         </linearGradient>
       </defs>
@@ -275,6 +275,22 @@ export default function RailroadCableOverlay({
 
         return (
           <g key="genesis-ignition-cable" className="group/genesis-cable">
+            <defs>
+              <linearGradient
+                id="genesis-cable-dynamic-grad"
+                gradientUnits="userSpaceOnUse"
+                x1={x1}
+                y1={y1}
+                x2={x2}
+                y2={y2}
+              >
+                <stop offset="0%" stopColor="#FFFFFF" stopOpacity="1" />
+                <stop offset="25%" stopColor="#FFFFFF" stopOpacity="1" />
+                <stop offset="70%" stopColor="#FF4D73" stopOpacity="1" />
+                <stop offset="100%" stopColor="#FF375F" stopOpacity="1" />
+              </linearGradient>
+            </defs>
+
             {/* ✦ 1. WIDE TRANSPARENT HOVER CAPTURE PATH */}
             <path
               d={pathData}
@@ -289,19 +305,27 @@ export default function RailroadCableOverlay({
               d={pathData}
               fill="none"
               stroke="#FF375F"
-              strokeOpacity="0.10"
-              strokeWidth="3.5"
-              className="transition-opacity group-hover/genesis-cable:stroke-opacity-25"
+              strokeOpacity="0.20"
+              strokeWidth="4"
+              className="transition-opacity group-hover/genesis-cable:stroke-opacity-40"
             />
 
-            {/* ✦ 3. PRIMARY GRADIENT IGNITION LINE */}
+            {/* ✦ 2.5 SOLID VIBRANT BASE CABLE (Guarantees 100% opacity with no transparent gaps) */}
             <path
               d={pathData}
               fill="none"
-              stroke="url(#genesis-cable-grad)"
+              stroke="#FF375F"
+              strokeWidth="1.6"
+            />
+
+            {/* ✦ 3. PRIMARY GRADIENT IGNITION LINE (Starlight White -> Electric Rose) */}
+            <path
+              d={pathData}
+              fill="none"
+              stroke="url(#genesis-cable-dynamic-grad)"
               strokeWidth="1.6"
               markerEnd="url(#cable-arrow)"
-              className="transition-all group-hover/genesis-cable:stroke-width-[2px]"
+              className="transition-all group-hover/genesis-cable:stroke-width-[2.2px]"
             />
 
             {/* ✦ 4. MIDPOINT FLOATING ACTION DOCK (APPLE FROSTED MICRO-NODE -> EXPANDS TO CUT ON HOVER) */}
@@ -695,15 +719,15 @@ export default function RailroadCableOverlay({
                   d={dragPathData}
                   fill="none"
                   stroke="#FF375F"
-                  strokeOpacity="0.12"
-                  strokeWidth="3.5"
+                  strokeOpacity="0.20"
+                  strokeWidth="4"
                 />
 
                 {/* Dragging Wire Active Pulsing Dashed Line */}
                 <path
                   d={dragPathData}
                   fill="none"
-                  stroke={draggingWire.fromSceneId === '__genesis__' ? 'url(#genesis-cable-grad)' : '#FF375F'}
+                  stroke="#FF375F"
                   strokeWidth="1.6"
                   strokeDasharray="5 3"
                   markerEnd="url(#cable-arrow)"

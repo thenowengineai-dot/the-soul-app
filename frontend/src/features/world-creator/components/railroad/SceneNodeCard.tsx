@@ -528,8 +528,8 @@ export default function SceneNodeCard({
                 </div>
               )
             ) : (
-              /* ✦ 2. ตอนขยาย (Expanded): เห็นเต็ม 100% ทุกตัวอักษร + ปุ่มอยู่หลังของแต่ละอัน */
-              <div className="space-y-2 pt-0.5">
+              /* ✦ 2. ตอนขยาย (Expanded): ปลดล็อคกล่องซ้อน ใช้ Hairline คั่นอย่างประณีต */
+              <div className="flex flex-col divide-y divide-white/[0.06] pt-1">
                 {triggerEntries.length > 0 ? (
                   triggerEntries.map(([key, val]) => {
                     const isLoop =
@@ -538,9 +538,9 @@ export default function SceneNodeCard({
                     return (
                       <div
                         key={key}
-                        className="rounded-[10px] bg-white/[0.03] border border-white/[0.06] p-2 flex flex-col gap-1.5"
+                        className="py-2 first:pt-0.5 last:pb-0 flex flex-col gap-1.5"
                       >
-                        {/* แถวบน: ปุ่ม Pill ซ้าย <---------------> ปุ่มไปต่อ/อยู่ที่เดิม ขวาสุดของแต่ละอัน */}
+                        {/* แถวบน: ปุ่ม Pill ซ้าย <---------------> ปุ่มไปต่อ/อยู่ที่เดิม ขวา */}
                         <div className="flex items-center justify-between gap-2">
                           <span className="px-2.5 py-0.5 rounded-full bg-white/[0.08] border border-white/15 text-[10.5px] sm:text-[11px] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
                             {key}
@@ -558,8 +558,9 @@ export default function SceneNodeCard({
 
                         {/* แถวล่าง: ข้อความตอบสนองแบบเต็มพื้นที่ 100% ไม่มีตัดคำ */}
                         {val.feedback && (
-                          <p className="text-[11px] sm:text-[11.5px] text-white/75 italic leading-[18px]">
-                            ➔ {val.feedback}
+                          <p className="text-[11px] sm:text-[11.5px] text-white/70 italic leading-[18px] pl-1">
+                            <span className="text-white/35 mr-1 font-mono not-italic">➔</span>
+                            {val.feedback}
                           </p>
                         )}
                       </div>

@@ -200,12 +200,12 @@ export default function SceneNodeCard({
 
   return (
     <div
-      className={`absolute w-[346px] rounded-[24px] bg-[#18181F]/95 backdrop-blur-2xl border p-4 flex flex-col justify-between transition-all select-none group/node ${
+      className={`absolute w-[346px] rounded-[28px] bg-white/[0.06] hover:bg-white/[0.09] backdrop-blur-2xl border p-4 sm:p-5 flex flex-col justify-between transition-all select-none group/node ${
         isDropTarget
-          ? 'border-[#EF264C] ring-2 ring-[#EF264C]/40 shadow-[0_8px_32px_rgba(239,38,76,0.3)] z-30'
+          ? 'border-[#EF264C] ring-2 ring-[#EF264C]/40 shadow-[0_8px_32px_rgba(239,38,76,0.3),inset_0_1px_0_rgba(255,255,255,0.12)] z-30'
           : isLocationDropTarget
-          ? 'border-[#528A7A] ring-2 ring-[#528A7A]/40 shadow-[0_8px_32px_rgba(82,138,122,0.25)] z-30'
-          : 'border-white/10 hover:border-white/18 shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.10)]'
+          ? 'border-[#528A7A] ring-2 ring-[#528A7A]/40 shadow-[0_8px_32px_rgba(82,138,122,0.25),inset_0_1px_0_rgba(255,255,255,0.12)] z-30'
+          : 'border-white/[0.10] hover:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.12)]'
       } ${isExpandedCard || isEditing ? 'min-h-[346px] h-auto pb-6 z-20' : 'h-[346px]'}`}
       style={{
         left: `${scene.position?.x ?? 80 + index * SCENE_STEP_X}px`,

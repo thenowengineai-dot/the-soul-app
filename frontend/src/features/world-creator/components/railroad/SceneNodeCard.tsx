@@ -329,17 +329,6 @@ export default function SceneNodeCard({
             )}
           </div>
 
-          {/* Turn Quota Apple Watch Monochrome Capsule */}
-          <div
-            className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/10 shrink-0 select-none"
-            title={`โควตาคุยเล่น: ${displayTurns} รอบ`}
-          >
-            <Clock size={10} className="text-white/40" />
-            <span className="text-[10.5px] font-mono text-white/60">
-              {displayTurns} รอบ
-            </span>
-          </div>
-
           {/* Edit / Save / Delete Buttons */}
           {isEditable && (
             <div
@@ -388,10 +377,10 @@ export default function SceneNodeCard({
                 <button
                   type="button"
                   onClick={() => handleInsertBeatAfter(bIdx - 1)}
-                  className="w-4 h-4 rounded-full bg-white/[0.04] hover:bg-white/12 text-white/30 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                  className="w-3.5 h-3.5 rounded-full bg-white/[0.04] hover:bg-white/12 text-white/30 hover:text-white flex items-center justify-center transition-all cursor-pointer"
                   title={`แทรกบีตคั่นกลางระหว่างบีต ${bIdx} และ ${bIdx + 1}`}
                 >
-                  <Plus size={9} strokeWidth={2.5} />
+                  <Plus size={8} strokeWidth={2.5} />
                 </button>
               )}
 
@@ -401,7 +390,7 @@ export default function SceneNodeCard({
                   setActiveBeatIndex(bIdx);
                   setIsEditing(false);
                 }}
-                className={`px-2.5 py-1 rounded-full text-[11.5px] sm:text-[12px] font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-2 py-0.5 rounded-full text-[10.5px] sm:text-[11px] font-medium transition-all cursor-pointer flex items-center gap-1 ${
                   bIdx === safeBeatIndex
                     ? 'bg-white/12 text-white border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] font-semibold'
                     : 'bg-white/[0.03] text-white/45 hover:text-white/80 border border-transparent'
@@ -416,14 +405,14 @@ export default function SceneNodeCard({
                       e.stopPropagation();
                       handleMoveBeatLeft(bIdx);
                     }}
-                    className="w-3.5 h-3.5 rounded hover:bg-white/20 flex items-center justify-center disabled:opacity-20 cursor-pointer transition-colors"
+                    className="w-3 h-3 rounded hover:bg-white/20 flex items-center justify-center disabled:opacity-20 cursor-pointer transition-colors"
                     title="เลื่อนบีตนี้ไปทางซ้าย"
                   >
-                    <ChevronLeft size={10} strokeWidth={2.4} />
+                    <ChevronLeft size={9} strokeWidth={2.4} />
                   </button>
                 )}
 
-                <span className="text-[#EF264C] text-[10px] font-mono">✦</span>
+                <span className="text-[#EF264C] text-[9px] font-mono">✦</span>
                 <span>บีต {bIdx + 1}</span>
 
                 {/* Move Right Arrow on Active Beat */}
@@ -435,10 +424,10 @@ export default function SceneNodeCard({
                       e.stopPropagation();
                       handleMoveBeatRight(bIdx);
                     }}
-                    className="w-3.5 h-3.5 rounded hover:bg-white/20 flex items-center justify-center disabled:opacity-20 cursor-pointer transition-colors"
+                    className="w-3 h-3 rounded hover:bg-white/20 flex items-center justify-center disabled:opacity-20 cursor-pointer transition-colors"
                     title="เลื่อนบีตนี้ไปทางขวา"
                   >
-                    <ChevronRight size={10} strokeWidth={2.4} />
+                    <ChevronRight size={9} strokeWidth={2.4} />
                   </button>
                 )}
               </div>
@@ -450,10 +439,10 @@ export default function SceneNodeCard({
             <button
               type="button"
               onClick={handleAddBeatEnd}
-              className="px-2 py-1 rounded-full bg-white/[0.03] hover:bg-white/[0.08] text-white/40 hover:text-white text-[11px] font-medium flex items-center gap-1 transition-all cursor-pointer shrink-0"
+              className="px-1.5 py-0.5 rounded-full bg-white/[0.03] hover:bg-white/[0.08] text-white/40 hover:text-white text-[10px] sm:text-[10.5px] font-medium flex items-center gap-0.5 transition-all cursor-pointer shrink-0"
               title="เพิ่มบีตใหม่ต่อท้าย"
             >
-              <Plus size={10} strokeWidth={2} />
+              <Plus size={9} strokeWidth={2} />
               <span>บีต</span>
             </button>
           )}

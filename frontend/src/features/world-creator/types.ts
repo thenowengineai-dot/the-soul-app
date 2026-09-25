@@ -243,6 +243,12 @@ export interface FullWorldData {
   opening_scenarios?: WorldScenario[];
 }
 
+export interface EngineShelfData {
+  isActive: boolean;
+  title: string;
+  previewNarrative: string;
+}
+
 export interface MuseIdeaItem {
   type: 'vo' | 'actor_state' | 'illusion' | 'chaos' | string;
   text: string;
@@ -259,6 +265,7 @@ export interface MuseMessage {
   extractedIdeas?: MuseIdeaItem[];
   part1?: string;
   part2?: string;
+  engineShelf?: EngineShelfData;
 }
 
 export interface WorldCreatorState {

@@ -11,10 +11,11 @@ import {
   Maximize2,
 } from 'lucide-react';
 import { TypingIndicator } from '../../../components/common';
-import type { CreatorMode, MuseIdeaItem, MuseMessage } from '../types';
+import type { CreatorMode, EngineShelfData, MuseIdeaItem, MuseMessage } from '../types';
 
 interface ParsedMuseMessage {
   dialogueText: string;
+  engineShelf?: EngineShelfData;
   thinking?: string;
   extractedIdeas?: MuseIdeaItem[];
   actionSuggestions?: string[];
@@ -36,10 +37,11 @@ function parseMuseMessage(msg: MuseMessage): ParsedMuseMessage {
       ? ((msg as unknown as Record<string, unknown>).content as string)
       : '';
 
-  // 1. ถ้าข้อความมีฟิลด์ thinking หรือ extractedIdeas ติดมาอยู่แล้ว
-  if (msg.thinking || (msg.extractedIdeas && msg.extractedIdeas.length > 0)) {
+  // 1. ถ้าข้อความมี engineShelf หรือ thinking หรือ extractedIdeas ติดมาอยู่แล้ว
+  if (msg.engineShelf || msg.thinking || (msg.extractedIdeas && msg.extractedIdeas.length > 0)) {
     return {
       dialogueText: rawText,
+      engineShelf: msg.engineShelf,
       thinking: typeof msg.thinking === 'string' ? msg.thinking : undefined,
       extractedIdeas: msg.extractedIdeas,
       actionSuggestions: msg.actionSuggestions,
@@ -55,16 +57,32 @@ function parseMuseMessage(msg: MuseMessage): ParsedMuseMessage {
 
   if (
     text.startsWith('{') &&
-    (text.includes('"thinking"') ||
+    (text.includes('"engine_shelf"') ||
+      text.includes('"dialogue"') ||
+      text.includes('"thinking"') ||
       text.includes('"reply_text_part1"') ||
       text.includes('"extracted_ideas"'))
   ) {
     try {
       const parsed = JSON.parse(text);
-      const part1 = parsed.reply_text_part1 || '';
-      const part2 = parsed.reply_text_part2 || '';
-      const dialogueText =
-        [part1, part2].filter(Boolean).join('\n\n') || parsed.text || text;
+      let dialogueText = '';
+      if (parsed.dialogue) {
+        dialogueText = parsed.dialogue;
+      } else {
+        const part1 = parsed.reply_text_part1 || '';
+        const part2 = parsed.reply_text_part2 || '';
+        dialogueText =
+          [part1, part2].filter(Boolean).join('\n\n') || parsed.text || text;
+      }
+
+      let engineShelf: EngineShelfData | undefined = msg.engineShelf;
+      if (!engineShelf && parsed.engine_shelf && typeof parsed.engine_shelf === 'object') {
+        engineShelf = {
+          isActive: Boolean(parsed.engine_shelf.is_active),
+          title: String(parsed.engine_shelf.title || ''),
+          previewNarrative: String(parsed.engine_shelf.preview_narrative || ''),
+        };
+      }
 
       const suggestions: string[] = [];
       if (Array.isArray(parsed.extracted_ideas)) {
@@ -85,6 +103,7 @@ function parseMuseMessage(msg: MuseMessage): ParsedMuseMessage {
 
       return {
         dialogueText,
+        engineShelf,
         thinking: typeof parsed.thinking === 'string' ? parsed.thinking : undefined,
         extractedIdeas: Array.isArray(parsed.extracted_ideas)
           ? parsed.extracted_ideas
@@ -99,6 +118,7 @@ function parseMuseMessage(msg: MuseMessage): ParsedMuseMessage {
 
   return {
     dialogueText: rawText,
+    engineShelf: msg.engineShelf,
     thinking: typeof msg.thinking === 'string' ? msg.thinking : undefined,
     extractedIdeas: msg.extractedIdeas,
     actionSuggestions: msg.actionSuggestions,
@@ -387,7 +407,27 @@ export default function TheMuseChat({
                   {parsed.dialogueText}
                 </div>
 
-                {/* 3. The Scratchpad / Extracted Ideas Shelf */}
+                {/* 3. The Engine's Vision Shelf (Micro Engine Preview / Long-Form Prose) */}
+                {parsed.engineShelf?.isActive && parsed.engineShelf.previewNarrative && (
+                  <div className="mt-1 p-4 rounded-2xl bg-[#141416] border border-[#2F3336] text-[#F2F2F5] flex flex-col gap-2.5 shadow-sm">
+                    <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
+                      <div className="flex items-center gap-2">
+                        <Sparkles size={13} className="text-[#EF264C]" />
+                        <span className="text-[12px] font-semibold tracking-wider uppercase text-[#EF264C]">
+                          {parsed.engineShelf.title || "The Engine's Vision"}
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-[#71767B] font-mono select-none">
+                        Micro Engine Preview
+                      </span>
+                    </div>
+                    <div className="text-[14px] font-normal leading-[1.75] text-[#D1D1D6] whitespace-pre-wrap break-words">
+                      {parsed.engineShelf.previewNarrative}
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. The Scratchpad / Extracted Ideas Shelf (Legacy Support) */}
                 {hasIdeas && parsed.extractedIdeas && (
                   <div className="pt-1 flex flex-col gap-2">
                     <div className="flex items-center gap-1.5 text-[12px] font-medium text-[#BEBEC4]">

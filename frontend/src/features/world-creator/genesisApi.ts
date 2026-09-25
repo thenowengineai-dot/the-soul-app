@@ -1,8 +1,10 @@
 import { GENESIS_API_BASE_URL, API_BASE_URL } from '../../config';
-import type { CreatorMode, MuseMessage, VaultDraft } from './types';
+import type { CreatorMode, MuseMessage, VaultDraft, EngineShelfData } from './types';
 
 export interface MuseChatResponse {
   text: string;
+  dialogue?: string;
+  engineShelf?: EngineShelfData;
   actionSuggestions: string[];
   rawIdeas?: Array<{ type: string; text: string }>;
   thinking?: string;
@@ -70,9 +72,19 @@ export async function sendMuseMessage(params: {
         ? JSON.parse(cleanStr)
         : rawResponse;
 
+    const dialogue = parsed.dialogue || '';
     const part1 = parsed.reply_text_part1 || '';
     const part2 = parsed.reply_text_part2 || '';
-    const fullText = [part1, part2].filter(Boolean).join('\n\n') || parsed.text || cleanStr;
+    const fullText = dialogue || [part1, part2].filter(Boolean).join('\n\n') || parsed.text || cleanStr;
+
+    let engineShelf: EngineShelfData | undefined = undefined;
+    if (parsed.engine_shelf && typeof parsed.engine_shelf === 'object') {
+      engineShelf = {
+        isActive: Boolean(parsed.engine_shelf.is_active),
+        title: String(parsed.engine_shelf.title || ''),
+        previewNarrative: String(parsed.engine_shelf.preview_narrative || ''),
+      };
+    }
 
     const suggestions: string[] = [];
     if (Array.isArray(parsed.extracted_ideas)) {
@@ -86,6 +98,8 @@ export async function sendMuseMessage(params: {
 
     return {
       text: fullText,
+      dialogue: dialogue || undefined,
+      engineShelf,
       actionSuggestions: suggestions.length > 0 ? suggestions : (parsed.actionSuggestions || []),
       rawIdeas: parsed.extracted_ideas || [],
       thinking: parsed.thinking || '',
@@ -324,6 +338,11 @@ export async function fetchMuseHistory(draftId: string): Promise<MuseMessage[]> 
       sender: m.sender === 'user' ? 'user' : 'muse',
       text: typeof m.text === 'string' ? m.text : (typeof m.content === 'string' ? m.content : ''),
       timestamp: m.timestamp || 'ตอนนี้',
+      engineShelf: m.engineShelf || (m.engine_shelf ? {
+        isActive: Boolean(m.engine_shelf.is_active),
+        title: String(m.engine_shelf.title || ''),
+        previewNarrative: String(m.engine_shelf.preview_narrative || ''),
+      } : undefined),
       actionSuggestions: Array.isArray(m.actionSuggestions)
         ? m.actionSuggestions.map((s: any) => (typeof s === 'string' ? s : (s?.text || String(s))))
         : [],

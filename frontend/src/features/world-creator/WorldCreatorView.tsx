@@ -507,6 +507,7 @@ export default function WorldCreatorView({ onExit, onPlayCampaign }: WorldCreato
         extractedIdeas: response.rawIdeas,
         part1: response.part1,
         part2: response.part2,
+        engineShelf: response.engineShelf,
       };
 
       setMessages((prev) => [...prev, botReply]);

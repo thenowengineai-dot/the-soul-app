@@ -319,7 +319,8 @@ class ActorAgent:
     async def generate_response(
         self, 
         actor_prompt: str,
-        chat_history: List[Dict[str, Any]]
+        chat_history: List[Dict[str, Any]],
+        thinking_budget: Optional[int] = None
     ) -> ActorOutput:
         """
         ฟังก์ชันหลักในการสร้างคำตอบแบบ JSON Block (Non-streaming)
@@ -336,9 +337,8 @@ class ActorAgent:
                 "safety_settings": self._get_safety_settings(),
             }
             if "gemini" in self.model_name.lower():
-                # 🌟 [THINKING MODE: LOW] ปรับโหมดคิดเป็น Low (512 tokens) เพื่อคำตอบที่เร็วและมีมิติสมจริง
-                thinking_budget = int(os.getenv("ACTOR_THINKING_BUDGET", "512"))
-                config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_budget=thinking_budget)
+                tb = thinking_budget if thinking_budget is not None else int(os.getenv("ACTOR_THINKING_BUDGET", "256"))
+                config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_budget=tb)
                 
             # ใช้ Vertex AI โดยบังคับให้ออกเป็น JSON เท่านั้น
             response = await self.client.aio.models.generate_content(

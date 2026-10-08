@@ -61,10 +61,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
 
   // จับเวลา Stopwatch ระหว่างที่ AI กำลังคิด
   useEffect(() => {
-    if (!isLoading) {
-      setElapsedSeconds(0)
-      return
-    }
+    if (!isLoading) return
     const timer = setInterval(() => {
       setElapsedSeconds(prev => +(prev + 0.1).toFixed(1))
     }, 100)
@@ -137,6 +134,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   const handleSimulate = async () => {
     if (!playerInput.trim()) return
 
+    setElapsedSeconds(0)
     setIsLoading(true)
     setErrorMessage(null)
 
@@ -500,15 +498,15 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
                   </span>
                   <div className="flex items-center gap-1 bg-[#0F0F0F] p-0.5 rounded-lg border border-[#282828]">
                     <button
-                      onClick={() => setThinkingBudget(256)}
+                      onClick={() => setThinkingBudget(0)}
                       className={`px-2 py-0.5 rounded text-[11px] font-medium transition-all ${
-                        thinkingBudget === 256
+                        thinkingBudget === 0
                           ? 'bg-[#EF264C] text-white font-semibold shadow-sm'
                           : 'text-[#AAAAAA] hover:text-[#F1F1F1]'
                       }`}
-                      title="Thinking Low: 256 tokens (~1.5-2.5s) แนะนำสำหรับเทสไว"
+                      title="Instant / Off: 0 tokens (เร็วสุด ข้ามกระบวนการคิด)"
                     >
-                      ⚡ Low (256)
+                      ⚡ Off (0)
                     </button>
                     <button
                       onClick={() => setThinkingBudget(128)}
@@ -517,9 +515,20 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
                           ? 'bg-[#EF264C] text-white font-semibold shadow-sm'
                           : 'text-[#AAAAAA] hover:text-[#F1F1F1]'
                       }`}
-                      title="Thinking Fast: 128 tokens (~1s) ไวที่สุด"
+                      title="Thinking Fast: 128 tokens (~1-1.5s)"
                     >
                       🚀 Fast (128)
+                    </button>
+                    <button
+                      onClick={() => setThinkingBudget(256)}
+                      className={`px-2 py-0.5 rounded text-[11px] font-medium transition-all ${
+                        thinkingBudget === 256
+                          ? 'bg-[#EF264C] text-white font-semibold shadow-sm'
+                          : 'text-[#AAAAAA] hover:text-[#F1F1F1]'
+                      }`}
+                      title="Thinking Low: 256 tokens (~2s) แนะนำมาตรฐาน"
+                    >
+                      🎯 Low (256)
                     </button>
                     <button
                       onClick={() => setThinkingBudget(1024)}

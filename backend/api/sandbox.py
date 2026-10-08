@@ -118,7 +118,8 @@ async def simulate_turn(req: SandboxSimulateRequest):
     try:
         actor_output = await actor.generate_response(
             actor_prompt=full_prompt,
-            chat_history=chat_history
+            chat_history=chat_history,
+            thinking_budget=req.thinking_budget
         )
     except Exception as e:
         logger.error(f"Sandbox execution failed: {e}", exc_info=True)

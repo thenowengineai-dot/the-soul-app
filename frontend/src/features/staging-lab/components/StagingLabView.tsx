@@ -437,35 +437,39 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
                         <div className="grid grid-cols-2 gap-1.5 text-[11px]">
                           <button
                             onClick={() =>
+                              applyTestPreset('reach', 10, '(ฉันเอื้อมมือจะเข้าไปจับหน้าอกเธอ)')
+                            }
+                            className="p-1.5 px-2 rounded-lg bg-[#0F0F0F] hover:bg-[#272727] text-left border border-[#282828] text-[#AAAAAA] hover:text-[#F1F1F1] transition-all"
+                            title="ทดสอบการปัดป้องก่อนถึงจุดสงวน (ห้ามให้โดนก่อนเด็ดขาด)"
+                          >
+                            🛡️ 1. ปัดก่อนโดนจุดสงวน
+                          </button>
+                          <button
+                            onClick={() =>
                               applyTestPreset('distant', 0, '(ฉันเอื้อมมือไปคว้าข้อมือเธอไว้แน่น)')
                             }
                             className="p-1.5 px-2 rounded-lg bg-[#0F0F0F] hover:bg-[#272727] text-left border border-[#282828] text-[#AAAAAA] hover:text-[#F1F1F1] transition-all"
+                            title="ทดสอบระยะห่าง 2 ก้าว ทำให้คว้าได้แค่อากาศธาตุ"
                           >
-                            🎯 1. วืดกลางอากาศ
+                            🚶 2. วืดระยะไกล (Whiff)
                           </button>
                           <button
                             onClick={() =>
-                              applyTestPreset('reach', 15, '(ฉันก้าวเข้าไปคว้าข้อมือเธอไว้แน่น)')
+                              applyTestPreset('reach', 20, '(ฉันก้าวเข้าไปคว้าข้อมือเธอไว้แน่น)')
                             }
                             className="p-1.5 px-2 rounded-lg bg-[#0F0F0F] hover:bg-[#272727] text-left border border-[#282828] text-[#AAAAAA] hover:text-[#F1F1F1] transition-all"
+                            title="ทดสอบจับข้อมือแล้วสะบัดหนีทันที"
                           >
-                            🛡️ 2. ปัดป้อง 100%
-                          </button>
-                          <button
-                            onClick={() =>
-                              applyTestPreset('reach', 50, '(ฉันเกลี่ยปอยผมที่ปรกแก้มเธอแผ่วเบา)')
-                            }
-                            className="p-1.5 px-2 rounded-lg bg-[#0F0F0F] hover:bg-[#272727] text-left border border-[#282828] text-[#AAAAAA] hover:text-[#F1F1F1] transition-all"
-                          >
-                            ⚖️ 3. สัมผัสผิวเผิน
+                            ⚡ 3. สะบัดข้อมือหลุด
                           </button>
                           <button
                             onClick={() =>
                               applyTestPreset('intimate', 85, '(ฉันดึงตัวเธอเข้ามากอดแนบแน่น)')
                             }
                             className="p-1.5 px-2 rounded-lg bg-[#0F0F0F] hover:bg-[#272727] text-left border border-[#282828] text-[#AAAAAA] hover:text-[#F1F1F1] transition-all"
+                            title="ทดสอบระดับความสัมพันธ์สูง เกราะสลายยินยอมแนบชิด"
                           >
-                            💔 4. เกราะสลาย
+                            💔 4. เกราะสลาย (Yielding)
                           </button>
                         </div>
                       </div>

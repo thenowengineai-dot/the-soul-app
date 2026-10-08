@@ -210,9 +210,9 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   const totalActiveModules = (isParryEnabled ? 1 : 0) + featureModules.filter(m => m.enabled).length
 
   return (
-    <div className="min-h-screen bg-[#0F0F0F] text-[#F1F1F1] flex flex-col font-sans selection:bg-[#EF264C]/30 selection:text-white">
+    <div className="h-full w-full bg-[#0F0F0F] text-[#F1F1F1] flex flex-col font-sans selection:bg-[#EF264C]/30 selection:text-white overflow-y-auto overflow-x-hidden">
       {/* 🧭 TOP BAR: หัวหน้าแล็บ และ ตัวสลับเซิร์ฟเวอร์ */}
-      <header className="sticky top-0 z-40 bg-[#0F0F0F]/90 backdrop-blur-md border-b border-[#282828] px-4 lg:px-8 py-3.5 flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-[#0F0F0F]/95 backdrop-blur-md border-b border-[#282828] px-4 lg:px-8 py-3.5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <button
             onClick={onBackToHome}
@@ -294,7 +294,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       </header>
 
       {/* 🌟 BODY CONTENT */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6 pb-28">
         {activeTab === 'playground' ? (
           /* ========================================================
              TAB 1: 🎮 PLAYGROUND (ห้องทดลอง)

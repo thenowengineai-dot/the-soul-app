@@ -34,6 +34,10 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - \033[96m[ROUTER]\0
 # สร้าง Router แทน app
 router = APIRouter()
 
+# 🧪 Staging Lab Sandbox Router
+from api.sandbox import router as sandbox_router
+router.include_router(sandbox_router)
+
 # 🌟 แก้ปัญหา Qdrant โดนแย่งกันใช้งานตอนรันเซิร์ฟเวอร์ (Lazy Initialization)
 game_pipeline = None
 

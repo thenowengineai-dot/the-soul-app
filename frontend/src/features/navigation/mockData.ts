@@ -4,12 +4,14 @@ import {
   Crown, 
   MessageCircle, 
   Heart,
-  Tag
+  Tag,
+  Sparkles
 } from 'lucide-react'
 import type { SidebarMenuItem, FollowedCreator } from './types'
 
 export const SIDEBAR_MENU: SidebarMenuItem[] = [
   { id: 'home', label: 'บ้าน', icon: Home },
+  { id: 'staging-lab', label: 'ห้องแล็บ Staging', icon: Sparkles },
   { id: 'quests', label: 'เควสต์', icon: Compass },
   { id: 'ranking', label: 'อันดับ', icon: Crown },
   { id: 'chats', label: 'แชทของฉัน', icon: MessageCircle },

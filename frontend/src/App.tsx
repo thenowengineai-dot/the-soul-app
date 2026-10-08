@@ -15,11 +15,12 @@ import {
 } from './features/chat'
 import type { Character } from './features/characters'
 import { WorldCreatorView } from './features/world-creator'
+import { StagingLabView } from './features/staging-lab'
 
 function App() {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState<boolean>(false);
   const [selectedMenu, setSelectedMenu] = useState<string>('home');
-  const [currentView, setCurrentView] = useState<'home' | 'chat' | 'profile' | 'world-creator'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'chat' | 'profile' | 'world-creator' | 'staging-lab'>('home');
   const [activeChatCharacter, setActiveChatCharacter] = useState<ChatConversation | null>(null);
 
   // 1. Identity & Auth State
@@ -72,6 +73,9 @@ function App() {
     setSelectedMenu(id);
     if (id === 'home') {
       setCurrentView('home');
+    } else if (id === 'staging-lab' || id === 'lab') {
+      setCurrentView('staging-lab');
+      setIsSidebarExpanded(false);
     } else if (id === 'profile' || id === 'settings') {
       setCurrentView('profile');
       setIsSidebarExpanded(false);
@@ -329,7 +333,9 @@ function App() {
   return (
     <div className="h-screen w-full bg-app-bg text-app-primary font-sans flex flex-col relative overflow-hidden">
       {/* 1. Main View Rendering */}
-      {currentView === 'world-creator' ? (
+      {currentView === 'staging-lab' ? (
+        <StagingLabView onBackToHome={handleBackToHome} />
+      ) : currentView === 'world-creator' ? (
         <WorldCreatorView
           onExit={handleBackToHome}
           onPlayCampaign={(campaign) => {

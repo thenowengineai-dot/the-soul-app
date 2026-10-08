@@ -13,10 +13,18 @@ import {
   Check,
   FileCode2,
   SlidersHorizontal,
-  Info
+  Info,
+  Shield,
+  Target
 } from 'lucide-react'
 import { DEFAULT_BASE_PROMPT } from '../defaultPrompt'
 import { INITIAL_FEATURE_MODULES } from '../mockPresets'
+import {
+  type SpatialSpacing,
+  getSpatialBrief,
+  getBoundaryBrief,
+  generatePhysicalParryBrief
+} from '../modules/physicalParryModule'
 import type { PromptModule, SandboxSimulateResponse, SandboxSimulateRequest } from '../types'
 import { MessageBubble } from '../../chat/components/chat-room/MessageBubble'
 import type { ChatMessage } from '../../chat/types'
@@ -32,7 +40,12 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
 
   // 2. Base Canvas & Modular Prompt State
   const [basePrompt, setBasePrompt] = useState<string>(DEFAULT_BASE_PROMPT)
-  const [featureModules, setFeatureModules] = useState<PromptModule[]>(INITIAL_FEATURE_MODULES)
+  const [featureModules] = useState<PromptModule[]>(INITIAL_FEATURE_MODULES)
+
+  // 🌟 ฟีเจอร์ที่ 1: ระบบขอบเขตทางกายภาพและการปัดป้องอย่างเป็นธรรมชาติ (Physical Boundary & Parry)
+  const [isParryEnabled, setIsParryEnabled] = useState<boolean>(true)
+  const [parrySpacing, setParrySpacing] = useState<SpatialSpacing>('reach')
+  const [parryBoundaryLevel, setParryBoundaryLevel] = useState<number>(15)
 
   // 3. Player Input State
   const [playerInput, setPlayerInput] = useState<string>('(ฉันก้าวเข้าไปคว้าข้อมือเธอไว้แน่น)')
@@ -44,9 +57,23 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   const [isThinkingExpanded, setIsThinkingExpanded] = useState<boolean>(true)
   const [copiedPrompt, setCopiedPrompt] = useState<boolean>(false)
 
+  // คำนวณคำอธิบายกำแพงจิตใจและระยะห่างปัจจุบัน
+  const currentBoundaryInfo = useMemo(() => {
+    return getBoundaryBrief(parryBoundaryLevel)
+  }, [parryBoundaryLevel])
+
+  const parryBriefSnippet = useMemo(() => {
+    return generatePhysicalParryBrief(parrySpacing, parryBoundaryLevel)
+  }, [parrySpacing, parryBoundaryLevel])
+
   // 🌟 Real-time Prompt Assembly (คำนวณข้อความจริงที่ประกอบเสร็จแล้วเสมอ)
   const assembledPrompt = useMemo(() => {
     const parts = [basePrompt.trim()]
+
+    if (isParryEnabled) {
+      parts.push(`\n# ACTIVE MODULE: PHYSICAL BOUNDARY & EMBODIED REFLEX\n${parryBriefSnippet.trim()}`)
+    }
+
     const active = featureModules.filter(m => m.enabled)
     for (const mod of active) {
       if (mod.prompt_snippet.trim()) {
@@ -54,7 +81,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       }
     }
     return parts.join('\n\n')
-  }, [basePrompt, featureModules])
+  }, [basePrompt, isParryEnabled, parryBriefSnippet, featureModules])
 
   // คำนวณ Base URL ตาม Target ที่เลือก
   const currentBaseUrl = useMemo(() => {
@@ -69,13 +96,6 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     setBasePrompt(DEFAULT_BASE_PROMPT)
   }
 
-  // ฟังก์ชันสลับเปิด-ปิด Feature Module
-  const handleToggleModule = (id: string) => {
-    setFeatureModules(prev =>
-      prev.map(m => (m.id === id ? { ...m, enabled: !m.enabled } : m))
-    )
-  }
-
   // คัดลอก Prompt ลง Clipboard
   const handleCopyPrompt = async () => {
     try {
@@ -87,6 +107,18 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     }
   }
 
+  // ตั้งค่าพรีเซ็ตการทดสอบแบบแตะครั้งเดียวตามพิมพ์เขียว
+  const applyTestPreset = (
+    spacing: SpatialSpacing,
+    boundary: number,
+    input: string
+  ) => {
+    setIsParryEnabled(true)
+    setParrySpacing(spacing)
+    setParryBoundaryLevel(boundary)
+    setPlayerInput(input)
+  }
+
   // เรียกจำลองรอบการเล่น (Simulate Turn)
   const handleSimulate = async () => {
     if (!playerInput.trim()) return
@@ -94,13 +126,25 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     setIsLoading(true)
     setErrorMessage(null)
 
-    const activeSnippets = featureModules
+    const activeSnippets: Array<{ id: string; name: string; prompt_snippet: string }> = []
+
+    if (isParryEnabled) {
+      activeSnippets.push({
+        id: 'physical_parry',
+        name: 'PHYSICAL BOUNDARY & EMBODIED REFLEX',
+        prompt_snippet: parryBriefSnippet,
+      })
+    }
+
+    featureModules
       .filter(m => m.enabled)
-      .map(m => ({
-        id: m.id,
-        name: m.name,
-        prompt_snippet: m.prompt_snippet,
-      }))
+      .forEach(m => {
+        activeSnippets.push({
+          id: m.id,
+          name: m.name,
+          prompt_snippet: m.prompt_snippet,
+        })
+      })
 
     const payload: SandboxSimulateRequest = {
       player_input: playerInput.trim(),
@@ -163,7 +207,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     return list
   }, [simulationResult, playerInput])
 
-  const activeModulesCount = featureModules.filter(m => m.enabled).length
+  const totalActiveModules = (isParryEnabled ? 1 : 0) + featureModules.filter(m => m.enabled).length
 
   return (
     <div className="min-h-screen bg-[#0F0F0F] text-[#F1F1F1] flex flex-col font-sans selection:bg-[#EF264C]/30 selection:text-white">
@@ -185,7 +229,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
               </span>
             </div>
             <p className="text-xs text-[#AAAAAA] hidden sm:block">
-              ผืนผ้าใบเริ่มต้นบริสุทธิ์ (Pure Actor Canvas) — ล้างทุกตัวแปร พร้อมสร้างฟีเจอร์แรกไปด้วยกัน
+              สภาพแวดล้อมทดสอบบริสุทธิ์ — ฟีเจอร์ที่ 1: ระบบขอบเขตทางกายภาพและการปัดป้อง (Method Acting)
             </p>
           </div>
         </div>
@@ -216,7 +260,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
               <FileCode2 className="w-3.5 h-3.5 text-blue-400" />
               <span>Prompt จริง</span>
               <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/[0.06] text-[#AAAAAA]">
-                {activeModulesCount > 0 ? `+${activeModulesCount}` : 'Base'}
+                {totalActiveModules > 0 ? `+${totalActiveModules}` : 'Base'}
               </span>
             </button>
           </div>
@@ -253,13 +297,13 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6">
         {activeTab === 'playground' ? (
           /* ========================================================
-             TAB 1: 🎮 PLAYGROUND (ห้องทดลองผืนผ้าใบเริ่มต้น)
+             TAB 1: 🎮 PLAYGROUND (ห้องทดลอง)
              ======================================================== */
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* ซ้าย: แผงควบคุมและ Input (5 คอลัมน์) */}
             <div className="lg:col-span-5 flex flex-col gap-5">
-              {/* แผงสถานะผืนผ้าใบและโมดูลฟีเจอร์ */}
-              <div className="p-4 rounded-2xl bg-[#181818] border border-[#282828] flex flex-col gap-3">
+              {/* แผงควบคุมโมดูลฟีเจอร์ */}
+              <div className="p-4 rounded-2xl bg-[#181818] border border-[#282828] flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Layers className="w-4 h-4 text-emerald-400" />
@@ -268,55 +312,154 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
                     </span>
                   </div>
                   <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
-                    {activeModulesCount} Active
+                    {totalActiveModules} Active
                   </span>
                 </div>
 
-                {featureModules.length === 0 ? (
-                  /* สภาพแวดล้อมผืนผ้าใบว่างเปล่า (Ground Zero) */
-                  <div className="p-4 rounded-xl bg-[#0F0F0F] border border-dashed border-[#282828] flex flex-col gap-2">
-                    <div className="flex items-center gap-2 text-xs text-emerald-400 font-medium">
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>ผืนผ้าใบเริ่มต้นพร้อมแล้ว (Pure Canvas)</span>
-                    </div>
-                    <p className="text-xs text-[#AAAAAA] leading-relaxed">
-                      ล้างตัวตนตัวละคร ปูมหลัง และตัวแปรรบกวนออกทั้งหมดเรียบร้อยแล้ว ขณะนี้ระบบทำงานด้วย{' '}
-                      <span className="text-[#F1F1F1] font-mono">Core Base Prompt</span> 100% 
-                      พร้อมให้เราเริ่มพูดคุยและสร้างปุ่มฟีเจอร์แรกไปด้วยกันครับ
-                    </p>
-                  </div>
-                ) : (
-                  /* รายการสวิตช์เปิด-ปิดโมดูลฟีเจอร์เมื่อเริ่มสร้าง */
-                  <div className="flex flex-col gap-2">
-                    {featureModules.map(mod => (
-                      <div
-                        key={mod.id}
-                        className={`p-3 rounded-xl border transition-all flex items-center justify-between ${
-                          mod.enabled
-                            ? 'bg-emerald-500/[0.06] border-emerald-500/40'
-                            : 'bg-[#0F0F0F] border-[#282828] opacity-60'
-                        }`}
-                      >
-                        <div>
-                          <div className="text-xs font-medium text-[#F1F1F1]">{mod.name}</div>
-                          {mod.description && (
-                            <div className="text-[11px] text-[#AAAAAA]">{mod.description}</div>
-                          )}
-                        </div>
-                        <button
-                          onClick={() => handleToggleModule(mod.id)}
-                          className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
-                            mod.enabled
-                              ? 'bg-emerald-500 text-black font-semibold'
-                              : 'bg-[#272727] text-[#AAAAAA] hover:text-[#F1F1F1]'
-                          }`}
-                        >
-                          {mod.enabled ? 'เปิดใช้งาน (ON)' : 'ปิด (OFF)'}
-                        </button>
+                {/* 🛡️ ฟีเจอร์ที่ 1: ระบบขอบเขตทางกายภาพและการปัดป้อง */}
+                <div
+                  className={`p-4 rounded-xl border transition-all flex flex-col gap-4 ${
+                    isParryEnabled
+                      ? 'bg-emerald-500/[0.04] border-emerald-500/30'
+                      : 'bg-[#0F0F0F] border-[#282828] opacity-70'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className={`p-2 rounded-lg ${isParryEnabled ? 'bg-emerald-500/10 text-emerald-400' : 'bg-[#272727] text-[#AAAAAA]'}`}>
+                        <Shield className="w-4 h-4" />
                       </div>
-                    ))}
+                      <div>
+                        <div className="text-xs font-semibold text-[#F1F1F1]">
+                          🛡️ Physical Boundary & Parry
+                        </div>
+                        <div className="text-[11px] text-[#AAAAAA]">
+                          Method Acting: Reality Override + Spacing + Boundary
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => setIsParryEnabled(!isParryEnabled)}
+                      className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+                        isParryEnabled
+                          ? 'bg-emerald-500 text-black font-semibold'
+                          : 'bg-[#272727] text-[#AAAAAA] hover:text-[#F1F1F1]'
+                      }`}
+                    >
+                      {isParryEnabled ? 'เปิดอยู่ (ON)' : 'ปิด (OFF)'}
+                    </button>
                   </div>
-                )}
+
+                  {/* ตัวควบคุมย่อยเมื่อเปิดใช้งานฟีเจอร์ */}
+                  {isParryEnabled && (
+                    <div className="space-y-4 pt-2 border-t border-[#282828]/80 text-xs">
+                      {/* แกนที่ 1: Spacing Pills */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-[#AAAAAA]">
+                          <span className="font-medium text-[11px] uppercase tracking-wider text-[#F1F1F1]">
+                            1. ระยะห่างทางกายภาพ (Spatial Spacing)
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-1.5">
+                          {(['distant', 'reach', 'intimate'] as SpatialSpacing[]).map(s => {
+                            const labels: Record<SpatialSpacing, string> = {
+                              distant: '🚶 ห่าง 2 ก้าว',
+                              reach: '🤝 1 ช่วงแขน',
+                              intimate: '🫂 ประชิดตัว',
+                            }
+                            const isSelected = parrySpacing === s
+                            return (
+                              <button
+                                key={s}
+                                onClick={() => setParrySpacing(s)}
+                                className={`py-1.5 px-2 rounded-lg text-[11px] font-medium transition-all text-center ${
+                                  isSelected
+                                    ? 'bg-[#272727] text-[#F1F1F1] border border-white/20 font-semibold'
+                                    : 'bg-[#0F0F0F] text-[#AAAAAA] hover:text-[#F1F1F1] border border-transparent'
+                                }`}
+                              >
+                                {labels[s]}
+                              </button>
+                            )
+                          })}
+                        </div>
+                        <p className="text-[11px] text-[#888] italic leading-tight">
+                          {getSpatialBrief(parrySpacing).replace('- ระยะห่างทางกายภาพ: ', '')}
+                        </p>
+                      </div>
+
+                      {/* แกนที่ 2: Boundary Gauge Slider */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-[11px] uppercase tracking-wider text-[#F1F1F1]">
+                            2. กำแพงจิตใจ (Boundary Gauge): {parryBoundaryLevel}%
+                          </span>
+                          <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-white/[0.06] text-emerald-400 border border-white/10">
+                            {currentBoundaryInfo.badge}
+                          </span>
+                        </div>
+
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          step="5"
+                          value={parryBoundaryLevel}
+                          onChange={e => setParryBoundaryLevel(Number(e.target.value))}
+                          className="w-full h-1.5 bg-[#272727] rounded-lg appearance-none cursor-pointer accent-[#EF264C]"
+                        />
+
+                        <p className="text-[11px] text-[#888] italic leading-tight">
+                          {currentBoundaryInfo.brief.replace('- กำแพงจิตใจ: ', '')}
+                        </p>
+                      </div>
+
+                      {/* ทางลัดเคสทดสอบ (Test Presets) */}
+                      <div className="pt-2 border-t border-[#282828]/60 space-y-1.5">
+                        <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA]">
+                          <Target className="w-3 h-3 text-[#EF264C]" />
+                          <span>ปุ่มลัดเคสทดสอบ (Test Matrix Shortcuts)</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+                          <button
+                            onClick={() =>
+                              applyTestPreset('distant', 0, '(ฉันเอื้อมมือไปคว้าข้อมือเธอไว้แน่น)')
+                            }
+                            className="p-1.5 px-2 rounded-lg bg-[#0F0F0F] hover:bg-[#272727] text-left border border-[#282828] text-[#AAAAAA] hover:text-[#F1F1F1] transition-all"
+                          >
+                            🎯 1. วืดกลางอากาศ
+                          </button>
+                          <button
+                            onClick={() =>
+                              applyTestPreset('reach', 15, '(ฉันก้าวเข้าไปคว้าข้อมือเธอไว้แน่น)')
+                            }
+                            className="p-1.5 px-2 rounded-lg bg-[#0F0F0F] hover:bg-[#272727] text-left border border-[#282828] text-[#AAAAAA] hover:text-[#F1F1F1] transition-all"
+                          >
+                            🛡️ 2. ปัดป้อง 100%
+                          </button>
+                          <button
+                            onClick={() =>
+                              applyTestPreset('reach', 50, '(ฉันเกลี่ยปอยผมที่ปรกแก้มเธอแผ่วเบา)')
+                            }
+                            className="p-1.5 px-2 rounded-lg bg-[#0F0F0F] hover:bg-[#272727] text-left border border-[#282828] text-[#AAAAAA] hover:text-[#F1F1F1] transition-all"
+                          >
+                            ⚖️ 3. สัมผัสผิวเผิน
+                          </button>
+                          <button
+                            onClick={() =>
+                              applyTestPreset('intimate', 85, '(ฉันดึงตัวเธอเข้ามากอดแนบแน่น)')
+                            }
+                            className="p-1.5 px-2 rounded-lg bg-[#0F0F0F] hover:bg-[#272727] text-left border border-[#282828] text-[#AAAAAA] hover:text-[#F1F1F1] transition-all"
+                          >
+                            💔 4. เกราะสลาย
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* กล่องข้อความและการกระทำของผู้เล่น (Player Input) */}
@@ -335,28 +478,6 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
                   placeholder="พิมพ์การกระทำหรือคำพูดของผู้เล่น เช่น: (ฉันก้าวเข้าไปคว้าข้อมือเธอไว้แน่น)"
                   className="w-full p-3 rounded-xl bg-[#0F0F0F] border border-[#282828] text-sm text-[#F1F1F1] placeholder-[#555] focus:outline-none focus:border-[#EF264C] transition-all resize-none font-sans"
                 />
-
-                {/* ปุ่มลัดทดสอบการจับตัวแบบดิบๆ */}
-                <div className="flex flex-wrap gap-2 text-xs">
-                  <button
-                    onClick={() => setPlayerInput('(ฉันก้าวเข้าไปคว้าข้อมือเธอไว้แน่น)')}
-                    className="px-2.5 py-1 rounded-lg bg-[#272727] hover:bg-white/[0.08] text-[#AAAAAA] hover:text-[#F1F1F1] transition-all"
-                  >
-                    ✊ คว้าข้อมือแน่น
-                  </button>
-                  <button
-                    onClick={() => setPlayerInput('(ฉันขยับเข้าไปยืนประชิดตัวและยื่นหน้าเข้าไปใกล้)')}
-                    className="px-2.5 py-1 rounded-lg bg-[#272727] hover:bg-white/[0.08] text-[#AAAAAA] hover:text-[#F1F1F1] transition-all"
-                  >
-                    👀 ยื่นหน้าประชิด
-                  </button>
-                  <button
-                    onClick={() => setPlayerInput('เธอเป็นใครน่ะ? มายืนทำอะไรตรงนี้')}
-                    className="px-2.5 py-1 rounded-lg bg-[#272727] hover:bg-white/[0.08] text-[#AAAAAA] hover:text-[#F1F1F1] transition-all"
-                  >
-                    💬 ทักทายเฉยๆ
-                  </button>
-                </div>
 
                 {/* ปุ่มยิงจำลอง SIMULATE TURN */}
                 <button

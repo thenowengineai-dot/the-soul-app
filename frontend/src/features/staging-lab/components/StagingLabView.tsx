@@ -44,6 +44,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   const [playerInput, setPlayerInput] = useState<string>(SANDBOX_PRESETS[0].player_input)
 
   // 2. Execution State
+  const [serverTarget, setServerTarget] = useState<'local' | 'cloud'>('local')
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [simulationResult, setSimulationResult] = useState<SandboxSimulateResponse | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -71,7 +72,11 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     setErrorMessage(null)
 
     try {
-      const response = await fetch('/api/sandbox/simulate', {
+      const baseUrl = serverTarget === 'local' 
+        ? 'http://localhost:8000' 
+        : 'https://the-soul-backend-330377476882.asia-southeast1.run.app'
+
+      const response = await fetch(`${baseUrl}/api/sandbox/simulate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -168,10 +173,34 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {/* Server Target Toggle (Local vs Cloud Run) */}
+          <div className="flex items-center gap-1 bg-[#1A1A1C] p-1 rounded-xl border border-[#2F3336] text-[11px]">
+            <button
+              onClick={() => setServerTarget('local')}
+              className={`px-2.5 py-1 rounded-lg transition-all flex items-center gap-1.5 ${
+                serverTarget === 'local'
+                  ? 'bg-white/10 text-[#F1F1F1] font-semibold border border-white/10 shadow-sm'
+                  : 'text-[#AAAAAA] hover:text-[#F1F1F1]'
+              }`}
+            >
+              <span>🖥️ Local (8000)</span>
+            </button>
+            <button
+              onClick={() => setServerTarget('cloud')}
+              className={`px-2.5 py-1 rounded-lg transition-all flex items-center gap-1.5 ${
+                serverTarget === 'cloud'
+                  ? 'bg-[#EF264C]/20 text-[#EF264C] font-semibold border border-[#EF264C]/30 shadow-sm'
+                  : 'text-[#AAAAAA] hover:text-[#F1F1F1]'
+              }`}
+            >
+              <span>☁️ Cloud Run</span>
+            </button>
+          </div>
+
           <div className="hidden sm:flex items-center gap-1.5 text-xs text-[#AAAAAA] bg-[#1C1C1E] px-3 py-1.5 rounded-full border border-white/5">
             <Cpu size={14} className="text-[#EF264C]" />
-            <span className="font-mono text-[11px]">Gemini 3.8 Flash • Medium Thinking</span>
+            <span className="font-mono text-[11px]">Gemini 3.8 Flash</span>
           </div>
         </div>
       </header>

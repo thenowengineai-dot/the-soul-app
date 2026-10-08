@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   ArrowLeft,
   Sparkles,
@@ -51,11 +51,25 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   const [playerInput, setPlayerInput] = useState<string>('(ฉันก้าวเข้าไปคว้าข้อมือเธอไว้แน่น)')
 
   // 4. Execution State
+  const [thinkingBudget, setThinkingBudget] = useState<number>(256)
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [elapsedSeconds, setElapsedSeconds] = useState<number>(0)
   const [simulationResult, setSimulationResult] = useState<SandboxSimulateResponse | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isThinkingExpanded, setIsThinkingExpanded] = useState<boolean>(true)
   const [copiedPrompt, setCopiedPrompt] = useState<boolean>(false)
+
+  // จับเวลา Stopwatch ระหว่างที่ AI กำลังคิด
+  useEffect(() => {
+    if (!isLoading) {
+      setElapsedSeconds(0)
+      return
+    }
+    const timer = setInterval(() => {
+      setElapsedSeconds(prev => +(prev + 0.1).toFixed(1))
+    }, 100)
+    return () => clearInterval(timer)
+  }, [isLoading])
 
   // คำนวณคำอธิบายกำแพงจิตใจและระยะห่างปัจจุบัน
   const currentBoundaryInfo = useMemo(() => {
@@ -150,7 +164,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       player_input: playerInput.trim(),
       base_prompt: basePrompt.trim(),
       active_modules: activeSnippets,
-      thinking_budget: 1024,
+      thinking_budget: thinkingBudget,
     }
 
     try {
@@ -479,6 +493,48 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
                   className="w-full p-3 rounded-xl bg-[#0F0F0F] border border-[#282828] text-sm text-[#F1F1F1] placeholder-[#555] focus:outline-none focus:border-[#EF264C] transition-all resize-none font-sans"
                 />
 
+                {/* ตัวเลือกโหมดความเร็วการคิด (Thinking Budget) */}
+                <div className="flex items-center justify-between text-xs text-[#AAAAAA] pt-1">
+                  <span className="text-[11px] uppercase tracking-wider text-[#AAAAAA]">
+                    ความเร็วคิด (Thinking):
+                  </span>
+                  <div className="flex items-center gap-1 bg-[#0F0F0F] p-0.5 rounded-lg border border-[#282828]">
+                    <button
+                      onClick={() => setThinkingBudget(256)}
+                      className={`px-2 py-0.5 rounded text-[11px] font-medium transition-all ${
+                        thinkingBudget === 256
+                          ? 'bg-[#EF264C] text-white font-semibold shadow-sm'
+                          : 'text-[#AAAAAA] hover:text-[#F1F1F1]'
+                      }`}
+                      title="Thinking Low: 256 tokens (~1.5-2.5s) แนะนำสำหรับเทสไว"
+                    >
+                      ⚡ Low (256)
+                    </button>
+                    <button
+                      onClick={() => setThinkingBudget(128)}
+                      className={`px-2 py-0.5 rounded text-[11px] font-medium transition-all ${
+                        thinkingBudget === 128
+                          ? 'bg-[#EF264C] text-white font-semibold shadow-sm'
+                          : 'text-[#AAAAAA] hover:text-[#F1F1F1]'
+                      }`}
+                      title="Thinking Fast: 128 tokens (~1s) ไวที่สุด"
+                    >
+                      🚀 Fast (128)
+                    </button>
+                    <button
+                      onClick={() => setThinkingBudget(1024)}
+                      className={`px-2 py-0.5 rounded text-[11px] font-medium transition-all ${
+                        thinkingBudget === 1024
+                          ? 'bg-[#EF264C] text-white font-semibold shadow-sm'
+                          : 'text-[#AAAAAA] hover:text-[#F1F1F1]'
+                      }`}
+                      title="Thinking Medium: 1024 tokens (~5-7s) คิดเชิงลึก"
+                    >
+                      🧠 Med (1024)
+                    </button>
+                  </div>
+                </div>
+
                 {/* ปุ่มยิงจำลอง SIMULATE TURN */}
                 <button
                   onClick={handleSimulate}
@@ -492,7 +548,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
                   {isLoading ? (
                     <>
                       <RotateCcw className="w-4 h-4 animate-spin" />
-                      <span>กำลังส่งให้ Gemini 3.8 Flash คิด...</span>
+                      <span>กำลังส่งให้ Gemini 3.8 Flash คิด... ({elapsedSeconds}s)</span>
                     </>
                   ) : (
                     <>

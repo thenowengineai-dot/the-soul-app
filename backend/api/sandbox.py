@@ -57,7 +57,7 @@ class SandboxSimulateRequest(BaseModel):
     player_input: str = Field(default="(ฉันก้าวเข้าไปคว้าข้อมือเธอไว้แน่น)", description="ข้อความหรือการกระทำของผู้เล่น")
     base_prompt: Optional[str] = Field(default=None, description="Core Base Prompt หากต้องการปรับแต่งจากค่าเริ่มต้น")
     active_modules: Optional[List[PromptModuleModel]] = Field(default_factory=list, description="รายการชิ้นส่วน Prompt ของฟีเจอร์ที่เปิดใช้งาน")
-    thinking_budget: Optional[int] = Field(default=1024, description="Token budget สำหรับ Thinking Mode (Medium)")
+    thinking_budget: Optional[int] = Field(default=256, description="Token budget สำหรับ Thinking Mode (Low=256, Medium=1024, Off=0)")
 
 
 class SandboxTelemetry(BaseModel):

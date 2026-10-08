@@ -194,6 +194,19 @@ class ActorAgent:
             c_text = msg.get("content")
             a_text = msg.get("action")
             
+            # Fallback หากข้อมูลส่งมาเป็น text หรือ parts
+            if not c_text and not a_text:
+                if "text" in msg and msg["text"]:
+                    c_text = msg["text"]
+                elif "parts" in msg and isinstance(msg["parts"], list):
+                    extracted = []
+                    for p in msg["parts"]:
+                        if isinstance(p, dict):
+                            extracted.append(p.get("text", str(p)))
+                        else:
+                            extracted.append(str(p))
+                    c_text = " ".join(extracted)
+
             parts = []
             if a_text and str(a_text).lower() not in ["none", "null", ""]:
                 if f"({a_text})" not in str(c_text) and f"*{a_text}*" not in str(c_text):

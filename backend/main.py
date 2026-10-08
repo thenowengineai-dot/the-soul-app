@@ -1,17 +1,58 @@
 import logging
 import os
+import sys
+import tempfile
+from pathlib import Path
+
+# ==========================================
+# 🌐 PATH CONFIGURATION (รองรับ Local & Cloud Run)
+# ==========================================
+BASE_DIR = Path(__file__).resolve().parent
+PARENT_DIR = BASE_DIR.parent
+
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+if str(PARENT_DIR) not in sys.path:
+    sys.path.insert(0, str(PARENT_DIR))
 
 # ==========================================
 # 🔑 ตั้งค่า API KEYS และ CREDENTIALS (GLOBAL)
-# ตั้งไว้ตรงนี้เพื่อให้ทุก Agent ในระบบดึงไปใช้ได้อัตโนมัติ
+# โหลด .env อัตโนมัติสำหรับ Local Development
 # ==========================================
-import tempfile
+try:
+    from dotenv import load_dotenv
+    load_dotenv(dotenv_path=BASE_DIR / ".env")
+except ImportError:
+    pass
 
 # ==========================================
 # 🔐 AUTHENTICATION (GCP vs GEMINI API KEY)
 # ==========================================
+# หาก GOOGLE_APPLICATION_CREDENTIALS เป็น relative path ให้แปลงเป็น absolute path
+cred_env = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+if cred_env and not os.path.isabs(cred_env):
+    cand1 = BASE_DIR / cred_env.lstrip("./")
+    cand2 = PARENT_DIR / cred_env.lstrip("./")
+    if cand1.exists():
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(cand1)
+    elif cand2.exists():
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(cand2)
+
+# Auto-detect candidates หากยังไม่ได้ตั้งค่า
+if not os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
+    candidate_keys = [
+        BASE_DIR / "project-de5847cd-022d-40ca-ad7-887e69285ab3.json",
+        PARENT_DIR / "project-de5847cd-022d-40ca-ad7-887e69285ab3.json",
+        BASE_DIR / "service_account_key.json",
+        PARENT_DIR / "service_account_key.json",
+    ]
+    for c in candidate_keys:
+        if c.exists():
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(c)
+            break
+
 if os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
-    print("✅ [AUTH] GOOGLE_APPLICATION_CREDENTIALS is already set.")
+    print(f"✅ [AUTH] GOOGLE_APPLICATION_CREDENTIALS is set: {os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')}")
 elif "GCP_CREDENTIALS_JSON" in os.environ:
     try:
         creds_json = os.environ["GCP_CREDENTIALS_JSON"]

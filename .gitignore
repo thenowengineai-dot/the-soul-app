@@ -6,6 +6,7 @@ service_account*.json
 *service-account*.json
 *service_account*.json
 *credentials*.json
+project-*.json
 *.pem
 *.key
 

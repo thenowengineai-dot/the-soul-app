@@ -78,15 +78,15 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
 
   // Physical brief computed string
   const parryBriefSnippet = useMemo(() => {
-    return generatePhysicalParryBrief(parrySpacing, parryBoundaryLevel)
-  }, [parrySpacing, parryBoundaryLevel])
+    return generatePhysicalParryBrief(parrySpacing, parryBoundaryLevel, playerInput)
+  }, [parrySpacing, parryBoundaryLevel, playerInput])
 
   // Real-time Assembled Prompt calculation
   const assembledPrompt = useMemo(() => {
     const parts = [basePrompt.trim()]
 
     if (isParryEnabled) {
-      parts.push(`\n# ACTIVE MODULE: PHYSICAL BOUNDARY & EMBODIED REFLEX\n${parryBriefSnippet.trim()}`)
+      parts.push(`\n# ACTIVE MODULE: REALITY OVERRIDE & PHYSICAL BOUNDARY\n${parryBriefSnippet.trim()}`)
     }
 
     const active = featureModules.filter(m => m.enabled)

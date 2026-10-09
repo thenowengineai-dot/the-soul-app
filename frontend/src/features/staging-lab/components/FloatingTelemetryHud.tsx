@@ -64,23 +64,23 @@ export function FloatingTelemetryHud({
       switch (outcome) {
         case 'PARRIED':
           return { text: `PARRIED (${contactLabel})`, color: 'text-emerald-400' }
+        case 'MISSED':
         case 'WHIFF':
-          return { text: `WHIFF (${contactLabel})`, color: 'text-cyan-400' }
-        case 'ESCAPED':
-          return { text: `ESCAPED (${contactLabel})`, color: 'text-sky-400' }
+          return { text: `MISSED (${contactLabel})`, color: 'text-[#38bdf8]' }
+        case 'GRAZED':
+          return { text: `GRAZED (${contactLabel})`, color: 'text-[#fbbf24]' }
+        case 'LATCHED':
         case 'YIELDED':
-          return { text: `YIELDED (${contactLabel})`, color: 'text-rose-400' }
-        case 'BREACHED':
-          return { text: `BREACHED (${contactLabel})`, color: 'text-amber-400' }
+          return { text: `LATCHED (${contactLabel})`, color: 'text-[#fb7185]' }
         default:
           return { text: `${outcome} (${contactLabel})`, color: 'text-emerald-400' }
       }
     }
     if (!isParryEnabled) return { text: 'COLLIDED (UNGUARDED)', color: 'text-amber-400' }
-    if (spacing === 'distant') return { text: 'WHIFF (คว้าได้แค่อากาศ)', color: 'text-cyan-400' }
-    if (boundaryLevel <= 30) return { text: 'PARRIED (สกัดกั้นก่อนถึงตัว)', color: 'text-emerald-400' }
-    if (boundaryLevel <= 70) return { text: 'HALF_GUARD (สกัดกั้นบางส่วน)', color: 'text-sky-400' }
-    return { text: 'YIELDING (ยินยอมสัมผัส)', color: 'text-rose-400' }
+    if (spacing === 'distant') return { text: 'MISSED (คว้าได้แค่อากาศ)', color: 'text-[#38bdf8]' }
+    if (boundaryLevel <= 35) return { text: 'PARRIED (สกัดกั้นก่อนถึงตัว)', color: 'text-emerald-400' }
+    if (boundaryLevel <= 75) return { text: 'GRAZED (เฉียดผิวชะงัก)', color: 'text-[#fbbf24]' }
+    return { text: 'LATCHED (ยินยอมสัมผัส)', color: 'text-[#fb7185]' }
   }
 
   const hitbox = resolveHitboxStatus()
@@ -188,6 +188,27 @@ export function FloatingTelemetryHud({
             <span className={`text-right font-medium text-[10.5px] ${hitbox.color}`}>
               {hitbox.text}
             </span>
+          </div>
+        )}
+
+        {/* Row 3.5: Active Persistent Contacts */}
+        {visibleRows.hitbox && (
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-white/50 font-bold shrink-0 text-[10px]">CONTACTS</span>
+            <div className="flex items-center gap-1 flex-wrap justify-end">
+              {telemetry?.verdict?.active_contacts && telemetry.verdict.active_contacts.length > 0 ? (
+                telemetry.verdict.active_contacts.map((c) => (
+                  <span
+                    key={c}
+                    className="px-1.5 py-0.2 rounded bg-white/10 text-[#F1F1F1] font-mono text-[9.5px] border border-white/15"
+                  >
+                    {c}
+                  </span>
+                ))
+              ) : (
+                <span className="text-white/35 text-[9.5px] font-mono">[ZERO CONTACT]</span>
+              )}
+            </div>
           </div>
         )}
 

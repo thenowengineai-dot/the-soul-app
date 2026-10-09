@@ -17,10 +17,12 @@ export interface SandboxSimulateRequest {
   thinking_budget?: number
 }
 
+export type CanonicalOutcome = 'MISSED' | 'PARRIED' | 'GRAZED' | 'LATCHED'
+
 export interface TelemetryVerdict {
   contact_occurred: boolean
-  outcome: 'PARRIED' | 'WHIFF' | 'ESCAPED' | 'YIELDED' | 'BREACHED' | string
-  target_zone?: string | null
+  outcome: CanonicalOutcome | string
+  active_contacts?: string[]
 }
 
 export interface SandboxTelemetry {

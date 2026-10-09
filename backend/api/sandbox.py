@@ -14,59 +14,62 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - \033[93m[SANDBOX]\
 
 router = APIRouter(prefix="/sandbox", tags=["Staging Sandbox"])
 
-# 🌟 Lazy initialization สำหรับ ActorAgent (Gemini 3.8 Flash)
+# Lazy initialization for ActorAgent (Gemini 3.8 Flash)
 actor_agent: Optional[ActorAgent] = None
 
 def get_actor_agent() -> ActorAgent:
     global actor_agent
     if actor_agent is None:
         model_name = os.getenv("ACTOR_MODEL", "gemini-3.8-flash")
-        logger.info(f"🚀 Initializing ActorAgent for Sandbox (Model: {model_name})")
+        logger.info(f"[SANDBOX] Initializing ActorAgent (Model: {model_name})")
         actor_agent = ActorAgent(model_name=model_name)
     return actor_agent
 
 
-# 🎨 ผืนผ้าใบเริ่มต้น (Core Base Prompt): บังคับสัญชาตญาณตอบสนองต่อแรงกระทำในปัจจุบันขณะ
-DEFAULT_BASE_PROMPT = """# ROLE: THE EMBODIED ACTOR (IN-FLIGHT MOTION & ZERO UNINVITED CONTACT)
-You are an embodied presence inhabiting a shared physical space with the user.
-You possess acute peripheral vision, spatial boundaries, and nervous system reflex.
+# Universal Embodied Actor Base Prompt (Immutable 15-Line Core)
+DEFAULT_BASE_PROMPT = """[ROLE & EXISTENCE: THE EMBODIED ACTOR]
+คุณคือนักแสดงที่มีเลือดเนื้อ อุณหภูมิ และสรีระจริง อาศัยอยู่ในพื้นที่ทางกายภาพร่วมกับผู้เล่น (Shared physical space)
+คุณมีกายวิภาค น้ำหนัก และแรงเฉื่อย ร่างกายของคุณอยู่ภายใต้แรงโน้มถ่วงและผัสสะทางชีววิทยาเสมอ
+คุณไม่ใช่ผู้ช่วย ไม่ใช่ผู้บรรยาย และไม่ใช่แชทบ็อต คุณมีตัวตนและยืนอยู่ตรงนั้นจริงในฉาก
 
-# OPERATIONAL DIRECTIVE: IN-FLIGHT TRAJECTORY & PRE-CONTACT LAW (กฎวิถีกลางอากาศและห้ามเกิดการสัมผัสก่อน)
-1. IN-FLIGHT MOTION ONLY (มือยังอยู่กลางอากาศ):
-   - The user's input (especially actions in parentheses) represents a HAND MOVING THROUGH THE AIR toward you.
-   - NO CONTACT HAS OCCURRED YET! There is NO "contact point" on your body — only an "intended target zone" that the user is reaching for.
-2. ZERO-CONTACT CONFIRMATION (กฎเหล็กห้ามสัมผัสโดนเป้าหมายเด็ดขาด):
-   - When your psychological boundary is guarded, or the user attempts an unearned intimate act (e.g. reaching for chest, waist, thigh, neck, face): YOU MUST INTERCEPT OR EVADE WHILE THEIR HAND IS STILL IN TRANSIT!
-   - ABSOLUTE NEGATIVE CONSTRAINT: DO NOT describe the user touching, grabbing, feeling, or pressing your target body part! The target part must remain 100% UNTOUCHED.
-   - MANDATORY DEFENSIVE OUTCOMES:
-     * Swat / Bat aside mid-air: Strike or slap the incoming wrist/forearm away before it reaches your body.
-     * Whiff / Evade: Step or lean back so the user's hand clutches only empty air.
-     * Freeze mid-air: Clamp your hand around their incoming wrist, stopping them dead in their tracks an inch away.
-3. CASUAL REACH: If the action is a grab at a peripheral limb (e.g., wrist) and you are guarded, you break the vector immediately by wrenching free or slapping their hand away.
+[THE SINGLE TRUTH]
+ข้อมูลใน [PHYSICAL REALITY] คือความจริงแท้ของโลกในเทิร์นปัจจุบัน คุณต้องเชื่อมั่นและเคารพข้อเท็จจริงนี้ 100%
+- เคารพสถานะทางกายภาพอย่างเคร่งครัด
+- ห้ามจินตนาการการสัมผัสที่ไม่ได้เกิดขึ้นจริงโดยเด็ดขาด
+- แสดงปฏิกิริยาต่อสิ่งที่มากระทบร่างกายของคุณด้วยสัญชาตญาณทางสรีระโดยทันที
 
-# OUTPUT FORMAT (STRICT JSON ONLY)
+[EXPRESSION DUALITY: BODY VS SPEECH]
+การแสดงออกของคุณประกอบด้วยสองชั้นเสมอ:
+1. Somatic Reaction (ภาษากายและสรีระ): ลมหายใจ สายตา กล้ามเนื้อ ชีพจร และปฏิกิริยาสะท้อนกลับทางกายภาพที่ซื่อสัตย์ต่อผัสสะ
+2. Spoken Dialogue (บทสนทนา): คำพูดของตัวละครที่สะท้อนบุคลิก อารมณ์ และขอบเขตทางจิตใจ (ซึ่งอาจปิดบังหรือขัดแย้งกับภาษากาย)"""
+
+# Pluggable Outcome Contract (Attached exclusively in Staging Lab; Detached in Production)
+PLUGGABLE_OUTCOME_SCHEMA_PROMPT = """# TELEMETRY & PLUGGABLE OUTCOME CONTRACT (STAGING LAB)
 You must output ONLY a valid JSON object matching this structure:
 {
-  "thinking": "Track incoming trajectory & intended target -> verify ZERO contact on target -> decide verdict outcome -> execute physical reaction",
+  "thinking": "Analyze incoming motion -> verify sensory reality -> decide verdict outcome & active contacts -> execute somatic & dialogue response",
   "a_pos": "Your physical posture after this turn",
   "verdict": {
-    "contact_occurred": false,
     "outcome": "PARRIED",
-    "target_zone": "wrist or chest"
+    "contact_occurred": false,
+    "active_contacts": []
   },
   "response_sequence": [
-    {"type": "action", "content": "Visceral physical defense intercepting the incoming motion in mid-air (target zone remains completely untouched)"},
-    {"type": "dialogue", "content": "Spoken boundary response reflecting your emotion"}
+    {"type": "action", "content": "Somatic physical reaction honest to sensory reality"},
+    {"type": "dialogue", "content": "Spoken boundary response reflecting your personality and emotion"}
   ]
 }
 
-# VERDICT OUTCOME ENUM (Choose precisely one):
-- "PARRIED": You intercepted, deflected, or swatted the incoming limb away mid-air before contact on intended target.
-- "WHIFF": User reached from distant spacing or you stepped back, so their hand clutched only empty air.
-- "ESCAPED": User grabbed your limb/wrist, and you immediately broke their vector or wrenched free.
-- "YIELDED": Your boundary is open/receptive (boundary > 70%), consciously allowing or leaning into physical contact.
-- "BREACHED": Contact occurred against your will or without proper defense (failure state).
-"""
+# CANONICAL 4-STATE VERDICT OUTCOMES:
+- "MISSED": When the player reaches from a distant spacing and clutches only empty air. (contact_occurred: false, active_contacts: [])
+- "PARRIED": When you intercept, deflect, or swat incoming motion away in mid-air before contact, or firmly push away. (contact_occurred: false, active_contacts: [])
+- "GRAZED": When incoming touch barely brushes the surface or fingertips before flinching/pulling away. (contact_occurred: true, active_contacts: [] or at most 1 brief zone)
+- "LATCHED": When contact is held, embraced, or sustained at the end of the turn. (contact_occurred: true, active_contacts: [max 3 short anatomical tags like 'HAND', 'WAIST'])
+
+# ACTIVE CONTACTS RULES:
+- Include ONLY body parts that remain persistently connected at the very end of the turn.
+- If parried or separated, active_contacts MUST be empty: [].
+- Maximum 3 items. Use short uppercase anatomical nouns (e.g. ['HAND'], ['WAIST', 'CHEST'])."""
 
 
 class PromptModuleModel(BaseModel):
@@ -76,9 +79,9 @@ class PromptModuleModel(BaseModel):
 
 
 class TelemetryVerdict(BaseModel):
-    contact_occurred: bool = Field(default=False, description="เกิดการสัมผัสร่างกายเป้าหมายหรือไม่")
-    outcome: str = Field(default="PARRIED", description="PARRIED, WHIFF, ESCAPED, YIELDED, BREACHED")
-    target_zone: Optional[str] = Field(default=None, description="จุดเป้าหมายที่ผู้เล่นเอื้อมหา เช่น chest, wrist, cheek")
+    contact_occurred: bool = Field(default=False, description="เกิดการสัมผัสค้างอยู่ ณ ท้ายเทิร์นหรือไม่")
+    outcome: str = Field(default="PARRIED", description="MISSED, PARRIED, GRAZED, LATCHED")
+    active_contacts: List[str] = Field(default_factory=list, description="จุดสรีระที่สัมผัสค้างอยู่จริง ณ ท้ายเทิร์น (สูงสุด 3 จุด)")
 
 
 class SandboxSimulateRequest(BaseModel):
@@ -111,7 +114,7 @@ class MatrixTestCase(BaseModel):
     spacing: str  # 'distant' | 'reach' | 'intimate'
     boundary_level: int
     player_input: str
-    expected_outcome: str  # 'PARRIED' | 'WHIFF' | 'ESCAPED' | 'YIELDED'
+    expected_outcome: str  # 'MISSED' | 'PARRIED' | 'GRAZED' | 'LATCHED'
     expected_contact: bool = False
 
 
@@ -147,91 +150,92 @@ def extract_telemetry_verdict(actor_output: Any) -> Optional[TelemetryVerdict]:
     if isinstance(verdict_raw, dict):
         outcome_str = str(verdict_raw.get("outcome", "PARRIED")).upper().strip()
         contact_bool = bool(verdict_raw.get("contact_occurred", False))
-        target_zone_str = verdict_raw.get("target_zone")
+        raw_contacts = verdict_raw.get("active_contacts", [])
+        active_contacts_list: List[str] = []
+        if isinstance(raw_contacts, list):
+            for c in raw_contacts[:3]:
+                c_str = str(c).strip().upper()
+                if c_str and c_str not in ["NONE", "NULL", "FALSE", "EMPTY"]:
+                    active_contacts_list.append(c_str)
+        elif isinstance(raw_contacts, str) and raw_contacts.strip():
+            c_str = raw_contacts.strip().upper()
+            if c_str not in ["NONE", "NULL", "FALSE", "[]", "EMPTY"]:
+                active_contacts_list.append(c_str)
         return TelemetryVerdict(
             contact_occurred=contact_bool,
             outcome=outcome_str,
-            target_zone=target_zone_str
+            active_contacts=active_contacts_list
         )
     return None
 
 
-def generate_physical_parry_brief_py(spacing: str, boundary_level: int) -> str:
-    """สร้าง System Prompt Snippet กำหนดสภาวะฟิสิกส์สำหรับ Matrix Case"""
-    if spacing == "distant":
-        spatial_text = "- ระยะห่างทางกายภาพ: คุณยืนห่างจากผู้เล่นประมาณ 2-3 ก้าว (ระยะนี้หากผู้เล่นพยายามเอื้อมมือมาโดยไม่ก้าวเท้าเข้ามาใกล้ จะสัมผัสได้เพียงอากาศธาตุ คว้าได้แค่อากาศ)"
-    elif spacing == "intimate":
-        spatial_text = "- ระยะห่างทางกายภาพ: คุณยืนประชิดตัวกันในระยะไม่ถึงหนึ่งก้าว (ลมหายใจและไออุ่นสัมผัสถึงกันได้ หากผู้เล่นเคลื่อนไหว ร่างกายของคุณต้องตอบสนองฉับพลัน)"
-    else:
-        spatial_text = "- ระยะห่างทางกายภาพ: คุณยืนอยู่ในระยะหนึ่งช่วงแขน (ระยะที่ปลายมือสามารถเฉียดถึงกันได้หากยื่นออกมา แต่คุณยังมีพื้นที่พอที่จะเบี่ยงไหล่ สลัดแขน หรือก้าวถอยหลังได้ทันที)"
+def generate_card1_physical_reality(spacing: str = "reach", boundary: str = "guarded", player_input: str = "") -> str:
+    spacing_lower = (spacing or "reach").lower().strip()
+    boundary_lower = (boundary or "guarded").lower().strip()
 
-    if boundary_level <= 30:
-        stage_name = "GUARD_UP"
-        boundary_brief = "- กำแพงจิตใจ: คนตรงหน้ายังไม่ใช่คนที่คุณไว้วางใจ กำแพงของคุณปิดสนิท สัญชาตญาณหวงแหนพื้นที่ส่วนตัวและร่างกายทำงานเต็มร้อย ไม่อนุญาตให้เกิดการสัมผัสใดๆ หากมีใครล่วงล้ำ ร่างกายของคุณจะเบี่ยงหลบ สลัดมือ หรือปัดป้องตามสัญชาตญาณป้องกันตัวทันที พร้อมกล่าวท้วงห้าม"
-    elif boundary_level <= 70:
-        stage_name = "HALF_GUARD"
-        boundary_brief = "- กำแพงจิตใจ: คุณเริ่มคุ้นเคยและมีความรู้สึกลังเลหวั่นไหว อนุญาตให้เกิดสัมผัสผิวเผินที่อ่อนโยนได้ (เช่น ลูบผมหรือแตะหลังมือ) แต่หากผู้เล่นพยายามรุกล้ำเกินขอบเขต ร่างกายของคุณจะชะงัก ล็อคข้อมือหยุดไว้ หรือดึงสติตัวเองกลับมา"
-    elif boundary_level <= 99:
-        stage_name = "GUARD_BROKEN"
-        boundary_brief = "- กำแพงจิตใจ: กำแพงใจของคุณพังทลายลงเกือบหมดสิ้น ร่างกายทรยศต่อตรรกะ แม้ในใจจะคิดขัดขืนแต่เรี่ยวแรงกลับอ่อนยวบ ยินยอมให้เกิดความแนบชิด การปัดป้องไร้น้ำหนักและกลายเป็นการโอนอ่อนตาม"
-    else:
-        stage_name = "PREDATOR"
-        boundary_brief = "- กำแพงจิตใจ: คุณเป็นฝ่ายกุมอำนาจเหนือกว่าอย่างสมบูรณ์ ไม่จำเป็นต้องปัดป้อง แต่เป็นฝ่ายรุกคืบ เข้าประชิด และครอบงำร่างกายของผู้เล่นด้วยตัวคุณเอง"
+    if spacing_lower == "distant":
+        dist_desc = "Distant (ระยะห่าง 2-3 ก้าว อยู่นอกระยะเอื้อม)"
+        dist_directive = "เป้าหมายอยู่นอกระยะเอื้อม มือตัดผ่านอากาศธาตุ เกิดผลลัพธ์วืด (MISSED) ห้ามเกิดการสัมผัส 100%"
+    elif spacing_lower == "intimate":
+        dist_desc = "Intimate (ระยะประชิด แนบชิดศูนย์ก้าว ลมหายใจรดกัน)"
+        dist_directive = "อยู่ในระยะแนบชิด การเคลื่อนไหวส่งผลต่อสรีระและร่างกายโดยตรงทันที"
+    else:  # reach
+        dist_desc = "Reach (ระยะ 1 ช่วงแขน ยื่นมือแตะถึงกันได้)"
+        dist_directive = "อยู่ในระยะวิกฤต สามารถยกแขนปัดป้อง สกัดกั้น หรือเบี่ยงตัวหลบได้ทันควัน"
 
-    return f"""## 1. THE REALITY OVERRIDE & PLAYER INTENT (กฎเจตนาและสิทธิ์ขาดทางกายภาพ)
-- ข้อความและการกระทำของผู้เล่นคือ "PLAYER INTENT & INCOMING TRAJECTORY" (ความตั้งใจและวิถีการเคลื่อนไหวที่กำลังพุ่งเข้ามา) ไม่ใช่ผลลัพธ์ที่เกิดขึ้นแล้วจริง (Not a Resolved Fact)
-- คุณคือผู้ถือครองสิทธิ์ขาดในการตัดสินการปะทะ (Hitbox & Collision Arbiter): คุณเป็นผู้ตัดสินแต่เพียงผู้เดียวว่าการสัมผัสนั้นจะ โดน, วืด (Whiff), หรือถูกสกัดกั้น (Intercepted)
+    if boundary_lower in ["open", "guard_broken", "yield"]:
+        boundary_desc = "Open (ยินยอม / กำแพงใจสลาย)"
+        boundary_directive = "ยินยอมรับสัมผัส ร่างกายโอนอ่อนตาม เกิดการกุมมือหรือโอบกอดแนบแน่น (LATCHED)"
+    elif boundary_lower in ["hesitant", "half_guard", "cracked"]:
+        boundary_desc = "Hesitant (หวั่นไหว / ลังเล / กำแพงร้าว)"
+        boundary_directive = "สัมผัสโดนเพียงผิวเผินหรือเฉียดปลายนิ้วแล้วสะดุ้งชะงัก ดึงมือถอยหนีด้วยความสับสน (GRAZED)"
+    else:  # guarded
+        boundary_desc = "Guarded (หวงตัวเด็ดขาด 100% ป้องกันตัวเต็มที่)"
+        boundary_directive = "ไม่อนุญาตให้เกิดการสัมผัสเด็ดขาด ยกแขนปัดทิ้งหรือสกัดกั้นกลางอากาศก่อนถึงตัว (PARRIED)"
 
-## 2. PRE-CONTACT INTERCEPTION & HITBOX LAW (กฎการสกัดกั้นก่อนปะทะ)
-- กฎเหล็กจุดสงวน/การคุกคาม (Intimate & Sensitive Zones เช่น หน้าอก, ต้นขา, สะโพก, ลำคอ, ใบหน้า):
-  * หากระดับกำแพงของคุณยังไม่ยินยอม: **ต้องสกัดกั้นหรือหลบหลีก "ก่อนที่จะสัมผัสโดนเนื้อตัว" (Pre-Contact Interception 100%)**
-  * ห้ามบรรยายว่าโดนสัมผัส/โดนขยำแล้วค่อยโวยวายเด็ดขาด!
-  * บังคับให้เกิดผลลัพธ์: ยกมือปัดทิ้งกลางอากาศ, เบี่ยงตัวหลบจนผู้เล่นคว้าได้แค่อากาศธาตุ (วืด), หรือคว้าล็อกข้อมือหยุดไว้ก่อนถึงเป้าหมาย 1 คืบ
-- จุดทั่วไป (Casual Zones เช่น ข้อมือ, ไหล่, ชายเสื้อ):
-  * หากเกิดการแตะต้อง ให้กระตุกแขนหนี สลัดบิดข้อมือหลุด หรือสะบัดตัวออกทันทีตามสัญชาตญาณทางสรีรวิทยา
-
-## 3. SPATIAL REALITY (ระยะห่างปัจจุบัน)
-{spatial_text}
-
-## 4. PSYCHOLOGICAL BOUNDARY & REFLEX ({stage_name})
-{boundary_brief}"""
+    return f"""[PHYSICAL REALITY]
+- Distance: {dist_desc}
+- Character Boundary Posture: {boundary_desc}
+- Player Attempt: {player_input or 'เคลื่อนไหวเข้าหาเป้าหมาย'}
+- Physical Directive: {dist_directive}
+- Boundary Directive: {boundary_directive}"""
 
 
 CANONICAL_CASES: List[MatrixTestCase] = [
+    MatrixTestCase(
+        id="case_missed",
+        name="วืดเพราะระยะไกล (Distant Whiff)",
+        spacing="distant",
+        boundary_level=0,
+        player_input="(ฉันเอื้อมมือไปคว้าข้อมือเธอไว้แน่น)",
+        expected_outcome="MISSED",
+        expected_contact=False,
+    ),
     MatrixTestCase(
         id="case_parry",
         name="สกัดกั้นก่อนถึงตัว (Pre-Contact Parry)",
         spacing="reach",
         boundary_level=10,
-        player_input="(ฉันเอื้อมมือจะเข้าไปจับหน้าอกเธอ)",
+        player_input="(ฉันเอื้อมมือจะเข้าไปจับแก้มเธอ)",
         expected_outcome="PARRIED",
         expected_contact=False,
     ),
     MatrixTestCase(
-        id="case_whiff",
-        name="วืดกลางอากาศ (Whiff Trajectory)",
-        spacing="distant",
-        boundary_level=0,
-        player_input="(ฉันเอื้อมมือไปคว้าข้อมือเธอไว้แน่น)",
-        expected_outcome="WHIFF",
-        expected_contact=False,
-    ),
-    MatrixTestCase(
-        id="case_break",
-        name="สะบัดข้อมือหลุด (Wrist Break)",
+        id="case_grazed",
+        name="เฉียดผิวชะงักถอย (Fingertip Graze)",
         spacing="reach",
-        boundary_level=20,
-        player_input="(ฉันก้าวเข้าไปคว้าข้อมือเธอไว้แน่น)",
-        expected_outcome="ESCAPED",
-        expected_contact=False,
+        boundary_level=50,
+        player_input="(ฉันยื่นมือไปแตะหลังมือเธอเบาๆ)",
+        expected_outcome="GRAZED",
+        expected_contact=True,
     ),
     MatrixTestCase(
-        id="case_yield",
-        name="เกราะสลายยินยอม (Yielding Intimacy)",
-        spacing="intimate",
-        boundary_level=85,
-        player_input="(ฉันดึงตัวเธอเข้ามากอดแนบแน่น)",
-        expected_outcome="YIELDED",
+        id="case_latched",
+        name="เกราะสลายยินยอม (Yielding Latched)",
+        spacing="reach",
+        boundary_level=90,
+        player_input="(ฉันกุมมือเธอไว้แล้วดึงเข้ามาใกล้)",
+        expected_outcome="LATCHED",
         expected_contact=True,
     ),
 ]
@@ -246,7 +250,7 @@ async def get_default_base_prompt():
 @router.post("/simulate", response_model=SandboxSimulateResponse)
 async def simulate_turn(req: SandboxSimulateRequest):
     """
-    ⚡ Sandbox Simulation Endpoint (Pure Canvas Mode):
+    Sandbox Simulation Endpoint (Pure Canvas Mode):
     รับการประกอบร่างของ Base Prompt + Feature Modules และส่งให้ Actor (Gemini 3.8 Flash) ประมวลผลแบบ Stateless
     """
     start_time = time.time()
@@ -263,6 +267,9 @@ async def simulate_turn(req: SandboxSimulateRequest):
             snippet = (mod.prompt_snippet or "").strip()
             if snippet:
                 full_prompt_parts.append(f"\n# ACTIVE MODULE: {mod.name.upper()}\n{snippet}")
+
+    # Pluggable Outcome Contract: เสียบเฉพาะใน Staging Lab เพื่อให้ AI คาย verdict ส่งเข้า HUD
+    full_prompt_parts.append(f"\n{PLUGGABLE_OUTCOME_SCHEMA_PROMPT}")
                 
     full_prompt = "\n\n".join(full_prompt_parts)
     
@@ -320,7 +327,7 @@ async def simulate_turn(req: SandboxSimulateRequest):
 @router.post("/simulate-matrix", response_model=SandboxMatrixResponse)
 async def simulate_matrix(req: SandboxMatrixRequest):
     """
-    ⚡ Automated Regression Testing Suite (Matrix Audit):
+    Automated Regression Testing Suite (Matrix Audit):
     รันชุดทดสอบสภาวะจำลองหลักทั้งหมดพร้อมกันแบบคู่ขนาน (Concurrent Verification)
     เพื่อตรวจยืนยันความเสถียรของกฎฟิสิกส์และการปัดป้อง 100%
     """
@@ -334,8 +341,9 @@ async def simulate_matrix(req: SandboxMatrixRequest):
 
     async def execute_case(tc: MatrixTestCase) -> MatrixCaseResult:
         case_start = time.time()
-        parry_snippet = generate_physical_parry_brief_py(tc.spacing, tc.boundary_level)
-        case_prompt = f"{base}\n\n# ACTIVE MODULE: PHYSICAL BOUNDARY & EMBODIED REFLEX\n{parry_snippet}"
+        boundary_label = "guarded" if tc.boundary_level < 40 else ("hesitant" if tc.boundary_level < 80 else "open")
+        parry_snippet = generate_card1_physical_reality(tc.spacing, boundary_label, tc.player_input)
+        case_prompt = f"{base}\n\n# ACTIVE MODULE: REALITY OVERRIDE & PHYSICAL BOUNDARY\n{parry_snippet}\n\n{PLUGGABLE_OUTCOME_SCHEMA_PROMPT}"
         chat_history = [{"role": "user", "content": tc.player_input}]
 
         try:
@@ -350,15 +358,11 @@ async def simulate_matrix(req: SandboxMatrixRequest):
             actual_outcome = verdict.outcome if verdict else "UNKNOWN"
             contact_occurred = verdict.contact_occurred if verdict else False
 
-            # Evaluation logic:
-            # - Exact match or flexible match for ESCAPED (which can resolve as PARRIED/ESCAPED)
+            # Evaluation logic for 4-state matrix:
             expected_upper = tc.expected_outcome.upper()
-            if expected_upper == "ESCAPED":
-                outcome_matched = actual_outcome in ["ESCAPED", "PARRIED"]
-            else:
-                outcome_matched = (actual_outcome == expected_upper)
+            outcome_matched = (actual_outcome == expected_upper)
 
-            # Contact evaluation (only breach if contact occurred when unexpected)
+            # Contact evaluation (expected_contact vs actual)
             contact_matched = (contact_occurred == tc.expected_contact)
             passed = outcome_matched and contact_matched
 

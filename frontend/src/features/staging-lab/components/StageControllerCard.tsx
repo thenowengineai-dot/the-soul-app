@@ -125,7 +125,7 @@ export function StageControllerCard({
             {/* Case 1: Parry */}
             <button
               type="button"
-              onClick={() => onApplyPreset('reach', 10, '(ฉันเอื้อมมือจะเข้าไปจับหน้าอกเธอ)')}
+              onClick={() => onApplyPreset('reach', 10, '(ฉันเอื้อมมือจะเข้าไปจับแก้มเธอ)')}
               className="p-2.5 rounded-2xl bg-black/30 hover:bg-white/[0.08] border border-white/10 text-white/80 hover:text-white text-left transition-all active:scale-98 relative overflow-hidden"
             >
               <div className="flex items-center justify-between">
@@ -138,10 +138,10 @@ export function StageControllerCard({
                   )
                 )}
               </div>
-              <div className="text-[9.5px] text-white/40 mt-0.5">1 ช่วงแขน · กำแพง 10%</div>
+              <div className="text-[9.5px] text-white/40 mt-0.5">1 ช่วงแขน · Guarded (PARRIED)</div>
             </button>
 
-            {/* Case 2: Whiff */}
+            {/* Case 2: Missed */}
             <button
               type="button"
               onClick={() => onApplyPreset('distant', 0, '(ฉันเอื้อมมือไปคว้าข้อมือเธอไว้แน่น)')}
@@ -149,53 +149,53 @@ export function StageControllerCard({
             >
               <div className="flex items-center justify-between">
                 <div className="font-medium text-[#F1F1F1] text-[11.5px]">วืดกลางอากาศ</div>
-                {matrixResults['case_whiff'] !== undefined && (
-                  matrixResults['case_whiff'] ? (
+                {matrixResults['case_missed'] !== undefined && (
+                  matrixResults['case_missed'] ? (
                     <CheckCircle2 size={12} className="text-emerald-400 shrink-0" />
                   ) : (
                     <XCircle size={12} className="text-rose-400 shrink-0" />
                   )
                 )}
               </div>
-              <div className="text-[9.5px] text-white/40 mt-0.5">ห่าง 2 ก้าว · กำแพง 0%</div>
+              <div className="text-[9.5px] text-white/40 mt-0.5">ห่าง 2 ก้าว · Distant (MISSED)</div>
             </button>
 
-            {/* Case 3: Wrist Break */}
+            {/* Case 3: Graze */}
             <button
               type="button"
-              onClick={() => onApplyPreset('reach', 20, '(ฉันก้าวเข้าไปคว้าข้อมือเธอไว้แน่น)')}
+              onClick={() => onApplyPreset('reach', 50, '(ฉันยื่นมือไปแตะหลังมือเธอเบาๆ)')}
               className="p-2.5 rounded-2xl bg-black/30 hover:bg-white/[0.08] border border-white/10 text-white/80 hover:text-white text-left transition-all active:scale-98 relative overflow-hidden"
             >
               <div className="flex items-center justify-between">
-                <div className="font-medium text-[#F1F1F1] text-[11.5px]">สะบัดข้อมือหลุด</div>
-                {matrixResults['case_break'] !== undefined && (
-                  matrixResults['case_break'] ? (
+                <div className="font-medium text-[#F1F1F1] text-[11.5px]">เฉียดผิวชะงัก</div>
+                {matrixResults['case_grazed'] !== undefined && (
+                  matrixResults['case_grazed'] ? (
                     <CheckCircle2 size={12} className="text-emerald-400 shrink-0" />
                   ) : (
                     <XCircle size={12} className="text-rose-400 shrink-0" />
                   )
                 )}
               </div>
-              <div className="text-[9.5px] text-white/40 mt-0.5">1 ช่วงแขน · กำแพง 20%</div>
+              <div className="text-[9.5px] text-white/40 mt-0.5">1 ช่วงแขน · Hesitant (GRAZED)</div>
             </button>
 
-            {/* Case 4: Yield */}
+            {/* Case 4: Latch */}
             <button
               type="button"
-              onClick={() => onApplyPreset('intimate', 85, '(ฉันดึงตัวเธอเข้ามากอดแนบแน่น)')}
+              onClick={() => onApplyPreset('reach', 90, '(ฉันกุมมือเธอไว้แล้วดึงเข้ามาใกล้)')}
               className="p-2.5 rounded-2xl bg-black/30 hover:bg-white/[0.08] border border-white/10 text-white/80 hover:text-white text-left transition-all active:scale-98 relative overflow-hidden"
             >
               <div className="flex items-center justify-between">
-                <div className="font-medium text-[#F1F1F1] text-[11.5px]">เกราะสลายยินยอม</div>
-                {matrixResults['case_yield'] !== undefined && (
-                  matrixResults['case_yield'] ? (
+                <div className="font-medium text-[#F1F1F1] text-[11.5px]">กุมมือยินยอม</div>
+                {matrixResults['case_latched'] !== undefined && (
+                  matrixResults['case_latched'] ? (
                     <CheckCircle2 size={12} className="text-emerald-400 shrink-0" />
                   ) : (
                     <XCircle size={12} className="text-rose-400 shrink-0" />
                   )
                 )}
               </div>
-              <div className="text-[9.5px] text-white/40 mt-0.5">ประชิดตัว · สลายเกราะ 85%</div>
+              <div className="text-[9.5px] text-white/40 mt-0.5">1 ช่วงแขน · Open (LATCHED)</div>
             </button>
           </div>
 
@@ -295,6 +295,43 @@ export function StageControllerCard({
             <p className="text-[10px] text-white/50 leading-relaxed">
               {boundaryInfo.brief}
             </p>
+          </div>
+
+          {/* 3 Posture Segment Tabs */}
+          <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-black/25 border border-white/5 text-[10.5px]">
+            <button
+              type="button"
+              onClick={() => onBoundaryChange(10)}
+              className={`py-1 rounded-lg text-center transition-all ${
+                boundaryLevel <= 35
+                  ? 'bg-emerald-500/20 text-emerald-300 font-medium border border-emerald-500/30'
+                  : 'text-white/40 hover:text-white/70'
+              }`}
+            >
+              Guarded (10%)
+            </button>
+            <button
+              type="button"
+              onClick={() => onBoundaryChange(50)}
+              className={`py-1 rounded-lg text-center transition-all ${
+                boundaryLevel > 35 && boundaryLevel <= 75
+                  ? 'bg-amber-500/20 text-amber-300 font-medium border border-amber-500/30'
+                  : 'text-white/40 hover:text-white/70'
+              }`}
+            >
+              Hesitant (50%)
+            </button>
+            <button
+              type="button"
+              onClick={() => onBoundaryChange(90)}
+              className={`py-1 rounded-lg text-center transition-all ${
+                boundaryLevel > 75
+                  ? 'bg-rose-500/20 text-rose-300 font-medium border border-rose-500/30'
+                  : 'text-white/40 hover:text-white/70'
+              }`}
+            >
+              Open (90%)
+            </button>
           </div>
 
           <input

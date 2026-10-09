@@ -1,4 +1,5 @@
 export type SpatialSpacing = 'distant' | 'reach' | 'intimate'
+export type BoundaryPosture = 'guarded' | 'hesitant' | 'open'
 
 export interface PhysicalParryConfig {
   enabled: boolean
@@ -6,15 +7,10 @@ export interface PhysicalParryConfig {
   boundaryLevel: number // 0 - 100
 }
 
-export function getSpatialBrief(spacing: SpatialSpacing): string {
-  switch (spacing) {
-    case 'distant':
-      return '- ระยะห่างทางกายภาพ: คุณยืนห่างจากผู้เล่นประมาณ 2-3 ก้าว (ระยะนี้หากผู้เล่นพยายามเอื้อมมือมาโดยไม่ก้าวเท้าเข้ามาใกล้ จะสัมผัสได้เพียงอากาศธาตุ คว้าได้แค่อากาศ)'
-    case 'reach':
-      return '- ระยะห่างทางกายภาพ: คุณยืนอยู่ในระยะหนึ่งช่วงแขน (ระยะที่ปลายมือสามารถเฉียดถึงกันได้หากยื่นออกมา แต่คุณยังมีพื้นที่พอที่จะเบี่ยงไหล่ สลัดแขน หรือก้าวถอยหลังได้ทันที)'
-    case 'intimate':
-      return '- ระยะห่างทางกายภาพ: คุณยืนประชิดตัวกันในระยะไม่ถึงหนึ่งก้าว (ลมหายใจและไออุ่นสัมผัสถึงกันได้ หากผู้เล่นเคลื่อนไหว ร่างกายของคุณต้องตอบสนองฉับพลัน)'
-  }
+export function getBoundaryPosture(level: number): BoundaryPosture {
+  if (level <= 35) return 'guarded'
+  if (level <= 75) return 'hesitant'
+  return 'open'
 }
 
 export function getBoundaryBrief(level: number): {
@@ -22,53 +18,59 @@ export function getBoundaryBrief(level: number): {
   stageName: string
   brief: string
 } {
-  if (level <= 30) {
+  const posture = getBoundaryPosture(level)
+  if (posture === 'guarded') {
     return {
-      badge: '🛡️ หวงแหนเด็ดขาด (Parry 100%)',
+      badge: 'หวงแหนเด็ดขาด (Parry 100%)',
       stageName: 'GUARD_UP',
-      brief: '- กำแพงจิตใจ: คนตรงหน้ายังไม่ใช่คนที่คุณไว้วางใจ กำแพงของคุณปิดสนิท สัญชาตญาณหวงแหนพื้นที่ส่วนตัวและร่างกายทำงานเต็มร้อย ไม่อนุญาตให้เกิดการสัมผัสใดๆ หากมีใครล่วงล้ำ ร่างกายของคุณจะเบี่ยงหลบ สลัดมือ หรือปัดป้องตามสัญชาตญาณป้องกันตัวทันที พร้อมกล่าวท้วงห้าม'
+      brief: 'กำแพงปิดสนิท สัญชาตญาณหวงแหนพื้นที่ส่วนตัวและร่างกายทำงานเต็มร้อย ไม่อนุญาตให้สัมผัส ปัดป้องหรือสกัดมือทิ้งกลางอากาศทันที'
     }
   }
-  if (level <= 70) {
+  if (posture === 'hesitant') {
     return {
-      badge: '⚖️ ลังเลหวั่นไหว (Half-Guard)',
-      stageName: 'HALF_GUARD',
-      brief: '- กำแพงจิตใจ: คุณเริ่มคุ้นเคยและมีความรู้สึกลังเลหวั่นไหว อนุญาตให้เกิดสัมผัสผิวเผินที่อ่อนโยนได้ (เช่น ลูบผมหรือแตะหลังมือ) แต่หากผู้เล่นพยายามรุกล้ำเกินขอบเขต ร่างกายของคุณจะชะงัก ล็อคข้อมือหยุดไว้ หรือดึงสติตัวเองกลับมา'
-    }
-  }
-  if (level <= 99) {
-    return {
-      badge: '💔 เกราะสลาย (Yielding)',
-      stageName: 'GUARD_BROKEN',
-      brief: '- กำแพงจิตใจ: กำแพงใจของคุณพังทลายลงเกือบหมดสิ้น ร่างกายทรยศต่อตรรกะ แม้ในใจจะคิดขัดขืนแต่เรี่ยวแรงกลับอ่อนยวบ ยินยอมให้เกิดความแนบชิด การปัดป้องไร้น้ำหนักและกลายเป็นการโอนอ่อนตาม'
+      badge: 'ลังเลหวั่นไหว (Hesitant / Graze)',
+      stageName: 'HESITANT',
+      brief: 'เริ่มหวั่นไหว ลังเล สับสน อนุญาตให้เกิดสัมผัสเฉียดผิวหรือโดนบางเบาแล้วสะดุ้งชะงัก ค่อยๆ ดึงมือถอยหนี'
     }
   }
   return {
-    badge: '👑 พลิกครอบงำ (Predator)',
-    stageName: 'PREDATOR',
-    brief: '- กำแพงจิตใจ: คุณเป็นฝ่ายกุมอำนาจเหนือกว่าอย่างสมบูรณ์ ไม่จำเป็นต้องปัดป้อง แต่เป็นฝ่ายรุกคืบ เข้าประชิด และครอบงำร่างกายของผู้เล่นด้วยตัวคุณเอง'
+    badge: 'เกราะสลายยินยอม (Open / Latched)',
+    stageName: 'OPEN',
+    brief: 'กำแพงใจเปิดออก ร่างกายยินยอมและโอนอ่อนตาม ยอมให้เกิดการกุมมือ โอบกอด หรือสัมผัสแนบแน่นค้างไว้'
   }
 }
 
-export function generatePhysicalParryBrief(spacing: SpatialSpacing, boundaryLevel: number): string {
-  const spatialText = getSpatialBrief(spacing)
-  const boundaryInfo = getBoundaryBrief(boundaryLevel)
+export function generatePhysicalParryBrief(
+  spacing: SpatialSpacing,
+  boundaryLevel: number,
+  playerInput: string = ''
+): string {
+  const posture = getBoundaryPosture(boundaryLevel)
 
-  return `## 1. THE REALITY OVERRIDE & PLAYER INTENT (กฎเจตนาและสิทธิ์ขาดทางกายภาพ)
-- ข้อความและการกระทำของผู้เล่นคือ "PLAYER INTENT & INCOMING TRAJECTORY" (ความตั้งใจและวิถีการเคลื่อนไหวที่กำลังพุ่งเข้ามา) ไม่ใช่ผลลัพธ์ที่เกิดขึ้นแล้วจริง (Not a Resolved Fact)
-- คุณคือผู้ถือครองสิทธิ์ขาดในการตัดสินการปะทะ (Hitbox & Collision Arbiter): คุณเป็นผู้ตัดสินแต่เพียงผู้เดียวว่าการสัมผัสนั้นจะ โดน, วืด (Whiff), หรือถูกสกัดกั้น (Intercepted)
+  let distDesc = 'Reach (1 ช่วงแขน เอื้อมถึงกันได้)'
+  let distDirective = 'อยู่ในระยะวิกฤต สามารถยกแขนปัดป้อง สกัดกั้น หรือเบี่ยงตัวหลบได้ทันควัน'
+  if (spacing === 'distant') {
+    distDesc = 'Distant (ห่าง 2-3 ก้าว อยู่นอกระยะเอื้อม)'
+    distDirective = 'เป้าหมายอยู่นอกระยะเอื้อม มือตัดผ่านอากาศธาตุ เกิดผลลัพธ์วืด (MISSED) ห้ามเกิดการสัมผัส 100%'
+  } else if (spacing === 'intimate') {
+    distDesc = 'Intimate (ประชิดตัว แนบชิดศูนย์ก้าว)'
+    distDirective = 'อยู่ในระยะแนบชิด การเคลื่อนไหวส่งผลต่อสรีระและร่างกายโดยตรงทันที'
+  }
 
-## 2. PRE-CONTACT INTERCEPTION & HITBOX LAW (กฎการสกัดกั้นก่อนปะทะ)
-- กฎเหล็กจุดสงวน/การคุกคาม (Intimate & Sensitive Zones เช่น หน้าอก, ต้นขา, สะโพก, ลำคอ, ใบหน้า):
-  * หากระดับกำแพงของคุณยังไม่ยินยอม: **ต้องสกัดกั้นหรือหลบหลีก "ก่อนที่จะสัมผัสโดนเนื้อตัว" (Pre-Contact Interception 100%)**
-  * ห้ามบรรยายว่าโดนสัมผัส/โดนขยำแล้วค่อยโวยวายเด็ดขาด! เพราะนั่นทำให้ผู้เล่นได้เสพสมความต้องการฟรีและทำลายศักดิ์ศรีของตัวละคร
-  * บังคับให้เกิดผลลัพธ์: ยกมือปัดทิ้งกลางอากาศ, เบี่ยงตัวหลบจนผู้เล่นคว้าได้แค่อากาศธาตุ (วืด), หรือคว้าล็อกข้อมือหยุดไว้ก่อนถึงเป้าหมาย 1 คืบ
-- จุดทั่วไป (Casual Zones เช่น ข้อมือ, ไหล่, ชายเสื้อ):
-  * หากเกิดการแตะต้อง ให้กระตุกแขนหนี สลัดบิดข้อมือหลุด หรือสะบัดตัวออกทันทีตามสัญชาตญาณทางสรีรวิทยา
+  let boundaryDesc = 'Guarded (หวงตัวเด็ดขาด 100% ป้องกันตัวเต็มที่)'
+  let boundaryDirective = 'ไม่อนุญาตให้เกิดการสัมผัสเด็ดขาด ยกแขนปัดทิ้งหรือสกัดกั้นกลางอากาศก่อนถึงตัว (PARRIED)'
+  if (posture === 'hesitant') {
+    boundaryDesc = 'Hesitant (หวั่นไหว ลังเล สับสน กำแพงจิตใจแตกร้าว)'
+    boundaryDirective = 'สัมผัสโดนเพียงผิวเผินหรือเฉียดปลายนิ้วแล้วสะดุ้งชะงัก ดึงมือถอยหนีด้วยความสับสน (GRAZED)'
+  } else if (posture === 'open') {
+    boundaryDesc = 'Open (ยินยอม กำแพงใจพังทลาย)'
+    boundaryDirective = 'ยินยอมรับสัมผัส ร่างกายโอนอ่อนตาม เกิดการกุมมือหรือโอบกอดแนบแน่น (LATCHED)'
+  }
 
-## 3. SPATIAL REALITY (ระยะห่างปัจจุบัน)
-${spatialText}
-
-## 4. PSYCHOLOGICAL BOUNDARY & REFLEX (${boundaryInfo.stageName})
-${boundaryInfo.brief}`
+  return `[PHYSICAL REALITY]
+- Distance: ${distDesc}
+- Character Boundary Posture: ${boundaryDesc}
+- Player Attempt: ${playerInput || 'เคลื่อนไหวเข้าหาเป้าหมาย'}
+- Physical Directive: ${distDirective}
+- Boundary Directive: ${boundaryDirective}`
 }

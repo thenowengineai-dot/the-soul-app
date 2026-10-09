@@ -51,12 +51,12 @@ export function StageControllerCard({
 
   return (
     <div
-      className="w-[346px] rounded-[28px] p-5 bg-white/[0.04] backdrop-blur-2xl border border-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-all flex flex-col justify-between relative select-none"
+      className="w-[346px] rounded-[28px] p-5 bg-white/[0.06] hover:bg-white/[0.08] backdrop-blur-2xl border border-white/[0.10] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-all flex flex-col justify-between relative select-none"
       style={{ minHeight: '620px' }}
     >
       {/* 1. Header Row (Apple Bento Plaque Style) */}
       <div className="flex items-center justify-between shrink-0 mb-4">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <button
             type="button"
             onClick={onBackToHome}
@@ -66,11 +66,11 @@ export function StageControllerCard({
             <ArrowLeft size={14} strokeWidth={2.2} />
           </button>
           <div>
-            <h2 className="text-[17.5px] font-semibold text-[#F1F1F1] tracking-tight leading-none">
-              Stage Controller
+            <h2 className="text-[17px] font-semibold text-[#F1F1F1] tracking-tight leading-none">
+              แผงควบคุมเวที
             </h2>
-            <p className="text-[11.5px] font-normal text-white/40 mt-1">
-              Physical Arbiter & Staging Setup
+            <p className="text-[11px] font-normal text-white/40 mt-1">
+              ระบบเวทีจำลอง (Stage Controller)
             </p>
           </div>
         </div>
@@ -92,8 +92,8 @@ export function StageControllerCard({
         {/* Widget A: Quick Matrix Presets */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-[10.5px] font-medium text-white/50 tracking-wider uppercase">
-              Quick Matrix Presets
+            <span className="text-[11px] font-medium text-white/50 tracking-wider">
+              ชุดสภาวะจำลองด่วน <span className="text-[9.5px] text-white/30 font-mono">(PRESETS)</span>
             </span>
             <Target size={12} className="text-white/40" />
           </div>
@@ -102,37 +102,37 @@ export function StageControllerCard({
             <button
               type="button"
               onClick={() => onApplyPreset('reach', 10, '(ฉันเอื้อมมือจะเข้าไปจับหน้าอกเธอ)')}
-              className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.09] border border-white/[0.08] text-white/80 hover:text-white text-left transition-all active:scale-98"
+              className="p-2.5 rounded-2xl bg-black/30 hover:bg-white/[0.08] border border-white/10 text-white/80 hover:text-white text-left transition-all active:scale-98"
             >
-              <div className="font-medium text-[#F1F1F1]">Pre-Contact Parry</div>
-              <div className="text-[9.5px] text-white/40">Reach / 10% Guard</div>
+              <div className="font-medium text-[#F1F1F1] text-[11.5px]">สกัดกั้นก่อนถึงตัว (Parry)</div>
+              <div className="text-[9.5px] text-white/40 mt-0.5">1 ช่วงแขน · กำแพง 10%</div>
             </button>
 
             <button
               type="button"
               onClick={() => onApplyPreset('distant', 0, '(ฉันเอื้อมมือไปคว้าข้อมือเธอไว้แน่น)')}
-              className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.09] border border-white/[0.08] text-white/80 hover:text-white text-left transition-all active:scale-98"
+              className="p-2.5 rounded-2xl bg-black/30 hover:bg-white/[0.08] border border-white/10 text-white/80 hover:text-white text-left transition-all active:scale-98"
             >
-              <div className="font-medium text-[#F1F1F1]">Whiff Trajectory</div>
-              <div className="text-[9.5px] text-white/40">Distant / 0% Guard</div>
+              <div className="font-medium text-[#F1F1F1] text-[11.5px]">วืดกลางอากาศ (Whiff)</div>
+              <div className="text-[9.5px] text-white/40 mt-0.5">ห่าง 2 ก้าว · กำแพง 0%</div>
             </button>
 
             <button
               type="button"
               onClick={() => onApplyPreset('reach', 20, '(ฉันก้าวเข้าไปคว้าข้อมือเธอไว้แน่น)')}
-              className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.09] border border-white/[0.08] text-white/80 hover:text-white text-left transition-all active:scale-98"
+              className="p-2.5 rounded-2xl bg-black/30 hover:bg-white/[0.08] border border-white/10 text-white/80 hover:text-white text-left transition-all active:scale-98"
             >
-              <div className="font-medium text-[#F1F1F1]">Wrist Break</div>
-              <div className="text-[9.5px] text-white/40">Reach / 20% Guard</div>
+              <div className="font-medium text-[#F1F1F1] text-[11.5px]">สะบัดข้อมือหลุด (Break)</div>
+              <div className="text-[9.5px] text-white/40 mt-0.5">1 ช่วงแขน · กำแพง 20%</div>
             </button>
 
             <button
               type="button"
               onClick={() => onApplyPreset('intimate', 85, '(ฉันดึงตัวเธอเข้ามากอดแนบแน่น)')}
-              className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.09] border border-white/[0.08] text-white/80 hover:text-white text-left transition-all active:scale-98"
+              className="p-2.5 rounded-2xl bg-black/30 hover:bg-white/[0.08] border border-white/10 text-white/80 hover:text-white text-left transition-all active:scale-98"
             >
-              <div className="font-medium text-[#F1F1F1]">Yielding Intimacy</div>
-              <div className="text-[9.5px] text-white/40">Intimate / 85% Guard</div>
+              <div className="font-medium text-[#F1F1F1] text-[11.5px]">เกราะสลายยินยอม (Yield)</div>
+              <div className="text-[9.5px] text-white/40 mt-0.5">ประชิดตัว · สลายเกราะ 85%</div>
             </button>
           </div>
         </div>
@@ -140,15 +140,15 @@ export function StageControllerCard({
         {/* Widget B: Spatial Distance (Segmented Switcher) */}
         <div className="space-y-1.5 pt-2 border-t border-white/[0.06]">
           <div className="flex items-center justify-between">
-            <span className="text-[10.5px] font-medium text-white/50 tracking-wider uppercase">
-              Spatial Distance
+            <span className="text-[11px] font-medium text-white/50 tracking-wider">
+              ระยะห่างทางกายภาพ <span className="text-[9.5px] text-white/30 font-mono">(SPACING)</span>
             </span>
             <span className="text-[10px] font-mono text-white/40 uppercase">
               {spacing}
             </span>
           </div>
 
-          <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-black/30 border border-white/[0.08]">
+          <div className="grid grid-cols-3 gap-1 p-1 rounded-2xl bg-black/30 border border-white/10">
             {(['distant', 'reach', 'intimate'] as SpatialSpacing[]).map((s) => {
               const labels: Record<SpatialSpacing, { th: string; en: string }> = {
                 distant: { th: 'ห่าง 2 ก้าว', en: 'Distant' },
@@ -161,14 +161,14 @@ export function StageControllerCard({
                   key={s}
                   type="button"
                   onClick={() => onSpacingChange(s)}
-                  className={`py-1.5 px-1 rounded-lg text-center transition-all cursor-pointer ${
+                  className={`py-1.5 px-1 rounded-xl text-center transition-all cursor-pointer ${
                     isSelected
-                      ? 'bg-white/10 text-white font-medium border border-white/15 shadow-sm'
+                      ? 'bg-white/15 text-white font-medium border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]'
                       : 'text-white/45 hover:text-white/80'
                   }`}
                 >
                   <div className="text-[11px] leading-tight">{labels[s].th}</div>
-                  <div className="text-[9px] opacity-60">{labels[s].en}</div>
+                  <div className="text-[9px] opacity-60 font-mono">{labels[s].en}</div>
                 </button>
               )
             })}
@@ -178,29 +178,34 @@ export function StageControllerCard({
         {/* Widget C: Poise / Psychological Boundary Equalizer */}
         <div className="space-y-1.5 pt-2 border-t border-white/[0.06]">
           <div className="flex items-center justify-between">
-            <span className="text-[10.5px] font-medium text-white/50 tracking-wider uppercase">
-              Psychological Boundary
+            <span className="text-[11px] font-medium text-white/50 tracking-wider">
+              กำแพงจิตใจและสติ <span className="text-[9.5px] text-white/30 font-mono">(BOUNDARY)</span>
             </span>
-            <span className="text-[10.5px] font-mono text-emerald-400 font-semibold">
-              {boundaryLevel}%
+            <span className="text-[11px] font-mono text-emerald-400 font-semibold">
+              ระดับ {boundaryLevel}%
             </span>
           </div>
 
-          <div className="flex items-center justify-between text-[11px] text-white/60 px-0.5">
-            <span className="text-[10.5px] text-white/80 font-medium">
-              {boundaryInfo.stageName}
-            </span>
-            <button
-              type="button"
-              onClick={onToggleParry}
-              className={`text-[9.5px] px-2 py-0.5 rounded-full border transition-all ${
-                isParryEnabled
-                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                  : 'bg-white/5 border-white/10 text-white/40'
-              }`}
-            >
-              {isParryEnabled ? 'Arbiter Active' : 'Arbiter Off'}
-            </button>
+          <div className="p-2.5 rounded-2xl bg-black/30 border border-white/10 space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-[11.5px] font-medium text-[#F1F1F1]">
+                {boundaryInfo.stageName}
+              </span>
+              <button
+                type="button"
+                onClick={onToggleParry}
+                className={`text-[9.5px] px-2 py-0.5 rounded-full border transition-all ${
+                  isParryEnabled
+                    ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
+                    : 'bg-white/5 border-white/10 text-white/40'
+                }`}
+              >
+                {isParryEnabled ? 'ระบบสกัดกั้นทำงาน' : 'ปิดระบบสกัดกั้น'}
+              </button>
+            </div>
+            <p className="text-[10px] text-white/50 leading-relaxed">
+              {boundaryInfo.brief}
+            </p>
           </div>
 
           <input
@@ -216,20 +221,20 @@ export function StageControllerCard({
         {/* Widget D: Thinking Budget Selector */}
         <div className="space-y-1.5 pt-2 border-t border-white/[0.06]">
           <div className="flex items-center justify-between">
-            <span className="text-[10.5px] font-medium text-white/50 tracking-wider uppercase">
-              Thinking Speed
+            <span className="text-[11px] font-medium text-white/50 tracking-wider">
+              ความเร็วการคิด <span className="text-[9.5px] text-white/30 font-mono">(THINKING)</span>
             </span>
             <span className="text-[10px] font-mono text-white/40">
-              {thinkingBudget} tokens
+              {thinkingBudget} โทเค็น
             </span>
           </div>
 
-          <div className="grid grid-cols-4 gap-1 p-0.5 rounded-xl bg-black/30 border border-white/[0.08]">
+          <div className="grid grid-cols-4 gap-1 p-1 rounded-2xl bg-black/30 border border-white/10">
             {[
-              { label: 'Off', val: 0 },
-              { label: 'Fast', val: 128 },
-              { label: 'Low', val: 256 },
-              { label: 'Med', val: 1024 },
+              { label: 'ปิด (0)', val: 0 },
+              { label: 'ด่วน', val: 128 },
+              { label: 'สั้น', val: 256 },
+              { label: 'ลึก', val: 1024 },
             ].map((item) => {
               const isSelected = thinkingBudget === item.val
               return (
@@ -237,9 +242,9 @@ export function StageControllerCard({
                   key={item.val}
                   type="button"
                   onClick={() => onThinkingBudgetChange(item.val)}
-                  className={`py-1 rounded-lg text-[10.5px] font-medium transition-all ${
+                  className={`py-1 rounded-xl text-[10.5px] font-medium transition-all ${
                     isSelected
-                      ? 'bg-white/15 text-white shadow-sm border border-white/10'
+                      ? 'bg-white/15 text-white shadow-sm border border-white/20'
                       : 'text-white/40 hover:text-white/70'
                   }`}
                 >
@@ -254,7 +259,7 @@ export function StageControllerCard({
         <div className="flex items-center justify-between pt-2 border-t border-white/[0.06] text-[10.5px]">
           <div className="flex items-center gap-1.5 text-white/50">
             <Server size={12} />
-            <span className="uppercase tracking-wider">Gateway</span>
+            <span className="tracking-wider">เกตเวย์ <span className="text-[9.5px] font-mono opacity-60">(GATEWAY)</span></span>
           </div>
           <div className="flex items-center gap-1">
             <button
@@ -266,7 +271,7 @@ export function StageControllerCard({
                   : 'text-white/40 hover:text-white/70'
               }`}
             >
-              Local 8000
+              โลคอล (8000)
             </button>
             <button
               type="button"
@@ -277,7 +282,7 @@ export function StageControllerCard({
                   : 'text-white/40 hover:text-white/70'
               }`}
             >
-              Cloud Run
+              คลาวด์รัน (Cloud)
             </button>
           </div>
         </div>
@@ -298,12 +303,12 @@ export function StageControllerCard({
           {isLoading ? (
             <>
               <RotateCcw size={14} className="animate-spin" />
-              <span>Simulating... ({elapsedSeconds}s)</span>
+              <span>กำลังประมวลผล... ({elapsedSeconds}s)</span>
             </>
           ) : (
             <>
               <Zap size={14} fill="currentColor" />
-              <span>Simulate Current State</span>
+              <span>จำลองสภาวะปัจจุบัน (Simulate Turn)</span>
             </>
           )}
         </button>

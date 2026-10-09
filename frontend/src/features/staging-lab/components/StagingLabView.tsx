@@ -14,7 +14,7 @@ import {
   generatePhysicalParryBrief
 } from '../modules/physicalParryModule'
 import type { PromptModule, SandboxSimulateResponse, SandboxSimulateRequest } from '../types'
-import { MessageBubble } from '../../chat/components/chat-room/MessageBubble'
+import { MessageList } from '../../chat/components/chat-room/MessageList'
 import { ChatInputBar } from '../../chat/components/chat-room/ChatInputBar'
 import type { ChatMessage } from '../../chat/types'
 import { StageControllerCard } from './StageControllerCard'
@@ -57,6 +57,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   // Stopwatch counter during inference
   useEffect(() => {
@@ -131,21 +132,28 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   }
 
   // Simulate execution handler
+  // Simulate execution handler
   const handleSimulate = async () => {
-    const currentInput = playerInput.trim()
-    if (!currentInput || isLoading) return
+    const trimmed = playerInput.trim()
+    if (!trimmed || isLoading) return
 
     setElapsedSeconds(0)
     setIsLoading(true)
     setErrorMessage(null)
 
-    // 1. Append user message to live chat log
-    const isAction = currentInput.startsWith('(') && currentInput.endsWith(')')
+    // Check if player input is an action: enclosed in asterisks *...* or parentheses (...)
+    const isAction =
+      (trimmed.startsWith('*') && trimmed.endsWith('*') && trimmed.length > 2) ||
+      (trimmed.startsWith('(') && trimmed.endsWith(')') && trimmed.length > 2)
+    const cleanText = isAction ? trimmed.slice(1, -1).trim() : trimmed
+
+    // 1. Append user message to live chat log (production parity)
     const userMsg: ChatMessage = {
       id: `user-${Date.now()}`,
-      text: currentInput,
+      text: cleanText,
       sender: 'me',
       type: isAction ? 'action' : 'msg',
+      read: true,
     }
     setChatLog(prev => [...prev, userMsg])
     setPlayerInput('')
@@ -170,8 +178,10 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
         })
       })
 
+    // If it's an action, format as (action) for the LLM prompt's in-flight trajectory rule
+    const backendPlayerInput = isAction ? `(${cleanText})` : trimmed
     const payload: SandboxSimulateRequest = {
-      player_input: currentInput,
+      player_input: backendPlayerInput,
       base_prompt: basePrompt.trim(),
       active_modules: activeSnippets,
       thinking_budget: thinkingBudget,
@@ -247,7 +257,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       </aside>
 
       {/* ======================================================================= */}
-      {/* 2. RIGHT CANVAS: THE LIVE CHAT ROOM (1:1 Production Chat Parity)        */}
+      {/* 2. RIGHT CANVAS: THE LIVE CHAT ROOM (100% Production Chat Parity)       */}
       {/* ======================================================================= */}
       <main className="flex-1 h-full flex flex-col relative overflow-hidden bg-app-bg">
         {/* Floating Telemetry HUD (Top-Right) */}
@@ -262,22 +272,18 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
         {/* Ambient Top Glow (Subtle Dark Apple Radial) */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[250px] bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none blur-3xl -z-10" />
 
-        {/* Live Chat Message Canvas */}
-        <div className="flex-1 overflow-y-auto px-6 sm:px-16 md:px-24 py-8 flex flex-col justify-start space-y-4 no-scrollbar">
-          {chatLog.map((msg, idx) => {
-            const isLast = idx === chatLog.length - 1
-            const isMe = msg.sender === 'me'
-            return (
-              <MessageBubble
-                key={msg.id}
-                message={msg}
-                isMe={isMe}
-                isLastInGroup={isLast}
-                isRead={true}
-                chatName="Actor"
-              />
-            )
-          })}
+        {/* Unified Scroll Container (Identical structure to production ChatRoom) */}
+        <div
+          ref={scrollContainerRef}
+          style={{ overscrollBehavior: 'none', overscrollBehaviorY: 'none' }}
+          className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col no-scrollbar relative overscroll-none touch-pan-y"
+        >
+          {/* Main Conversation Column */}
+          <MessageList
+            messages={chatLog}
+            chatName="Actor"
+            endRef={messagesEndRef}
+          />
 
           {/* Inline Error Notification */}
           {errorMessage && (
@@ -287,17 +293,13 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
             </div>
           )}
 
-          <div ref={messagesEndRef} className="h-4" />
-        </div>
-
-        {/* Bottom Production ChatInputBar */}
-        <div className="shrink-0 p-4 sm:p-6 w-full max-w-4xl mx-auto z-10">
+          {/* Sticky Bottom Bar with Unified Capsule Input Dock */}
           <ChatInputBar
             inputMessage={playerInput}
             onInputChange={setPlayerInput}
             onSendMessage={handleSimulate}
             isStreaming={isLoading}
-            chatName="Actor Canvas"
+            chatName="Actor"
           />
         </div>
       </main>

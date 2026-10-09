@@ -73,7 +73,7 @@ export function FloatingTelemetryHud({
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/80 hover:bg-black/95 backdrop-blur-md border border-white/10 hover:border-white/20 text-white/80 hover:text-white text-[11px] font-mono transition-all shadow-xl active:scale-95 cursor-pointer"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/35 hover:bg-black/50 backdrop-blur-md border border-white/10 hover:border-white/20 text-white/80 hover:text-white text-[11px] font-mono transition-all shadow-xl active:scale-95 cursor-pointer"
           title="เปิดแผงตรวจวัด Telemetry"
         >
           <Activity size={12} className="text-emerald-400" />
@@ -88,39 +88,27 @@ export function FloatingTelemetryHud({
     )
   }
 
-  // Expanded MSI Afterburner Style OSD
+  // Expanded MSI Afterburner Style OSD (Ultra-Translucent)
   return (
-    <div className="absolute top-5 right-6 z-30 w-[310px] sm:w-[330px] rounded-2xl bg-black/85 backdrop-blur-md border border-white/10 shadow-2xl p-3.5 select-none transition-all">
-      {/* HUD Header */}
-      <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/[0.08]">
-        <div className="flex items-center gap-2">
-          <Activity size={13} className="text-emerald-400" />
-          <span className="font-mono text-[11px] font-semibold text-white/90 tracking-wider">
-            BRAIN TELEMETRY
-          </span>
-          <span className="text-[9px] font-mono px-1 rounded bg-white/10 text-white/60">
-            OSD
-          </span>
-        </div>
-
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={() => setShowSettings(!showSettings)}
-            className="w-6 h-6 rounded flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
-            title="ตั้งค่าแสดงผลค่าสถานะ"
-          >
-            <Sliders size={12} />
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsOpen(false)}
-            className="w-6 h-6 rounded flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
-            title="ย่อแผง HUD"
-          >
-            <Minimize2 size={12} />
-          </button>
-        </div>
+    <div className="absolute top-5 right-6 z-30 w-[310px] sm:w-[330px] rounded-2xl bg-black/35 backdrop-blur-xl border border-white/10 shadow-2xl p-3.5 select-none transition-all">
+      {/* Top Controls (Clean Floating Controls, No Header Title) */}
+      <div className="flex items-center justify-end gap-1 mb-2">
+        <button
+          type="button"
+          onClick={() => setShowSettings(!showSettings)}
+          className="w-5 h-5 rounded flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+          title="ตั้งค่าแสดงผลค่าสถานะ"
+        >
+          <Sliders size={11} />
+        </button>
+        <button
+          type="button"
+          onClick={() => setIsOpen(false)}
+          className="w-5 h-5 rounded flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+          title="ย่อแผง HUD"
+        >
+          <Minimize2 size={11} />
+        </button>
       </div>
 
       {/* Settings Popover Tray */}

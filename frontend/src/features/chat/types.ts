@@ -147,6 +147,8 @@ export interface ChatInputBarProps {
   selectedModel?: string
   onModelChange?: (model: string) => void
   availableModels?: Array<{ id: string; name: string; tag?: string }>
+  thinkingBudget?: number
+  onThinkingBudgetChange?: (budget: number) => void
 }
 
 export interface ChatRoomProps {

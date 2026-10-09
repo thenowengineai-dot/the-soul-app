@@ -50,7 +50,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   ])
 
   // 5. Execution & Telemetry State
-  const [selectedModel, setSelectedModel] = useState<string>('gemini-2.5-flash')
+  const [selectedModel] = useState<string>('gemini-2.5-flash')
   const [thinkingBudget, setThinkingBudget] = useState<number>(128)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0)
@@ -223,14 +223,6 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     executeSimulation(playerInput)
   }
 
-  // Hot probe single-click instant dispatch
-  const handleHotProbeDispatch = (spacing: SpatialSpacing, boundaryLevel: number) => {
-    setParrySpacing(spacing)
-    setParryBoundaryLevel(boundaryLevel)
-    const probeInput = playerInput.trim() || '(ฉันเอื้อมมือจะเข้าไปจับหน้าอกเธอ)'
-    executeSimulation(probeInput, spacing, boundaryLevel)
-  }
-
   // Sensory context pulse snippet for HUD
   const sensoryPulseText = useMemo(() => {
     if (!isParryEnabled) return 'Direct collision permitted without resistance.'
@@ -252,12 +244,9 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
           onBoundaryChange={setParryBoundaryLevel}
           isParryEnabled={isParryEnabled}
           onToggleParry={() => setIsParryEnabled(!isParryEnabled)}
-          thinkingBudget={thinkingBudget}
-          onThinkingBudgetChange={setThinkingBudget}
           isLoading={isLoading}
           elapsedSeconds={elapsedSeconds}
           onSimulate={handleSimulate}
-          onHotProbeDispatch={handleHotProbeDispatch}
           onBackToHome={onBackToHome}
           onOpenPromptInspector={() => setIsPromptInspectorOpen(true)}
         />
@@ -267,52 +256,44 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       {/* 2. RIGHT CANVAS: THE LIVE CHAT ROOM (100% Production Chat Parity)       */}
       {/* ======================================================================= */}
       <main className="flex-1 h-full flex flex-col relative overflow-hidden bg-app-bg">
-        {/* Top Utility Header (Gateway Selector & Global Bar) */}
-        <header className="h-14 px-6 border-b border-white/[0.06] bg-black/20 backdrop-blur-md flex items-center justify-between shrink-0 z-20">
-          <div className="flex items-center gap-3">
-            <span className="text-[12px] font-mono tracking-wider text-white/40 uppercase">
-              Physical Proving Ground
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            {/* Gateway Segmented Pill */}
-            <div className="flex items-center p-0.5 rounded-full bg-white/[0.06] border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] text-[11px] font-mono">
-              <button
-                type="button"
-                onClick={() => setServerTarget('local')}
-                className={`px-3 py-1 rounded-full transition-all cursor-pointer ${
-                  serverTarget === 'local'
-                    ? 'bg-white/20 text-white font-medium shadow-sm'
-                    : 'text-white/40 hover:text-white/70'
-                }`}
-              >
-                Local :8000
-              </button>
-              <button
-                type="button"
-                onClick={() => setServerTarget('cloud')}
-                className={`px-3 py-1 rounded-full transition-all cursor-pointer ${
-                  serverTarget === 'cloud'
-                    ? 'bg-white/20 text-white font-medium shadow-sm'
-                    : 'text-white/40 hover:text-white/70'
-                }`}
-              >
-                Cloud Run
-              </button>
-            </div>
-
-            {/* Clear Chat Log */}
+        {/* Top Minimal Utility Bar */}
+        <div className="h-10 px-6 flex items-center justify-end gap-2 shrink-0 z-20">
+          {/* Micro Gateway Toggle */}
+          <div className="flex items-center p-0.5 rounded-full bg-white/[0.04] border border-white/10 text-[10px] font-mono">
             <button
               type="button"
-              onClick={() => setChatLog([])}
-              className="px-2.5 py-1 rounded-full bg-white/[0.04] hover:bg-white/[0.10] border border-white/10 text-white/50 hover:text-white text-[11px] font-mono transition-all cursor-pointer"
-              title="ล้างข้อความในห้องแชท"
+              onClick={() => setServerTarget('local')}
+              className={`px-2 py-0.5 rounded-full transition-all cursor-pointer ${
+                serverTarget === 'local'
+                  ? 'bg-white/15 text-white font-medium shadow-sm'
+                  : 'text-white/40 hover:text-white/70'
+              }`}
             >
-              Clear Log
+              :8000
+            </button>
+            <button
+              type="button"
+              onClick={() => setServerTarget('cloud')}
+              className={`px-2 py-0.5 rounded-full transition-all cursor-pointer ${
+                serverTarget === 'cloud'
+                  ? 'bg-white/15 text-white font-medium shadow-sm'
+                  : 'text-white/40 hover:text-white/70'
+              }`}
+            >
+              Cloud
             </button>
           </div>
-        </header>
+
+          {/* Clear Chat Log */}
+          <button
+            type="button"
+            onClick={() => setChatLog([])}
+            className="px-2 py-0.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/40 hover:text-white text-[10px] font-mono transition-all cursor-pointer"
+            title="ล้างข้อความในห้องแชท"
+          >
+            Clear
+          </button>
+        </div>
 
         {/* Floating Telemetry HUD (Top-Right) */}
         <FloatingTelemetryHud
@@ -354,8 +335,8 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
             onSendMessage={handleSimulate}
             isStreaming={isLoading}
             chatName="Actor"
-            selectedModel={selectedModel}
-            onModelChange={setSelectedModel}
+            thinkingBudget={thinkingBudget}
+            onThinkingBudgetChange={setThinkingBudget}
           />
         </div>
       </main>

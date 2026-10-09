@@ -15,12 +15,9 @@ interface StageControllerCardProps {
   onBoundaryChange: (level: number) => void
   isParryEnabled: boolean
   onToggleParry: () => void
-  thinkingBudget: number
-  onThinkingBudgetChange: (budget: number) => void
   isLoading: boolean
   elapsedSeconds: number
   onSimulate: () => void
-  onHotProbeDispatch: (spacing: SpatialSpacing, boundaryLevel: number) => void
   onBackToHome: () => void
   onOpenPromptInspector?: () => void
 }
@@ -32,12 +29,9 @@ export function StageControllerCard({
   onBoundaryChange,
   isParryEnabled,
   onToggleParry,
-  thinkingBudget,
-  onThinkingBudgetChange,
   isLoading,
   elapsedSeconds,
   onSimulate,
-  onHotProbeDispatch,
   onBackToHome,
   onOpenPromptInspector,
 }: StageControllerCardProps) {
@@ -46,7 +40,6 @@ export function StageControllerCard({
   return (
     <div
       className="w-[346px] rounded-[28px] p-5 bg-white/[0.06] hover:bg-white/[0.08] backdrop-blur-2xl border border-white/[0.10] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-all flex flex-col justify-between relative select-none"
-      style={{ minHeight: '620px' }}
     >
       {/* 1. Header Row (Apple Bento Plaque Style) */}
       <div className="flex items-center justify-between shrink-0 mb-4">
@@ -83,88 +76,8 @@ export function StageControllerCard({
 
       {/* 2. Middle Body: Apple Tactile Widget Controls */}
       <div className="flex-1 flex flex-col gap-4 overflow-y-auto no-scrollbar py-1">
-        {/* Widget A: Hot Simulation Probes (1-Click Instant Dispatch) */}
+        {/* Widget A: Spatial Distance (Segmented Switcher) */}
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-medium text-white/50 tracking-wider">
-                ยิงสภาวะทันที <span className="text-[9.5px] text-white/30 font-mono">(HOT PROBES)</span>
-              </span>
-            </div>
-            <span className="text-[9.5px] font-mono px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/40">
-              1-CLICK DISPATCH
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-1.5 text-[11px]">
-            {/* Probe 1: Parry */}
-            <button
-              type="button"
-              disabled={isLoading}
-              onClick={() => onHotProbeDispatch('reach', 10)}
-              className="p-2.5 rounded-2xl bg-black/30 hover:bg-emerald-500/10 border border-white/10 hover:border-emerald-500/30 text-white/80 hover:text-white text-left transition-all active:scale-98 relative overflow-hidden group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <div className="flex items-center justify-between">
-                <div className="font-medium text-[#F1F1F1] text-[11.5px] group-hover:text-emerald-300 transition-colors">สกัดกั้นเด็ดขาด</div>
-                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
-                  PARRY
-                </span>
-              </div>
-              <div className="text-[9.5px] text-white/40 mt-0.5">1 ช่วงแขน · Guarded (10%)</div>
-            </button>
-
-            {/* Probe 2: Graze */}
-            <button
-              type="button"
-              disabled={isLoading}
-              onClick={() => onHotProbeDispatch('reach', 50)}
-              className="p-2.5 rounded-2xl bg-black/30 hover:bg-amber-500/10 border border-white/10 hover:border-amber-500/30 text-white/80 hover:text-white text-left transition-all active:scale-98 relative overflow-hidden group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <div className="flex items-center justify-between">
-                <div className="font-medium text-[#F1F1F1] text-[11.5px] group-hover:text-amber-300 transition-colors">สั่นไหวเฉียดผิว</div>
-                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-400">
-                  GRAZE
-                </span>
-              </div>
-              <div className="text-[9.5px] text-white/40 mt-0.5">1 ช่วงแขน · Hesitant (50%)</div>
-            </button>
-
-            {/* Probe 3: Latch */}
-            <button
-              type="button"
-              disabled={isLoading}
-              onClick={() => onHotProbeDispatch('reach', 90)}
-              className="p-2.5 rounded-2xl bg-black/30 hover:bg-rose-500/10 border border-white/10 hover:border-rose-500/30 text-white/80 hover:text-white text-left transition-all active:scale-98 relative overflow-hidden group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <div className="flex items-center justify-between">
-                <div className="font-medium text-[#F1F1F1] text-[11.5px] group-hover:text-rose-300 transition-colors">ยินยอมแนบชิด</div>
-                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-rose-500/15 border border-rose-500/30 text-rose-400">
-                  LATCH
-                </span>
-              </div>
-              <div className="text-[9.5px] text-white/40 mt-0.5">1 ช่วงแขน · Open (90%)</div>
-            </button>
-
-            {/* Probe 4: Miss */}
-            <button
-              type="button"
-              disabled={isLoading}
-              onClick={() => onHotProbeDispatch('distant', 10)}
-              className="p-2.5 rounded-2xl bg-black/30 hover:bg-sky-500/10 border border-white/10 hover:border-sky-500/30 text-white/80 hover:text-white text-left transition-all active:scale-98 relative overflow-hidden group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <div className="flex items-center justify-between">
-                <div className="font-medium text-[#F1F1F1] text-[11.5px] group-hover:text-sky-300 transition-colors">คว้าลมระยะไกล</div>
-                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-sky-500/15 border border-sky-500/30 text-sky-400">
-                  MISS
-                </span>
-              </div>
-              <div className="text-[9.5px] text-white/40 mt-0.5">ห่าง 2 ก้าว · Distant</div>
-            </button>
-          </div>
-        </div>
-
-        {/* Widget B: Spatial Distance (Segmented Switcher) */}
-        <div className="space-y-1.5 pt-2 border-t border-white/[0.06]">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium text-white/50 tracking-wider">
               ระยะห่างทางกายภาพ <span className="text-[9.5px] text-white/30 font-mono">(SPACING)</span>
@@ -279,43 +192,6 @@ export function StageControllerCard({
             onChange={(e) => onBoundaryChange(Number(e.target.value))}
             className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#EF264C]"
           />
-        </div>
-
-        {/* Widget D: Thinking Budget Selector */}
-        <div className="space-y-1.5 pt-2 border-t border-white/[0.06]">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-white/50 tracking-wider">
-              ความเร็วการคิด <span className="text-[9.5px] text-white/30 font-mono">(THINKING)</span>
-            </span>
-            <span className="text-[10px] font-mono text-white/40">
-              {thinkingBudget} โทเค็น
-            </span>
-          </div>
-
-          <div className="grid grid-cols-4 gap-1 p-1 rounded-2xl bg-black/30 border border-white/10">
-            {[
-              { label: 'ปิด (0)', val: 0 },
-              { label: 'ด่วน', val: 128 },
-              { label: 'สั้น', val: 256 },
-              { label: 'ลึก', val: 1024 },
-            ].map((item) => {
-              const isSelected = thinkingBudget === item.val
-              return (
-                <button
-                  key={item.val}
-                  type="button"
-                  onClick={() => onThinkingBudgetChange(item.val)}
-                  className={`py-1 rounded-xl text-[10.5px] font-medium transition-all ${
-                    isSelected
-                      ? 'bg-white/15 text-white shadow-sm border border-white/20'
-                      : 'text-white/40 hover:text-white/70'
-                  }`}
-                >
-                  {item.label}
-                </button>
-              )
-            })}
-          </div>
         </div>
       </div>
 

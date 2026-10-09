@@ -25,28 +25,26 @@ export function ChatInputBar({
   typingVariant = 'bubble',
   chatAvatar = '',
   chatName = '',
-  selectedModel,
-  onModelChange,
-  availableModels,
+  thinkingBudget,
+  onThinkingBudgetChange,
 }: ChatInputBarProps) {
   const [isEmojiOpen, setIsEmojiOpen] = useState(false)
   const [isPlusMenuOpen, setIsPlusMenuOpen] = useState(false)
-  const [isModelMenuOpen, setIsModelMenuOpen] = useState(false)
+  const [isThinkingMenuOpen, setIsThinkingMenuOpen] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
   const plusMenuRef = useRef<HTMLDivElement>(null)
-  const modelMenuRef = useRef<HTMLDivElement>(null)
+  const thinkingMenuRef = useRef<HTMLDivElement>(null)
 
-  const defaultModelsList = [
-    { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', tag: 'Fast' },
-    { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Lite', tag: 'Ultra Lean' },
-    { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', tag: 'Deep' },
+  const thinkingOptions = [
+    { label: 'ปิด (0)', val: 0, desc: 'ตอบทันที' },
+    { label: 'ด่วน (128)', val: 128, desc: 'คิดฉับไว' },
+    { label: 'สั้น (256)', val: 256, desc: 'มาตรฐาน' },
+    { label: 'ลึก (1024)', val: 1024, desc: 'วิเคราะห์ลึก' },
   ]
-  const modelsToRender = availableModels || defaultModelsList
-  const selectedModelLabel =
-    modelsToRender.find((m) => m.id === selectedModel)?.name ||
-    selectedModel ||
-    'Gemini 2.5 Flash'
+  const currentThinkingLabel =
+    thinkingOptions.find((opt) => opt.val === thinkingBudget)?.label ||
+    `คิด (${thinkingBudget})`
 
   // ปิดเมนูป็อปอัพเมื่อคลิกด้านนอก
   useEffect(() => {
@@ -55,8 +53,8 @@ export function ChatInputBar({
       if (plusMenuRef.current && !plusMenuRef.current.contains(target)) {
         setIsPlusMenuOpen(false)
       }
-      if (modelMenuRef.current && !modelMenuRef.current.contains(target)) {
-        setIsModelMenuOpen(false)
+      if (thinkingMenuRef.current && !thinkingMenuRef.current.contains(target)) {
+        setIsThinkingMenuOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -210,52 +208,50 @@ export function ChatInputBar({
             />
           </div>
 
-          {/* Model Selector Pill (Gemini Web Style) */}
-          {selectedModel && (
-            <div className="relative shrink-0 flex items-center ml-1" ref={modelMenuRef}>
+          {/* Thinking Speed Capsule (Apple Frosted Glass) */}
+          {thinkingBudget !== undefined && (
+            <div className="relative shrink-0 flex items-center ml-1" ref={thinkingMenuRef}>
               <button
                 type="button"
-                onClick={() => setIsModelMenuOpen((prev) => !prev)}
+                onClick={() => setIsThinkingMenuOpen((prev) => !prev)}
                 className="h-[28px] sm:h-[30px] px-2.5 rounded-full bg-white/[0.08] hover:bg-white/[0.16] border border-white/[0.12] hover:border-white/20 text-[#F1F1F1] text-[11px] font-mono flex items-center gap-1.5 transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] active:scale-95"
-                title="เลือกโมเดล AI"
+                title="เลือกความเร็วการคิด"
               >
                 <span className="font-medium tracking-tight">
-                  {selectedModelLabel}
+                  {currentThinkingLabel}
                 </span>
                 <ChevronDown
                   size={11}
                   className={`opacity-60 transition-transform duration-200 ${
-                    isModelMenuOpen ? 'rotate-180' : ''
+                    isThinkingMenuOpen ? 'rotate-180' : ''
                   }`}
                 />
               </button>
 
               {/* Dropdown Menu */}
-              {isModelMenuOpen && (
-                <div className="absolute bottom-[calc(100%+12px)] left-0 z-50 w-[240px] bg-[#151517]/95 backdrop-blur-2xl border border-white/[0.14] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.6)] rounded-2xl p-1.5 animate-in fade-in zoom-in-95 duration-150">
+              {isThinkingMenuOpen && (
+                <div className="absolute bottom-[calc(100%+12px)] left-0 z-50 w-[230px] bg-[#151517]/95 backdrop-blur-2xl border border-white/[0.14] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.6)] rounded-2xl p-1.5 animate-in fade-in zoom-in-95 duration-150">
                   <div className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider text-white/40">
-                    SELECT MODEL
+                    THINKING SPEED
                   </div>
-                  {modelsToRender.map((m) => (
+                  {thinkingOptions.map((opt) => (
                     <button
-                      key={m.id}
+                      key={opt.val}
                       type="button"
                       onClick={() => {
-                        onModelChange?.(m.id)
-                        setIsModelMenuOpen(false)
+                        onThinkingBudgetChange?.(opt.val)
+                        setIsThinkingMenuOpen(false)
                       }}
                       className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[12px] transition-all cursor-pointer ${
-                        selectedModel === m.id
+                        thinkingBudget === opt.val
                           ? 'bg-white/15 text-white font-medium border border-white/20'
                           : 'text-white/70 hover:text-white hover:bg-white/[0.08]'
                       }`}
                     >
-                      <span>{m.name}</span>
-                      {m.tag && (
-                        <span className="text-[9.5px] font-mono px-1.5 py-0.5 rounded bg-white/10 text-white/60">
-                          {m.tag}
-                        </span>
-                      )}
+                      <span className="font-mono">{opt.label}</span>
+                      <span className="text-[10px] text-white/45 font-sans">
+                        {opt.desc}
+                      </span>
                     </button>
                   ))}
                 </div>

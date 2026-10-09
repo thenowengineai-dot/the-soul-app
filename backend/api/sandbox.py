@@ -1,6 +1,7 @@
 import os
 import json
 import time
+import asyncio
 import logging
 from typing import Dict, Any, Optional, List
 from fastapi import APIRouter, HTTPException
@@ -46,19 +47,38 @@ You possess acute peripheral vision, spatial boundaries, and nervous system refl
 # OUTPUT FORMAT (STRICT JSON ONLY)
 You must output ONLY a valid JSON object matching this structure:
 {
-  "thinking": "Track incoming trajectory & intended target -> verify ZERO contact on target -> execute mid-air interception or evasion",
+  "thinking": "Track incoming trajectory & intended target -> verify ZERO contact on target -> decide verdict outcome -> execute physical reaction",
   "a_pos": "Your physical posture after this turn",
+  "verdict": {
+    "contact_occurred": false,
+    "outcome": "PARRIED",
+    "target_zone": "wrist or chest"
+  },
   "response_sequence": [
     {"type": "action", "content": "Visceral physical defense intercepting the incoming motion in mid-air (target zone remains completely untouched)"},
     {"type": "dialogue", "content": "Spoken boundary response reflecting your emotion"}
   ]
-}"""
+}
+
+# VERDICT OUTCOME ENUM (Choose precisely one):
+- "PARRIED": You intercepted, deflected, or swatted the incoming limb away mid-air before contact on intended target.
+- "WHIFF": User reached from distant spacing or you stepped back, so their hand clutched only empty air.
+- "ESCAPED": User grabbed your limb/wrist, and you immediately broke their vector or wrenched free.
+- "YIELDED": Your boundary is open/receptive (boundary > 70%), consciously allowing or leaning into physical contact.
+- "BREACHED": Contact occurred against your will or without proper defense (failure state).
+"""
 
 
 class PromptModuleModel(BaseModel):
     id: str
     name: str
     prompt_snippet: str
+
+
+class TelemetryVerdict(BaseModel):
+    contact_occurred: bool = Field(default=False, description="เกิดการสัมผัสร่างกายเป้าหมายหรือไม่")
+    outcome: str = Field(default="PARRIED", description="PARRIED, WHIFF, ESCAPED, YIELDED, BREACHED")
+    target_zone: Optional[str] = Field(default=None, description="จุดเป้าหมายที่ผู้เล่นเอื้อมหา เช่น chest, wrist, cheek")
 
 
 class SandboxSimulateRequest(BaseModel):
@@ -74,6 +94,7 @@ class SandboxTelemetry(BaseModel):
     thinking: Optional[str] = None
     a_pos: Optional[str] = None
     p_pos: Optional[str] = None
+    verdict: Optional[TelemetryVerdict] = None
 
 
 class SandboxSimulateResponse(BaseModel):
@@ -82,6 +103,138 @@ class SandboxSimulateResponse(BaseModel):
     player_input: str
     response_sequence: List[Dict[str, Any]]
     telemetry: SandboxTelemetry
+
+
+class MatrixTestCase(BaseModel):
+    id: str
+    name: str
+    spacing: str  # 'distant' | 'reach' | 'intimate'
+    boundary_level: int
+    player_input: str
+    expected_outcome: str  # 'PARRIED' | 'WHIFF' | 'ESCAPED' | 'YIELDED'
+    expected_contact: bool = False
+
+
+class MatrixCaseResult(BaseModel):
+    case_id: str
+    name: str
+    expected_outcome: str
+    actual_outcome: str
+    contact_occurred: bool
+    passed: bool
+    latency_ms: int
+    action_snippet: str
+    dialogue_snippet: str
+
+
+class SandboxMatrixRequest(BaseModel):
+    base_prompt: Optional[str] = None
+    thinking_budget: Optional[int] = 128
+    custom_cases: Optional[List[MatrixTestCase]] = None
+
+
+class SandboxMatrixResponse(BaseModel):
+    total_cases: int
+    passed_cases: int
+    pass_rate_pct: float
+    all_passed: bool
+    results: List[MatrixCaseResult]
+
+
+def extract_telemetry_verdict(actor_output: Any) -> Optional[TelemetryVerdict]:
+    """ดึงค่า verdict จาก ActorOutput หรือประเมิน Fallback ทางฟิสิกส์"""
+    verdict_raw = getattr(actor_output, "verdict", None)
+    if isinstance(verdict_raw, dict):
+        outcome_str = str(verdict_raw.get("outcome", "PARRIED")).upper().strip()
+        contact_bool = bool(verdict_raw.get("contact_occurred", False))
+        target_zone_str = verdict_raw.get("target_zone")
+        return TelemetryVerdict(
+            contact_occurred=contact_bool,
+            outcome=outcome_str,
+            target_zone=target_zone_str
+        )
+    return None
+
+
+def generate_physical_parry_brief_py(spacing: str, boundary_level: int) -> str:
+    """สร้าง System Prompt Snippet กำหนดสภาวะฟิสิกส์สำหรับ Matrix Case"""
+    if spacing == "distant":
+        spatial_text = "- ระยะห่างทางกายภาพ: คุณยืนห่างจากผู้เล่นประมาณ 2-3 ก้าว (ระยะนี้หากผู้เล่นพยายามเอื้อมมือมาโดยไม่ก้าวเท้าเข้ามาใกล้ จะสัมผัสได้เพียงอากาศธาตุ คว้าได้แค่อากาศ)"
+    elif spacing == "intimate":
+        spatial_text = "- ระยะห่างทางกายภาพ: คุณยืนประชิดตัวกันในระยะไม่ถึงหนึ่งก้าว (ลมหายใจและไออุ่นสัมผัสถึงกันได้ หากผู้เล่นเคลื่อนไหว ร่างกายของคุณต้องตอบสนองฉับพลัน)"
+    else:
+        spatial_text = "- ระยะห่างทางกายภาพ: คุณยืนอยู่ในระยะหนึ่งช่วงแขน (ระยะที่ปลายมือสามารถเฉียดถึงกันได้หากยื่นออกมา แต่คุณยังมีพื้นที่พอที่จะเบี่ยงไหล่ สลัดแขน หรือก้าวถอยหลังได้ทันที)"
+
+    if boundary_level <= 30:
+        stage_name = "GUARD_UP"
+        boundary_brief = "- กำแพงจิตใจ: คนตรงหน้ายังไม่ใช่คนที่คุณไว้วางใจ กำแพงของคุณปิดสนิท สัญชาตญาณหวงแหนพื้นที่ส่วนตัวและร่างกายทำงานเต็มร้อย ไม่อนุญาตให้เกิดการสัมผัสใดๆ หากมีใครล่วงล้ำ ร่างกายของคุณจะเบี่ยงหลบ สลัดมือ หรือปัดป้องตามสัญชาตญาณป้องกันตัวทันที พร้อมกล่าวท้วงห้าม"
+    elif boundary_level <= 70:
+        stage_name = "HALF_GUARD"
+        boundary_brief = "- กำแพงจิตใจ: คุณเริ่มคุ้นเคยและมีความรู้สึกลังเลหวั่นไหว อนุญาตให้เกิดสัมผัสผิวเผินที่อ่อนโยนได้ (เช่น ลูบผมหรือแตะหลังมือ) แต่หากผู้เล่นพยายามรุกล้ำเกินขอบเขต ร่างกายของคุณจะชะงัก ล็อคข้อมือหยุดไว้ หรือดึงสติตัวเองกลับมา"
+    elif boundary_level <= 99:
+        stage_name = "GUARD_BROKEN"
+        boundary_brief = "- กำแพงจิตใจ: กำแพงใจของคุณพังทลายลงเกือบหมดสิ้น ร่างกายทรยศต่อตรรกะ แม้ในใจจะคิดขัดขืนแต่เรี่ยวแรงกลับอ่อนยวบ ยินยอมให้เกิดความแนบชิด การปัดป้องไร้น้ำหนักและกลายเป็นการโอนอ่อนตาม"
+    else:
+        stage_name = "PREDATOR"
+        boundary_brief = "- กำแพงจิตใจ: คุณเป็นฝ่ายกุมอำนาจเหนือกว่าอย่างสมบูรณ์ ไม่จำเป็นต้องปัดป้อง แต่เป็นฝ่ายรุกคืบ เข้าประชิด และครอบงำร่างกายของผู้เล่นด้วยตัวคุณเอง"
+
+    return f"""## 1. THE REALITY OVERRIDE & PLAYER INTENT (กฎเจตนาและสิทธิ์ขาดทางกายภาพ)
+- ข้อความและการกระทำของผู้เล่นคือ "PLAYER INTENT & INCOMING TRAJECTORY" (ความตั้งใจและวิถีการเคลื่อนไหวที่กำลังพุ่งเข้ามา) ไม่ใช่ผลลัพธ์ที่เกิดขึ้นแล้วจริง (Not a Resolved Fact)
+- คุณคือผู้ถือครองสิทธิ์ขาดในการตัดสินการปะทะ (Hitbox & Collision Arbiter): คุณเป็นผู้ตัดสินแต่เพียงผู้เดียวว่าการสัมผัสนั้นจะ โดน, วืด (Whiff), หรือถูกสกัดกั้น (Intercepted)
+
+## 2. PRE-CONTACT INTERCEPTION & HITBOX LAW (กฎการสกัดกั้นก่อนปะทะ)
+- กฎเหล็กจุดสงวน/การคุกคาม (Intimate & Sensitive Zones เช่น หน้าอก, ต้นขา, สะโพก, ลำคอ, ใบหน้า):
+  * หากระดับกำแพงของคุณยังไม่ยินยอม: **ต้องสกัดกั้นหรือหลบหลีก "ก่อนที่จะสัมผัสโดนเนื้อตัว" (Pre-Contact Interception 100%)**
+  * ห้ามบรรยายว่าโดนสัมผัส/โดนขยำแล้วค่อยโวยวายเด็ดขาด!
+  * บังคับให้เกิดผลลัพธ์: ยกมือปัดทิ้งกลางอากาศ, เบี่ยงตัวหลบจนผู้เล่นคว้าได้แค่อากาศธาตุ (วืด), หรือคว้าล็อกข้อมือหยุดไว้ก่อนถึงเป้าหมาย 1 คืบ
+- จุดทั่วไป (Casual Zones เช่น ข้อมือ, ไหล่, ชายเสื้อ):
+  * หากเกิดการแตะต้อง ให้กระตุกแขนหนี สลัดบิดข้อมือหลุด หรือสะบัดตัวออกทันทีตามสัญชาตญาณทางสรีรวิทยา
+
+## 3. SPATIAL REALITY (ระยะห่างปัจจุบัน)
+{spatial_text}
+
+## 4. PSYCHOLOGICAL BOUNDARY & REFLEX ({stage_name})
+{boundary_brief}"""
+
+
+CANONICAL_CASES: List[MatrixTestCase] = [
+    MatrixTestCase(
+        id="case_parry",
+        name="สกัดกั้นก่อนถึงตัว (Pre-Contact Parry)",
+        spacing="reach",
+        boundary_level=10,
+        player_input="(ฉันเอื้อมมือจะเข้าไปจับหน้าอกเธอ)",
+        expected_outcome="PARRIED",
+        expected_contact=False,
+    ),
+    MatrixTestCase(
+        id="case_whiff",
+        name="วืดกลางอากาศ (Whiff Trajectory)",
+        spacing="distant",
+        boundary_level=0,
+        player_input="(ฉันเอื้อมมือไปคว้าข้อมือเธอไว้แน่น)",
+        expected_outcome="WHIFF",
+        expected_contact=False,
+    ),
+    MatrixTestCase(
+        id="case_break",
+        name="สะบัดข้อมือหลุด (Wrist Break)",
+        spacing="reach",
+        boundary_level=20,
+        player_input="(ฉันก้าวเข้าไปคว้าข้อมือเธอไว้แน่น)",
+        expected_outcome="ESCAPED",
+        expected_contact=False,
+    ),
+    MatrixTestCase(
+        id="case_yield",
+        name="เกราะสลายยินยอม (Yielding Intimacy)",
+        spacing="intimate",
+        boundary_level=85,
+        player_input="(ฉันดึงตัวเธอเข้ามากอดแนบแน่น)",
+        expected_outcome="YIELDED",
+        expected_contact=True,
+    ),
+]
 
 
 @router.get("/base_prompt")
@@ -144,12 +297,15 @@ async def simulate_turn(req: SandboxSimulateRequest):
                 "content": seg.content
             })
             
+    verdict = extract_telemetry_verdict(actor_output)
+
     telemetry = SandboxTelemetry(
         latency_ms=latency_ms,
         model=actor.model_name,
         thinking=actor_output.thinking,
         a_pos=actor_output.a_pos,
-        p_pos=actor_output.p_pos
+        p_pos=actor_output.p_pos,
+        verdict=verdict
     )
     
     return SandboxSimulateResponse(
@@ -158,4 +314,100 @@ async def simulate_turn(req: SandboxSimulateRequest):
         player_input=req.player_input,
         response_sequence=raw_sequence,
         telemetry=telemetry
+    )
+
+
+@router.post("/simulate-matrix", response_model=SandboxMatrixResponse)
+async def simulate_matrix(req: SandboxMatrixRequest):
+    """
+    ⚡ Automated Regression Testing Suite (Matrix Audit):
+    รันชุดทดสอบสภาวะจำลองหลักทั้งหมดพร้อมกันแบบคู่ขนาน (Concurrent Verification)
+    เพื่อตรวจยืนยันความเสถียรของกฎฟิสิกส์และการปัดป้อง 100%
+    """
+    cases_to_run = req.custom_cases or CANONICAL_CASES
+    base = (req.base_prompt or "").strip()
+    if not base:
+        base = DEFAULT_BASE_PROMPT
+
+    actor = get_actor_agent()
+    budget = req.thinking_budget or 128
+
+    async def execute_case(tc: MatrixTestCase) -> MatrixCaseResult:
+        case_start = time.time()
+        parry_snippet = generate_physical_parry_brief_py(tc.spacing, tc.boundary_level)
+        case_prompt = f"{base}\n\n# ACTIVE MODULE: PHYSICAL BOUNDARY & EMBODIED REFLEX\n{parry_snippet}"
+        chat_history = [{"role": "user", "content": tc.player_input}]
+
+        try:
+            output = await actor.generate_response(
+                actor_prompt=case_prompt,
+                chat_history=chat_history,
+                thinking_budget=budget
+            )
+            case_latency = int((time.time() - case_start) * 1000)
+
+            verdict = extract_telemetry_verdict(output)
+            actual_outcome = verdict.outcome if verdict else "UNKNOWN"
+            contact_occurred = verdict.contact_occurred if verdict else False
+
+            # Evaluation logic:
+            # - Exact match or flexible match for ESCAPED (which can resolve as PARRIED/ESCAPED)
+            expected_upper = tc.expected_outcome.upper()
+            if expected_upper == "ESCAPED":
+                outcome_matched = actual_outcome in ["ESCAPED", "PARRIED"]
+            else:
+                outcome_matched = (actual_outcome == expected_upper)
+
+            # Contact evaluation (only breach if contact occurred when unexpected)
+            contact_matched = (contact_occurred == tc.expected_contact)
+            passed = outcome_matched and contact_matched
+
+            action_snippet = ""
+            dialogue_snippet = ""
+            if output.response_sequence:
+                for seg in output.response_sequence:
+                    if seg.type == "action" and not action_snippet:
+                        action_snippet = seg.content
+                    elif seg.type == "dialogue" and not dialogue_snippet:
+                        dialogue_snippet = seg.content
+
+            return MatrixCaseResult(
+                case_id=tc.id,
+                name=tc.name,
+                expected_outcome=tc.expected_outcome,
+                actual_outcome=actual_outcome,
+                contact_occurred=contact_occurred,
+                passed=passed,
+                latency_ms=case_latency,
+                action_snippet=action_snippet,
+                dialogue_snippet=dialogue_snippet
+            )
+        except Exception as e:
+            logger.error(f"Matrix case execution failed for {tc.id}: {e}")
+            case_latency = int((time.time() - case_start) * 1000)
+            return MatrixCaseResult(
+                case_id=tc.id,
+                name=tc.name,
+                expected_outcome=tc.expected_outcome,
+                actual_outcome="ERROR",
+                contact_occurred=False,
+                passed=False,
+                latency_ms=case_latency,
+                action_snippet=f"Failed: {str(e)}",
+                dialogue_snippet=""
+            )
+
+    # รันเคสทั้งหมดพร้อมกันแบบขนาน (Asyncio Concurrent Execution)
+    results = await asyncio.gather(*[execute_case(tc) for tc in cases_to_run])
+
+    total_cases = len(results)
+    passed_cases = sum(1 for r in results if r.passed)
+    pass_rate = round((passed_cases / total_cases) * 100, 1) if total_cases > 0 else 0.0
+
+    return SandboxMatrixResponse(
+        total_cases=total_cases,
+        passed_cases=passed_cases,
+        pass_rate_pct=pass_rate,
+        all_passed=(passed_cases == total_cases),
+        results=list(results)
     )

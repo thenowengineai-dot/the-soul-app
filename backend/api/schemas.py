@@ -155,6 +155,10 @@ class ActorOutput(BaseModel):
         ...,
         description="ลิสต์ลำดับการแสดงที่สลับระหว่าง action และ dialogue อย่างเป็นธรรมชาติ (The Fluid Array)"
     )
+    verdict: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="ผลการตัดสินสถานะทางกายภาพของ AI: contact_occurred, outcome (PARRIED, WHIFF, ESCAPED, YIELDED, BREACHED), target_zone"
+    )
 
     @field_validator("p_pos", mode="before")
     @classmethod

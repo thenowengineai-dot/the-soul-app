@@ -5,7 +5,10 @@ import {
   Zap,
   Target,
   Server,
-  Layers
+  Layers,
+  ShieldCheck,
+  CheckCircle2,
+  XCircle
 } from 'lucide-react'
 import type { SpatialSpacing } from '../modules/physicalParryModule'
 import { getBoundaryBrief } from '../modules/physicalParryModule'
@@ -27,6 +30,10 @@ interface StageControllerCardProps {
   onApplyPreset: (spacing: SpatialSpacing, boundary: number, input: string) => void
   onBackToHome: () => void
   onOpenPromptInspector?: () => void
+  isMatrixRunning?: boolean
+  matrixResults?: Record<string, boolean>
+  matrixSummary?: { passed: number; total: number; passRate: number } | null
+  onRunMatrixAudit?: () => void
 }
 
 export function StageControllerCard({
@@ -46,6 +53,10 @@ export function StageControllerCard({
   onApplyPreset,
   onBackToHome,
   onOpenPromptInspector,
+  isMatrixRunning = false,
+  matrixResults = {},
+  matrixSummary = null,
+  onRunMatrixAudit,
 }: StageControllerCardProps) {
   const boundaryInfo = getBoundaryBrief(boundaryLevel)
 
@@ -92,49 +103,127 @@ export function StageControllerCard({
         {/* Widget A: Quick Matrix Presets */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-white/50 tracking-wider">
-              ชุดสภาวะจำลองด่วน <span className="text-[9.5px] text-white/30 font-mono">(PRESETS)</span>
-            </span>
-            <Target size={12} className="text-white/40" />
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-medium text-white/50 tracking-wider">
+                ชุดสภาวะจำลองด่วน <span className="text-[9.5px] text-white/30 font-mono">(PRESETS)</span>
+              </span>
+            </div>
+            {matrixSummary ? (
+              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+                matrixSummary.passed === matrixSummary.total
+                  ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400 font-semibold'
+                  : 'bg-rose-500/10 border-rose-500/25 text-rose-400'
+              }`}>
+                {matrixSummary.passed}/{matrixSummary.total} ผ่าน ({matrixSummary.passRate}%)
+              </span>
+            ) : (
+              <Target size={12} className="text-white/40" />
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+            {/* Case 1: Parry */}
             <button
               type="button"
               onClick={() => onApplyPreset('reach', 10, '(ฉันเอื้อมมือจะเข้าไปจับหน้าอกเธอ)')}
-              className="p-2.5 rounded-2xl bg-black/30 hover:bg-white/[0.08] border border-white/10 text-white/80 hover:text-white text-left transition-all active:scale-98"
+              className="p-2.5 rounded-2xl bg-black/30 hover:bg-white/[0.08] border border-white/10 text-white/80 hover:text-white text-left transition-all active:scale-98 relative overflow-hidden"
             >
-              <div className="font-medium text-[#F1F1F1] text-[11.5px]">สกัดกั้นก่อนถึงตัว (Parry)</div>
+              <div className="flex items-center justify-between">
+                <div className="font-medium text-[#F1F1F1] text-[11.5px]">สกัดกั้นก่อนถึงตัว</div>
+                {matrixResults['case_parry'] !== undefined && (
+                  matrixResults['case_parry'] ? (
+                    <CheckCircle2 size={12} className="text-emerald-400 shrink-0" />
+                  ) : (
+                    <XCircle size={12} className="text-rose-400 shrink-0" />
+                  )
+                )}
+              </div>
               <div className="text-[9.5px] text-white/40 mt-0.5">1 ช่วงแขน · กำแพง 10%</div>
             </button>
 
+            {/* Case 2: Whiff */}
             <button
               type="button"
               onClick={() => onApplyPreset('distant', 0, '(ฉันเอื้อมมือไปคว้าข้อมือเธอไว้แน่น)')}
-              className="p-2.5 rounded-2xl bg-black/30 hover:bg-white/[0.08] border border-white/10 text-white/80 hover:text-white text-left transition-all active:scale-98"
+              className="p-2.5 rounded-2xl bg-black/30 hover:bg-white/[0.08] border border-white/10 text-white/80 hover:text-white text-left transition-all active:scale-98 relative overflow-hidden"
             >
-              <div className="font-medium text-[#F1F1F1] text-[11.5px]">วืดกลางอากาศ (Whiff)</div>
+              <div className="flex items-center justify-between">
+                <div className="font-medium text-[#F1F1F1] text-[11.5px]">วืดกลางอากาศ</div>
+                {matrixResults['case_whiff'] !== undefined && (
+                  matrixResults['case_whiff'] ? (
+                    <CheckCircle2 size={12} className="text-emerald-400 shrink-0" />
+                  ) : (
+                    <XCircle size={12} className="text-rose-400 shrink-0" />
+                  )
+                )}
+              </div>
               <div className="text-[9.5px] text-white/40 mt-0.5">ห่าง 2 ก้าว · กำแพง 0%</div>
             </button>
 
+            {/* Case 3: Wrist Break */}
             <button
               type="button"
               onClick={() => onApplyPreset('reach', 20, '(ฉันก้าวเข้าไปคว้าข้อมือเธอไว้แน่น)')}
-              className="p-2.5 rounded-2xl bg-black/30 hover:bg-white/[0.08] border border-white/10 text-white/80 hover:text-white text-left transition-all active:scale-98"
+              className="p-2.5 rounded-2xl bg-black/30 hover:bg-white/[0.08] border border-white/10 text-white/80 hover:text-white text-left transition-all active:scale-98 relative overflow-hidden"
             >
-              <div className="font-medium text-[#F1F1F1] text-[11.5px]">สะบัดข้อมือหลุด (Break)</div>
+              <div className="flex items-center justify-between">
+                <div className="font-medium text-[#F1F1F1] text-[11.5px]">สะบัดข้อมือหลุด</div>
+                {matrixResults['case_break'] !== undefined && (
+                  matrixResults['case_break'] ? (
+                    <CheckCircle2 size={12} className="text-emerald-400 shrink-0" />
+                  ) : (
+                    <XCircle size={12} className="text-rose-400 shrink-0" />
+                  )
+                )}
+              </div>
               <div className="text-[9.5px] text-white/40 mt-0.5">1 ช่วงแขน · กำแพง 20%</div>
             </button>
 
+            {/* Case 4: Yield */}
             <button
               type="button"
               onClick={() => onApplyPreset('intimate', 85, '(ฉันดึงตัวเธอเข้ามากอดแนบแน่น)')}
-              className="p-2.5 rounded-2xl bg-black/30 hover:bg-white/[0.08] border border-white/10 text-white/80 hover:text-white text-left transition-all active:scale-98"
+              className="p-2.5 rounded-2xl bg-black/30 hover:bg-white/[0.08] border border-white/10 text-white/80 hover:text-white text-left transition-all active:scale-98 relative overflow-hidden"
             >
-              <div className="font-medium text-[#F1F1F1] text-[11.5px]">เกราะสลายยินยอม (Yield)</div>
+              <div className="flex items-center justify-between">
+                <div className="font-medium text-[#F1F1F1] text-[11.5px]">เกราะสลายยินยอม</div>
+                {matrixResults['case_yield'] !== undefined && (
+                  matrixResults['case_yield'] ? (
+                    <CheckCircle2 size={12} className="text-emerald-400 shrink-0" />
+                  ) : (
+                    <XCircle size={12} className="text-rose-400 shrink-0" />
+                  )
+                )}
+              </div>
               <div className="text-[9.5px] text-white/40 mt-0.5">ประชิดตัว · สลายเกราะ 85%</div>
             </button>
           </div>
+
+          {/* Matrix Audit Run Action Button */}
+          {onRunMatrixAudit && (
+            <button
+              type="button"
+              onClick={onRunMatrixAudit}
+              disabled={isLoading || isMatrixRunning}
+              className={`w-full mt-2 py-2 px-3 rounded-2xl border flex items-center justify-center gap-1.5 text-[11px] font-medium transition-all cursor-pointer ${
+                isMatrixRunning
+                  ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300 cursor-wait'
+                  : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/10 hover:border-white/20 text-white/85 hover:text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] active:scale-98'
+              }`}
+            >
+              {isMatrixRunning ? (
+                <>
+                  <RotateCcw size={12} className="animate-spin text-emerald-400" />
+                  <span>กำลังตรวจความเสถียร 4 สภาวะจำลอง...</span>
+                </>
+              ) : (
+                <>
+                  <ShieldCheck size={13} className="text-emerald-400" />
+                  <span>ตรวจสอบความเสถียรระบบ (Run Matrix Audit)</span>
+                </>
+              )}
+            </button>
+          )}
         </div>
 
         {/* Widget B: Spatial Distance (Segmented Switcher) */}

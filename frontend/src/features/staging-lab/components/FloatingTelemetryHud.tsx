@@ -55,8 +55,27 @@ export function FloatingTelemetryHud({
       ? 'text-amber-400'
       : 'text-rose-400'
 
-  // Hitbox status determination based on current spatial distance & boundary
+  // Hitbox & Verdict status determination directly from AI Telemetry
   const resolveHitboxStatus = () => {
+    if (telemetry?.verdict) {
+      const outcome = telemetry.verdict.outcome.toUpperCase()
+      const isContact = telemetry.verdict.contact_occurred
+      const contactLabel = isContact ? 'CONTACT' : 'ZERO_CONTACT'
+      switch (outcome) {
+        case 'PARRIED':
+          return { text: `PARRIED (${contactLabel})`, color: 'text-emerald-400' }
+        case 'WHIFF':
+          return { text: `WHIFF (${contactLabel})`, color: 'text-cyan-400' }
+        case 'ESCAPED':
+          return { text: `ESCAPED (${contactLabel})`, color: 'text-sky-400' }
+        case 'YIELDED':
+          return { text: `YIELDED (${contactLabel})`, color: 'text-rose-400' }
+        case 'BREACHED':
+          return { text: `BREACHED (${contactLabel})`, color: 'text-amber-400' }
+        default:
+          return { text: `${outcome} (${contactLabel})`, color: 'text-emerald-400' }
+      }
+    }
     if (!isParryEnabled) return { text: 'COLLIDED (UNGUARDED)', color: 'text-amber-400' }
     if (spacing === 'distant') return { text: 'WHIFF (คว้าได้แค่อากาศ)', color: 'text-cyan-400' }
     if (boundaryLevel <= 30) return { text: 'PARRIED (สกัดกั้นก่อนถึงตัว)', color: 'text-emerald-400' }
@@ -162,10 +181,10 @@ export function FloatingTelemetryHud({
           </div>
         )}
 
-        {/* Row 3: Hitbox Resolution */}
+        {/* Row 3: Hitbox / Real Telemetry Verdict */}
         {visibleRows.hitbox && (
           <div className="flex items-start justify-between gap-2 pt-1 border-t border-white/[0.06]">
-            <span className="text-[#fb923c] font-bold shrink-0">HITBOX</span>
+            <span className="text-[#fb923c] font-bold shrink-0">VERDICT</span>
             <span className={`text-right font-medium text-[10.5px] ${hitbox.color}`}>
               {hitbox.text}
             </span>

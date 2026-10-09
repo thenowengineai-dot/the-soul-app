@@ -13,7 +13,7 @@ import {
   type SpatialSpacing,
   generatePhysicalParryBrief
 } from '../modules/physicalParryModule'
-import type { PromptModule, SandboxSimulateResponse, SandboxSimulateRequest } from '../types'
+import type { PromptModule, SandboxSimulateResponse, SandboxSimulateRequest, SandboxMatrixResponse } from '../types'
 import { MessageList } from '../../chat/components/chat-room/MessageList'
 import { ChatInputBar } from '../../chat/components/chat-room/ChatInputBar'
 import type { ChatMessage } from '../../chat/types'
@@ -49,12 +49,15 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     },
   ])
 
-  // 5. Execution & Telemetry State
+  // 5. Execution, Telemetry & Matrix Audit State
   const [thinkingBudget, setThinkingBudget] = useState<number>(128)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0)
   const [simulationResult, setSimulationResult] = useState<SandboxSimulateResponse | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [isMatrixRunning, setIsMatrixRunning] = useState<boolean>(false)
+  const [matrixResults, setMatrixResults] = useState<Record<string, boolean>>({})
+  const [matrixSummary, setMatrixSummary] = useState<{ passed: number; total: number; passRate: number } | null>(null)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -222,6 +225,71 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     }
   }
 
+  // Matrix regression testing suite audit handler
+  const handleRunMatrixAudit = async () => {
+    if (isMatrixRunning || isLoading) return
+    setIsMatrixRunning(true)
+    setErrorMessage(null)
+
+    try {
+      const response = await fetch(`${currentBaseUrl}/api/sandbox/simulate-matrix`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          base_prompt: basePrompt.trim(),
+          thinking_budget: thinkingBudget,
+        }),
+      })
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}))
+        throw new Error(errData.detail || `Matrix run failed with status ${response.status}`)
+      }
+
+      const data: SandboxMatrixResponse = await response.json()
+      const resultMap: Record<string, boolean> = {}
+      data.results.forEach(r => {
+        resultMap[r.case_id] = r.passed
+      })
+      setMatrixResults(resultMap)
+      setMatrixSummary({
+        passed: data.passed_cases,
+        total: data.total_cases,
+        passRate: data.pass_rate_pct,
+      })
+
+      // Update telemetry HUD with the primary parry case verdict
+      if (data.results.length > 0) {
+        const first = data.results[0]
+        setSimulationResult(prev => ({
+          status: 'success',
+          full_prompt_used: prev?.full_prompt_used ?? '',
+          player_input: first.name,
+          response_sequence: [
+            { type: 'action', content: first.action_snippet },
+            { type: 'dialogue', content: first.dialogue_snippet },
+          ],
+          telemetry: {
+            latency_ms: first.latency_ms,
+            model: prev?.telemetry?.model ?? 'Gemini 3.8 Flash',
+            thinking: `Matrix Suite: ${data.passed_cases}/${data.total_cases} Passed (${data.pass_rate_pct}%)`,
+            verdict: {
+              contact_occurred: first.contact_occurred,
+              outcome: first.actual_outcome,
+            },
+          },
+        }))
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Matrix audit failed'
+      setErrorMessage(msg)
+    } finally {
+      setIsMatrixRunning(false)
+    }
+  }
+
   // Sensory context pulse snippet for HUD
   const sensoryPulseText = useMemo(() => {
     if (!isParryEnabled) return 'Direct collision permitted without resistance.'
@@ -253,6 +321,10 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
           onApplyPreset={handleApplyPreset}
           onBackToHome={onBackToHome}
           onOpenPromptInspector={() => setIsPromptInspectorOpen(true)}
+          isMatrixRunning={isMatrixRunning}
+          matrixResults={matrixResults}
+          matrixSummary={matrixSummary}
+          onRunMatrixAudit={handleRunMatrixAudit}
         />
       </aside>
 

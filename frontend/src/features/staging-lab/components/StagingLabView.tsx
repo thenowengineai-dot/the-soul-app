@@ -13,7 +13,7 @@ import {
   type SpatialSpacing,
   generatePhysicalParryBrief
 } from '../modules/physicalParryModule'
-import type { PromptModule, SandboxSimulateResponse, SandboxSimulateRequest, SandboxMatrixResponse } from '../types'
+import type { PromptModule, SandboxSimulateResponse, SandboxSimulateRequest } from '../types'
 import { MessageList } from '../../chat/components/chat-room/MessageList'
 import { ChatInputBar } from '../../chat/components/chat-room/ChatInputBar'
 import type { ChatMessage } from '../../chat/types'
@@ -49,15 +49,13 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     },
   ])
 
-  // 5. Execution, Telemetry & Matrix Audit State
+  // 5. Execution & Telemetry State
+  const [selectedModel, setSelectedModel] = useState<string>('gemini-2.5-flash')
   const [thinkingBudget, setThinkingBudget] = useState<number>(128)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0)
   const [simulationResult, setSimulationResult] = useState<SandboxSimulateResponse | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [isMatrixRunning, setIsMatrixRunning] = useState<boolean>(false)
-  const [matrixResults, setMatrixResults] = useState<Record<string, boolean>>({})
-  const [matrixSummary, setMatrixSummary] = useState<{ passed: number; total: number; passRate: number } | null>(null)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -122,23 +120,17 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     }
   }
 
-  // Preset setter
-  const handleApplyPreset = (
-    spacing: SpatialSpacing,
-    boundary: number,
-    input: string
+  // Unified simulation executor
+  const executeSimulation = async (
+    inputText: string,
+    overrideSpacing?: SpatialSpacing,
+    overrideBoundary?: number
   ) => {
-    setIsParryEnabled(true)
-    setParrySpacing(spacing)
-    setParryBoundaryLevel(boundary)
-    setPlayerInput(input)
-  }
-
-  // Simulate execution handler
-  // Simulate execution handler
-  const handleSimulate = async () => {
-    const trimmed = playerInput.trim()
+    const trimmed = (inputText || '').trim()
     if (!trimmed || isLoading) return
+
+    const effectiveSpacing = overrideSpacing ?? parrySpacing
+    const effectiveBoundary = overrideBoundary ?? parryBoundaryLevel
 
     setElapsedSeconds(0)
     setIsLoading(true)
@@ -164,10 +156,11 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     // 2. Prepare payload
     const activeSnippets: Array<{ id: string; name: string; prompt_snippet: string }> = []
     if (isParryEnabled) {
+      const turnBrief = generatePhysicalParryBrief(effectiveSpacing, effectiveBoundary, trimmed)
       activeSnippets.push({
         id: 'physical_parry',
         name: 'PHYSICAL BOUNDARY & EMBODIED REFLEX',
-        prompt_snippet: parryBriefSnippet,
+        prompt_snippet: turnBrief,
       })
     }
 
@@ -181,13 +174,13 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
         })
       })
 
-    // If it's an action, format as (action) for the LLM prompt's in-flight trajectory rule
     const backendPlayerInput = isAction ? `(${cleanText})` : trimmed
     const payload: SandboxSimulateRequest = {
       player_input: backendPlayerInput,
       base_prompt: basePrompt.trim(),
       active_modules: activeSnippets,
       thinking_budget: thinkingBudget,
+      model_name: selectedModel,
     }
 
     try {
@@ -225,69 +218,17 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     }
   }
 
-  // Matrix regression testing suite audit handler
-  const handleRunMatrixAudit = async () => {
-    if (isMatrixRunning || isLoading) return
-    setIsMatrixRunning(true)
-    setErrorMessage(null)
+  // Simulate execution handler (manual click or Enter)
+  const handleSimulate = () => {
+    executeSimulation(playerInput)
+  }
 
-    try {
-      const response = await fetch(`${currentBaseUrl}/api/sandbox/simulate-matrix`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          base_prompt: basePrompt.trim(),
-          thinking_budget: thinkingBudget,
-        }),
-      })
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}))
-        throw new Error(errData.detail || `Matrix run failed with status ${response.status}`)
-      }
-
-      const data: SandboxMatrixResponse = await response.json()
-      const resultMap: Record<string, boolean> = {}
-      data.results.forEach(r => {
-        resultMap[r.case_id] = r.passed
-      })
-      setMatrixResults(resultMap)
-      setMatrixSummary({
-        passed: data.passed_cases,
-        total: data.total_cases,
-        passRate: data.pass_rate_pct,
-      })
-
-      // Update telemetry HUD with the primary parry case verdict
-      if (data.results.length > 0) {
-        const first = data.results[0]
-        setSimulationResult(prev => ({
-          status: 'success',
-          full_prompt_used: prev?.full_prompt_used ?? '',
-          player_input: first.name,
-          response_sequence: [
-            { type: 'action', content: first.action_snippet },
-            { type: 'dialogue', content: first.dialogue_snippet },
-          ],
-          telemetry: {
-            latency_ms: first.latency_ms,
-            model: prev?.telemetry?.model ?? 'Gemini 3.8 Flash',
-            thinking: `Matrix Suite: ${data.passed_cases}/${data.total_cases} Passed (${data.pass_rate_pct}%)`,
-            verdict: {
-              contact_occurred: first.contact_occurred,
-              outcome: first.actual_outcome,
-            },
-          },
-        }))
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Matrix audit failed'
-      setErrorMessage(msg)
-    } finally {
-      setIsMatrixRunning(false)
-    }
+  // Hot probe single-click instant dispatch
+  const handleHotProbeDispatch = (spacing: SpatialSpacing, boundaryLevel: number) => {
+    setParrySpacing(spacing)
+    setParryBoundaryLevel(boundaryLevel)
+    const probeInput = playerInput.trim() || '(ฉันเอื้อมมือจะเข้าไปจับหน้าอกเธอ)'
+    executeSimulation(probeInput, spacing, boundaryLevel)
   }
 
   // Sensory context pulse snippet for HUD
@@ -313,18 +254,12 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
           onToggleParry={() => setIsParryEnabled(!isParryEnabled)}
           thinkingBudget={thinkingBudget}
           onThinkingBudgetChange={setThinkingBudget}
-          serverTarget={serverTarget}
-          onServerTargetChange={setServerTarget}
           isLoading={isLoading}
           elapsedSeconds={elapsedSeconds}
           onSimulate={handleSimulate}
-          onApplyPreset={handleApplyPreset}
+          onHotProbeDispatch={handleHotProbeDispatch}
           onBackToHome={onBackToHome}
           onOpenPromptInspector={() => setIsPromptInspectorOpen(true)}
-          isMatrixRunning={isMatrixRunning}
-          matrixResults={matrixResults}
-          matrixSummary={matrixSummary}
-          onRunMatrixAudit={handleRunMatrixAudit}
         />
       </aside>
 
@@ -332,6 +267,53 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       {/* 2. RIGHT CANVAS: THE LIVE CHAT ROOM (100% Production Chat Parity)       */}
       {/* ======================================================================= */}
       <main className="flex-1 h-full flex flex-col relative overflow-hidden bg-app-bg">
+        {/* Top Utility Header (Gateway Selector & Global Bar) */}
+        <header className="h-14 px-6 border-b border-white/[0.06] bg-black/20 backdrop-blur-md flex items-center justify-between shrink-0 z-20">
+          <div className="flex items-center gap-3">
+            <span className="text-[12px] font-mono tracking-wider text-white/40 uppercase">
+              Physical Proving Ground
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            {/* Gateway Segmented Pill */}
+            <div className="flex items-center p-0.5 rounded-full bg-white/[0.06] border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] text-[11px] font-mono">
+              <button
+                type="button"
+                onClick={() => setServerTarget('local')}
+                className={`px-3 py-1 rounded-full transition-all cursor-pointer ${
+                  serverTarget === 'local'
+                    ? 'bg-white/20 text-white font-medium shadow-sm'
+                    : 'text-white/40 hover:text-white/70'
+                }`}
+              >
+                Local :8000
+              </button>
+              <button
+                type="button"
+                onClick={() => setServerTarget('cloud')}
+                className={`px-3 py-1 rounded-full transition-all cursor-pointer ${
+                  serverTarget === 'cloud'
+                    ? 'bg-white/20 text-white font-medium shadow-sm'
+                    : 'text-white/40 hover:text-white/70'
+                }`}
+              >
+                Cloud Run
+              </button>
+            </div>
+
+            {/* Clear Chat Log */}
+            <button
+              type="button"
+              onClick={() => setChatLog([])}
+              className="px-2.5 py-1 rounded-full bg-white/[0.04] hover:bg-white/[0.10] border border-white/10 text-white/50 hover:text-white text-[11px] font-mono transition-all cursor-pointer"
+              title="ล้างข้อความในห้องแชท"
+            >
+              Clear Log
+            </button>
+          </div>
+        </header>
+
         {/* Floating Telemetry HUD (Top-Right) */}
         <FloatingTelemetryHud
           telemetry={simulationResult?.telemetry ?? null}
@@ -372,6 +354,8 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
             onSendMessage={handleSimulate}
             isStreaming={isLoading}
             chatName="Actor"
+            selectedModel={selectedModel}
+            onModelChange={setSelectedModel}
           />
         </div>
       </main>

@@ -144,6 +144,9 @@ export interface ChatInputBarProps {
   typingVariant?: 'bubble' | 'action' | 'hybrid' | 'with-text'
   chatAvatar?: string
   chatName?: string
+  selectedModel?: string
+  onModelChange?: (model: string) => void
+  availableModels?: Array<{ id: string; name: string; tag?: string }>
 }
 
 export interface ChatRoomProps {

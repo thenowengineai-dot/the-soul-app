@@ -88,7 +88,7 @@ export function FloatingTelemetryHud({
   // Minimized Floating Pill Badge
   if (!isOpen) {
     return (
-      <div className="absolute top-5 right-6 z-30 select-none">
+      <div className="absolute top-[68px] right-6 z-30 select-none">
         <button
           type="button"
           onClick={() => setIsOpen(true)}
@@ -109,7 +109,7 @@ export function FloatingTelemetryHud({
 
   // Expanded MSI Afterburner Style OSD (Ultra-Translucent)
   return (
-    <div className="absolute top-5 right-6 z-30 w-[310px] sm:w-[330px] rounded-2xl bg-black/35 backdrop-blur-xl border border-white/10 shadow-2xl p-3.5 select-none transition-all">
+    <div className="absolute top-[68px] right-6 z-30 w-[310px] sm:w-[330px] rounded-2xl bg-black/35 backdrop-blur-xl border border-white/10 shadow-2xl p-3.5 select-none transition-all">
       {/* Top Controls (Clean Floating Controls, No Header Title) */}
       <div className="flex items-center justify-end gap-1 mb-2">
         <button

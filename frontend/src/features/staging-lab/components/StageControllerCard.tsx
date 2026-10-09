@@ -3,12 +3,7 @@ import {
   ArrowLeft,
   RotateCcw,
   Zap,
-  Target,
-  Server,
-  Layers,
-  ShieldCheck,
-  CheckCircle2,
-  XCircle
+  Layers
 } from 'lucide-react'
 import type { SpatialSpacing } from '../modules/physicalParryModule'
 import { getBoundaryBrief } from '../modules/physicalParryModule'
@@ -22,18 +17,12 @@ interface StageControllerCardProps {
   onToggleParry: () => void
   thinkingBudget: number
   onThinkingBudgetChange: (budget: number) => void
-  serverTarget: 'local' | 'cloud'
-  onServerTargetChange: (target: 'local' | 'cloud') => void
   isLoading: boolean
   elapsedSeconds: number
   onSimulate: () => void
-  onApplyPreset: (spacing: SpatialSpacing, boundary: number, input: string) => void
+  onHotProbeDispatch: (spacing: SpatialSpacing, boundaryLevel: number) => void
   onBackToHome: () => void
   onOpenPromptInspector?: () => void
-  isMatrixRunning?: boolean
-  matrixResults?: Record<string, boolean>
-  matrixSummary?: { passed: number; total: number; passRate: number } | null
-  onRunMatrixAudit?: () => void
 }
 
 export function StageControllerCard({
@@ -45,18 +34,12 @@ export function StageControllerCard({
   onToggleParry,
   thinkingBudget,
   onThinkingBudgetChange,
-  serverTarget,
-  onServerTargetChange,
   isLoading,
   elapsedSeconds,
   onSimulate,
-  onApplyPreset,
+  onHotProbeDispatch,
   onBackToHome,
   onOpenPromptInspector,
-  isMatrixRunning = false,
-  matrixResults = {},
-  matrixSummary = null,
-  onRunMatrixAudit,
 }: StageControllerCardProps) {
   const boundaryInfo = getBoundaryBrief(boundaryLevel)
 
@@ -100,130 +83,84 @@ export function StageControllerCard({
 
       {/* 2. Middle Body: Apple Tactile Widget Controls */}
       <div className="flex-1 flex flex-col gap-4 overflow-y-auto no-scrollbar py-1">
-        {/* Widget A: Quick Matrix Presets */}
+        {/* Widget A: Hot Simulation Probes (1-Click Instant Dispatch) */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <span className="text-[11px] font-medium text-white/50 tracking-wider">
-                ชุดสภาวะจำลองด่วน <span className="text-[9.5px] text-white/30 font-mono">(PRESETS)</span>
+                ยิงสภาวะทันที <span className="text-[9.5px] text-white/30 font-mono">(HOT PROBES)</span>
               </span>
             </div>
-            {matrixSummary ? (
-              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
-                matrixSummary.passed === matrixSummary.total
-                  ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400 font-semibold'
-                  : 'bg-rose-500/10 border-rose-500/25 text-rose-400'
-              }`}>
-                {matrixSummary.passed}/{matrixSummary.total} ผ่าน ({matrixSummary.passRate}%)
-              </span>
-            ) : (
-              <Target size={12} className="text-white/40" />
-            )}
+            <span className="text-[9.5px] font-mono px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/40">
+              1-CLICK DISPATCH
+            </span>
           </div>
 
           <div className="grid grid-cols-2 gap-1.5 text-[11px]">
-            {/* Case 1: Parry */}
+            {/* Probe 1: Parry */}
             <button
               type="button"
-              onClick={() => onApplyPreset('reach', 10, '(ฉันเอื้อมมือจะเข้าไปจับแก้มเธอ)')}
-              className="p-2.5 rounded-2xl bg-black/30 hover:bg-white/[0.08] border border-white/10 text-white/80 hover:text-white text-left transition-all active:scale-98 relative overflow-hidden"
+              disabled={isLoading}
+              onClick={() => onHotProbeDispatch('reach', 10)}
+              className="p-2.5 rounded-2xl bg-black/30 hover:bg-emerald-500/10 border border-white/10 hover:border-emerald-500/30 text-white/80 hover:text-white text-left transition-all active:scale-98 relative overflow-hidden group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <div className="flex items-center justify-between">
-                <div className="font-medium text-[#F1F1F1] text-[11.5px]">สกัดกั้นก่อนถึงตัว</div>
-                {matrixResults['case_parry'] !== undefined && (
-                  matrixResults['case_parry'] ? (
-                    <CheckCircle2 size={12} className="text-emerald-400 shrink-0" />
-                  ) : (
-                    <XCircle size={12} className="text-rose-400 shrink-0" />
-                  )
-                )}
+                <div className="font-medium text-[#F1F1F1] text-[11.5px] group-hover:text-emerald-300 transition-colors">สกัดกั้นเด็ดขาด</div>
+                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
+                  PARRY
+                </span>
               </div>
-              <div className="text-[9.5px] text-white/40 mt-0.5">1 ช่วงแขน · Guarded (PARRIED)</div>
+              <div className="text-[9.5px] text-white/40 mt-0.5">1 ช่วงแขน · Guarded (10%)</div>
             </button>
 
-            {/* Case 2: Missed */}
+            {/* Probe 2: Graze */}
             <button
               type="button"
-              onClick={() => onApplyPreset('distant', 0, '(ฉันเอื้อมมือไปคว้าข้อมือเธอไว้แน่น)')}
-              className="p-2.5 rounded-2xl bg-black/30 hover:bg-white/[0.08] border border-white/10 text-white/80 hover:text-white text-left transition-all active:scale-98 relative overflow-hidden"
+              disabled={isLoading}
+              onClick={() => onHotProbeDispatch('reach', 50)}
+              className="p-2.5 rounded-2xl bg-black/30 hover:bg-amber-500/10 border border-white/10 hover:border-amber-500/30 text-white/80 hover:text-white text-left transition-all active:scale-98 relative overflow-hidden group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <div className="flex items-center justify-between">
-                <div className="font-medium text-[#F1F1F1] text-[11.5px]">วืดกลางอากาศ</div>
-                {matrixResults['case_missed'] !== undefined && (
-                  matrixResults['case_missed'] ? (
-                    <CheckCircle2 size={12} className="text-emerald-400 shrink-0" />
-                  ) : (
-                    <XCircle size={12} className="text-rose-400 shrink-0" />
-                  )
-                )}
+                <div className="font-medium text-[#F1F1F1] text-[11.5px] group-hover:text-amber-300 transition-colors">สั่นไหวเฉียดผิว</div>
+                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-400">
+                  GRAZE
+                </span>
               </div>
-              <div className="text-[9.5px] text-white/40 mt-0.5">ห่าง 2 ก้าว · Distant (MISSED)</div>
+              <div className="text-[9.5px] text-white/40 mt-0.5">1 ช่วงแขน · Hesitant (50%)</div>
             </button>
 
-            {/* Case 3: Graze */}
+            {/* Probe 3: Latch */}
             <button
               type="button"
-              onClick={() => onApplyPreset('reach', 50, '(ฉันยื่นมือไปแตะหลังมือเธอเบาๆ)')}
-              className="p-2.5 rounded-2xl bg-black/30 hover:bg-white/[0.08] border border-white/10 text-white/80 hover:text-white text-left transition-all active:scale-98 relative overflow-hidden"
+              disabled={isLoading}
+              onClick={() => onHotProbeDispatch('reach', 90)}
+              className="p-2.5 rounded-2xl bg-black/30 hover:bg-rose-500/10 border border-white/10 hover:border-rose-500/30 text-white/80 hover:text-white text-left transition-all active:scale-98 relative overflow-hidden group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <div className="flex items-center justify-between">
-                <div className="font-medium text-[#F1F1F1] text-[11.5px]">เฉียดผิวชะงัก</div>
-                {matrixResults['case_grazed'] !== undefined && (
-                  matrixResults['case_grazed'] ? (
-                    <CheckCircle2 size={12} className="text-emerald-400 shrink-0" />
-                  ) : (
-                    <XCircle size={12} className="text-rose-400 shrink-0" />
-                  )
-                )}
+                <div className="font-medium text-[#F1F1F1] text-[11.5px] group-hover:text-rose-300 transition-colors">ยินยอมแนบชิด</div>
+                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-rose-500/15 border border-rose-500/30 text-rose-400">
+                  LATCH
+                </span>
               </div>
-              <div className="text-[9.5px] text-white/40 mt-0.5">1 ช่วงแขน · Hesitant (GRAZED)</div>
+              <div className="text-[9.5px] text-white/40 mt-0.5">1 ช่วงแขน · Open (90%)</div>
             </button>
 
-            {/* Case 4: Latch */}
+            {/* Probe 4: Miss */}
             <button
               type="button"
-              onClick={() => onApplyPreset('reach', 90, '(ฉันกุมมือเธอไว้แล้วดึงเข้ามาใกล้)')}
-              className="p-2.5 rounded-2xl bg-black/30 hover:bg-white/[0.08] border border-white/10 text-white/80 hover:text-white text-left transition-all active:scale-98 relative overflow-hidden"
+              disabled={isLoading}
+              onClick={() => onHotProbeDispatch('distant', 10)}
+              className="p-2.5 rounded-2xl bg-black/30 hover:bg-sky-500/10 border border-white/10 hover:border-sky-500/30 text-white/80 hover:text-white text-left transition-all active:scale-98 relative overflow-hidden group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <div className="flex items-center justify-between">
-                <div className="font-medium text-[#F1F1F1] text-[11.5px]">กุมมือยินยอม</div>
-                {matrixResults['case_latched'] !== undefined && (
-                  matrixResults['case_latched'] ? (
-                    <CheckCircle2 size={12} className="text-emerald-400 shrink-0" />
-                  ) : (
-                    <XCircle size={12} className="text-rose-400 shrink-0" />
-                  )
-                )}
+                <div className="font-medium text-[#F1F1F1] text-[11.5px] group-hover:text-sky-300 transition-colors">คว้าลมระยะไกล</div>
+                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-sky-500/15 border border-sky-500/30 text-sky-400">
+                  MISS
+                </span>
               </div>
-              <div className="text-[9.5px] text-white/40 mt-0.5">1 ช่วงแขน · Open (LATCHED)</div>
+              <div className="text-[9.5px] text-white/40 mt-0.5">ห่าง 2 ก้าว · Distant</div>
             </button>
           </div>
-
-          {/* Matrix Audit Run Action Button */}
-          {onRunMatrixAudit && (
-            <button
-              type="button"
-              onClick={onRunMatrixAudit}
-              disabled={isLoading || isMatrixRunning}
-              className={`w-full mt-2 py-2 px-3 rounded-2xl border flex items-center justify-center gap-1.5 text-[11px] font-medium transition-all cursor-pointer ${
-                isMatrixRunning
-                  ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300 cursor-wait'
-                  : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/10 hover:border-white/20 text-white/85 hover:text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] active:scale-98'
-              }`}
-            >
-              {isMatrixRunning ? (
-                <>
-                  <RotateCcw size={12} className="animate-spin text-emerald-400" />
-                  <span>กำลังตรวจความเสถียร 4 สภาวะจำลอง...</span>
-                </>
-              ) : (
-                <>
-                  <ShieldCheck size={13} className="text-emerald-400" />
-                  <span>ตรวจสอบความเสถียรระบบ (Run Matrix Audit)</span>
-                </>
-              )}
-            </button>
-          )}
         </div>
 
         {/* Widget B: Spatial Distance (Segmented Switcher) */}
@@ -378,38 +315,6 @@ export function StageControllerCard({
                 </button>
               )
             })}
-          </div>
-        </div>
-
-        {/* Widget E: Server Target Switcher */}
-        <div className="flex items-center justify-between pt-2 border-t border-white/[0.06] text-[10.5px]">
-          <div className="flex items-center gap-1.5 text-white/50">
-            <Server size={12} />
-            <span className="tracking-wider">เกตเวย์ <span className="text-[9.5px] font-mono opacity-60">(GATEWAY)</span></span>
-          </div>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => onServerTargetChange('local')}
-              className={`px-2 py-0.5 rounded text-[10px] font-medium transition-all ${
-                serverTarget === 'local'
-                  ? 'bg-white/15 text-white border border-white/15'
-                  : 'text-white/40 hover:text-white/70'
-              }`}
-            >
-              โลคอล (8000)
-            </button>
-            <button
-              type="button"
-              onClick={() => onServerTargetChange('cloud')}
-              className={`px-2 py-0.5 rounded text-[10px] font-medium transition-all ${
-                serverTarget === 'cloud'
-                  ? 'bg-white/15 text-white border border-white/15'
-                  : 'text-white/40 hover:text-white/70'
-              }`}
-            >
-              คลาวด์รัน (Cloud)
-            </button>
           </div>
         </div>
       </div>

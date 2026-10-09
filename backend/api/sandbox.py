@@ -89,6 +89,7 @@ class SandboxSimulateRequest(BaseModel):
     base_prompt: Optional[str] = Field(default=None, description="Core Base Prompt หากต้องการปรับแต่งจากค่าเริ่มต้น")
     active_modules: Optional[List[PromptModuleModel]] = Field(default_factory=list, description="รายการชิ้นส่วน Prompt ของฟีเจอร์ที่เปิดใช้งาน")
     thinking_budget: Optional[int] = Field(default=256, description="Token budget สำหรับ Thinking Mode (Low=256, Medium=1024, Off=0)")
+    model_name: Optional[str] = Field(default=None, description="ชื่อโมเดล Gemini ที่ต้องการใช้ประมวลผล")
 
 
 class SandboxTelemetry(BaseModel):
@@ -278,8 +279,11 @@ async def simulate_turn(req: SandboxSimulateRequest):
         {"role": "user", "content": req.player_input}
     ]
     
-    # 3. กำหนด Thinking Budget และเรียก ActorAgent (Gemini 3.8 Flash)
+    # 3. กำหนด Thinking Budget และเรียก ActorAgent
     actor = get_actor_agent()
+    if req.model_name and req.model_name.strip() and req.model_name.strip() != actor.model_name:
+        actor = ActorAgent(model_name=req.model_name.strip())
+
     if req.thinking_budget:
         os.environ["ACTOR_THINKING_BUDGET"] = str(req.thinking_budget)
         

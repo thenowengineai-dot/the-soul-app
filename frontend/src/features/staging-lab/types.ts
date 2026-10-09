@@ -15,6 +15,7 @@ export interface SandboxSimulateRequest {
     prompt_snippet: string
   }>
   thinking_budget?: number
+  model_name?: string
 }
 
 export type CanonicalOutcome = 'MISSED' | 'PARRIED' | 'GRAZED' | 'LATCHED'

@@ -1,227 +1,226 @@
-
 import {
-  ArrowLeft,
   RotateCcw,
   Zap,
-  Layers
+  Shield,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react'
 import type { SpatialSpacing } from '../modules/physicalParryModule'
 import { getBoundaryBrief } from '../modules/physicalParryModule'
 
 interface StageControllerCardProps {
+  isActive: boolean
+  onActivate: () => void
+  isExpanded: boolean
+  onToggleExpand: () => void
   spacing: SpatialSpacing
   onSpacingChange: (spacing: SpatialSpacing) => void
   boundaryLevel: number
   onBoundaryChange: (level: number) => void
-  isParryEnabled: boolean
-  onToggleParry: () => void
   isLoading: boolean
   elapsedSeconds: number
   onSimulate: () => void
-  onBackToHome: () => void
-  onOpenPromptInspector?: () => void
 }
 
 export function StageControllerCard({
+  isActive,
+  onActivate,
+  isExpanded,
+  onToggleExpand,
   spacing,
   onSpacingChange,
   boundaryLevel,
   onBoundaryChange,
-  isParryEnabled,
-  onToggleParry,
   isLoading,
   elapsedSeconds,
   onSimulate,
-  onBackToHome,
-  onOpenPromptInspector,
 }: StageControllerCardProps) {
   const boundaryInfo = getBoundaryBrief(boundaryLevel)
 
   return (
     <div
-      className="w-[346px] rounded-[28px] p-5 bg-white/[0.06] hover:bg-white/[0.08] backdrop-blur-2xl border border-white/[0.10] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-all flex flex-col justify-between relative select-none"
+      className={`w-[346px] rounded-[24px] transition-all select-none border backdrop-blur-2xl ${
+        isActive
+          ? 'bg-white/[0.07] border-[#38bdf8]/40 shadow-[0_0_24px_rgba(56,189,248,0.10)]'
+          : 'bg-white/[0.04] hover:bg-white/[0.06] border-white/[0.08] hover:border-white/15'
+      }`}
     >
-      {/* 1. Header Row (Apple Bento Plaque Style) */}
-      <div className="flex items-center justify-between shrink-0 mb-4">
-        <div className="flex items-center gap-2.5">
-          <button
-            type="button"
-            onClick={onBackToHome}
-            className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 hover:border-white/20 text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] active:scale-95"
-            title="กลับหน้าหลัก"
+      {/* 1. Accordion Header Row */}
+      <div className="p-4 flex items-center justify-between gap-2">
+        <button
+          type="button"
+          onClick={onToggleExpand}
+          className="flex-1 flex items-center gap-2.5 text-left cursor-pointer group"
+        >
+          <div
+            className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all shrink-0 ${
+              isActive
+                ? 'bg-[#38bdf8]/15 border-[#38bdf8]/40 text-[#38bdf8]'
+                : 'bg-white/[0.05] border-white/10 text-white/50 group-hover:text-white/80'
+            }`}
           >
-            <ArrowLeft size={14} strokeWidth={2.2} />
-          </button>
+            <Shield size={14} strokeWidth={2.2} />
+          </div>
           <div>
-            <h2 className="text-[17px] font-semibold text-[#F1F1F1] tracking-tight leading-none">
-              แผงควบคุมเวที
-            </h2>
-            <p className="text-[11px] font-normal text-white/40 mt-1">
-              ระบบเวทีจำลอง (Stage Controller)
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-mono uppercase px-1.5 py-0.2 rounded bg-white/10 text-[#38bdf8] font-bold">
+                การ์ดที่ 1
+              </span>
+              <h2 className="text-[14.5px] font-semibold text-[#F1F1F1] tracking-tight leading-none">
+                ขอบเขตสัมผัส
+              </h2>
+            </div>
+            <p className="text-[10.5px] font-normal text-white/40 mt-1">
+              Physical Boundary & Parry
             </p>
           </div>
-        </div>
+        </button>
 
-        {onOpenPromptInspector && (
+        {/* Right Header Actions: Activation Pill + Chevron */}
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             type="button"
-            onClick={onOpenPromptInspector}
-            className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 hover:border-white/20 text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] active:scale-95"
-            title="ตรวจสอบ Prompt จริง"
+            onClick={(e) => {
+              e.stopPropagation()
+              onActivate()
+            }}
+            className={`px-2.5 py-1 rounded-full text-[10px] font-mono font-medium border transition-all cursor-pointer flex items-center gap-1.5 ${
+              isActive
+                ? 'bg-[#38bdf8]/20 text-[#bae6fd] border-[#38bdf8]/50 shadow-[0_0_12px_rgba(56,189,248,0.25)]'
+                : 'bg-white/[0.04] text-white/40 border-white/10 hover:text-white/70 hover:bg-white/[0.08]'
+            }`}
+            title={isActive ? 'การ์ดนี้กำลังถูกทดสอบ' : 'คลิกเพื่อเลือกทดสอบการ์ดนี้'}
           >
-            <Layers size={13} strokeWidth={2} />
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                isActive ? 'bg-[#38bdf8] animate-pulse' : 'bg-white/30'
+              }`}
+            />
+            {isActive ? 'ACTIVE' : 'เลือกทดสอบ'}
           </button>
-        )}
+
+          <button
+            type="button"
+            onClick={onToggleExpand}
+            className="w-7 h-7 rounded-full bg-white/[0.04] hover:bg-white/[0.10] text-white/40 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+            title={isExpanded ? 'พับเก็บการ์ด' : 'คลี่ออกดูการ์ด'}
+          >
+            {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </button>
+        </div>
       </div>
 
-      {/* 2. Middle Body: Apple Tactile Widget Controls */}
-      <div className="flex-1 flex flex-col gap-4 overflow-y-auto no-scrollbar py-1">
-        {/* Widget A: Spatial Distance (Segmented Switcher) */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-white/50 tracking-wider">
-              ระยะห่างทางกายภาพ <span className="text-[9.5px] text-white/30 font-mono">(SPACING)</span>
-            </span>
-            <span className="text-[10px] font-mono text-white/40 uppercase">
-              {spacing}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-3 gap-1 p-1 rounded-2xl bg-black/30 border border-white/10">
-            {(['distant', 'reach', 'intimate'] as SpatialSpacing[]).map((s) => {
-              const labels: Record<SpatialSpacing, { th: string; en: string }> = {
-                distant: { th: 'ห่าง 2 ก้าว', en: 'Distant' },
-                reach: { th: '1 ช่วงแขน', en: 'Reach' },
-                intimate: { th: 'ประชิดตัว', en: 'Intimate' },
-              }
-              const isSelected = spacing === s
-              return (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => onSpacingChange(s)}
-                  className={`py-1.5 px-1 rounded-xl text-center transition-all cursor-pointer ${
-                    isSelected
-                      ? 'bg-white/15 text-white font-medium border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]'
-                      : 'text-white/45 hover:text-white/80'
-                  }`}
-                >
-                  <div className="text-[11px] leading-tight">{labels[s].th}</div>
-                  <div className="text-[9px] opacity-60 font-mono">{labels[s].en}</div>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Widget C: Poise / Psychological Boundary Equalizer */}
-        <div className="space-y-1.5 pt-2 border-t border-white/[0.06]">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-white/50 tracking-wider">
-              กำแพงจิตใจและสติ <span className="text-[9.5px] text-white/30 font-mono">(BOUNDARY)</span>
-            </span>
-            <span className="text-[11px] font-mono text-emerald-400 font-semibold">
-              ระดับ {boundaryLevel}%
-            </span>
-          </div>
-
-          <div className="p-2.5 rounded-2xl bg-black/30 border border-white/10 space-y-1">
+      {/* 2. Expandable Body Content */}
+      {isExpanded && (
+        <div className="px-4 pb-4 pt-1 space-y-4 border-t border-white/[0.06]">
+          {/* Widget A: Spatial Distance (Segmented Switcher) */}
+          <div className="space-y-1.5 pt-1">
             <div className="flex items-center justify-between">
-              <span className="text-[11.5px] font-medium text-[#F1F1F1]">
+              <span className="text-[11px] font-medium text-white/50 tracking-wider">
+                ระยะห่างทางกายภาพ <span className="text-[9.5px] text-white/30 font-mono">(SPACING)</span>
+              </span>
+              <span className="text-[10px] font-mono text-white/40 uppercase">
+                {spacing}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-1 p-1 rounded-2xl bg-black/30 border border-white/10">
+              {(['distant', 'reach', 'intimate'] as SpatialSpacing[]).map((s) => {
+                const isSelected = spacing === s
+                const labels: Record<SpatialSpacing, { th: string; sub: string }> = {
+                  distant: { th: '2-3 ก้าว', sub: 'Distant' },
+                  reach: { th: 'ช่วงแขน', sub: 'Reach' },
+                  intimate: { th: 'แนบชิด', sub: 'Intimate' },
+                }
+
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => onSpacingChange(s)}
+                    className={`py-1.5 px-2 rounded-xl text-center transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-white/[0.14] text-white shadow-sm border border-white/10 font-medium'
+                        : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]'
+                    }`}
+                  >
+                    <div className="text-[11px] leading-tight font-medium">{labels[s].th}</div>
+                    <div className="text-[9px] text-white/40 uppercase tracking-tighter mt-0.5">
+                      {labels[s].sub}
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Widget B: Physical Boundary Slider */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-white/50 tracking-wider">
+                ระดับการหวงตัว <span className="text-[9.5px] text-white/30 font-mono">(BOUNDARY)</span>
+              </span>
+              <span className="text-[11.5px] font-mono font-medium text-[#F1F1F1]">
+                {boundaryLevel}%
+              </span>
+            </div>
+
+            <div className="px-1 py-1">
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value={boundaryLevel}
+                onChange={(e) => onBoundaryChange(Number(e.target.value))}
+                className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#38bdf8]"
+              />
+              <div className="flex justify-between text-[9px] font-mono text-white/30 mt-1">
+                <span>0% (หวงตัวเด็ดขาด)</span>
+                <span>50%</span>
+                <span>100% (ยินยอม)</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Widget C: Active Posture Badge */}
+          <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] space-y-1">
+            <div className="flex items-center justify-between text-[10.5px]">
+              <span className="font-medium text-white/70">สภาวะจิตใจและผัสสะ:</span>
+              <span className="font-mono text-[10px] text-[#38bdf8] font-bold">
                 {boundaryInfo.stageName}
               </span>
-              <button
-                type="button"
-                onClick={onToggleParry}
-                className={`text-[9.5px] px-2 py-0.5 rounded-full border transition-all ${
-                  isParryEnabled
-                    ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
-                    : 'bg-white/5 border-white/10 text-white/40'
-                }`}
-              >
-                {isParryEnabled ? 'ระบบสกัดกั้นทำงาน' : 'ปิดระบบสกัดกั้น'}
-              </button>
             </div>
-            <p className="text-[10px] text-white/50 leading-relaxed">
+            <p className="text-[11px] text-white/80 leading-relaxed font-sans">
               {boundaryInfo.brief}
             </p>
           </div>
 
-          {/* 3 Posture Segment Tabs */}
-          <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-black/25 border border-white/5 text-[10.5px]">
-            <button
-              type="button"
-              onClick={() => onBoundaryChange(10)}
-              className={`py-1 rounded-lg text-center transition-all ${
-                boundaryLevel <= 35
-                  ? 'bg-emerald-500/20 text-emerald-300 font-medium border border-emerald-500/30'
-                  : 'text-white/40 hover:text-white/70'
-              }`}
-            >
-              Guarded (10%)
-            </button>
-            <button
-              type="button"
-              onClick={() => onBoundaryChange(50)}
-              className={`py-1 rounded-lg text-center transition-all ${
-                boundaryLevel > 35 && boundaryLevel <= 75
-                  ? 'bg-amber-500/20 text-amber-300 font-medium border border-amber-500/30'
-                  : 'text-white/40 hover:text-white/70'
-              }`}
-            >
-              Hesitant (50%)
-            </button>
-            <button
-              type="button"
-              onClick={() => onBoundaryChange(90)}
-              className={`py-1 rounded-lg text-center transition-all ${
-                boundaryLevel > 75
-                  ? 'bg-rose-500/20 text-rose-300 font-medium border border-rose-500/30'
-                  : 'text-white/40 hover:text-white/70'
-              }`}
-            >
-              Open (90%)
-            </button>
-          </div>
-
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={boundaryLevel}
-            onChange={(e) => onBoundaryChange(Number(e.target.value))}
-            className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#EF264C]"
-          />
+          {/* Widget D: Action CTA (รันเฉพาะการ์ด 1) */}
+          <button
+            type="button"
+            onClick={onSimulate}
+            disabled={isLoading}
+            className={`w-full h-10 rounded-full font-medium text-[12.5px] tracking-tight transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-[0.98] ${
+              isLoading
+                ? 'bg-white/10 text-white/50 border border-white/10 cursor-not-allowed'
+                : 'bg-[#F1F1F1] hover:bg-white text-black border border-white/40 hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]'
+            }`}
+          >
+            {isLoading ? (
+              <>
+                <RotateCcw size={13} className="animate-spin text-white/60" />
+                <span>กำลังจำลองขอบเขต... ({elapsedSeconds.toFixed(1)}s)</span>
+              </>
+            ) : (
+              <>
+                <Zap size={13} fill="currentColor" />
+                <span>รันจำลองการ์ดที่ 1</span>
+              </>
+            )}
+          </button>
         </div>
-      </div>
-
-      {/* 3. Bottom Execution Bar: Tactile Carmine Simulate Action */}
-      <div className="pt-3 border-t border-white/[0.08] shrink-0">
-        <button
-          type="button"
-          onClick={onSimulate}
-          disabled={isLoading}
-          className={`w-full py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 font-medium text-[13px] transition-all cursor-pointer shadow-[0_2px_12px_rgba(239,38,76,0.25)] ${
-            isLoading
-              ? 'bg-white/10 text-white/40 cursor-not-allowed'
-              : 'bg-[#EF264C] hover:bg-[#d91d40] text-white active:scale-98'
-          }`}
-        >
-          {isLoading ? (
-            <>
-              <RotateCcw size={14} className="animate-spin" />
-              <span>กำลังประมวลผล... ({elapsedSeconds}s)</span>
-            </>
-          ) : (
-            <>
-              <Zap size={14} fill="currentColor" />
-              <span>จำลองสภาวะปัจจุบัน (Simulate Turn)</span>
-            </>
-          )}
-        </button>
-      </div>
+      )}
     </div>
   )
 }
-
-export default StageControllerCard

@@ -19,6 +19,7 @@ interface FloatingTelemetryHudProps {
   sensoryPulseText?: string
   isTelemetryContractEnabled?: boolean
   onToggleTelemetryContract?: () => void
+  activeCardId?: 'card1' | 'card2' | 'card3'
 }
 
 export function FloatingTelemetryHud({
@@ -29,6 +30,7 @@ export function FloatingTelemetryHud({
   sensoryPulseText = '',
   isTelemetryContractEnabled = true,
   onToggleTelemetryContract,
+  activeCardId = 'card1',
 }: FloatingTelemetryHudProps) {
   const [isOpen, setIsOpen] = useState(true)
   const [showSettings, setShowSettings] = useState(false)
@@ -116,27 +118,51 @@ export function FloatingTelemetryHud({
     )
   }
 
+  const isBoundaryContext = activeCardId === 'card1' || activeCardId === 'card3'
+  const isKineticContext = activeCardId === 'card2' || activeCardId === 'card3'
+
   // Expanded MSI Afterburner Style OSD (Ultra-Translucent)
   return (
     <div className="absolute top-[52px] right-6 z-30 w-[310px] sm:w-[330px] rounded-2xl bg-black/35 backdrop-blur-xl border border-white/10 shadow-2xl p-3.5 select-none transition-all">
-      {/* Top Controls (Clean Floating Controls, No Header Title) */}
-      <div className="flex items-center justify-end gap-1 mb-2">
-        <button
-          type="button"
-          onClick={() => setShowSettings(!showSettings)}
-          className="w-5 h-5 rounded flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
-          title="ตั้งค่าแสดงผลค่าสถานะ"
-        >
-          <Sliders size={11} />
-        </button>
-        <button
-          type="button"
-          onClick={() => setIsOpen(false)}
-          className="w-5 h-5 rounded flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
-          title="ย่อแผง HUD"
-        >
-          <Minimize2 size={11} />
-        </button>
+      {/* Top Header: Active Feature HUD Badge + Controls */}
+      <div className="flex items-center justify-between gap-1 mb-2">
+        <div className="flex items-center gap-1.5">
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${
+              activeCardId === 'card1'
+                ? 'bg-[#38bdf8] shadow-[0_0_8px_rgba(56,189,248,0.5)]'
+                : activeCardId === 'card2'
+                ? 'bg-[#34d399] shadow-[0_0_8px_rgba(52,211,153,0.5)]'
+                : 'bg-[#c084fc] shadow-[0_0_8px_rgba(192,132,252,0.5)]'
+            }`}
+          />
+          <span className="text-[10px] font-mono uppercase font-bold text-white/70 tracking-wider">
+            {activeCardId === 'card1'
+              ? 'HUD 1 · ขอบเขตสัมผัส'
+              : activeCardId === 'card2'
+              ? 'HUD 2 · สรีระและแรงเฉื่อย'
+              : 'HUD 3 · ระบบรวมร่าง'}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setShowSettings(!showSettings)}
+            className="w-5 h-5 rounded flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+            title="ตั้งค่าแสดงผลค่าสถานะ"
+          >
+            <Sliders size={11} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsOpen(false)}
+            className="w-5 h-5 rounded flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+            title="ย่อแผง HUD"
+          >
+            <Minimize2 size={11} />
+          </button>
+        </div>
       </div>
 
       {/* Settings Popover Tray */}
@@ -208,7 +234,7 @@ export function FloatingTelemetryHud({
         )}
 
         {/* Row 3: Hitbox / Real Telemetry Verdict */}
-        {visibleRows.hitbox && (
+        {isBoundaryContext && visibleRows.hitbox && (
           <div className="flex items-start justify-between gap-2 pt-1 border-t border-white/[0.06]">
             <span className="text-[#fb923c] font-bold shrink-0">VERDICT</span>
             <span className={`text-right font-medium text-[10.5px] ${hitbox.color}`}>
@@ -218,7 +244,7 @@ export function FloatingTelemetryHud({
         )}
 
         {/* Row 3.5: Active Persistent Contacts */}
-        {visibleRows.hitbox && (
+        {isBoundaryContext && visibleRows.hitbox && (
           <div className="flex items-center justify-between gap-2">
             <span className="text-white/50 font-bold shrink-0 text-[10px]">CONTACTS</span>
             <div className="flex items-center gap-1 flex-wrap justify-end">
@@ -239,7 +265,7 @@ export function FloatingTelemetryHud({
         )}
 
         {/* Row 4: Distance State */}
-        {visibleRows.distance && (
+        {isBoundaryContext && visibleRows.distance && (
           <div className="flex items-center justify-between">
             <span className="text-[#a78bfa] font-bold">DISTANCE</span>
             <span className="text-white/80 uppercase">
@@ -249,7 +275,7 @@ export function FloatingTelemetryHud({
         )}
 
         {/* Row 5: Boundary State */}
-        {visibleRows.boundary && (
+        {isBoundaryContext && visibleRows.boundary && (
           <div className="flex items-center justify-between">
             <span className="text-[#f472b6] font-bold">BOUNDARY</span>
             <span className="text-white/80">
@@ -259,7 +285,7 @@ export function FloatingTelemetryHud({
         )}
 
         {/* Row 5.5: Kinetic Decision / Tempo Mode */}
-        {visibleRows.kinetic && telemetry?.kinetic_decision && (
+        {isKineticContext && visibleRows.kinetic && telemetry?.kinetic_decision && (
           <div className="pt-1.5 border-t border-white/[0.06]">
             <div className="flex items-center justify-between text-[10px] mb-1">
               <span className="text-[#34d399] font-bold">TEMPO</span>
@@ -286,7 +312,7 @@ export function FloatingTelemetryHud({
         )}
 
         {/* Row 6: Actor Posture (Cinematic Silhouette Snapshot) */}
-        {visibleRows.posture && telemetry?.a_pos && (
+        {isKineticContext && visibleRows.posture && telemetry?.a_pos && (
           <div className="pt-1.5 border-t border-white/[0.06]">
             <div className="flex items-center justify-between text-[10px] mb-1">
               <span className="text-[#38bdf8] font-bold">POSTURE</span>
@@ -300,8 +326,8 @@ export function FloatingTelemetryHud({
           </div>
         )}
 
-        {/* Row 6: Sensory Context Snippet */}
-        {visibleRows.sensory && sensoryPulseText && (
+        {/* Row 6.5: Sensory Context Snippet */}
+        {isBoundaryContext && visibleRows.sensory && sensoryPulseText && (
           <div className="pt-1 border-t border-white/[0.06]">
             <div className="text-[9.5px] text-white/40 uppercase mb-0.5">
               Sensory Pulse (To Actor):

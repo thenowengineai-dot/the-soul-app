@@ -37,6 +37,7 @@ export function FloatingTelemetryHud({
     hitbox: true,
     distance: true,
     boundary: true,
+    posture: true,
     sensory: true,
   })
 
@@ -229,6 +230,21 @@ export function FloatingTelemetryHud({
             <span className="text-white/80">
               {boundaryLevel}% ({isParryEnabled ? 'Active' : 'Bypassed'})
             </span>
+          </div>
+        )}
+
+        {/* Row 6: Actor Posture (Grounded Cinematic Snapshot) */}
+        {visibleRows.posture && telemetry?.a_pos && (
+          <div className="pt-1.5 border-t border-white/[0.06]">
+            <div className="flex items-center justify-between text-[10px] mb-1">
+              <span className="text-[#38bdf8] font-bold">POSTURE</span>
+              <span className="text-[9px] text-white/40 uppercase tracking-wider font-mono">
+                GROUNDED SNAPSHOT
+              </span>
+            </div>
+            <div className="text-[11px] text-[#F1F1F1] font-sans leading-relaxed bg-white/[0.04] p-2 rounded-lg border border-white/[0.08]">
+              "{telemetry.a_pos}"
+            </div>
           </div>
         )}
 

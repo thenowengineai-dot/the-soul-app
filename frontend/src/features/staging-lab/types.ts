@@ -16,6 +16,7 @@ export interface SandboxSimulateRequest {
   }>
   thinking_budget?: number
   model_name?: string
+  current_actor_posture?: string
 }
 
 export type CanonicalOutcome = 'MISSED' | 'PARRIED' | 'GRAZED' | 'LATCHED'

@@ -48,7 +48,7 @@ PLUGGABLE_OUTCOME_SCHEMA_PROMPT = """# TELEMETRY & PLUGGABLE OUTCOME CONTRACT (S
 You must output ONLY a valid JSON object matching this structure:
 {
   "thinking": "Analyze incoming motion -> verify sensory reality -> decide verdict outcome & active contacts -> execute somatic & dialogue response",
-  "a_pos": "Your physical posture after this turn",
+  "a_pos": "ยืนหันข้างกอดอกแน่น แผ่นหลังแนบสนิทกับผนังห้องเย็นเฉียบ ปลายเล็บจิกเนื้อผ้าเสื้อเชิ้ตตัวเอง",
   "verdict": {
     "outcome": "PARRIED",
     "contact_occurred": false,
@@ -59,6 +59,13 @@ You must output ONLY a valid JSON object matching this structure:
     {"type": "dialogue", "content": "Spoken boundary response reflecting your personality and emotion"}
   ]
 }
+
+# A_POS RULE (GROUNDED CINEMATIC SNAPSHOT - SENSORY REALISM):
+- Must be a single, vivid Thai freeze-frame sentence (10-20 words). Never use robotic brackets or '+' symbols!
+- Ground your physical body with mass, gravity & surface friction across 3 anchors:
+  1) Contact surface & gravity: Where your weight rests or what your feet/back press against (e.g. แผ่นหลังแนบผนังเย็น, ส้นเท้าสะดุดถอย, นั่งบนขอบเตียงที่ยุบยวบ, ทิ้งน้ำหนักซบบนแผ่นอก)
+  2) Silhouette & physical tether: Stance and what your hands grip/cling to (e.g. กอดอกแน่นปลายเล็บจิกแขนเสื้อ, สองมือกุมสาบเสื้อยับยู่, สองมือกุมทับหลังมือคุณ)
+  3) Biological state or gaze: Breath, shiver, tension or eye direction (e.g. เบือนหน้าหนี, หอบหายใจจนแผ่นอกกระเพื่อม, จ้องสบตาในระยะลมหายใจรดริน)
 
 # CANONICAL 4-STATE VERDICT OUTCOMES:
 - "MISSED": When the player reaches from a distant spacing and clutches only empty air. (contact_occurred: false, active_contacts: [])
@@ -90,6 +97,7 @@ class SandboxSimulateRequest(BaseModel):
     active_modules: Optional[List[PromptModuleModel]] = Field(default_factory=list, description="รายการชิ้นส่วน Prompt ของฟีเจอร์ที่เปิดใช้งาน")
     thinking_budget: Optional[int] = Field(default=256, description="Token budget สำหรับ Thinking Mode (Low=256, Medium=1024, Off=0)")
     model_name: Optional[str] = Field(default=None, description="ชื่อโมเดล Gemini ที่ต้องการใช้ประมวลผล")
+    current_actor_posture: Optional[str] = Field(default=None, description="ท่วงท่าจุดเริ่มต้นของตัวละครจากเทิร์นก่อนหน้า (Kinetic Anchor)")
 
 
 class SandboxTelemetry(BaseModel):
@@ -268,6 +276,13 @@ async def simulate_turn(req: SandboxSimulateRequest):
             snippet = (mod.prompt_snippet or "").strip()
             if snippet:
                 full_prompt_parts.append(f"\n# ACTIVE MODULE: {mod.name.upper()}\n{snippet}")
+
+    if req.current_actor_posture and req.current_actor_posture.strip():
+        full_prompt_parts.append(
+            f"\n[KINETIC CONTINUITY & BODY ANCHOR]\n"
+            f"- ท่าทางเริ่มต้นของคุณก่อนรับการกระทำนี้ (a_pos): {req.current_actor_posture.strip()}\n"
+            f"- Anti-Teleport Law: ร่างกายมีมวลสารและเคลื่อนไหวต่อเนื่อง คุณต้องเริ่มเคลื่อนไหวหรือคลายตัวออกจากท่าสตาร์ทนี้ ห้ามวาร์ปหรือเปลี่ยนท่ากะทันหันโดยไร้รอยต่อ"
+        )
 
     # Pluggable Outcome Contract: เสียบเฉพาะใน Staging Lab เพื่อให้ AI คาย verdict ส่งเข้า HUD
     full_prompt_parts.append(f"\n{PLUGGABLE_OUTCOME_SCHEMA_PROMPT}")

@@ -181,6 +181,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       active_modules: activeSnippets,
       thinking_budget: thinkingBudget,
       model_name: selectedModel,
+      current_actor_posture: simulationResult?.telemetry?.a_pos,
     }
 
     try {
@@ -284,12 +285,15 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
             </button>
           </div>
 
-          {/* Clear Chat Log */}
+          {/* Clear Chat Log & Reset Posture */}
           <button
             type="button"
-            onClick={() => setChatLog([])}
+            onClick={() => {
+              setChatLog([])
+              setSimulationResult(null)
+            }}
             className="px-2 py-0.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/40 hover:text-white text-[10px] font-mono transition-all cursor-pointer"
-            title="ล้างข้อความในห้องแชท"
+            title="ล้างข้อความในห้องแชทและรีเซ็ตท่าทาง"
           >
             Clear
           </button>

@@ -263,7 +263,7 @@ export function FloatingTelemetryHud({
             <div className="flex items-center justify-between text-[10px] mb-1">
               <span className="text-[#38bdf8] font-bold">POSTURE</span>
               <span className="text-[9px] text-white/40 uppercase tracking-wider font-mono">
-                GROUNDED SNAPSHOT
+                KINETIC CORE
               </span>
             </div>
             <div className="text-[11px] text-[#F1F1F1] font-sans leading-relaxed bg-white/[0.04] p-2 rounded-lg border border-white/[0.08]">

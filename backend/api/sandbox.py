@@ -48,7 +48,7 @@ PLUGGABLE_OUTCOME_SCHEMA_PROMPT = """# TELEMETRY & PLUGGABLE OUTCOME CONTRACT (S
 You must output ONLY a valid JSON object matching this structure:
 {
   "thinking": "Analyze incoming motion -> verify sensory reality -> decide verdict outcome & active contacts -> execute somatic & dialogue response",
-  "a_pos": "ยืนหันข้างกอดอกแน่น แผ่นหลังแนบสนิทกับผนังห้องเย็นเฉียบ ปลายเล็บจิกเนื้อผ้าเสื้อเชิ้ตตัวเอง",
+  "a_pos": "ถอยหลังพิงผนัง กอดอกแน่นจนเล็บจิกแขน",
   "verdict": {
     "outcome": "PARRIED",
     "contact_occurred": false,
@@ -60,12 +60,15 @@ You must output ONLY a valid JSON object matching this structure:
   ]
 }
 
-# A_POS RULE (GROUNDED CINEMATIC SNAPSHOT - SENSORY REALISM):
-- Must be a single, vivid Thai freeze-frame sentence (10-20 words). Never use robotic brackets or '+' symbols!
-- Ground your physical body with mass, gravity & surface friction across 3 anchors:
-  1) Contact surface & gravity: Where your weight rests or what your feet/back press against (e.g. แผ่นหลังแนบผนังเย็น, ส้นเท้าสะดุดถอย, นั่งบนขอบเตียงที่ยุบยวบ, ทิ้งน้ำหนักซบบนแผ่นอก)
-  2) Silhouette & physical tether: Stance and what your hands grip/cling to (e.g. กอดอกแน่นปลายเล็บจิกแขนเสื้อ, สองมือกุมสาบเสื้อยับยู่, สองมือกุมทับหลังมือคุณ)
-  3) Biological state or gaze: Breath, shiver, tension or eye direction (e.g. เบือนหน้าหนี, หอบหายใจจนแผ่นอกกระเพื่อม, จ้องสบตาในระยะลมหายใจรดริน)
+# A_POS RULE (APPLE PURE KINETIC CORE - STRICTLY 6-9 WORDS):
+- Output strictly 6-9 Thai words. Ruthlessly subtract all literary fluff, decorative adjectives, and filler (no 'ห้องเย็นเฉียบ', no 'เสื้อเชิ้ตตัวเอง')!
+- Never use robotic brackets or '+' symbols!
+- Isolate the singular kinetic truth: [กิริยาหลัก/จุดทิ้งน้ำหนัก] + [จุดสัมผัสหรือแรงต้านที่บอกอารมณ์]
+- Canonical Core Examples:
+  * PARRIED: "ถอยหลังพิงผนัง กอดอกแน่นจนเล็บจิกแขน"
+  * GRAZED: "สะดุดถอยครึ่งก้าว สองมือกุมสาบเสื้อยับแน่น"
+  * LATCHED: "ทิ้งตัวซบอกคุณ สองมือกุมทับหลังมือคุณแน่น"
+  * COUNTER: "ก้าวเท้าประชิด โน้มหน้าสบตาในระยะลมหายใจ"
 
 # CANONICAL 4-STATE VERDICT OUTCOMES:
 - "MISSED": When the player reaches from a distant spacing and clutches only empty air. (contact_occurred: false, active_contacts: [])

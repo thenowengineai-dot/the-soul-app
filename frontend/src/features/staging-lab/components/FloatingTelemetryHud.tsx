@@ -42,6 +42,7 @@ export function FloatingTelemetryHud({
     distance: true,
     boundary: true,
     posture: true,
+    kinetic: true,
     sensory: true,
   })
 
@@ -257,13 +258,40 @@ export function FloatingTelemetryHud({
           </div>
         )}
 
-        {/* Row 6: Actor Posture (Grounded Cinematic Snapshot) */}
+        {/* Row 5.5: Kinetic Decision / Tempo Mode */}
+        {visibleRows.kinetic && telemetry?.kinetic_decision && (
+          <div className="pt-1.5 border-t border-white/[0.06]">
+            <div className="flex items-center justify-between text-[10px] mb-1">
+              <span className="text-[#34d399] font-bold">TEMPO</span>
+              <span
+                className={`px-1.5 py-0.2 rounded font-mono text-[9px] uppercase font-semibold ${
+                  telemetry.kinetic_decision.tempo === 'HIGH_VELOCITY_SNAP'
+                    ? 'bg-[#fb923c]/20 text-[#fb923c] border border-[#fb923c]/30'
+                    : telemetry.kinetic_decision.tempo === 'LOW_VELOCITY_UNHOOK'
+                    ? 'bg-[#c084fc]/20 text-[#c084fc] border border-[#c084fc]/30'
+                    : telemetry.kinetic_decision.tempo === 'MICRO_SHIFT'
+                    ? 'bg-[#38bdf8]/20 text-[#38bdf8] border border-[#38bdf8]/30'
+                    : 'bg-[#34d399]/20 text-[#34d399] border border-[#34d399]/30'
+                }`}
+              >
+                {telemetry.kinetic_decision.tempo.replace(/_/g, ' ')}
+              </span>
+            </div>
+            {telemetry.kinetic_decision.somatic_tension && (
+              <div className="text-[10.5px] text-white/70 italic bg-white/[0.03] p-1.5 rounded border border-white/[0.05] leading-snug">
+                "{telemetry.kinetic_decision.somatic_tension}"
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Row 6: Actor Posture (Cinematic Silhouette Snapshot) */}
         {visibleRows.posture && telemetry?.a_pos && (
           <div className="pt-1.5 border-t border-white/[0.06]">
             <div className="flex items-center justify-between text-[10px] mb-1">
               <span className="text-[#38bdf8] font-bold">POSTURE</span>
               <span className="text-[9px] text-white/40 uppercase tracking-wider font-mono">
-                KINETIC CORE
+                SILHOUETTE SNAPSHOT
               </span>
             </div>
             <div className="text-[11px] text-[#F1F1F1] font-sans leading-relaxed bg-white/[0.04] p-2 rounded-lg border border-white/[0.08]">

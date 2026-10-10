@@ -28,12 +28,24 @@ export interface TelemetryVerdict {
   active_contacts?: string[]
 }
 
+export type KineticTempoMode =
+  | 'STILLNESS'
+  | 'MICRO_SHIFT'
+  | 'HIGH_VELOCITY_SNAP'
+  | 'LOW_VELOCITY_UNHOOK'
+
+export interface KineticDecision {
+  tempo: KineticTempoMode | string
+  somatic_tension?: string
+}
+
 export interface SandboxTelemetry {
   latency_ms: number
   model: string
   thinking?: string
   a_pos?: string
   p_pos?: string
+  kinetic_decision?: KineticDecision | null
   verdict?: TelemetryVerdict | null
 }
 

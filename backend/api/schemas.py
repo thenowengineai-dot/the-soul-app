@@ -159,6 +159,10 @@ class ActorOutput(BaseModel):
         default=None,
         description="ผลการตัดสินสถานะทางกายภาพของ AI: contact_occurred, outcome (PARRIED, WHIFF, ESCAPED, YIELDED, BREACHED), target_zone"
     )
+    kinetic_decision: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="การตัดสินใจจังหวะสรีระภาพยนตร์: tempo (STILLNESS, MICRO_SHIFT, HIGH_VELOCITY_SNAP, LOW_VELOCITY_UNHOOK), somatic_tension"
+    )
 
     @field_validator("p_pos", mode="before")
     @classmethod

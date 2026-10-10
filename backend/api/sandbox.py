@@ -47,8 +47,12 @@ DEFAULT_BASE_PROMPT = """[ROLE & EXISTENCE: THE EMBODIED ACTOR]
 PLUGGABLE_OUTCOME_SCHEMA_PROMPT = """# TELEMETRY & PLUGGABLE OUTCOME CONTRACT (STAGING LAB)
 You must output ONLY a valid JSON object matching this structure:
 {
-  "thinking": "Analyze incoming motion -> verify sensory reality -> decide verdict outcome & active contacts -> execute somatic & dialogue response",
-  "a_pos": "ถอยหลังพิงผนัง กอดอกแน่นจนเล็บจิกแขน",
+  "thinking": "Analyze incoming motion -> decide kinetic tempo & somatic tension -> determine verdict & contacts -> execute somatic & dialogue response",
+  "kinetic_decision": {
+    "tempo": "HIGH_VELOCITY_SNAP",
+    "somatic_tension": "กล้ามเนื้อไหล่เกร็งสะบัดหนีสัมผัส"
+  },
+  "a_pos": "ยืนหันข้างกอดอกแน่น ปลายเล็บจิกแขนเสื้อตัวเอง",
   "verdict": {
     "outcome": "PARRIED",
     "contact_occurred": false,
@@ -60,15 +64,28 @@ You must output ONLY a valid JSON object matching this structure:
   ]
 }
 
-# A_POS RULE (APPLE PURE KINETIC CORE - STRICTLY 6-9 WORDS):
-- Output strictly 6-9 Thai words. Ruthlessly subtract all literary fluff, decorative adjectives, and filler (no 'ห้องเย็นเฉียบ', no 'เสื้อเชิ้ตตัวเอง')!
-- Never use robotic brackets or '+' symbols!
-- Isolate the singular kinetic truth: [กิริยาหลัก/จุดทิ้งน้ำหนัก] + [จุดสัมผัสหรือแรงต้านที่บอกอารมณ์]
-- Canonical Core Examples:
-  * PARRIED: "ถอยหลังพิงผนัง กอดอกแน่นจนเล็บจิกแขน"
-  * GRAZED: "สะดุดถอยครึ่งก้าว สองมือกุมสาบเสื้อยับแน่น"
-  * LATCHED: "ทิ้งตัวซบอกคุณ สองมือกุมทับหลังมือคุณแน่น"
-  * COUNTER: "ก้าวเท้าประชิด โน้มหน้าสบตาในระยะลมหายใจ"
+# KINETIC DECISION RULES:
+- "tempo": Choose strictly 1 mode reflecting your physical pacing:
+  * "STILLNESS": When player merely speaks or no physical force threatens balance (maintain mass).
+  * "MICRO_SHIFT": When emotionally pressured or startled, reaction is isolated to facial/muscle flinch without moving base posture.
+  * "HIGH_VELOCITY_SNAP": When sudden impact, aggressive grab, or abrupt parry occurs (skip intermediate frames, cut straight to impact!).
+  * "LOW_VELOCITY_UNHOOK": When lingering hesitation, slow release, or delicate pull-back occurs.
+- "somatic_tension": Short concise phrase (max 6 Thai words) describing localized muscle tension or gaze friction (e.g. 'กล้ามเนื้อไหล่เกร็งสะบัดหนี', 'สันกรามขบแน่นสบตานิ่ง', 'ผ่อนคลายลมหายใจ').
+
+# A_POS RULE (CINEMATIC SILHOUETTE SNAPSHOT - 8-15 SYLLABLES):
+- Output strictly 1 cohesive natural Thai sentence (approx 8-15 syllables / 6-10 words).
+- Must be an instant visual snapshot rendering a clear 3D image in the mind in 0.1 seconds.
+- Weave together 3 essential physical elements into 1 sentence:
+  1. Silhouette & Stance: Center of gravity and footwork (ยืนหันข้าง / ผงะถอย / ยืนแนบชิด / ก้าวประชิด)
+  2. Hands Placement: Emotional and defensive posture of arms/hands (กอดอกแน่น / สองมือกุมอก / สองมือกุมทับหลังมือคุณ)
+  3. Gaze & Friction: Head angle, gaze, or somatic resistance (ปลายเล็บจิกแขนเสื้อ / หอบหายใจ / จ้องสบตาในระยะประชิด)
+- Ruthlessly subtract all abstract emotion words (no 'ด้วยความกลัว', no 'อย่างหวาดระแวง') and decorative room adjectives!
+- Never use technical symbols like '+' or '·' or brackets!
+- Canonical Golden Examples:
+  * PARRIED: "ยืนหันข้างกอดอกแน่น ปลายเล็บจิกแขนเสื้อตัวเอง"
+  * GRAZED: "ผงะถอยหลังครึ่งก้าว สองมือกุมอกหอบหายใจ"
+  * LATCHED: "ยืนแนบชิดปลายเท้า สองมือกุมทับหลังมือคุณ"
+  * COUNTER: "ก้าวประชิดตัว โน้มหน้าเข้ามาจ้องสบตาในระยะประชิด"
 
 # CANONICAL 4-STATE VERDICT OUTCOMES:
 - "MISSED": When the player reaches from a distant spacing and clutches only empty air. (contact_occurred: false, active_contacts: [])
@@ -104,12 +121,18 @@ class SandboxSimulateRequest(BaseModel):
     attach_telemetry_schema: bool = Field(default=True, description="เสียบ Pluggable Outcome Schema สำหรับ HUD หรือไม่")
 
 
+class KineticDecisionModel(BaseModel):
+    tempo: str = Field(default="STILLNESS", description="STILLNESS, MICRO_SHIFT, HIGH_VELOCITY_SNAP, LOW_VELOCITY_UNHOOK")
+    somatic_tension: Optional[str] = Field(default=None, description="ปฏิกิริยาของกล้ามเนื้อหรือสายตาที่สะท้อนอารมณ์")
+
+
 class SandboxTelemetry(BaseModel):
     latency_ms: int
     model: str
     thinking: Optional[str] = None
     a_pos: Optional[str] = None
     p_pos: Optional[str] = None
+    kinetic_decision: Optional[KineticDecisionModel] = None
     verdict: Optional[TelemetryVerdict] = None
 
 
@@ -178,6 +201,19 @@ def extract_telemetry_verdict(actor_output: Any) -> Optional[TelemetryVerdict]:
             contact_occurred=contact_bool,
             outcome=outcome_str,
             active_contacts=active_contacts_list
+        )
+    return None
+
+
+def extract_kinetic_decision(actor_output: Any) -> Optional[KineticDecisionModel]:
+    """ดึงค่า kinetic_decision (Tempo Mode และ Somatic Tension) จาก ActorOutput"""
+    kd_raw = getattr(actor_output, "kinetic_decision", None)
+    if isinstance(kd_raw, dict):
+        tempo_str = str(kd_raw.get("tempo", "STILLNESS")).upper().strip()
+        tension_str = str(kd_raw.get("somatic_tension", "")).strip() or None
+        return KineticDecisionModel(
+            tempo=tempo_str,
+            somatic_tension=tension_str
         )
     return None
 
@@ -338,6 +374,7 @@ async def simulate_turn(req: SandboxSimulateRequest):
             })
             
     verdict = extract_telemetry_verdict(actor_output)
+    kinetic_decision = extract_kinetic_decision(actor_output)
 
     telemetry = SandboxTelemetry(
         latency_ms=latency_ms,
@@ -345,6 +382,7 @@ async def simulate_turn(req: SandboxSimulateRequest):
         thinking=actor_output.thinking,
         a_pos=actor_output.a_pos,
         p_pos=actor_output.p_pos,
+        kinetic_decision=kinetic_decision,
         verdict=verdict
     )
     

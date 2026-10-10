@@ -5,7 +5,9 @@ import {
   Check,
   RotateCcw,
   FileCode2,
-  Info
+  Info,
+  Shield,
+  Activity
 } from 'lucide-react'
 import { DEFAULT_BASE_PROMPT, DEFAULT_TELEMETRY_SCHEMA_PROMPT } from '../defaultPrompt'
 import { INITIAL_FEATURE_MODULES } from '../mockPresets'
@@ -13,11 +15,16 @@ import {
   type SpatialSpacing,
   generatePhysicalParryBrief
 } from '../modules/physicalParryModule'
+import {
+  generateKineticPacingPrompt,
+  STANCE_PRESETS
+} from '../modules/kineticContinuityModule'
 import type { PromptModule, SandboxSimulateResponse, SandboxSimulateRequest } from '../types'
 import { MessageList } from '../../chat/components/chat-room/MessageList'
 import { ChatInputBar } from '../../chat/components/chat-room/ChatInputBar'
 import type { ChatMessage } from '../../chat/types'
 import { StageControllerCard } from './StageControllerCard'
+import { KineticContinuityCard } from './KineticContinuityCard'
 import { FloatingTelemetryHud } from './FloatingTelemetryHud'
 
 interface StagingLabViewProps {
@@ -49,10 +56,17 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   const [basePrompt, setBasePrompt] = useState<string>(DEFAULT_BASE_PROMPT)
   const [featureModules] = useState<PromptModule[]>(INITIAL_FEATURE_MODULES)
 
-  // 3. Physical Boundary Arbiter Controls
+  // 3. Physical Boundary Arbiter Controls (Card 1)
   const [isParryEnabled, setIsParryEnabled] = useState<boolean>(true)
   const [parrySpacing, setParrySpacing] = useState<SpatialSpacing>('reach')
   const [parryBoundaryLevel, setParryBoundaryLevel] = useState<number>(10)
+
+  // 3.5 Kinetic Continuity & Pacing Controls (Card 2)
+  const [activeCardTab, setActiveCardTab] = useState<'boundary' | 'kinetic'>('boundary')
+  const [isKineticEnabled, setIsKineticEnabled] = useState<boolean>(true)
+  const [originPosture, setOriginPosture] = useState<string>(
+    STANCE_PRESETS[0].snapshot
+  )
 
   // 4. Player Input & Chat History State
   const [playerInput, setPlayerInput] = useState<string>('(ฉันเอื้อมมือจะเข้าไปจับหน้าอกเธอ)')
@@ -93,6 +107,18 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   const parryBriefSnippet = useMemo(() => {
     return generatePhysicalParryBrief(parrySpacing, parryBoundaryLevel, playerInput)
   }, [parrySpacing, parryBoundaryLevel, playerInput])
+
+  // Kinetic Pacing brief computed string
+  const kineticPromptSnippet = useMemo(() => {
+    return generateKineticPacingPrompt(originPosture, isKineticEnabled)
+  }, [originPosture, isKineticEnabled])
+
+  // Multi-turn feedback seeding: Seed new a_pos from telemetry into originPosture automatically
+  useEffect(() => {
+    if (simulationResult?.telemetry?.a_pos && simulationResult.telemetry.a_pos.trim()) {
+      setOriginPosture(simulationResult.telemetry.a_pos.trim())
+    }
+  }, [simulationResult])
 
   // Close on Escape key
   useEffect(() => {
@@ -144,6 +170,23 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       })
     }
 
+    // Layer 2.5: Kinetic Continuity & Pacing (Card 2 - Emerald)
+    if (isKineticEnabled && kineticPromptSnippet.trim()) {
+      layers.push({
+        id: 'kinetic_pacing_module',
+        title: 'Layer 2.5: Kinetic Continuity & Cinematic Pacing (Card 2)',
+        sourceTag: 'KINETIC PACING',
+        sourceLabel: 'กฎแห่งแรงเฉื่อยและจังหวะภาพยนตร์',
+        badgeBg: 'bg-[#34d399]/10',
+        badgeText: 'text-[#34d399]',
+        badgeBorder: 'border-[#34d399]/30',
+        borderClass: 'border-[#34d399]/20',
+        bgClass: 'bg-[#34d399]/[0.03]',
+        textClass: 'text-[#a7f3d0]',
+        content: kineticPromptSnippet.trim(),
+      })
+    }
+
     // Layer 3: Active Feature Modules (Purple)
     const activeMods = featureModules.filter(m => m.enabled)
     for (const mod of activeMods) {
@@ -164,20 +207,20 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       }
     }
 
-    // Layer 4: Kinetic Continuity & Body Anchor (Emerald)
+    // Layer 4: Kinetic Continuity & Silhouette Anchor (Emerald)
     if (simulationResult?.telemetry?.a_pos && simulationResult.telemetry.a_pos.trim()) {
       layers.push({
         id: 'kinetic_anchor',
-        title: 'Layer 4: Kinetic Continuity (Body Anchor & Anti-Teleport Memory)',
-        sourceTag: 'KINETIC ANCHOR (MEMORY)',
-        sourceLabel: 'ส่งต่อพิกัดร่างกายจากเทิร์นก่อนหน้า',
+        title: 'Layer 4: Kinetic Continuity (Cinematic Silhouette Anchor)',
+        sourceTag: 'SILHOUETTE ANCHOR',
+        sourceLabel: 'ส่งต่อช็อตภาพนิ่งสรีระจากเทิร์นก่อนหน้า',
         badgeBg: 'bg-[#34d399]/10',
         badgeText: 'text-[#34d399]',
         badgeBorder: 'border-[#34d399]/30',
         borderClass: 'border-[#34d399]/20',
         bgClass: 'bg-[#34d399]/[0.03]',
         textClass: 'text-[#a7f3d0]',
-        content: `[KINETIC CONTINUITY & BODY ANCHOR]\n- ท่าทางเริ่มต้นของคุณก่อนรับการกระทำนี้ (a_pos): ${simulationResult.telemetry.a_pos.trim()}\n- Anti-Teleport Law: ร่างกายมีมวลสารและเคลื่อนไหวต่อเนื่อง คุณต้องเริ่มเคลื่อนไหวหรือคลายตัวออกจากท่าสตาร์ทนี้ ห้ามวาร์ปหรือเปลี่ยนท่ากะทันหันโดยไร้รอยต่อ`,
+        content: `[KINETIC CONTINUITY & SILHOUETTE ANCHOR]\n- ช็อตภาพนิ่งสรีระของคุณก่อนรับข้อความนี้ (a_pos): "${simulationResult.telemetry.a_pos.trim()}"\n- Anti-Teleport Law: ร่างกายมีมวลสารและเคลื่อนไหวต่อเนื่อง หากเทิร์นนี้ต้องเคลื่อนไหว คุณต้องเริ่มคลายท่าหรือถ่ายน้ำหนักออกจากภาพนิ่งนี้เสมอ ห้ามวาร์ปหรือเปลี่ยนท่ากะทันหันโดยไร้รอยต่อ`,
       })
     }
 
@@ -274,6 +317,14 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       })
     }
 
+    if (isKineticEnabled && kineticPromptSnippet.trim()) {
+      activeSnippets.push({
+        id: 'kinetic_pacing',
+        name: 'CINEMATIC KINETIC CONTINUITY & PACING',
+        prompt_snippet: kineticPromptSnippet.trim(),
+      })
+    }
+
     featureModules
       .filter(m => m.enabled)
       .forEach(m => {
@@ -291,7 +342,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       active_modules: activeSnippets,
       thinking_budget: thinkingBudget,
       model_name: selectedModel,
-      current_actor_posture: simulationResult?.telemetry?.a_pos,
+      current_actor_posture: originPosture || simulationResult?.telemetry?.a_pos,
       attach_telemetry_schema: isTelemetryContractEnabled,
     }
 
@@ -349,19 +400,65 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       {/* 1. LEFT ASIDE: THE STAGE CONTROLLER (370px with 346px Apple Bento Card)  */}
       {/* ======================================================================= */}
       <aside className="w-[370px] shrink-0 h-full p-3.5 flex flex-col justify-start items-center overflow-y-auto no-scrollbar border-r border-white/[0.08] bg-app-bg z-20">
-        <StageControllerCard
-          spacing={parrySpacing}
-          onSpacingChange={setParrySpacing}
-          boundaryLevel={parryBoundaryLevel}
-          onBoundaryChange={setParryBoundaryLevel}
-          isParryEnabled={isParryEnabled}
-          onToggleParry={() => setIsParryEnabled(!isParryEnabled)}
-          isLoading={isLoading}
-          elapsedSeconds={elapsedSeconds}
-          onSimulate={handleSimulate}
-          onBackToHome={onBackToHome}
-          onOpenPromptInspector={() => setIsPromptInspectorOpen(true)}
-        />
+        {/* Apple Segmented Switcher Dock */}
+        <div className="w-[346px] mb-3 p-1 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-between text-[11px] font-medium shrink-0">
+          <button
+            type="button"
+            onClick={() => setActiveCardTab('boundary')}
+            className={`flex-1 py-1.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+              activeCardTab === 'boundary'
+                ? 'bg-white/15 text-white shadow-sm font-semibold'
+                : 'text-white/40 hover:text-white/70'
+            }`}
+          >
+            <Shield size={12} />
+            <span>ขอบเขตสัมผัส (Card 1)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveCardTab('kinetic')}
+            className={`flex-1 py-1.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+              activeCardTab === 'kinetic'
+                ? 'bg-white/15 text-white shadow-sm font-semibold'
+                : 'text-white/40 hover:text-white/70'
+            }`}
+          >
+            <Activity size={12} />
+            <span>สรีระและแรงเฉื่อย (Card 2)</span>
+          </button>
+        </div>
+
+        {activeCardTab === 'boundary' ? (
+          <StageControllerCard
+            spacing={parrySpacing}
+            onSpacingChange={setParrySpacing}
+            boundaryLevel={parryBoundaryLevel}
+            onBoundaryChange={setParryBoundaryLevel}
+            isParryEnabled={isParryEnabled}
+            onToggleParry={() => setIsParryEnabled(!isParryEnabled)}
+            isLoading={isLoading}
+            elapsedSeconds={elapsedSeconds}
+            onSimulate={handleSimulate}
+            onBackToHome={onBackToHome}
+            onOpenPromptInspector={() => setIsPromptInspectorOpen(true)}
+          />
+        ) : (
+          <KineticContinuityCard
+            originPosture={originPosture}
+            onOriginPostureChange={setOriginPosture}
+            isKineticEnabled={isKineticEnabled}
+            onToggleKinetic={() => setIsKineticEnabled(!isKineticEnabled)}
+            onSelectVelocityAction={(actionText) => {
+              setPlayerInput(actionText)
+              executeSimulation(actionText)
+            }}
+            isLoading={isLoading}
+            elapsedSeconds={elapsedSeconds}
+            onSimulate={handleSimulate}
+            onBackToHome={onBackToHome}
+            onOpenPromptInspector={() => setIsPromptInspectorOpen(true)}
+          />
+        )}
       </aside>
 
       {/* ======================================================================= */}

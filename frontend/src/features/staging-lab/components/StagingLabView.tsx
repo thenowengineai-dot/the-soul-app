@@ -7,7 +7,7 @@ import {
   FileCode2,
   Info
 } from 'lucide-react'
-import { DEFAULT_BASE_PROMPT } from '../defaultPrompt'
+import { DEFAULT_BASE_PROMPT, DEFAULT_TELEMETRY_SCHEMA_PROMPT } from '../defaultPrompt'
 import { INITIAL_FEATURE_MODULES } from '../mockPresets'
 import {
   type SpatialSpacing,
@@ -24,10 +24,25 @@ interface StagingLabViewProps {
   onBackToHome: () => void
 }
 
+interface PromptLayerItem {
+  id: string
+  title: string
+  sourceTag: string
+  sourceLabel: string
+  badgeBg: string
+  badgeText: string
+  badgeBorder: string
+  borderClass: string
+  bgClass: string
+  textClass: string
+  content: string
+}
+
 export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   // 1. Target Gateway & Modal States
   const [serverTarget, setServerTarget] = useState<'local' | 'cloud'>('local')
   const [isPromptInspectorOpen, setIsPromptInspectorOpen] = useState(false)
+  const [isTelemetryContractEnabled, setIsTelemetryContractEnabled] = useState<boolean>(true)
   const [copiedPrompt, setCopiedPrompt] = useState(false)
 
   // 2. Base Canvas & Modular Prompt State
@@ -79,22 +94,117 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     return generatePhysicalParryBrief(parrySpacing, parryBoundaryLevel, playerInput)
   }, [parrySpacing, parryBoundaryLevel, playerInput])
 
-  // Real-time Assembled Prompt calculation
-  const assembledPrompt = useMemo(() => {
-    const parts = [basePrompt.trim()]
-
-    if (isParryEnabled) {
-      parts.push(`\n# ACTIVE MODULE: REALITY OVERRIDE & PHYSICAL BOUNDARY\n${parryBriefSnippet.trim()}`)
-    }
-
-    const active = featureModules.filter(m => m.enabled)
-    for (const mod of active) {
-      if (mod.prompt_snippet.trim()) {
-        parts.push(`\n# ACTIVE MODULE: ${mod.name.toUpperCase()}\n${mod.prompt_snippet.trim()}`)
+  // Close on Escape key
+  useEffect(() => {
+    if (!isPromptInspectorOpen) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsPromptInspectorOpen(false)
       }
     }
-    return parts.join('\n\n')
-  }, [basePrompt, isParryEnabled, parryBriefSnippet, featureModules])
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isPromptInspectorOpen])
+
+  // Real-time Assembled Prompt Layers (Multi-Origin Architecture)
+  const promptLayers = useMemo<PromptLayerItem[]>(() => {
+    const layers: PromptLayerItem[] = []
+
+    // Layer 1: Core Base Prompt (White)
+    if (basePrompt.trim()) {
+      layers.push({
+        id: 'core_base',
+        title: 'Layer 1: Core Base Prompt (The Embodied Backbone)',
+        sourceTag: 'CORE BACKBONE',
+        sourceLabel: 'ตัวตน จิตวิทยา และกฎการแสดงดั้งเดิม',
+        badgeBg: 'bg-white/10',
+        badgeText: 'text-[#F1F1F1]',
+        badgeBorder: 'border-white/20',
+        borderClass: 'border-white/15',
+        bgClass: 'bg-white/[0.02]',
+        textClass: 'text-[#E4E4E7]',
+        content: basePrompt.trim(),
+      })
+    }
+
+    // Layer 2: Left Controller Injection (Physical Reality & Boundary - Cyan)
+    if (isParryEnabled && parryBriefSnippet.trim()) {
+      layers.push({
+        id: 'physical_reality',
+        title: 'Layer 2: Left Controller Injection (Physical Reality & Boundary)',
+        sourceTag: 'LEFT CONTROLLER (INJECTED)',
+        sourceLabel: 'คำนวณสดจาก Spacing & Boundary Slider',
+        badgeBg: 'bg-[#38bdf8]/10',
+        badgeText: 'text-[#38bdf8]',
+        badgeBorder: 'border-[#38bdf8]/30',
+        borderClass: 'border-[#38bdf8]/20',
+        bgClass: 'bg-[#38bdf8]/[0.03]',
+        textClass: 'text-[#bae6fd]',
+        content: `# ACTIVE MODULE: REALITY OVERRIDE & PHYSICAL BOUNDARY\n${parryBriefSnippet.trim()}`,
+      })
+    }
+
+    // Layer 3: Active Feature Modules (Purple)
+    const activeMods = featureModules.filter(m => m.enabled)
+    for (const mod of activeMods) {
+      if (mod.prompt_snippet.trim()) {
+        layers.push({
+          id: `module_${mod.id}`,
+          title: `Layer 3: Feature Module (${mod.name})`,
+          sourceTag: 'FEATURE MODULE',
+          sourceLabel: 'โมดูลเสริมที่เปิดใช้งาน',
+          badgeBg: 'bg-[#a78bfa]/10',
+          badgeText: 'text-[#a78bfa]',
+          badgeBorder: 'border-[#a78bfa]/30',
+          borderClass: 'border-[#a78bfa]/20',
+          bgClass: 'bg-[#a78bfa]/[0.03]',
+          textClass: 'text-[#ddd6fe]',
+          content: `# ACTIVE MODULE: ${mod.name.toUpperCase()}\n${mod.prompt_snippet.trim()}`,
+        })
+      }
+    }
+
+    // Layer 4: Kinetic Continuity & Body Anchor (Emerald)
+    if (simulationResult?.telemetry?.a_pos && simulationResult.telemetry.a_pos.trim()) {
+      layers.push({
+        id: 'kinetic_anchor',
+        title: 'Layer 4: Kinetic Continuity (Body Anchor & Anti-Teleport Memory)',
+        sourceTag: 'KINETIC ANCHOR (MEMORY)',
+        sourceLabel: 'ส่งต่อพิกัดร่างกายจากเทิร์นก่อนหน้า',
+        badgeBg: 'bg-[#34d399]/10',
+        badgeText: 'text-[#34d399]',
+        badgeBorder: 'border-[#34d399]/30',
+        borderClass: 'border-[#34d399]/20',
+        bgClass: 'bg-[#34d399]/[0.03]',
+        textClass: 'text-[#a7f3d0]',
+        content: `[KINETIC CONTINUITY & BODY ANCHOR]\n- ท่าทางเริ่มต้นของคุณก่อนรับการกระทำนี้ (a_pos): ${simulationResult.telemetry.a_pos.trim()}\n- Anti-Teleport Law: ร่างกายมีมวลสารและเคลื่อนไหวต่อเนื่อง คุณต้องเริ่มเคลื่อนไหวหรือคลายตัวออกจากท่าสตาร์ทนี้ ห้ามวาร์ปหรือเปลี่ยนท่ากะทันหันโดยไร้รอยต่อ`,
+      })
+    }
+
+    // Layer 5: Right HUD Telemetry Contract (Amber - Pluggable)
+    if (isTelemetryContractEnabled) {
+      layers.push({
+        id: 'hud_telemetry',
+        title: 'Layer 5: Right HUD Telemetry Contract (Outcome & Posture Schema)',
+        sourceTag: 'RIGHT HUD TELEMETRY (PLUGGABLE)',
+        sourceLabel: 'สัญญาสั่ง AI คายค่าส่ง Floating HUD',
+        badgeBg: 'bg-[#fb923c]/10',
+        badgeText: 'text-[#fb923c]',
+        badgeBorder: 'border-[#fb923c]/30',
+        borderClass: 'border-[#fb923c]/20',
+        bgClass: 'bg-[#fb923c]/[0.03]',
+        textClass: 'text-[#fed7aa]',
+        content: DEFAULT_TELEMETRY_SCHEMA_PROMPT.trim(),
+      })
+    }
+
+    return layers
+  }, [basePrompt, isParryEnabled, parryBriefSnippet, featureModules, simulationResult, isTelemetryContractEnabled])
+
+  // Full Assembled Prompt string
+  const assembledPrompt = useMemo(() => {
+    return promptLayers.map(l => l.content).join('\n\n')
+  }, [promptLayers])
 
   // Current API Base URL
   const currentBaseUrl = useMemo(() => {
@@ -182,6 +292,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       thinking_budget: thinkingBudget,
       model_name: selectedModel,
       current_actor_posture: simulationResult?.telemetry?.a_pos,
+      attach_telemetry_schema: isTelemetryContractEnabled,
     }
 
     try {
@@ -306,6 +417,8 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
           boundaryLevel={parryBoundaryLevel}
           isParryEnabled={isParryEnabled}
           sensoryPulseText={sensoryPulseText}
+          isTelemetryContractEnabled={isTelemetryContractEnabled}
+          onToggleTelemetryContract={() => setIsTelemetryContractEnabled(!isTelemetryContractEnabled)}
         />
 
         {/* Ambient Top Glow (Subtle Dark Apple Radial) */}
@@ -346,72 +459,201 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       </main>
 
       {/* ======================================================================= */}
-      {/* 3. PROMPT INSPECTOR MODAL (Apple Editorial Luxury Style)                */}
+      {/* 3. FULL-SCREEN PROMPT BLUEPRINT & ASSEMBLY STUDIO (50/50 DUAL CANVAS)   */}
       {/* ======================================================================= */}
       {isPromptInspectorOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 sm:p-8 animate-in fade-in duration-200">
-          <div className="w-full max-w-4xl max-h-[85vh] rounded-[28px] bg-[#141414] border border-white/10 shadow-2xl flex flex-col overflow-hidden">
-            {/* Modal Header */}
-            <div className="h-16 px-6 border-b border-white/[0.08] flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-2">
-                <FileCode2 size={16} className="text-emerald-400" />
-                <h3 className="text-[16px] font-semibold text-[#F1F1F1]">
-                  Prompt Architecture Inspector
+        <div className="fixed inset-0 z-50 bg-[#090909]/98 backdrop-blur-3xl flex flex-col overflow-hidden animate-in fade-in duration-200 select-none font-sans">
+          {/* Top Master Utility Bar */}
+          <header className="h-14 px-6 border-b border-white/[0.08] flex items-center justify-between shrink-0 bg-[#0E0E10]">
+            {/* Left: Studio Identity & Dimension Pill */}
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#38bdf8]/10 border border-[#38bdf8]/30 text-[#38bdf8] flex items-center justify-center">
+                <FileCode2 size={16} />
+              </div>
+              <div>
+                <h3 className="text-[15px] font-semibold text-[#F1F1F1] tracking-tight leading-none">
+                  พิมพ์เขียวของเวที (Prompt Blueprint & Assembly Studio)
                 </h3>
+                <p className="text-[10px] text-white/40 font-mono mt-1">
+                  100% PROMPT TRANSPARENCY • ORIGIN SYNTAX HIGHLIGHTING
+                </p>
+              </div>
+              <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-white/[0.05] border border-white/10 text-[10px] font-mono text-white/40">
+                50/50 DUAL CANVAS
+              </span>
+            </div>
+
+            {/* Center: Pluggable HUD Telemetry Capsule Switcher */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsTelemetryContractEnabled(!isTelemetryContractEnabled)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-mono transition-all cursor-pointer ${
+                  isTelemetryContractEnabled
+                    ? 'bg-[#fb923c]/15 hover:bg-[#fb923c]/25 border-[#fb923c]/30 text-[#fb923c] shadow-[0_0_15px_rgba(251,146,60,0.15)]'
+                    : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/10 text-white/40 hover:text-white/70'
+                }`}
+                title="คลิกเพื่อเสียบ / ถอดหัววัด Telemetry Contract สำหรับ HUD"
+              >
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    isTelemetryContractEnabled
+                      ? 'bg-[#fb923c] animate-pulse'
+                      : 'bg-white/30'
+                  }`}
+                />
+                <span className="font-semibold">
+                  {isTelemetryContractEnabled
+                    ? 'HUD CONTRACT: PLUGGED (คายค่าส่ง HUD)'
+                    : 'HUD CONTRACT: DETACHED (นักแสดงบริสุทธิ์)'}
+                </span>
+              </button>
+            </div>
+
+            {/* Right: Actions (Stats, Copy, Close) */}
+            <div className="flex items-center gap-2">
+              <span className="hidden md:inline-block text-[11px] font-mono text-white/40 mr-1">
+                {promptLayers.length} Layers • {assembledPrompt.length} Chars
+              </span>
+
+              <button
+                type="button"
+                onClick={handleCopyPrompt}
+                className="px-3.5 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-xs font-medium text-white/90 hover:text-white flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+              >
+                {copiedPrompt ? (
+                  <Check size={13} className="text-emerald-400" />
+                ) : (
+                  <Copy size={13} />
+                )}
+                <span>{copiedPrompt ? 'Copied' : 'Copy Full Prompt'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsPromptInspectorOpen(false)}
+                className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 hover:border-white/20 text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95 ml-1"
+                title="ปิดหน้าต่าง (Esc)"
+              >
+                <X size={15} />
+              </button>
+            </div>
+          </header>
+
+          {/* Body: Exactly 50/50 Split Canvas */}
+          <div className="flex-1 flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-white/[0.08] overflow-hidden">
+            {/* ======================================================= */}
+            {/* LEFT 50%: Core Base Prompt Editor (Backbone)            */}
+            {/* ======================================================= */}
+            <div className="w-full md:w-1/2 h-full flex flex-col bg-[#0B0B0C] overflow-hidden">
+              {/* Column Subheader */}
+              <div className="h-11 px-6 border-b border-white/[0.06] flex items-center justify-between shrink-0 bg-white/[0.01]">
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-semibold text-white/60 uppercase tracking-wider font-mono">
+                    Source Core (Backbone)
+                  </span>
+                  <span className="text-[10px] text-white/30 font-mono">
+                    • แก้ไขได้
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleResetBasePrompt}
+                  className="px-2 py-1 rounded text-[10.5px] font-mono text-white/40 hover:text-white hover:bg-white/10 flex items-center gap-1.5 transition-all cursor-pointer"
+                  title="รีเซ็ตเป็นค่าเริ่มต้น"
+                >
+                  <RotateCcw size={11} />
+                  <span>Reset Default</span>
+                </button>
               </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleCopyPrompt}
-                  className="px-3 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer"
-                >
-                  {copiedPrompt ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
-                  <span>{copiedPrompt ? 'Copied' : 'Copy Full Prompt'}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsPromptInspectorOpen(false)}
-                  className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer"
-                >
-                  <X size={14} />
-                </button>
+              {/* Editor Workspace */}
+              <div className="flex-1 p-5 overflow-hidden flex flex-col">
+                <textarea
+                  value={basePrompt}
+                  onChange={e => setBasePrompt(e.target.value)}
+                  className="w-full h-full p-4 rounded-2xl bg-black/40 border border-white/[0.08] hover:border-white/15 focus:border-[#38bdf8]/40 text-xs font-mono text-[#F1F1F1] leading-relaxed resize-none focus:outline-none transition-all no-scrollbar"
+                  placeholder="เขียน Base Prompt โครงร่างตัวตนของนักแสดง..."
+                  spellCheck={false}
+                />
               </div>
             </div>
 
-            {/* Modal Body */}
-            <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-6 no-scrollbar">
-              {/* Left Column: Base Prompt */}
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-medium text-white/50 uppercase tracking-wider">
-                    Core Base Prompt (Backbone)
+            {/* ======================================================= */}
+            {/* RIGHT 50%: Live Assembled Prompt (Multi-Layer Render)   */}
+            {/* ======================================================= */}
+            <div className="w-full md:w-1/2 h-full flex flex-col bg-[#080809] overflow-hidden">
+              {/* Column Subheader & Origin Legend */}
+              <div className="h-11 px-6 border-b border-white/[0.06] flex items-center justify-between shrink-0 bg-white/[0.01]">
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-semibold text-white/60 uppercase tracking-wider font-mono">
+                    Live Assembly (Sent to Gemini)
                   </span>
-                  <button
-                    type="button"
-                    onClick={handleResetBasePrompt}
-                    className="text-[10px] text-white/40 hover:text-white flex items-center gap-1 transition-all"
-                  >
-                    <RotateCcw size={10} />
-                    <span>Reset Default</span>
-                  </button>
+                  <span className="text-[10px] text-emerald-400 font-mono">
+                    • 100% Real
+                  </span>
                 </div>
-                <textarea
-                  rows={16}
-                  value={basePrompt}
-                  onChange={e => setBasePrompt(e.target.value)}
-                  className="w-full p-3.5 rounded-2xl bg-black/40 border border-white/[0.08] text-xs font-mono text-[#F1F1F1] focus:outline-none focus:border-white/20 transition-all leading-relaxed resize-none"
-                />
+
+                {/* Layer Origin Pills Legend */}
+                <div className="flex items-center gap-1.5">
+                  <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-white/10 text-white/70 border border-white/15">
+                    Core
+                  </span>
+                  {isParryEnabled && (
+                    <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-[#38bdf8]/15 text-[#38bdf8] border border-[#38bdf8]/30">
+                      Left
+                    </span>
+                  )}
+                  {simulationResult?.telemetry?.a_pos && (
+                    <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-[#34d399]/15 text-[#34d399] border border-[#34d399]/30">
+                      Kinetic
+                    </span>
+                  )}
+                  {isTelemetryContractEnabled && (
+                    <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-[#fb923c]/15 text-[#fb923c] border border-[#fb923c]/30">
+                      HUD
+                    </span>
+                  )}
+                </div>
               </div>
 
-              {/* Right Column: Full Assembled Prompt */}
-              <div className="flex flex-col gap-2">
-                <span className="text-[11px] font-medium text-white/50 uppercase tracking-wider">
-                  Assembled Prompt (Sent to Gemini)
-                </span>
-                <div className="w-full h-[360px] p-3.5 rounded-2xl bg-black/60 border border-white/[0.08] text-xs font-mono text-emerald-300/80 overflow-y-auto whitespace-pre-wrap leading-relaxed no-scrollbar select-text">
-                  {assembledPrompt}
-                </div>
+              {/* Stacked Layer Cards View */}
+              <div className="flex-1 p-5 overflow-y-auto space-y-3.5 no-scrollbar">
+                {promptLayers.map((layer) => (
+                  <div
+                    key={layer.id}
+                    className={`rounded-2xl border ${layer.borderClass} ${layer.bgClass} p-3.5 transition-all shadow-sm`}
+                  >
+                    {/* Layer Header Row */}
+                    <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-white/[0.06]">
+                      <div className="flex items-center gap-2 truncate">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-semibold uppercase tracking-wider border ${layer.badgeBg} ${layer.badgeText} ${layer.badgeBorder}`}
+                        >
+                          {layer.sourceTag}
+                        </span>
+                        <span className="text-[11px] font-semibold text-[#F1F1F1] truncate">
+                          {layer.title}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono text-white/35 shrink-0">
+                        {layer.content.length} chars
+                      </span>
+                    </div>
+
+                    {/* Micro Source Description */}
+                    <p className="text-[10px] text-white/40 mb-2 font-mono">
+                      {layer.sourceLabel}
+                    </p>
+
+                    {/* Layer Code Content */}
+                    <div
+                      className={`p-3 rounded-xl bg-black/50 border border-white/[0.05] font-mono text-[11px] leading-relaxed whitespace-pre-wrap select-text max-h-72 overflow-y-auto no-scrollbar ${layer.textClass}`}
+                    >
+                      {layer.content}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

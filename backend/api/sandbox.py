@@ -98,6 +98,7 @@ class SandboxSimulateRequest(BaseModel):
     thinking_budget: Optional[int] = Field(default=256, description="Token budget สำหรับ Thinking Mode (Low=256, Medium=1024, Off=0)")
     model_name: Optional[str] = Field(default=None, description="ชื่อโมเดล Gemini ที่ต้องการใช้ประมวลผล")
     current_actor_posture: Optional[str] = Field(default=None, description="ท่วงท่าจุดเริ่มต้นของตัวละครจากเทิร์นก่อนหน้า (Kinetic Anchor)")
+    attach_telemetry_schema: bool = Field(default=True, description="เสียบ Pluggable Outcome Schema สำหรับ HUD หรือไม่")
 
 
 class SandboxTelemetry(BaseModel):
@@ -256,6 +257,15 @@ async def get_default_base_prompt():
     return {"base_prompt": DEFAULT_BASE_PROMPT}
 
 
+@router.get("/prompt_templates")
+async def get_prompt_templates():
+    """ดึง Base Prompt และ Telemetry Schema Prompt สำหรับตั้งค่าและพรีวิวหน้าบ้าน"""
+    return {
+        "base_prompt": DEFAULT_BASE_PROMPT,
+        "telemetry_schema_prompt": PLUGGABLE_OUTCOME_SCHEMA_PROMPT,
+    }
+
+
 @router.post("/simulate", response_model=SandboxSimulateResponse)
 async def simulate_turn(req: SandboxSimulateRequest):
     """
@@ -284,8 +294,9 @@ async def simulate_turn(req: SandboxSimulateRequest):
             f"- Anti-Teleport Law: ร่างกายมีมวลสารและเคลื่อนไหวต่อเนื่อง คุณต้องเริ่มเคลื่อนไหวหรือคลายตัวออกจากท่าสตาร์ทนี้ ห้ามวาร์ปหรือเปลี่ยนท่ากะทันหันโดยไร้รอยต่อ"
         )
 
-    # Pluggable Outcome Contract: เสียบเฉพาะใน Staging Lab เพื่อให้ AI คาย verdict ส่งเข้า HUD
-    full_prompt_parts.append(f"\n{PLUGGABLE_OUTCOME_SCHEMA_PROMPT}")
+    # Pluggable Outcome Contract: เสียบเฉพาะเมื่อเปิดใช้งาน เพื่อให้ AI คาย verdict ส่งเข้า HUD
+    if req.attach_telemetry_schema:
+        full_prompt_parts.append(f"\n{PLUGGABLE_OUTCOME_SCHEMA_PROMPT}")
                 
     full_prompt = "\n\n".join(full_prompt_parts)
     

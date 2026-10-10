@@ -17,6 +17,8 @@ interface FloatingTelemetryHudProps {
   boundaryLevel: number
   isParryEnabled: boolean
   sensoryPulseText?: string
+  isTelemetryContractEnabled?: boolean
+  onToggleTelemetryContract?: () => void
 }
 
 export function FloatingTelemetryHud({
@@ -25,6 +27,8 @@ export function FloatingTelemetryHud({
   boundaryLevel,
   isParryEnabled,
   sensoryPulseText = '',
+  isTelemetryContractEnabled = true,
+  onToggleTelemetryContract,
 }: FloatingTelemetryHudProps) {
   const [isOpen, setIsOpen] = useState(true)
   const [showSettings, setShowSettings] = useState(false)
@@ -58,6 +62,9 @@ export function FloatingTelemetryHud({
 
   // Hitbox & Verdict status determination directly from AI Telemetry
   const resolveHitboxStatus = () => {
+    if (!isTelemetryContractEnabled) {
+      return { text: 'DETACHED (PURE ACTOR)', color: 'text-white/40' }
+    }
     if (telemetry?.verdict) {
       const outcome = telemetry.verdict.outcome.toUpperCase()
       const isContact = telemetry.verdict.contact_occurred
@@ -152,6 +159,23 @@ export function FloatingTelemetryHud({
               </button>
             ))}
           </div>
+          {onToggleTelemetryContract && (
+            <div className="pt-1.5 mt-1 border-t border-white/[0.08] flex items-center justify-between">
+              <span className="text-[10px] text-white/50">Telemetry Contract:</span>
+              <button
+                type="button"
+                onClick={onToggleTelemetryContract}
+                className={`px-2 py-0.5 rounded text-[9.5px] font-mono transition-all cursor-pointer ${
+                  isTelemetryContractEnabled
+                    ? 'bg-[#fb923c]/20 text-[#fb923c] border border-[#fb923c]/40 font-semibold'
+                    : 'bg-white/10 text-white/40'
+                }`}
+                title="คลิกเพื่อสลับระหว่างเสียบ / ถอดหัววัด Telemetry Contract"
+              >
+                {isTelemetryContractEnabled ? 'PLUGGED' : 'DETACHED'}
+              </button>
+            </div>
+          )}
         </div>
       )}
 

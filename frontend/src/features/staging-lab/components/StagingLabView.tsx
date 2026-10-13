@@ -111,7 +111,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   }
 
   // 4. Player Input & Chat History State
-  const [playerInput, setPlayerInput] = useState<string>('(ฉันเอื้อมมือจะเข้าไปจับหน้าอกเธอ)')
+  const [playerInput, setPlayerInput] = useState<string>('')
   const [chatLog, setChatLog] = useState<ChatMessage[]>([
     {
       id: 'init-vo',
@@ -345,8 +345,14 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     overrideSpacing?: SpatialSpacing,
     overrideBoundary?: number
   ) => {
-    const trimmed = (inputText || '').trim()
-    if (!trimmed || isLoading) return
+    const rawText = (inputText || '').trim()
+    const fallbackDefault = activeCardId === 'card1'
+      ? '(ฉันเอื้อมมือเข้าไปหาเธอ)'
+      : activeCardId === 'card2'
+      ? '(ฉันก้าวเข้ามาหาเธอ)'
+      : '(ฉันขยับตัวเข้ามาใกล้เธอ)'
+    const trimmed = rawText || fallbackDefault
+    if (isLoading) return
 
     const effectiveSpacing = overrideSpacing ?? parrySpacing
     const effectiveBoundary = overrideBoundary ?? parryBoundaryLevel
@@ -361,12 +367,12 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       (trimmed.startsWith('(') && trimmed.endsWith(')') && trimmed.length > 2)
     const cleanText = isAction ? trimmed.slice(1, -1).trim() : trimmed
 
-    // 1. Append user message to live chat log (production parity)
+    // 1. Append user message to live chat log (production parity - always in colored bubble)
     const userMsg: ChatMessage = {
       id: `user-${Date.now()}`,
-      text: cleanText,
+      text: trimmed,
       sender: 'me',
-      type: isAction ? 'action' : 'msg',
+      type: 'msg',
       read: true,
     }
     setChatLog(prev => [...prev, userMsg])

@@ -60,7 +60,8 @@ export function MessageBubble({
   }
 
   // 3. Chat Bubbles & Actions (สไตล์ Apple iMessage: ไร้รูปหน้า/ชื่อ + Perfect Pill + หางคำพูดที่ข้อความสุดท้าย)
-  const isAction = message.type === 'action'
+  // เฉพาะตัวละคร AI เท่านั้นที่แสดง Action เป็นบทกำกับฉากแบบตัวเอียงพร้อม ✦ ส่วนข้อความของผู้เล่น (isMe) อยู่ในบับเบิ้ลสีเสมอ
+  const isAction = !isMe && message.type === 'action'
 
   return (
     <div className={`flex flex-col w-full ${isMe ? 'items-end' : 'items-start'} ${marginTop}`}>

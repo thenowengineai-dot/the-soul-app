@@ -20,8 +20,10 @@ interface KineticContinuityCardProps {
   onActivate: () => void
   isExpanded: boolean
   onToggleExpand: () => void
-  originPosture: string
+  initialPosture: string
+  currentPosture: string
   onOriginPostureChange: (posture: string) => void
+  onResetPosture?: () => void
   onSelectVelocityAction: (actionText: string) => void
   isLoading: boolean
   elapsedSeconds: number
@@ -33,8 +35,10 @@ export function KineticContinuityCard({
   onActivate,
   isExpanded,
   onToggleExpand,
-  originPosture,
+  initialPosture,
+  currentPosture,
   onOriginPostureChange,
+  onResetPosture,
   onSelectVelocityAction,
   isLoading,
   elapsedSeconds,
@@ -42,9 +46,9 @@ export function KineticContinuityCard({
 }: KineticContinuityCardProps) {
   const [isCustomMode, setIsCustomMode] = useState(false)
 
-  // Find active preset if matches
+  // Find active preset if matches baseline
   const activePreset = STANCE_PRESETS.find(
-    (p) => p.snapshot.trim() === originPosture.trim()
+    (p) => p.snapshot.trim() === initialPosture.trim()
   )
 
   const handleSelectPreset = (preset: StancePreset) => {
@@ -173,7 +177,7 @@ export function KineticContinuityCard({
             ) : (
               <div>
                 <textarea
-                  value={originPosture}
+                  value={initialPosture}
                   onChange={(e) => onOriginPostureChange(e.target.value)}
                   placeholder="พิมพ์ช็อตภาพนิ่งสรีระ เช่น 'ยืนหันข้างกอดอกแน่น ปลายเล็บจิกแขนเสื้อตัวเอง'"
                   rows={2}
@@ -182,10 +186,41 @@ export function KineticContinuityCard({
               </div>
             )}
 
-            {/* Active Stance Snapshot Display */}
-            <div className="p-2 rounded-xl bg-white/[0.02] border border-white/[0.05] text-[10.5px] text-white/70 italic leading-snug">
-              "{originPosture || 'ยังไม่ได้ระบุท่าตั้งต้น'}"
-            </div>
+            {/* Active Stance Snapshot Display (Dual-State In-Memory Mirror) */}
+            {currentPosture.trim() !== initialPosture.trim() ? (
+              <div className="p-2.5 rounded-xl bg-white/[0.04] border border-[#34d399]/25 space-y-1.5">
+                <div className="flex items-center justify-between text-[9.5px] font-mono">
+                  <span className="text-[#34d399] font-semibold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#34d399] animate-pulse" />
+                    ท่าปัจจุบัน (เทิร์น 2+)
+                  </span>
+                  {onResetPosture && (
+                    <button
+                      type="button"
+                      onClick={onResetPosture}
+                      className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-white/[0.06] hover:bg-white/[0.12] text-white/70 hover:text-white transition-colors cursor-pointer border border-white/10 text-[9px]"
+                      title="รีเซ็ตสรีระกลับสู่ท่าตั้งต้น"
+                    >
+                      <RotateCcw size={9} />
+                      <span>รีเซ็ตสรีระ</span>
+                    </button>
+                  )}
+                </div>
+                <div className="text-[11px] text-[#F1F1F1] font-sans leading-snug">
+                  "{currentPosture}"
+                </div>
+                <div className="text-[9.5px] text-white/40 font-mono truncate pt-0.5 border-t border-white/[0.04]">
+                  เริ่มจาก: "{initialPosture}"
+                </div>
+              </div>
+            ) : (
+              <div className="p-2 rounded-xl bg-white/[0.02] border border-white/[0.05] space-y-0.5">
+                <div className="text-[9px] font-mono text-white/40">ท่าตั้งต้น (ORIGIN):</div>
+                <div className="text-[10.5px] text-white/80 italic leading-snug">
+                  "{initialPosture || 'ยังไม่ได้ระบุท่าตั้งต้น'}"
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Velocity Triggers (Cinema Pacing Presets) */}

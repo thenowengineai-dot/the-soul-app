@@ -14,6 +14,86 @@ export const DEFAULT_BASE_PROMPT = `[ROLE & EXISTENCE: THE EMBODIED ACTOR]
 1. Somatic Reaction (ภาษากายและสรีระ): ลมหายใจ สายตา กล้ามเนื้อ ชีพจร และปฏิกิริยาสะท้อนกลับทางกายภาพที่ซื่อสัตย์ต่อผัสสะ
 2. Spoken Dialogue (บทสนทนา): คำพูดของตัวละครที่สะท้อนบุคลิก อารมณ์ และขอบเขตทางจิตใจ (ซึ่งอาจปิดบังหรือขัดแย้งกับภาษากาย)`
 
+export const CARD1_TELEMETRY_SCHEMA_PROMPT = `# TELEMETRY & PLUGGABLE OUTCOME CONTRACT (CARD 1: PHYSICAL BOUNDARY)
+You must output ONLY a valid JSON object matching this structure:
+{
+  "thinking": "Analyze incoming motion -> verify sensory reality -> decide verdict outcome & active contacts -> execute somatic & dialogue response",
+  "a_pos": "ยืนหันข้างกอดอกแน่น ปลายเล็บจิกแขนเสื้อตัวเอง",
+  "verdict": {
+    "outcome": "PARRIED",
+    "contact_occurred": false,
+    "active_contacts": []
+  },
+  "response_sequence": [
+    {"type": "action", "content": "Somatic physical reaction honest to sensory reality"},
+    {"type": "dialogue", "content": "Spoken boundary response reflecting your personality and emotion"}
+  ]
+}
+
+# A_POS RULE (CINEMATIC SILHOUETTE SNAPSHOT - 8-15 SYLLABLES):
+- Output strictly 1 cohesive natural Thai sentence (approx 8-15 syllables / 6-10 words).
+- Must be an instant visual snapshot rendering a clear 3D image in the mind in 0.1 seconds.
+- Weave together 3 essential physical elements into 1 sentence:
+  1. Silhouette & Stance: Center of gravity and footwork (ยืนหันข้าง / ผงะถอย / ยืนแนบชิด / ก้าวประชิด)
+  2. Hands Placement: Emotional and defensive posture of arms/hands (กอดอกแน่น / สองมือกุมอก / สองมือกุมทับหลังมือคุณ)
+  3. Gaze & Friction: Head angle, gaze, or somatic resistance (ปลายเล็บจิกแขนเสื้อ / หอบหายใจ / จ้องสบตาในระยะประชิด)
+- Ruthlessly subtract all abstract emotion words (no 'ด้วยความกลัว', no 'อย่างหวาดระแวง') and decorative room adjectives!
+- Never use technical symbols like '+' or '·' or brackets!
+- Canonical Golden Examples:
+  * PARRIED: "ยืนหันข้างกอดอกแน่น ปลายเล็บจิกแขนเสื้อตัวเอง"
+  * GRAZED: "ผงะถอยหลังครึ่งก้าว สองมือกุมอกหอบหายใจ"
+  * LATCHED: "ยืนแนบชิดปลายเท้า สองมือกุมทับหลังมือคุณ"
+  * COUNTER: "ก้าวประชิดตัว โน้มหน้าเข้ามาจ้องสบตาในระยะประชิด"
+
+# CANONICAL 4-STATE VERDICT OUTCOMES:
+- "MISSED": When the player reaches from a distant spacing and clutches only empty air. (contact_occurred: false, active_contacts: [])
+- "PARRIED": When you intercept, deflect, or swat incoming motion away in mid-air before contact, or firmly push away. (contact_occurred: false, active_contacts: [])
+- "GRAZED": When incoming touch barely brushes the surface or fingertips before flinching/pulling away. (contact_occurred: true, active_contacts: [] or at most 1 brief zone)
+- "LATCHED": When contact is held, embraced, or sustained at the end of the turn. (contact_occurred: true, active_contacts: [max 3 short anatomical tags like 'HAND', 'WAIST'])
+
+# ACTIVE CONTACTS RULES:
+- Include ONLY body parts that remain persistently connected at the very end of the turn.
+- If parried or separated, active_contacts MUST be empty: [].
+- Maximum 3 items. Use short uppercase anatomical nouns (e.g. ['HAND'], ['WAIST', 'CHEST']).`
+
+export const CARD2_TELEMETRY_SCHEMA_PROMPT = `# TELEMETRY & KINETIC OUTCOME CONTRACT (CARD 2: KINETIC CONTINUITY)
+You must output ONLY a valid JSON object matching this structure:
+{
+  "thinking": "Analyze incoming motion -> decide kinetic tempo & somatic tension -> transition from current a_pos -> execute somatic & dialogue response",
+  "kinetic_decision": {
+    "tempo": "HIGH_VELOCITY_SNAP",
+    "somatic_tension": "กล้ามเนื้อไหล่เกร็งสะบัดหนีสัมผัส"
+  },
+  "a_pos": "ยืนหันข้างกอดอกแน่น ปลายเล็บจิกแขนเสื้อตัวเอง",
+  "response_sequence": [
+    {"type": "action", "content": "Somatic physical reaction transitioning smoothly from origin posture"},
+    {"type": "dialogue", "content": "Spoken boundary response reflecting your personality and emotion"}
+  ]
+}
+
+# KINETIC DECISION RULES:
+- "tempo": Choose strictly 1 mode reflecting your physical pacing:
+  * "STILLNESS": When player merely speaks or no physical force threatens balance (maintain mass).
+  * "MICRO_SHIFT": When emotionally pressured or startled, reaction is isolated to facial/muscle flinch without moving base posture.
+  * "HIGH_VELOCITY_SNAP": When sudden impact, aggressive grab, or abrupt parry occurs (skip intermediate frames, cut straight to impact!).
+  * "LOW_VELOCITY_UNHOOK": When lingering hesitation, slow release, or delicate pull-back occurs.
+- "somatic_tension": Short concise phrase (max 6 Thai words) describing localized muscle tension or gaze friction (e.g. 'กล้ามเนื้อไหล่เกร็งสะบัดหนี', 'สันกรามขบแน่นสบตานิ่ง', 'ผ่อนคลายลมหายใจ').
+
+# A_POS RULE (CINEMATIC SILHOUETTE SNAPSHOT - 8-15 SYLLABLES):
+- Output strictly 1 cohesive natural Thai sentence (approx 8-15 syllables / 6-10 words).
+- Must be an instant visual snapshot rendering a clear 3D image in the mind in 0.1 seconds.
+- Weave together 3 essential physical elements into 1 sentence:
+  1. Silhouette & Stance: Center of gravity and footwork (ยืนหันข้าง / ผงะถอย / ยืนแนบชิด / ก้าวประชิด)
+  2. Hands Placement: Emotional and defensive posture of arms/hands (กอดอกแน่น / สองมือกุมอก / สองมือกุมทับหลังมือคุณ)
+  3. Gaze & Friction: Head angle, gaze, or somatic resistance (ปลายเล็บจิกแขนเสื้อ / หอบหายใจ / จ้องสบตาในระยะประชิด)
+- Ruthlessly subtract all abstract emotion words (no 'ด้วยความกลัว', no 'อย่างหวาดระแวง') and decorative room adjectives!
+- Never use technical symbols like '+' or '·' or brackets!
+- Canonical Golden Examples:
+  * "ยืนหันข้างกอดอกแน่น ปลายเล็บจิกแขนเสื้อตัวเอง"
+  * "ผงะถอยหลังครึ่งก้าว สองมือกุมอกหอบหายใจ"
+  * "ยืนแนบชิดปลายเท้า สองมือกุมทับหลังมือคุณ"
+  * "ก้าวประชิดตัว โน้มหน้าเข้ามาจ้องสบตาในระยะประชิด"`
+
 export const DEFAULT_TELEMETRY_SCHEMA_PROMPT = `# TELEMETRY & PLUGGABLE OUTCOME CONTRACT (STAGING LAB)
 You must output ONLY a valid JSON object matching this structure:
 {

@@ -43,6 +43,49 @@ DEFAULT_BASE_PROMPT = """[ROLE & EXISTENCE: THE EMBODIED ACTOR]
 1. Somatic Reaction (ภาษากายและสรีระ): ลมหายใจ สายตา กล้ามเนื้อ ชีพจร และปฏิกิริยาสะท้อนกลับทางกายภาพที่ซื่อสัตย์ต่อผัสสะ
 2. Spoken Dialogue (บทสนทนา): คำพูดของตัวละครที่สะท้อนบุคลิก อารมณ์ และขอบเขตทางจิตใจ (ซึ่งอาจปิดบังหรือขัดแย้งกับภาษากาย)"""
 
+# Pluggable Outcome Contract for Card 1 (Physical Boundary & Parry - Pure & Lean)
+CARD1_TELEMETRY_SCHEMA_PROMPT = """# TELEMETRY & PLUGGABLE OUTCOME CONTRACT (CARD 1: PHYSICAL BOUNDARY)
+You must output ONLY a valid JSON object matching this structure:
+{
+  "thinking": "Analyze incoming motion -> verify sensory reality -> decide verdict outcome & active contacts -> execute somatic & dialogue response",
+  "a_pos": "ยืนหันข้างกอดอกแน่น ปลายเล็บจิกแขนเสื้อตัวเอง",
+  "verdict": {
+    "outcome": "PARRIED",
+    "contact_occurred": false,
+    "active_contacts": []
+  },
+  "response_sequence": [
+    {"type": "action", "content": "Somatic physical reaction honest to sensory reality"},
+    {"type": "dialogue", "content": "Spoken boundary response reflecting your personality and emotion"}
+  ]
+}
+
+# A_POS RULE (CINEMATIC SILHOUETTE SNAPSHOT - 8-15 SYLLABLES):
+- Output strictly 1 cohesive natural Thai sentence (approx 8-15 syllables / 6-10 words).
+- Must be an instant visual snapshot rendering a clear 3D image in the mind in 0.1 seconds.
+- Weave together 3 essential physical elements into 1 sentence:
+  1. Silhouette & Stance: Center of gravity and footwork (ยืนหันข้าง / ผงะถอย / ยืนแนบชิด / ก้าวประชิด)
+  2. Hands Placement: Emotional and defensive posture of arms/hands (กอดอกแน่น / สองมือกุมอก / สองมือกุมทับหลังมือคุณ)
+  3. Gaze & Friction: Head angle, gaze, or somatic resistance (ปลายเล็บจิกแขนเสื้อ / หอบหายใจ / จ้องสบตาในระยะประชิด)
+- Ruthlessly subtract all abstract emotion words (no 'ด้วยความกลัว', no 'อย่างหวาดระแวง') and decorative room adjectives!
+- Never use technical symbols like '+' or '·' or brackets!
+- Canonical Golden Examples:
+  * PARRIED: "ยืนหันข้างกอดอกแน่น ปลายเล็บจิกแขนเสื้อตัวเอง"
+  * GRAZED: "ผงะถอยหลังครึ่งก้าว สองมือกุมอกหอบหายใจ"
+  * LATCHED: "ยืนแนบชิดปลายเท้า สองมือกุมทับหลังมือคุณ"
+  * COUNTER: "ก้าวประชิดตัว โน้มหน้าเข้ามาจ้องสบตาในระยะประชิด"
+
+# CANONICAL 4-STATE VERDICT OUTCOMES:
+- "MISSED": When the player reaches from a distant spacing and clutches only empty air. (contact_occurred: false, active_contacts: [])
+- "PARRIED": When you intercept, deflect, or swat incoming motion away in mid-air before contact, or firmly push away. (contact_occurred: false, active_contacts: [])
+- "GRAZED": When incoming touch barely brushes the surface or fingertips before flinching/pulling away. (contact_occurred: true, active_contacts: [] or at most 1 brief zone)
+- "LATCHED": When contact is held, embraced, or sustained at the end of the turn. (contact_occurred: true, active_contacts: [max 3 short anatomical tags like 'HAND', 'WAIST'])
+
+# ACTIVE CONTACTS RULES:
+- Include ONLY body parts that remain persistently connected at the very end of the turn.
+- If parried or separated, active_contacts MUST be empty: [].
+- Maximum 3 items. Use short uppercase anatomical nouns (e.g. ['HAND'], ['WAIST', 'CHEST'])."""
+
 # Pluggable Outcome Contract (Attached exclusively in Staging Lab; Detached in Production)
 PLUGGABLE_OUTCOME_SCHEMA_PROMPT = """# TELEMETRY & PLUGGABLE OUTCOME CONTRACT (STAGING LAB)
 You must output ONLY a valid JSON object matching this structure:
@@ -119,6 +162,7 @@ class SandboxSimulateRequest(BaseModel):
     model_name: Optional[str] = Field(default=None, description="ชื่อโมเดล Gemini ที่ต้องการใช้ประมวลผล")
     current_actor_posture: Optional[str] = Field(default=None, description="ท่วงท่าจุดเริ่มต้นของตัวละครจากเทิร์นก่อนหน้า (Kinetic Anchor)")
     attach_telemetry_schema: bool = Field(default=True, description="เสียบ Pluggable Outcome Schema สำหรับ HUD หรือไม่")
+    telemetry_schema_prompt: Optional[str] = Field(default=None, description="Schema Prompt กำหนดเองสำหรับการ์ดที่เลือก")
 
 
 class KineticDecisionModel(BaseModel):
@@ -326,16 +370,11 @@ async def simulate_turn(req: SandboxSimulateRequest):
             if snippet:
                 full_prompt_parts.append(f"\n# ACTIVE MODULE: {mod.name.upper()}\n{snippet}")
 
-    if req.current_actor_posture and req.current_actor_posture.strip():
-        full_prompt_parts.append(
-            f"\n[KINETIC CONTINUITY & BODY ANCHOR]\n"
-            f"- ท่าทางเริ่มต้นของคุณก่อนรับการกระทำนี้ (a_pos): {req.current_actor_posture.strip()}\n"
-            f"- Anti-Teleport Law: ร่างกายมีมวลสารและเคลื่อนไหวต่อเนื่อง คุณต้องเริ่มเคลื่อนไหวหรือคลายตัวออกจากท่าสตาร์ทนี้ ห้ามวาร์ปหรือเปลี่ยนท่ากะทันหันโดยไร้รอยต่อ"
-        )
 
     # Pluggable Outcome Contract: เสียบเฉพาะเมื่อเปิดใช้งาน เพื่อให้ AI คาย verdict ส่งเข้า HUD
     if req.attach_telemetry_schema:
-        full_prompt_parts.append(f"\n{PLUGGABLE_OUTCOME_SCHEMA_PROMPT}")
+        schema_text = (req.telemetry_schema_prompt or "").strip() or PLUGGABLE_OUTCOME_SCHEMA_PROMPT
+        full_prompt_parts.append(f"\n{schema_text}")
                 
     full_prompt = "\n\n".join(full_prompt_parts)
     
@@ -414,7 +453,7 @@ async def simulate_matrix(req: SandboxMatrixRequest):
         case_start = time.time()
         boundary_label = "guarded" if tc.boundary_level < 40 else ("hesitant" if tc.boundary_level < 80 else "open")
         parry_snippet = generate_card1_physical_reality(tc.spacing, boundary_label, tc.player_input)
-        case_prompt = f"{base}\n\n# ACTIVE MODULE: REALITY OVERRIDE & PHYSICAL BOUNDARY\n{parry_snippet}\n\n{PLUGGABLE_OUTCOME_SCHEMA_PROMPT}"
+        case_prompt = f"{base}\n\n# ACTIVE MODULE: REALITY OVERRIDE & PHYSICAL BOUNDARY\n{parry_snippet}\n\n{CARD1_TELEMETRY_SCHEMA_PROMPT}"
         chat_history = [{"role": "user", "content": tc.player_input}]
 
         try:

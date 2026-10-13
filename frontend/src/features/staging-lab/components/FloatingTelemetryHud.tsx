@@ -312,7 +312,7 @@ export function FloatingTelemetryHud({
         )}
 
         {/* Row 6: Actor Posture (Cinematic Silhouette Snapshot) */}
-        {isKineticContext && visibleRows.posture && telemetry?.a_pos && (
+        {visibleRows.posture && telemetry?.a_pos && (
           <div className="pt-1.5 border-t border-white/[0.06]">
             <div className="flex items-center justify-between text-[10px] mb-1">
               <span className="text-[#38bdf8] font-bold">POSTURE</span>

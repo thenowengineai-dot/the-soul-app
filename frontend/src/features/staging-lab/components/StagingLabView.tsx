@@ -9,7 +9,12 @@ import {
   ArrowLeft,
   Layers
 } from 'lucide-react'
-import { DEFAULT_BASE_PROMPT, DEFAULT_TELEMETRY_SCHEMA_PROMPT } from '../defaultPrompt'
+import {
+  DEFAULT_BASE_PROMPT,
+  DEFAULT_TELEMETRY_SCHEMA_PROMPT,
+  CARD1_TELEMETRY_SCHEMA_PROMPT,
+  CARD2_TELEMETRY_SCHEMA_PROMPT
+} from '../defaultPrompt'
 import { INITIAL_FEATURE_MODULES } from '../mockPresets'
 import {
   type SpatialSpacing,
@@ -81,10 +86,30 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   const [parrySpacing, setParrySpacing] = useState<SpatialSpacing>('reach')
   const [parryBoundaryLevel, setParryBoundaryLevel] = useState<number>(10)
 
-  // 3.2 Card 2: Kinetic Continuity & Pacing Controls
-  const [originPosture, setOriginPosture] = useState<string>(
+  // 3.2 Card 2: Kinetic Continuity & Pacing Controls (Dual-State In-Memory)
+  const [initialPosture, setInitialPosture] = useState<string>(
     STANCE_PRESETS[0].snapshot
   )
+  const [currentPosture, setCurrentPosture] = useState<string>(
+    STANCE_PRESETS[0].snapshot
+  )
+
+  const handleOriginPostureChange = (newPosture: string) => {
+    setInitialPosture(newPosture)
+    setCurrentPosture(newPosture)
+  }
+
+  const handleResetPosture = () => {
+    setCurrentPosture(initialPosture)
+    setChatLog([
+      {
+        id: `reset-vo-${Date.now()}`,
+        type: 'vo',
+        text: `รีเซ็ตสรีระกลับสู่ท่าตั้งต้นเรียบร้อย: "${initialPosture}"`,
+      },
+    ])
+    setSimulationResult(null)
+  }
 
   // 4. Player Input & Chat History State
   const [playerInput, setPlayerInput] = useState<string>('(ฉันเอื้อมมือจะเข้าไปจับหน้าอกเธอ)')
@@ -128,13 +153,13 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
 
   // Kinetic Pacing brief computed string (Card 2)
   const kineticPromptSnippet = useMemo(() => {
-    return generateKineticPacingPrompt(originPosture, activeCardId === 'card2')
-  }, [originPosture, activeCardId])
+    return generateKineticPacingPrompt(currentPosture, activeCardId === 'card2')
+  }, [currentPosture, activeCardId])
 
   // Unified Fusion brief computed string (Card 3)
   const unifiedFusionSnippet = useMemo(() => {
-    return generateUnifiedFusionPrompt(parrySpacing, parryBoundaryLevel, originPosture, playerInput)
-  }, [parrySpacing, parryBoundaryLevel, originPosture, playerInput])
+    return generateUnifiedFusionPrompt(parrySpacing, parryBoundaryLevel, currentPosture, playerInput)
+  }, [parrySpacing, parryBoundaryLevel, currentPosture, playerInput])
 
 
   // Close on Escape key
@@ -235,42 +260,42 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       }
     }
 
-    // Layer 4: Kinetic Continuity & Silhouette Anchor (Emerald)
-    // Only active when testing kinematic behaviors (Card 2 or Card 3)
-    if (
-      (activeCardId === 'card2' || activeCardId === 'card3') &&
-      simulationResult?.telemetry?.a_pos &&
-      simulationResult.telemetry.a_pos.trim()
-    ) {
-      layers.push({
-        id: 'kinetic_anchor',
-        title: 'Layer 4: Kinetic Continuity (Cinematic Silhouette Anchor)',
-        sourceTag: 'SILHOUETTE ANCHOR',
-        sourceLabel: 'ส่งต่อช็อตภาพนิ่งสรีระจากเทิร์นก่อนหน้า',
-        badgeBg: 'bg-[#34d399]/10',
-        badgeText: 'text-[#34d399]',
-        badgeBorder: 'border-[#34d399]/30',
-        borderClass: 'border-[#34d399]/20',
-        bgClass: 'bg-[#34d399]/[0.03]',
-        textClass: 'text-[#a7f3d0]',
-        content: `[KINETIC CONTINUITY & SILHOUETTE ANCHOR]\n- ช็อตภาพนิ่งสรีระของคุณก่อนรับข้อความนี้ (a_pos): "${simulationResult.telemetry.a_pos.trim()}"\n- Anti-Teleport Law: ร่างกายมีมวลสารและเคลื่อนไหวต่อเนื่อง หากเทิร์นนี้ต้องเคลื่อนไหว คุณต้องเริ่มคลายท่าหรือถ่ายน้ำหนักออกจากภาพนิ่งนี้เสมอ ห้ามวาร์ปหรือเปลี่ยนท่ากะทันหันโดยไร้รอยต่อ`,
-      })
-    }
-
-    // Layer 5: Right HUD Telemetry Contract (Amber - Pluggable)
+    // Layer 3 (or 4 with extra modules): Right HUD Telemetry Contract (Amber - Pluggable)
     if (isTelemetryContractEnabled) {
+      const activeTelemetrySchema =
+        activeCardId === 'card1'
+          ? CARD1_TELEMETRY_SCHEMA_PROMPT
+          : activeCardId === 'card2'
+          ? CARD2_TELEMETRY_SCHEMA_PROMPT
+          : DEFAULT_TELEMETRY_SCHEMA_PROMPT
+
       layers.push({
         id: 'hud_telemetry',
-        title: 'Layer 5: Right HUD Telemetry Contract (Outcome & Posture Schema)',
-        sourceTag: 'RIGHT HUD TELEMETRY (PLUGGABLE)',
-        sourceLabel: 'สัญญาสั่ง AI คายค่าส่ง Floating HUD',
+        title:
+          activeCardId === 'card1'
+            ? 'Layer 3: Right HUD Telemetry Contract (Card 1: Boundary & Posture Schema)'
+            : activeCardId === 'card2'
+            ? 'Layer 3: Right HUD Telemetry Contract (Card 2: Kinetic Pacing Schema)'
+            : 'Layer 3: Right HUD Telemetry Contract (Outcome & Posture Schema)',
+        sourceTag:
+          activeCardId === 'card1'
+            ? 'CARD 1 TELEMETRY (PLUGGABLE)'
+            : activeCardId === 'card2'
+            ? 'CARD 2 TELEMETRY (PLUGGABLE)'
+            : 'RIGHT HUD TELEMETRY (PLUGGABLE)',
+        sourceLabel:
+          activeCardId === 'card1'
+            ? 'สัญญาสั่ง AI คายค่าขอบเขตและภาพนิ่งสรีระ'
+            : activeCardId === 'card2'
+            ? 'สัญญาสั่ง AI คายค่าจังหวะความเร็ว สรีระ และ Somatic Tension'
+            : 'สัญญาสั่ง AI คายค่าส่ง Floating HUD',
         badgeBg: 'bg-[#fb923c]/10',
         badgeText: 'text-[#fb923c]',
         badgeBorder: 'border-[#fb923c]/30',
         borderClass: 'border-[#fb923c]/20',
         bgClass: 'bg-[#fb923c]/[0.03]',
         textClass: 'text-[#fed7aa]',
-        content: DEFAULT_TELEMETRY_SCHEMA_PROMPT.trim(),
+        content: activeTelemetrySchema.trim(),
       })
     }
 
@@ -366,7 +391,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
         })
       }
     } else if (activeCardId === 'card3') {
-      const fusionPrompt = generateUnifiedFusionPrompt(effectiveSpacing, effectiveBoundary, originPosture, trimmed)
+      const fusionPrompt = generateUnifiedFusionPrompt(effectiveSpacing, effectiveBoundary, currentPosture, trimmed)
       if (fusionPrompt.trim()) {
         activeSnippets.push({
           id: 'unified_fusion',
@@ -393,11 +418,15 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       active_modules: activeSnippets,
       thinking_budget: thinkingBudget,
       model_name: selectedModel,
-      current_actor_posture:
-        activeCardId === 'card2' || activeCardId === 'card3'
-          ? (originPosture || simulationResult?.telemetry?.a_pos)
-          : undefined,
+      current_actor_posture: undefined,
       attach_telemetry_schema: isTelemetryContractEnabled,
+      telemetry_schema_prompt: isTelemetryContractEnabled
+        ? (activeCardId === 'card1'
+            ? CARD1_TELEMETRY_SCHEMA_PROMPT
+            : activeCardId === 'card2'
+            ? CARD2_TELEMETRY_SCHEMA_PROMPT
+            : DEFAULT_TELEMETRY_SCHEMA_PROMPT)
+        : undefined,
     }
 
     try {
@@ -417,9 +446,9 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       const data: SandboxSimulateResponse = await response.json()
       setSimulationResult(data)
 
-      // Multi-turn feedback seeding: Seed resultant a_pos directly into originPosture
+      // Multi-turn feedback seeding: Seed resultant a_pos directly into currentPosture (Volleyball Scoreboard Flip)
       if (data.telemetry?.a_pos && data.telemetry.a_pos.trim()) {
-        setOriginPosture(data.telemetry.a_pos.trim())
+        setCurrentPosture(data.telemetry.a_pos.trim())
       }
 
       // 3. Append actor response sequence to chat log
@@ -512,8 +541,10 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
             onActivate={() => handleActivateCard('card2')}
             isExpanded={expandedCards.card2}
             onToggleExpand={() => toggleCardExpand('card2')}
-            originPosture={originPosture}
-            onOriginPostureChange={setOriginPosture}
+            initialPosture={initialPosture}
+            currentPosture={currentPosture}
+            onOriginPostureChange={handleOriginPostureChange}
+            onResetPosture={handleResetPosture}
             onSelectVelocityAction={(actionText) => {
               setPlayerInput(actionText)
               executeSimulation(actionText)
@@ -533,8 +564,8 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
             onSpacingChange={setParrySpacing}
             boundaryLevel={parryBoundaryLevel}
             onBoundaryChange={setParryBoundaryLevel}
-            originPosture={originPosture}
-            onOriginPostureChange={setOriginPosture}
+            originPosture={currentPosture}
+            onOriginPostureChange={handleOriginPostureChange}
             onSelectVelocityAction={(actionText) => {
               setPlayerInput(actionText)
               executeSimulation(actionText)
@@ -795,11 +826,6 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
                   {activeCardId === 'card3' && (
                     <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-[#c084fc]/15 text-[#c084fc] border border-[#c084fc]/30">
                       Card 3 Fusion
-                    </span>
-                  )}
-                  {(activeCardId === 'card2' || activeCardId === 'card3') && simulationResult?.telemetry?.a_pos && (
-                    <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-[#34d399]/15 text-[#34d399] border border-[#34d399]/30">
-                      Kinetic Anchor
                     </span>
                   )}
                   {isTelemetryContractEnabled && (

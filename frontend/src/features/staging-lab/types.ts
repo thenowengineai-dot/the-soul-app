@@ -18,6 +18,7 @@ export interface SandboxSimulateRequest {
   model_name?: string
   current_actor_posture?: string
   attach_telemetry_schema?: boolean
+  telemetry_schema_prompt?: string
 }
 
 export type CanonicalOutcome = 'MISSED' | 'PARRIED' | 'GRAZED' | 'LATCHED'

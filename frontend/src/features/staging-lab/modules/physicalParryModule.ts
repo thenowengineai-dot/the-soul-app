@@ -43,7 +43,8 @@ export function getBoundaryBrief(level: number): {
 export function generatePhysicalParryBrief(
   spacing: SpatialSpacing,
   boundaryLevel: number,
-  playerInput: string = ''
+  playerInput: string = '',
+  originPosture?: string
 ): string {
   const posture = getBoundaryPosture(boundaryLevel)
 
@@ -67,9 +68,13 @@ export function generatePhysicalParryBrief(
     boundaryDirective = 'ยินยอมรับสัมผัส ร่างกายโอนอ่อนตาม เกิดการกุมมือหรือโอบกอดแนบแน่น (LATCHED)'
   }
 
+  const postureLine = originPosture?.trim()
+    ? `\n- Actor Origin Stance: "${originPosture.trim()}" (สรีระและท่วงท่าปัจจุบันของนักแสดงก่อนการเคลื่อนไหว เริ่มต้นปฏิกิริยาจากท่านี้)`
+    : ''
+
   return `[PHYSICAL REALITY]
 - Distance: ${distDesc}
-- Character Boundary Posture: ${boundaryDesc}
+- Character Boundary Posture: ${boundaryDesc}${postureLine}
 - Player Attempt: ${playerInput || 'เคลื่อนไหวเข้าหาเป้าหมาย'}
 - Physical Directive: ${distDirective}
 - Boundary Directive: ${boundaryDirective}`

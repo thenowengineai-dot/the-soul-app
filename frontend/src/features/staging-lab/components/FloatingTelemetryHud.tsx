@@ -10,31 +10,38 @@ import {
 } from 'lucide-react'
 import type { SandboxTelemetry } from '../types'
 import type { SpatialSpacing } from '../modules/physicalParryModule'
+import { BoundaryHudLens, KineticHudLens } from '../cartridges'
 
 interface FloatingTelemetryHudProps {
   telemetry: SandboxTelemetry | null
   spacing: SpatialSpacing
   boundaryLevel: number
-  isParryEnabled: boolean
+  isBoundaryActive?: boolean
+  isKineticActive?: boolean
+  currentPosture?: string
   sensoryPulseText?: string
   isTelemetryContractEnabled?: boolean
   onToggleTelemetryContract?: () => void
-  activeCardId?: 'card1' | 'card2' | 'card3'
 }
 
 export function FloatingTelemetryHud({
   telemetry,
   spacing,
   boundaryLevel,
-  isParryEnabled,
+  isBoundaryActive = true,
+  isKineticActive = true,
+  currentPosture = '',
   sensoryPulseText = '',
   isTelemetryContractEnabled = true,
   onToggleTelemetryContract,
-  activeCardId = 'card1',
 }: FloatingTelemetryHudProps) {
   const [isOpen, setIsOpen] = useState(true)
   const [showSettings, setShowSettings] = useState(false)
   const [showThinking, setShowThinking] = useState(false)
+
+  // Current Posture Resolution: Fallback to currentPosture on Standby, or AI resultant a_pos on Turn Complete
+  const isTransitioned = Boolean(telemetry?.a_pos && telemetry.a_pos.trim())
+  const displayPosture = isTransitioned ? (telemetry?.a_pos?.trim() ?? '') : currentPosture.trim()
 
   // Metric row visibility toggles
   const [visibleRows, setVisibleRows] = useState({
@@ -63,39 +70,6 @@ export function FloatingTelemetryHud({
       ? 'text-amber-400'
       : 'text-rose-400'
 
-  // Hitbox & Verdict status determination directly from AI Telemetry
-  const resolveHitboxStatus = () => {
-    if (!isTelemetryContractEnabled) {
-      return { text: 'DETACHED (PURE ACTOR)', color: 'text-white/40' }
-    }
-    if (telemetry?.verdict) {
-      const outcome = telemetry.verdict.outcome.toUpperCase()
-      const isContact = telemetry.verdict.contact_occurred
-      const contactLabel = isContact ? 'CONTACT' : 'ZERO_CONTACT'
-      switch (outcome) {
-        case 'PARRIED':
-          return { text: `PARRIED (${contactLabel})`, color: 'text-emerald-400' }
-        case 'MISSED':
-        case 'WHIFF':
-          return { text: `MISSED (${contactLabel})`, color: 'text-[#38bdf8]' }
-        case 'GRAZED':
-          return { text: `GRAZED (${contactLabel})`, color: 'text-[#fbbf24]' }
-        case 'LATCHED':
-        case 'YIELDED':
-          return { text: `LATCHED (${contactLabel})`, color: 'text-[#fb7185]' }
-        default:
-          return { text: `${outcome} (${contactLabel})`, color: 'text-emerald-400' }
-      }
-    }
-    if (!isParryEnabled) return { text: 'COLLIDED (UNGUARDED)', color: 'text-amber-400' }
-    if (spacing === 'distant') return { text: 'MISSED (คว้าได้แค่อากาศ)', color: 'text-[#38bdf8]' }
-    if (boundaryLevel <= 35) return { text: 'PARRIED (สกัดกั้นก่อนถึงตัว)', color: 'text-emerald-400' }
-    if (boundaryLevel <= 75) return { text: 'GRAZED (เฉียดผิวชะงัก)', color: 'text-[#fbbf24]' }
-    return { text: 'LATCHED (ยินยอมสัมผัส)', color: 'text-[#fb7185]' }
-  }
-
-  const hitbox = resolveHitboxStatus()
-
   // Minimized Floating Pill Badge
   if (!isOpen) {
     return (
@@ -118,9 +92,6 @@ export function FloatingTelemetryHud({
     )
   }
 
-  const isBoundaryContext = activeCardId === 'card1' || activeCardId === 'card3'
-  const isKineticContext = activeCardId === 'card2' || activeCardId === 'card3'
-
   // Expanded MSI Afterburner Style OSD (Ultra-Translucent)
   return (
     <div className="absolute top-[52px] right-6 z-30 w-[310px] sm:w-[330px] rounded-2xl bg-black/35 backdrop-blur-xl border border-white/10 shadow-2xl p-3.5 select-none transition-all">
@@ -129,11 +100,13 @@ export function FloatingTelemetryHud({
         <div className="flex items-center gap-1.5">
           <span
             className={`w-1.5 h-1.5 rounded-full ${
-              activeCardId === 'card1'
-                ? 'bg-[#38bdf8]'
-                : activeCardId === 'card2'
-                ? 'bg-[#34d399]'
-                : 'bg-[#c084fc]'
+              isBoundaryActive && isKineticActive
+                ? 'bg-[#c084fc] shadow-[0_0_6px_rgba(192,132,252,0.8)]'
+                : isBoundaryActive
+                ? 'bg-[#38bdf8] shadow-[0_0_6px_rgba(56,189,248,0.8)]'
+                : isKineticActive
+                ? 'bg-[#34d399] shadow-[0_0_6px_rgba(52,211,153,0.8)]'
+                : 'bg-white/30'
             }`}
           />
           <span className="text-[10px] font-mono uppercase text-white/50 tracking-wider">
@@ -202,103 +175,60 @@ export function FloatingTelemetryHud({
         </div>
       )}
 
-      {/* Monospace Telemetry Grid */}
+      {/* Monospace Telemetry Grid - Dynamic Modular HUD Lenses */}
       <div className="font-mono text-[11px] leading-relaxed space-y-1.5">
-        {/* Row 1: Hitbox / Real Telemetry Verdict */}
-        {isBoundaryContext && visibleRows.hitbox && (
-          <div className="flex items-start justify-between gap-2">
-            <span className="text-[#fb923c] font-bold shrink-0">VERDICT</span>
-            <span className={`text-right font-medium text-[10.5px] ${hitbox.color}`}>
-              {hitbox.text}
-            </span>
-          </div>
+        {isBoundaryActive && (
+          <BoundaryHudLens
+            telemetry={telemetry}
+            visibleRows={visibleRows}
+            spacing={spacing}
+            boundaryLevel={boundaryLevel}
+            isParryEnabled={isBoundaryActive}
+          />
         )}
-
-        {/* Row 3.5: Active Persistent Contacts */}
-        {isBoundaryContext && visibleRows.hitbox && (
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-white/50 font-bold shrink-0 text-[10px]">CONTACTS</span>
-            <div className="flex items-center gap-1 flex-wrap justify-end">
-              {telemetry?.verdict?.active_contacts && telemetry.verdict.active_contacts.length > 0 ? (
-                telemetry.verdict.active_contacts.map((c) => (
-                  <span
-                    key={c}
-                    className="px-1.5 py-0.2 rounded bg-white/10 text-[#F1F1F1] font-mono text-[9.5px] border border-white/15"
-                  >
-                    {c}
-                  </span>
-                ))
-              ) : (
-                <span className="text-white/35 text-[9.5px] font-mono">[ZERO CONTACT]</span>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Row 4: Distance State */}
-        {isBoundaryContext && visibleRows.distance && (
-          <div className="flex items-center justify-between">
-            <span className="text-[#a78bfa] font-bold">DISTANCE</span>
-            <span className="text-white/80 uppercase">
-              {spacing === 'distant' ? '2 Steps (Distant)' : spacing === 'reach' ? '1 Arm (Reach)' : 'Intimate'}
-            </span>
-          </div>
-        )}
-
-        {/* Row 5: Boundary State */}
-        {isBoundaryContext && visibleRows.boundary && (
-          <div className="flex items-center justify-between">
-            <span className="text-[#f472b6] font-bold">BOUNDARY</span>
-            <span className="text-white/80">
-              {boundaryLevel}% ({isParryEnabled ? 'Active' : 'Bypassed'})
-            </span>
-          </div>
-        )}
-
-        {/* Row 5.5: Kinetic Decision / Tempo Mode */}
-        {isKineticContext && visibleRows.kinetic && telemetry?.kinetic_decision && (
-          <div className="pt-1.5 border-t border-white/[0.06]">
-            <div className="flex items-center justify-between text-[10px] mb-1">
-              <span className="text-[#34d399] font-bold">TEMPO</span>
-              <span
-                className={`px-1.5 py-0.2 rounded font-mono text-[9px] uppercase font-semibold ${
-                  telemetry.kinetic_decision.tempo === 'HIGH_VELOCITY_SNAP'
-                    ? 'bg-[#fb923c]/20 text-[#fb923c] border border-[#fb923c]/30'
-                    : telemetry.kinetic_decision.tempo === 'LOW_VELOCITY_UNHOOK'
-                    ? 'bg-[#c084fc]/20 text-[#c084fc] border border-[#c084fc]/30'
-                    : telemetry.kinetic_decision.tempo === 'MICRO_SHIFT'
-                    ? 'bg-[#38bdf8]/20 text-[#38bdf8] border border-[#38bdf8]/30'
-                    : 'bg-[#34d399]/20 text-[#34d399] border border-[#34d399]/30'
-                }`}
-              >
-                {telemetry.kinetic_decision.tempo.replace(/_/g, ' ')}
-              </span>
-            </div>
-            {telemetry.kinetic_decision.somatic_tension && (
-              <div className="text-[10.5px] text-white/70 italic bg-white/[0.03] p-1.5 rounded border border-white/[0.05] leading-snug">
-                "{telemetry.kinetic_decision.somatic_tension}"
-              </div>
-            )}
-          </div>
+        {isKineticActive && (
+          <KineticHudLens
+            telemetry={telemetry}
+            visibleRows={visibleRows}
+            currentPosture={displayPosture}
+          />
         )}
 
         {/* Row 6: Actor Posture (Cinematic Silhouette Snapshot) */}
-        {visibleRows.posture && telemetry?.a_pos && (
+        {visibleRows.posture && displayPosture && (
           <div className="pt-1.5 border-t border-white/[0.06]">
             <div className="flex items-center justify-between text-[10px] mb-1">
-              <span className="text-[#38bdf8] font-bold">POSTURE</span>
-              <span className="text-[9px] text-white/40 uppercase tracking-wider font-mono">
-                SILHOUETTE SNAPSHOT
+              <span
+                className={`font-bold transition-colors ${
+                  isTransitioned
+                    ? isBoundaryActive && isKineticActive
+                      ? 'text-[#c084fc]'
+                      : isBoundaryActive
+                      ? 'text-[#38bdf8]'
+                      : 'text-[#34d399]'
+                    : 'text-white/60'
+                }`}
+              >
+                POSTURE
+              </span>
+              <span
+                className={`text-[9px] uppercase tracking-wider font-mono px-1 py-0.2 rounded transition-colors ${
+                  isTransitioned
+                    ? 'text-white/60 bg-white/[0.06] border border-white/10'
+                    : 'text-white/40'
+                }`}
+              >
+                {isTransitioned ? 'TRANSITIONED A_POS' : 'STANDBY (ORIGIN)'}
               </span>
             </div>
             <div className="text-[11px] text-[#F1F1F1] font-sans leading-relaxed bg-white/[0.04] p-2 rounded-lg border border-white/[0.08]">
-              "{telemetry.a_pos}"
+              "{displayPosture}"
             </div>
           </div>
         )}
 
         {/* Row 6.5: Sensory Context Snippet */}
-        {isBoundaryContext && visibleRows.sensory && sensoryPulseText && (
+        {visibleRows.sensory && sensoryPulseText && (
           <div className="pt-1 border-t border-white/[0.06]">
             <div className="text-[9.5px] text-white/40 uppercase mb-0.5">
               Sensory Pulse (To Actor):

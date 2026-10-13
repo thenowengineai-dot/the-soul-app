@@ -14,10 +14,12 @@ export const DEFAULT_BASE_PROMPT = `[ROLE & EXISTENCE: THE EMBODIED ACTOR]
 1. Somatic Reaction (ภาษากายและสรีระ): ลมหายใจ สายตา กล้ามเนื้อ ชีพจร และปฏิกิริยาสะท้อนกลับทางกายภาพที่ซื่อสัตย์ต่อผัสสะ
 2. Spoken Dialogue (บทสนทนา): คำพูดของตัวละครที่สะท้อนบุคลิก อารมณ์ และขอบเขตทางจิตใจ (ซึ่งอาจปิดบังหรือขัดแย้งกับภาษากาย)`
 
+export const UNIVERSAL_THINKING_PROTOCOL = "1. Perceive sensory intent & spatial distance from current a_pos -> 2. Arbitrate active physical directives & somatic constraints -> 3. Formulate resultant posture transition -> 4. Execute somatic reflex & dialogue"
+
 export const CARD1_TELEMETRY_SCHEMA_PROMPT = `# TELEMETRY & PLUGGABLE OUTCOME CONTRACT (CARD 1: PHYSICAL BOUNDARY)
 You must output ONLY a valid JSON object matching this structure:
 {
-  "thinking": "Analyze incoming motion -> verify sensory reality -> decide verdict outcome & active contacts -> execute somatic & dialogue response",
+  "thinking": "1. Perceive sensory intent & spatial distance from current a_pos -> 2. Arbitrate active physical directives & somatic constraints -> 3. Formulate resultant posture transition -> 4. Execute somatic reflex & dialogue",
   "a_pos": "ยืนหันข้างกอดอกแน่น ปลายเล็บจิกแขนเสื้อตัวเอง",
   "verdict": {
     "outcome": "PARRIED",
@@ -59,7 +61,7 @@ You must output ONLY a valid JSON object matching this structure:
 export const CARD2_TELEMETRY_SCHEMA_PROMPT = `# TELEMETRY & KINETIC OUTCOME CONTRACT (CARD 2: KINETIC CONTINUITY)
 You must output ONLY a valid JSON object matching this structure:
 {
-  "thinking": "Analyze incoming motion -> decide kinetic tempo & somatic tension -> transition from current a_pos -> execute somatic & dialogue response",
+  "thinking": "1. Perceive sensory intent & spatial distance from current a_pos -> 2. Arbitrate active physical directives & somatic constraints -> 3. Formulate resultant posture transition -> 4. Execute somatic reflex & dialogue",
   "kinetic_decision": {
     "tempo": "HIGH_VELOCITY_SNAP",
     "somatic_tension": "กล้ามเนื้อไหล่เกร็งสะบัดหนีสัมผัส"
@@ -97,7 +99,7 @@ You must output ONLY a valid JSON object matching this structure:
 export const DEFAULT_TELEMETRY_SCHEMA_PROMPT = `# TELEMETRY & PLUGGABLE OUTCOME CONTRACT (STAGING LAB)
 You must output ONLY a valid JSON object matching this structure:
 {
-  "thinking": "Analyze incoming motion -> decide kinetic tempo & somatic tension -> determine verdict & contacts -> execute somatic & dialogue response",
+  "thinking": "1. Perceive sensory intent & spatial distance from current a_pos -> 2. Arbitrate active physical directives & somatic constraints -> 3. Formulate resultant posture transition -> 4. Execute somatic reflex & dialogue",
   "kinetic_decision": {
     "tempo": "HIGH_VELOCITY_SNAP",
     "somatic_tension": "กล้ามเนื้อไหล่เกร็งสะบัดหนีสัมผัส"

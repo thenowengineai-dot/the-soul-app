@@ -148,3 +148,50 @@ System Prompt หลักของตัวละครจะต้องเร
 2. **ผสานเข้ากับ Round Assembler:** นำตรรกะตัวแปรไปเชื่อมต่อกับ Round Spec ของห้องแชทหลัก
 3. **ตรวจสอบความเสถียร:** รันการตรวจสอบไม่ให้กระทบต่อบุคลิกภาพเดิมของตัวละคร
 4. **เปิดใช้งานจริงบน Production:** ผู้เล่นจะได้สัมผัสฟีเจอร์ใหม่ที่มีความลื่นไหล สมจริง และไร้รอยต่อ
+
+---
+
+## 6. สถาปัตยกรรมตลับฟีเจอร์สำเร็จรูป (The Feature Cartridge Architecture)
+
+เพื่อป้องกันการผูกติดโค้ดข้ามโมดูล (Cross-Coupling Debt) และทำให้ระบบ Staging Lab เป็นแท่นเสียบฟีเจอร์ (Plug-and-Play Console Dock) ที่ขยายตัวได้ไร้ขีดจำกัด ทุก 1 ฟีเจอร์จะต้องถูกออกแบบและแพ็กอยู่ในรูปของ **"ตลับฟีเจอร์ (Feature Cartridge)"** ที่สมบูรณ์ในตัวเอง 100%:
+
+### 6.1 สามประสานแห่งตลับฟีเจอร์ (The Cartridge Triad)
+ภายใน 1 โฟลเดอร์ของตลับฟีเจอร์ (`cartridges/<feature-name>/`) ประกอบด้วย 3 องค์ประกอบหลัก:
+1. **The Controller Card (`Card.tsx`):** แผงควบคุมและปรับแต่งตัวแปรฝั่งซ้าย (UI & Sliders) สำหรับให้ Director ทดสอบสภาวะ
+2. **The Prompt Engine (`engine.ts`):** ตรรกะและฟังก์ชันคำนวณบริสุทธิ์ (Pure Functions) ทำหน้าที่แปลงค่าตัวแปรสภาวะให้เป็น Prompt Snippet สั้นๆ ไม่เกิน 3-5 บรรทัด (พร้อมส่งเข้า Production Pipeline ของ Backend ได้ทันทีโดยไร้การพึ่งพา UI)
+3. **The HUD Sensor Lens (`HudLens.tsx`):** สัญญา JSON Telemetry Schema ที่สั่ง AI คายค่า พร้อม UI เลนส์ตรวจวัดเฉพาะทางสำหรับแสดงผลบน Live Outcome HUD ฝั่งขวา
+
+### 6.2 สัญญาตลับสากล (Universal Cartridge Contract)
+```typescript
+export interface FeatureCartridge<TState, TTelemetry> {
+  id: string
+  name: string
+  subtitle: string
+  accentColor: string // e.g. '#38bdf8' | '#34d399' | '#c084fc'
+  
+  // 1. Controller UI (Left Dock)
+  CardComponent: React.ComponentType<{
+    state: TState
+    onChangeState: (newState: TState) => void
+    isActive: boolean
+    onActivate: () => void
+    isExpanded: boolean
+    onToggleExpand: () => void
+  }>
+  
+  // 2. Pure Engine Logic (Production Parity)
+  generatePrompt: (state: TState, playerInput: string) => string
+  telemetrySchemaPrompt?: string
+  
+  // 3. HUD Sensor Lens (Right HUD)
+  HudLensComponent?: React.ComponentType<{
+    telemetry?: TTelemetry
+  }>
+}
+```
+
+### 6.3 ประโยชน์เชิงสถาปัตยกรรม (Architectural Advantages)
+1. **Zero-Pollution Main Stage:** `StagingLabView.tsx` จะทำหน้าที่เป็นเพียง Console Shell คอยเรนเดอร์ Active Cartridge โดยปราศจากเงื่อนไข `if-else / switch case` ที่เจาะจงเฉพาะฟีเจอร์ใดฟีเจอร์หนึ่ง
+2. **True Plug-and-Play:** เมื่อต้องการเพิ่มการ์ดใหม่ (เช่น แววตาสบประสาน, อุณหภูมิชีพจร) เพียงสร้างโฟลเดอร์ตลับใหม่แล้วนำมาลงทะเบียนใน `CARTRIDGES_REGISTRY` ระบบจะรองรับการทดสอบได้ทันที
+3. **Instant Backend Portability:** เมื่อทดสอบผ่าน ให้ยกเฉพาะไฟล์ `engine.ts` ของตลับนั้น ไปเชื่อมต่อกับ `RoundAssembler` ของ Production Engine ได้ในคำสั่งเดียวโดยไม่ต้องแก้ไขโค้ดใหม่
+

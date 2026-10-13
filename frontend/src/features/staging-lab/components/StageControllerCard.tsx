@@ -36,21 +36,20 @@ export function StageControllerCard({
       className={`w-[346px] rounded-[28px] transition-all select-none border backdrop-blur-2xl relative overflow-hidden ${
         isActive
           ? 'bg-white/[0.08] border-[#38bdf8]/40 shadow-[inset_0_1px_0_rgba(56,189,248,0.30),0_0_24px_rgba(56,189,248,0.12)]'
-          : 'bg-white/[0.06] hover:bg-white/[0.09] border-white/[0.10] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]'
+          : 'bg-white/[0.03] hover:bg-white/[0.06] border-white/[0.08] hover:border-white/15'
       }`}
     >
-      {/* 1. Accordion Header Row (Ruthless Subtraction to Essence - Apple Style) */}
-      <div className="px-4 py-3.5 flex items-center justify-between gap-2">
-        <button
-          type="button"
-          onClick={onToggleExpand}
-          className="flex-1 flex items-center gap-2 text-left cursor-pointer group min-w-0"
-        >
+      {/* 1. Accordion Header Row (The Effect Rack / Pedalboard Style) */}
+      <div 
+        onClick={onToggleExpand}
+        className="px-4 py-3.5 flex items-center justify-between gap-2 cursor-pointer select-none"
+      >
+        <div className="flex-1 flex items-center gap-2 text-left group min-w-0">
           <span
             className={`w-2 h-2 rounded-full shrink-0 transition-all ${
               isActive
                 ? 'bg-[#38bdf8] shadow-[0_0_8px_rgba(56,189,248,0.8)]'
-                : 'bg-[#38bdf8]/40 group-hover:bg-[#38bdf8]/70'
+                : 'bg-white/20'
             }`}
           />
           <div className="flex items-baseline gap-1.5 truncate">
@@ -61,9 +60,9 @@ export function StageControllerCard({
               (ระยะและการปัดป้อง)
             </span>
           </div>
-        </button>
+        </div>
 
-        {/* Right Header Actions: Tactile Status Pill + Chevron */}
+        {/* Right Header Actions: Tactile ENGAGED / BYPASS Switch + Chevron */}
         <div className="flex items-center gap-1.5 shrink-0">
           <button
             type="button"
@@ -71,19 +70,23 @@ export function StageControllerCard({
               e.stopPropagation()
               onActivate()
             }}
-            className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-medium transition-all cursor-pointer flex items-center gap-1 select-none ${
+            className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium transition-all cursor-pointer flex items-center gap-1.5 select-none ${
               isActive
                 ? 'bg-[#38bdf8]/15 text-[#38bdf8] border border-[#38bdf8]/35 shadow-[inset_0_1px_0_rgba(56,189,248,0.20)]'
-                : 'bg-white/[0.04] hover:bg-white/[0.08] text-white/45 hover:text-white/80 border border-white/10 hover:border-white/20'
+                : 'bg-white/[0.04] hover:bg-white/[0.08] text-white/40 hover:text-white/70 border border-white/10 hover:border-white/20'
             }`}
-            title={isActive ? 'การ์ดนี้กำลังถูกทดสอบ' : 'คลิกเพื่อเลือกทดสอบการ์ดนี้'}
+            title={isActive ? 'คลิกเพื่อบายพาส (Bypass)' : 'คลิกเพื่อเสียบใช้งาน (Engage)'}
           >
-            <span>{isActive ? 'กำลังใช้' : 'เลือกใช้'}</span>
+            <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-[#38bdf8]' : 'bg-white/30'}`} />
+            <span>{isActive ? 'ENGAGED' : 'BYPASS'}</span>
           </button>
 
           <button
             type="button"
-            onClick={onToggleExpand}
+            onClick={(e) => {
+              e.stopPropagation()
+              onToggleExpand()
+            }}
             className="w-6 h-6 rounded-full bg-white/[0.04] hover:bg-white/[0.10] text-white/35 hover:text-white/80 flex items-center justify-center transition-all cursor-pointer"
             title={isExpanded ? 'พับเก็บการ์ด' : 'คลี่ออกดูการ์ด'}
           >

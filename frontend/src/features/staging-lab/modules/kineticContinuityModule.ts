@@ -16,36 +16,113 @@ export interface VelocityPreset {
   expectedReaction: string
 }
 
-export const STANCE_PRESETS: StancePreset[] = [
+export interface ChoreographyCue {
+  step: number
+  label: string
+  actionText: string
+  intent: string
+}
+
+export interface KineticScenario {
+  id: string
+  shortLabel: string
+  title: string
+  stance: string
+  physicsNote: string
+  cues: ChoreographyCue[]
+}
+
+export const KINETIC_SCENARIOS: KineticScenario[] = [
   {
-    id: 'defensive_cross_arm',
-    label: 'ยืนหันข้างกอดอกแน่น',
-    category: 'defensive',
-    snapshot: 'ยืนหันข้างกอดอกแน่น ปลายเล็บจิกแขนเสื้อตัวเอง',
-    description: 'ท่ายืนเบี่ยงข้าง ตั้งการ์ดสูง มีแรงกดดันภายในสูง',
+    id: 'window_guarded',
+    shortLabel: 'ริมหน้าต่าง',
+    title: 'จากการปิดกั้น สู่การคลายตัว (The Guarded Window)',
+    stance: 'ยืนกอดอกแน่น แผ่นหลังแนบชิดขอบหน้าต่าง สายตามองเหม่อออกไปข้างนอก',
+    physicsNote: 'แขนล็อก หลังพิงหน้าต่าง ต้องคลายแขนก่อนก้าวเท้า',
+    cues: [
+      {
+        step: 1,
+        label: 'หยั่งเชิงระยะห่าง',
+        actionText: '*เดินเข้ามาในห้อง วางแก้วกาแฟอุ่นๆ ลงบนโต๊ะ แล้วยืนนิ่งๆ ไม่พูดอะไร*',
+        intent: 'AI ควรละสายตามอง แต่ยังไม่ทิ้งหน้าต่าง',
+      },
+      {
+        step: 2,
+        label: 'เปิดพื้นที่ปลอดภัย',
+        actionText: '*เลื่อนเก้าอี้ตัวข้างๆ ออก แล้วผายมือชวนเธอมานั่ง*',
+        intent: 'AI ควรคลายแขนลง และก้าวเท้าสั้นๆ',
+      },
+      {
+        step: 3,
+        label: 'เข้าสู่ระยะสัมผัส',
+        actionText: '*เดินเข้าไปใกล้ในระยะเอื้อมมือ ยื่นแก้วกาแฟให้ตรงหน้า*',
+        intent: 'AI ควรยื่นมือมารับแก้ว สบตาในระยะประชิด',
+      },
+    ],
   },
   {
-    id: 'intimate_sofa_cup',
-    label: 'นั่งชันเข่ากุมแก้วกาแฟ',
-    category: 'intimate',
-    snapshot: 'นั่งชันเข่าบนโซฟา สองมือกุมแก้วกาแฟอุ่น',
-    description: 'ท่านั่งผ่อนคลาย ปิดบังลำตัวบางส่วน มวลกายสงบ',
+    id: 'sofa_vulnerable',
+    shortLabel: 'บนโซฟา',
+    title: 'ความเปราะบางในพื้นที่ส่วนตัว (The Vulnerable Sofa)',
+    stance: 'นั่งกอดเข่าคุดคู้บนโซฟาผ้า ปลายคางเกยบนหัวเข่า สองมือกุมข้อเท้าแน่น',
+    physicsNote: 'จุดศูนย์ถ่วงต่ำ ร่างกายพับจมในเบาะ การลุกทันทีเป็นไปไม่ได้',
+    cues: [
+      {
+        step: 1,
+        label: 'แทรกแซงพื้นที่',
+        actionText: '*เดินมาทรุดตัวลงนั่งบนโซฟาข้างๆ ในระยะประชิด*',
+        intent: 'AI ควรเกร็งไหล่ สะดุ้งเบี่ยงตัวหนี',
+      },
+      {
+        step: 2,
+        label: 'สร้างความอบอุ่น',
+        actionText: '*หยิบผ้าห่มผืนบางมาคลุมลงบนไหล่ของเธออย่างอ่อนโยน*',
+        intent: 'AI ควรคลายมือจากข้อเท้ามาจับผ้าห่ม',
+      },
+      {
+        step: 3,
+        label: 'ทดสอบสัมผัสตรง',
+        actionText: '*ค่อยๆ เอื้อมมือไปแตะหลังมือที่กุมผ้าห่มไว้เบาๆ*',
+        intent: 'AI ปลายนิ้วกระตุกชะงัก ลังเลที่จะดึงมือหนี',
+      },
+    ],
   },
   {
-    id: 'open_balcony_look',
-    label: 'ยืนพิงระเบียงเหม่อมอง',
-    category: 'open',
-    snapshot: 'ยืนพิงระเบียง ปล่อยแขนทิ้งข้างลำตัวเหม่อมอง',
-    description: 'ท่ายืนผ่อนคลาย เปิดพื้นที่ด้านหน้า สายตามองไกล',
-  },
-  {
-    id: 'close_edge_stare',
-    label: 'ก้าวประชิดตัวสบตา',
-    category: 'open',
-    snapshot: 'ก้าวประชิดตัว โน้มหน้าเข้ามาจ้องสบตาในระยะประชิด',
-    description: 'ระยะใกล้มาก พร้อมตอบโต้หรือรุกกลับในทันที',
+    id: 'desk_barrier',
+    shortLabel: 'โต๊ะทำงาน',
+    title: 'สิ่งกีดขวางและการเผชิญหน้า (The Desk Barrier)',
+    stance: 'นั่งหลังตรงหน้าโต๊ะทำงาน ปลายนิ้วแตะคีย์บอร์ด สายตาจับจ้องหน้าจอคอมพิวเตอร์',
+    physicsNote: 'มีโต๊ะเป็นสิ่งกีดขวาง แขนอยู่ระดับอก ปลายนิ้วพิมพ์งาน',
+    cues: [
+      {
+        step: 1,
+        label: 'กดดันจากด้านหลัง',
+        actionText: '*เดินมายืนซ้อนหลังเก้าอี้ โน้มตัวลงมาดูหน้าจอคอมพิวเตอร์*',
+        intent: 'AI นิ้วชะงัก แผ่นหลังเกร็งตรง',
+      },
+      {
+        step: 2,
+        label: 'ตีกรอบระยะประชิด',
+        actionText: '*วางมือข้างหนึ่งบนพนักพิง อีกข้างทาบลงบนโต๊ะข้างคีย์บอร์ด*',
+        intent: 'AI โน้มตัวไปข้างหน้า สองมือยันขอบโต๊ะ',
+      },
+      {
+        step: 3,
+        label: 'เปลี่ยนระนาบสรีระ',
+        actionText: '*เอื้อมมือไปจับขอบเก้าอี้ ค่อยๆ ดึงหมุนให้หันกลับมาเผชิญหน้า*',
+        intent: 'AI หมุนตามแรงดึง จ้องสบตาตรงๆ',
+      },
+    ],
   },
 ]
+
+export const STANCE_PRESETS: StancePreset[] = KINETIC_SCENARIOS.map((s) => ({
+  id: s.id,
+  label: s.shortLabel,
+  category: 'defensive' as const,
+  snapshot: s.stance,
+  description: s.physicsNote,
+}))
 
 export const VELOCITY_PRESETS: VelocityPreset[] = [
   {

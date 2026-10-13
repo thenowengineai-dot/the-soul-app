@@ -23,17 +23,13 @@ import {
   generateKineticPacingPrompt,
   STANCE_PRESETS
 } from '../modules/kineticContinuityModule'
-import { generateUnifiedFusionPrompt } from '../modules/unifiedFusionModule'
 import type { PromptModule, SandboxSimulateResponse, SandboxSimulateRequest } from '../types'
 import { MessageList } from '../../chat/components/chat-room/MessageList'
 import { ChatInputBar } from '../../chat/components/chat-room/ChatInputBar'
 import type { ChatMessage } from '../../chat/types'
 import { StageControllerCard } from './StageControllerCard'
 import { KineticContinuityCard } from './KineticContinuityCard'
-import { UnifiedFusionCard } from './UnifiedFusionCard'
 import { FloatingTelemetryHud } from './FloatingTelemetryHud'
-
-export type ActiveCardId = 'card1' | 'card2' | 'card3'
 
 interface StagingLabViewProps {
   onBackToHome: () => void
@@ -64,23 +60,6 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   const [basePrompt, setBasePrompt] = useState<string>(DEFAULT_BASE_PROMPT)
   const [featureModules] = useState<PromptModule[]>(INITIAL_FEATURE_MODULES)
 
-  // 3. Card Stack State (Single-Active Radio Architecture & Independent Accordion)
-  const [activeCardId, setActiveCardId] = useState<ActiveCardId>('card1')
-  const [expandedCards, setExpandedCards] = useState<Record<ActiveCardId, boolean>>({
-    card1: true,
-    card2: false,
-    card3: false,
-  })
-
-  const toggleCardExpand = (id: ActiveCardId) => {
-    setExpandedCards(prev => ({ ...prev, [id]: !prev[id] }))
-  }
-
-  const handleActivateCard = (id: ActiveCardId) => {
-    setActiveCardId(id)
-    setExpandedCards(prev => ({ ...prev, [id]: true }))
-  }
-
   // 3.1 Card 1: Physical Boundary Controls
   const [parrySpacing, setParrySpacing] = useState<SpatialSpacing>('reach')
   const [parryBoundaryLevel, setParryBoundaryLevel] = useState<number>(10)
@@ -92,6 +71,12 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   const [currentPosture, setCurrentPosture] = useState<string>(
     STANCE_PRESETS[0].snapshot
   )
+
+  // 3.3 Dynamic Signal Chain States (The Effect Rack / Pedalboard Architecture)
+  const [isBoundaryActive, setIsBoundaryActive] = useState<boolean>(true)
+  const [isKineticActive, setIsKineticActive] = useState<boolean>(true)
+  const [isBoundaryExpanded, setIsBoundaryExpanded] = useState<boolean>(true)
+  const [isKineticExpanded, setIsKineticExpanded] = useState<boolean>(true)
 
   const handleOriginPostureChange = (newPosture: string) => {
     setInitialPosture(newPosture)
@@ -147,18 +132,14 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
 
   // Physical brief computed string (Card 1)
   const parryBriefSnippet = useMemo(() => {
-    return generatePhysicalParryBrief(parrySpacing, parryBoundaryLevel, playerInput)
-  }, [parrySpacing, parryBoundaryLevel, playerInput])
+    return generatePhysicalParryBrief(parrySpacing, parryBoundaryLevel, playerInput, currentPosture)
+  }, [parrySpacing, parryBoundaryLevel, playerInput, currentPosture])
 
   // Kinetic Pacing brief computed string (Card 2)
   const kineticPromptSnippet = useMemo(() => {
-    return generateKineticPacingPrompt(currentPosture, activeCardId === 'card2')
-  }, [currentPosture, activeCardId])
+    return generateKineticPacingPrompt(currentPosture, isKineticActive)
+  }, [currentPosture, isKineticActive])
 
-  // Unified Fusion brief computed string (Card 3)
-  const unifiedFusionSnippet = useMemo(() => {
-    return generateUnifiedFusionPrompt(parrySpacing, parryBoundaryLevel, currentPosture, playerInput)
-  }, [parrySpacing, parryBoundaryLevel, currentPosture, playerInput])
 
 
   // Close on Escape key
@@ -194,12 +175,12 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       })
     }
 
-    // Layer 2: Injected Feature Module (Isolated Single-Active Card)
-    if (activeCardId === 'card1' && parryBriefSnippet.trim()) {
+    // Layer 2: Injected Feature Modules (The Effect Rack / Signal Chain)
+    if (isBoundaryActive && parryBriefSnippet.trim()) {
       layers.push({
         id: 'physical_reality',
-        title: 'Layer 2: Left Controller Injection (Card 1: Physical Reality & Boundary)',
-        sourceTag: 'CARD 1 (INJECTED)',
+        title: 'Signal Chain: Pedal 1 (Physical Reality & Boundary)',
+        sourceTag: 'PEDAL 1: BOUNDARY',
         sourceLabel: 'คำนวณสดจาก Spacing & Boundary Slider',
         badgeBg: 'bg-[#38bdf8]/10',
         badgeText: 'text-[#38bdf8]',
@@ -209,11 +190,13 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
         textClass: 'text-[#bae6fd]',
         content: `# ACTIVE MODULE: REALITY OVERRIDE & PHYSICAL BOUNDARY\n${parryBriefSnippet.trim()}`,
       })
-    } else if (activeCardId === 'card2' && kineticPromptSnippet.trim()) {
+    }
+
+    if (isKineticActive && kineticPromptSnippet.trim()) {
       layers.push({
         id: 'kinetic_pacing_module',
-        title: 'Layer 2: Left Controller Injection (Card 2: Kinetic Continuity & Pacing)',
-        sourceTag: 'CARD 2 (INJECTED)',
+        title: 'Signal Chain: Pedal 2 (Kinetic Continuity & Pacing)',
+        sourceTag: 'PEDAL 2: KINETIC',
         sourceLabel: 'กฎแห่งแรงเฉื่อยและจังหวะภาพยนตร์',
         badgeBg: 'bg-[#34d399]/10',
         badgeText: 'text-[#34d399]',
@@ -222,20 +205,6 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
         bgClass: 'bg-[#34d399]/[0.03]',
         textClass: 'text-[#a7f3d0]',
         content: kineticPromptSnippet.trim(),
-      })
-    } else if (activeCardId === 'card3' && unifiedFusionSnippet.trim()) {
-      layers.push({
-        id: 'unified_fusion_module',
-        title: 'Layer 2: Left Controller Injection (Card 3: Unified Fusion Spacing + Kinetic)',
-        sourceTag: 'CARD 3 FUSION (INJECTED)',
-        sourceLabel: 'ผสานสัญชาตญาณป้องกันตัวเข้ากับพลศาสตร์สรีระต่อเนื่อง',
-        badgeBg: 'bg-[#c084fc]/10',
-        badgeText: 'text-[#c084fc]',
-        badgeBorder: 'border-[#c084fc]/30',
-        borderClass: 'border-[#c084fc]/20',
-        bgClass: 'bg-[#c084fc]/[0.03]',
-        textClass: 'text-[#e9d5ff]',
-        content: unifiedFusionSnippet.trim(),
       })
     }
 
@@ -262,30 +231,38 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     // Layer 3 (or 4 with extra modules): Right HUD Telemetry Contract (Amber - Pluggable)
     if (isTelemetryContractEnabled) {
       const activeTelemetrySchema =
-        activeCardId === 'card1'
+        isBoundaryActive && isKineticActive
+          ? DEFAULT_TELEMETRY_SCHEMA_PROMPT
+          : isBoundaryActive
           ? CARD1_TELEMETRY_SCHEMA_PROMPT
-          : activeCardId === 'card2'
+          : isKineticActive
           ? CARD2_TELEMETRY_SCHEMA_PROMPT
           : DEFAULT_TELEMETRY_SCHEMA_PROMPT
 
       layers.push({
         id: 'hud_telemetry',
         title:
-          activeCardId === 'card1'
-            ? 'Layer 3: Right HUD Telemetry Contract (Card 1: Boundary & Posture Schema)'
-            : activeCardId === 'card2'
-            ? 'Layer 3: Right HUD Telemetry Contract (Card 2: Kinetic Pacing Schema)'
-            : 'Layer 3: Right HUD Telemetry Contract (Outcome & Posture Schema)',
+          isBoundaryActive && isKineticActive
+            ? 'Signal Chain: Telemetry Contract (Dual Modular: Boundary + Kinetic)'
+            : isBoundaryActive
+            ? 'Signal Chain: Telemetry Contract (Pedal 1: Boundary & Posture Schema)'
+            : isKineticActive
+            ? 'Signal Chain: Telemetry Contract (Pedal 2: Kinetic Pacing Schema)'
+            : 'Signal Chain: Telemetry Contract (Outcome & Posture Schema)',
         sourceTag:
-          activeCardId === 'card1'
-            ? 'CARD 1 TELEMETRY (PLUGGABLE)'
-            : activeCardId === 'card2'
-            ? 'CARD 2 TELEMETRY (PLUGGABLE)'
+          isBoundaryActive && isKineticActive
+            ? 'DUAL TELEMETRY (PLUGGABLE)'
+            : isBoundaryActive
+            ? 'PEDAL 1 TELEMETRY (PLUGGABLE)'
+            : isKineticActive
+            ? 'PEDAL 2 TELEMETRY (PLUGGABLE)'
             : 'RIGHT HUD TELEMETRY (PLUGGABLE)',
         sourceLabel:
-          activeCardId === 'card1'
+          isBoundaryActive && isKineticActive
+            ? 'สัญญาสั่ง AI คายค่าขอบเขตการสัมผัสและจังหวะแรงเฉื่อยสรีระพร้อมกัน'
+            : isBoundaryActive
             ? 'สัญญาสั่ง AI คายค่าขอบเขตและภาพนิ่งสรีระ'
-            : activeCardId === 'card2'
+            : isKineticActive
             ? 'สัญญาสั่ง AI คายค่าจังหวะความเร็ว สรีระ และ Somatic Tension'
             : 'สัญญาสั่ง AI คายค่าส่ง Floating HUD',
         badgeBg: 'bg-[#fb923c]/10',
@@ -301,10 +278,10 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     return layers
   }, [
     basePrompt,
-    activeCardId,
+    isBoundaryActive,
+    isKineticActive,
     parryBriefSnippet,
     kineticPromptSnippet,
-    unifiedFusionSnippet,
     featureModules,
     simulationResult,
     isTelemetryContractEnabled,
@@ -346,11 +323,12 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     overrideBoundary?: number
   ) => {
     const rawText = (inputText || '').trim()
-    const fallbackDefault = activeCardId === 'card1'
-      ? '(ฉันเอื้อมมือเข้าไปหาเธอ)'
-      : activeCardId === 'card2'
-      ? '(ฉันก้าวเข้ามาหาเธอ)'
-      : '(ฉันขยับตัวเข้ามาใกล้เธอ)'
+    const fallbackDefault =
+      isBoundaryActive && isKineticActive
+        ? '(ฉันก้าวเข้ามาหาเธอ)'
+        : isBoundaryActive
+        ? '(ฉันเอื้อมมือเข้าไปหาเธอ)'
+        : '(ฉันก้าวเข้ามาหาเธอ)'
     const trimmed = rawText || fallbackDefault
     if (isLoading) return
 
@@ -378,32 +356,24 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     setChatLog(prev => [...prev, userMsg])
     setPlayerInput('')
 
-    // 2. Prepare payload - strictly isolated to the single active card
+    // 2. Prepare payload - Dynamic Signal Chain (The Effect Rack Architecture)
     const activeSnippets: Array<{ id: string; name: string; prompt_snippet: string }> = []
-    if (activeCardId === 'card1') {
-      const turnBrief = generatePhysicalParryBrief(effectiveSpacing, effectiveBoundary, trimmed)
+
+    if (isBoundaryActive) {
+      const turnBrief = generatePhysicalParryBrief(effectiveSpacing, effectiveBoundary, trimmed, currentPosture)
       activeSnippets.push({
         id: 'physical_parry',
         name: 'PHYSICAL BOUNDARY & EMBODIED REFLEX',
         prompt_snippet: turnBrief,
       })
-    } else if (activeCardId === 'card2') {
-      if (kineticPromptSnippet.trim()) {
-        activeSnippets.push({
-          id: 'kinetic_pacing',
-          name: 'CINEMATIC KINETIC CONTINUITY & PACING',
-          prompt_snippet: kineticPromptSnippet.trim(),
-        })
-      }
-    } else if (activeCardId === 'card3') {
-      const fusionPrompt = generateUnifiedFusionPrompt(effectiveSpacing, effectiveBoundary, currentPosture, trimmed)
-      if (fusionPrompt.trim()) {
-        activeSnippets.push({
-          id: 'unified_fusion',
-          name: 'UNIFIED PHYSICAL & KINETIC FUSION',
-          prompt_snippet: fusionPrompt.trim(),
-        })
-      }
+    }
+
+    if (isKineticActive && kineticPromptSnippet.trim()) {
+      activeSnippets.push({
+        id: 'kinetic_pacing',
+        name: 'CINEMATIC KINETIC CONTINUITY & PACING',
+        prompt_snippet: kineticPromptSnippet.trim(),
+      })
     }
 
     featureModules
@@ -426,9 +396,11 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       current_actor_posture: undefined,
       attach_telemetry_schema: isTelemetryContractEnabled,
       telemetry_schema_prompt: isTelemetryContractEnabled
-        ? (activeCardId === 'card1'
+        ? (isBoundaryActive && isKineticActive
+            ? DEFAULT_TELEMETRY_SCHEMA_PROMPT
+            : isBoundaryActive
             ? CARD1_TELEMETRY_SCHEMA_PROMPT
-            : activeCardId === 'card2'
+            : isKineticActive
             ? CARD2_TELEMETRY_SCHEMA_PROMPT
             : DEFAULT_TELEMETRY_SCHEMA_PROMPT)
         : undefined,
@@ -481,11 +453,14 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
 
   // Sensory context pulse snippet for HUD
   const sensoryPulseText = useMemo(() => {
-    if (activeCardId === 'card2') return 'Kinetic tempo and cinematic silhouette continuity active.'
+    if (isBoundaryActive && isKineticActive) {
+      return 'Dual signal chain active: Physical boundary arbitration and kinetic inertia continuity.'
+    }
+    if (isKineticActive) return 'Kinetic tempo and cinematic silhouette continuity active.'
     if (parrySpacing === 'distant') return 'Player reaches from distant range. Trajectory clutches only empty air.'
     if (parryBoundaryLevel <= 30) return 'Immediate reflexive boundary. Pre-contact interception in transit.'
     return 'Boundary receptive. Physical proximity acknowledged.'
-  }, [activeCardId, parrySpacing, parryBoundaryLevel])
+  }, [isBoundaryActive, isKineticActive, parrySpacing, parryBoundaryLevel])
 
   return (
     <div className="h-screen w-screen flex bg-app-bg text-[#F1F1F1] overflow-hidden select-none font-sans relative">
@@ -509,48 +484,33 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
           </button>
         </div>
 
-        {/* Vertical Card Stack (Single-Active Radio & Independent Accordion) */}
+        {/* Vertical Card Stack (The Effect Rack / Pedalboard Architecture) */}
         <div className="w-[346px] flex flex-col gap-3 pb-8">
-          {/* Card 1: Physical Boundary & Parry */}
+          {/* Pedal 1: Physical Boundary & Parry */}
           <StageControllerCard
-            isActive={activeCardId === 'card1'}
-            onActivate={() => handleActivateCard('card1')}
-            isExpanded={expandedCards.card1}
-            onToggleExpand={() => toggleCardExpand('card1')}
+            isActive={isBoundaryActive}
+            onActivate={() => setIsBoundaryActive(prev => !prev)}
+            isExpanded={isBoundaryExpanded}
+            onToggleExpand={() => setIsBoundaryExpanded(prev => !prev)}
             spacing={parrySpacing}
             onSpacingChange={setParrySpacing}
             boundaryLevel={parryBoundaryLevel}
             onBoundaryChange={setParryBoundaryLevel}
           />
 
-          {/* Card 2: Kinetic Continuity & Cinematic Pacing */}
+          {/* Pedal 2: Kinetic Continuity & Cinematic Pacing */}
           <KineticContinuityCard
-            isActive={activeCardId === 'card2'}
-            onActivate={() => handleActivateCard('card2')}
-            isExpanded={expandedCards.card2}
-            onToggleExpand={() => toggleCardExpand('card2')}
+            isActive={isKineticActive}
+            onActivate={() => setIsKineticActive(prev => !prev)}
+            isExpanded={isKineticExpanded}
+            onToggleExpand={() => setIsKineticExpanded(prev => !prev)}
             initialPosture={initialPosture}
             currentPosture={currentPosture}
             onOriginPostureChange={handleOriginPostureChange}
             onResetPosture={handleResetPosture}
-            onSelectVelocityAction={(actionText) => {
+            onPreFillAction={(actionText) => {
               setPlayerInput(actionText)
-              executeSimulation(actionText)
             }}
-          />
-
-          {/* Card 3: Unified Fusion (Physical Parry + Kinetic Continuity) */}
-          <UnifiedFusionCard
-            isActive={activeCardId === 'card3'}
-            onActivate={() => handleActivateCard('card3')}
-            isExpanded={expandedCards.card3}
-            onToggleExpand={() => toggleCardExpand('card3')}
-            spacing={parrySpacing}
-            onSpacingChange={setParrySpacing}
-            boundaryLevel={parryBoundaryLevel}
-            onBoundaryChange={setParryBoundaryLevel}
-            originPosture={currentPosture}
-            onOriginPostureChange={handleOriginPostureChange}
             onSelectVelocityAction={(actionText) => {
               setPlayerInput(actionText)
               executeSimulation(actionText)
@@ -621,11 +581,12 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
           telemetry={simulationResult?.telemetry ?? null}
           spacing={parrySpacing}
           boundaryLevel={parryBoundaryLevel}
-          isParryEnabled={activeCardId === 'card1' || activeCardId === 'card3'}
+          isBoundaryActive={isBoundaryActive}
+          isKineticActive={isKineticActive}
+          currentPosture={currentPosture}
           sensoryPulseText={sensoryPulseText}
           isTelemetryContractEnabled={isTelemetryContractEnabled}
           onToggleTelemetryContract={() => setIsTelemetryContractEnabled(!isTelemetryContractEnabled)}
-          activeCardId={activeCardId}
         />
 
         {/* Ambient Top Glow (Subtle Dark Apple Radial) */}
@@ -810,19 +771,14 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
                   <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-white/10 text-white/70 border border-white/15">
                     Core
                   </span>
-                  {activeCardId === 'card1' && (
+                  {isBoundaryActive && (
                     <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-[#38bdf8]/15 text-[#38bdf8] border border-[#38bdf8]/30">
-                      Card 1
+                      Pedal 1 (Boundary)
                     </span>
                   )}
-                  {activeCardId === 'card2' && (
+                  {isKineticActive && (
                     <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-[#34d399]/15 text-[#34d399] border border-[#34d399]/30">
-                      Card 2
-                    </span>
-                  )}
-                  {activeCardId === 'card3' && (
-                    <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-[#c084fc]/15 text-[#c084fc] border border-[#c084fc]/30">
-                      Card 3 Fusion
+                      Pedal 2 (Kinetic)
                     </span>
                   )}
                   {isTelemetryContractEnabled && (

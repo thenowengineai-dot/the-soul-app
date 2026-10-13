@@ -3,11 +3,13 @@ import type React from 'react'
 import { 
   Plus, 
   ArrowUp, 
-  AudioLines,
   Asterisk,
   Smile,
   Image as ImageIcon,
-  ChevronDown
+  ChevronUp,
+  ChevronRight,
+  Check,
+  Play
 } from 'lucide-react'
 import { TypingIndicator } from '../../../../components/common'
 import type { ChatInputBarProps } from '../../types'
@@ -25,26 +27,33 @@ export function ChatInputBar({
   typingVariant = 'bubble',
   chatAvatar = '',
   chatName = '',
-  thinkingBudget,
+  selectedModel = 'gemini-3.8-flash',
+  onModelChange,
+  thinkingBudget = 256,
   onThinkingBudgetChange,
+  latencyMs,
+  elapsedSeconds,
 }: ChatInputBarProps) {
   const [isEmojiOpen, setIsEmojiOpen] = useState(false)
   const [isPlusMenuOpen, setIsPlusMenuOpen] = useState(false)
-  const [isThinkingMenuOpen, setIsThinkingMenuOpen] = useState(false)
+  const [isModelMenuOpen, setIsModelMenuOpen] = useState(false)
+  const [isSubmenuOpen, setIsSubmenuOpen] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
   const plusMenuRef = useRef<HTMLDivElement>(null)
-  const thinkingMenuRef = useRef<HTMLDivElement>(null)
+  const modelMenuRef = useRef<HTMLDivElement>(null)
 
-  const thinkingOptions = [
-    { label: 'ปิด (0)', val: 0, desc: 'ตอบทันที' },
-    { label: 'ด่วน (128)', val: 128, desc: 'คิดฉับไว' },
-    { label: 'สั้น (256)', val: 256, desc: 'มาตรฐาน' },
-    { label: 'ลึก (1024)', val: 1024, desc: 'วิเคราะห์ลึก' },
+  const isFlashLite = selectedModel?.includes('flash-lite')
+  const isFlash38 = !isFlashLite
+
+  const GEMINI_THINKING_LEVELS = [
+    { id: 'low', label: 'Low', budget: 256 },
+    { id: 'medium', label: 'Medium', budget: 512 },
   ]
-  const currentThinkingLabel =
-    thinkingOptions.find((opt) => opt.val === thinkingBudget)?.label ||
-    `คิด (${thinkingBudget})`
+
+  const currentLevelObj =
+    GEMINI_THINKING_LEVELS.find((l) => l.budget === thinkingBudget) ||
+    GEMINI_THINKING_LEVELS[0] // Default to Low (256)
 
   // ปิดเมนูป็อปอัพเมื่อคลิกด้านนอก
   useEffect(() => {
@@ -53,8 +62,9 @@ export function ChatInputBar({
       if (plusMenuRef.current && !plusMenuRef.current.contains(target)) {
         setIsPlusMenuOpen(false)
       }
-      if (thinkingMenuRef.current && !thinkingMenuRef.current.contains(target)) {
-        setIsThinkingMenuOpen(false)
+      if (modelMenuRef.current && !modelMenuRef.current.contains(target)) {
+        setIsModelMenuOpen(false)
+        setIsSubmenuOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -208,57 +218,6 @@ export function ChatInputBar({
             />
           </div>
 
-          {/* Thinking Speed Capsule (Apple Frosted Glass) */}
-          {thinkingBudget !== undefined && (
-            <div className="relative shrink-0 flex items-center ml-1" ref={thinkingMenuRef}>
-              <button
-                type="button"
-                onClick={() => setIsThinkingMenuOpen((prev) => !prev)}
-                className="h-[28px] sm:h-[30px] px-2.5 rounded-full bg-white/[0.08] hover:bg-white/[0.16] border border-white/[0.12] hover:border-white/20 text-[#F1F1F1] text-[11px] font-mono flex items-center gap-1.5 transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] active:scale-95"
-                title="เลือกความเร็วการคิด"
-              >
-                <span className="font-medium tracking-tight">
-                  {currentThinkingLabel}
-                </span>
-                <ChevronDown
-                  size={11}
-                  className={`opacity-60 transition-transform duration-200 ${
-                    isThinkingMenuOpen ? 'rotate-180' : ''
-                  }`}
-                />
-              </button>
-
-              {/* Dropdown Menu */}
-              {isThinkingMenuOpen && (
-                <div className="absolute bottom-[calc(100%+12px)] left-0 z-50 w-[230px] bg-[#151517]/95 backdrop-blur-2xl border border-white/[0.14] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.6)] rounded-2xl p-1.5 animate-in fade-in zoom-in-95 duration-150">
-                  <div className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider text-white/40">
-                    THINKING SPEED
-                  </div>
-                  {thinkingOptions.map((opt) => (
-                    <button
-                      key={opt.val}
-                      type="button"
-                      onClick={() => {
-                        onThinkingBudgetChange?.(opt.val)
-                        setIsThinkingMenuOpen(false)
-                      }}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[12px] transition-all cursor-pointer ${
-                        thinkingBudget === opt.val
-                          ? 'bg-white/15 text-white font-medium border border-white/20'
-                          : 'text-white/70 hover:text-white hover:bg-white/[0.08]'
-                      }`}
-                    >
-                      <span className="font-mono">{opt.label}</span>
-                      <span className="text-[10px] text-white/45 font-sans">
-                        {opt.desc}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
           {/* ช่องกรอกข้อความ (Personalized Placeholder พร้อมระยะ Breathing Room) */}
           <input 
             ref={inputRef}
@@ -277,6 +236,134 @@ export function ChatInputBar({
             }`} 
           />
 
+          {/* Model Status Trigger (Clean text, borderless, status always visible) */}
+          {(selectedModel !== undefined || thinkingBudget !== undefined || onModelChange !== undefined) && (
+            <div className="relative shrink-0 flex items-center mr-1 sm:mr-2" ref={modelMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsModelMenuOpen((prev) => !prev)}
+                className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-white/85 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer select-none active:scale-95"
+                title="เลือกโมเดลและการประมวลผล"
+              >
+                <span className="text-[12.5px] sm:text-[13px] font-normal text-[#F1F1F1] whitespace-nowrap">
+                  {isFlashLite ? '3.5 Flash Lite' : 'Gemini 3.8 Flash'}
+                </span>
+                {!isFlashLite && (
+                  <span className="text-[12px] sm:text-[12.5px] text-white/45 whitespace-nowrap">
+                    {currentLevelObj.label}
+                  </span>
+                )}
+                <ChevronUp
+                  size={13}
+                  className={`text-white/40 transition-transform duration-200 ${
+                    isModelMenuOpen ? 'rotate-180' : ''
+                  }`}
+                />
+                {/* Subtle Latency Indicator (เช่น · 1.2s) */}
+                {isStreaming ? (
+                  <span className="flex items-center gap-1 text-[11px] font-mono text-white/40 ml-0.5">
+                    <span className="text-white/20 select-none">·</span>
+                    <span>{elapsedSeconds !== undefined ? `${elapsedSeconds.toFixed(1)}s` : '...'}</span>
+                  </span>
+                ) : latencyMs && latencyMs > 0 ? (
+                  <span className="flex items-center gap-1 text-[11px] font-mono text-white/40 ml-0.5">
+                    <span className="text-white/20 select-none">·</span>
+                    <span>
+                      {latencyMs >= 1000 ? `${(latencyMs / 1000).toFixed(1)}s` : `${latencyMs}ms`}
+                    </span>
+                  </span>
+                ) : null}
+              </button>
+
+              {/* Popover Menu - Only real models, no placeholders, no view usage */}
+              {isModelMenuOpen && (
+                <div className="absolute bottom-[calc(100%+12px)] right-0 z-50 w-[240px] sm:w-[255px] bg-[#18181A]/98 backdrop-blur-2xl border border-white/[0.12] shadow-[0_16px_40px_rgba(0,0,0,0.7)] rounded-2xl p-1.5 animate-in fade-in zoom-in-95 duration-150">
+                  {/* Header */}
+                  <div className="px-3 pt-2 pb-1.5 text-[12px] text-white/40 font-medium select-none">
+                    Model
+                  </div>
+
+                  {/* 1. Gemini 3.8 Flash with Submenu (Low, Medium) */}
+                  <div
+                    className="relative"
+                    onMouseEnter={() => setIsSubmenuOpen(true)}
+                    onMouseLeave={() => setIsSubmenuOpen(false)}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setIsSubmenuOpen((prev) => !prev)}
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[13px] transition-colors cursor-pointer select-none ${
+                        isFlash38 || isSubmenuOpen
+                          ? 'bg-white/[0.08] text-white'
+                          : 'text-white/80 hover:text-white hover:bg-white/[0.06]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="font-normal text-[#F1F1F1]">Gemini 3.8 Flash</span>
+                        {isFlash38 && (
+                          <span className="text-[12px] text-white/45">{currentLevelObj.label}</span>
+                        )}
+                      </div>
+                      <ChevronRight size={14} className="text-white/40" />
+                    </button>
+
+                    {/* Flyout Submenu for Low / Medium */}
+                    {isSubmenuOpen && (
+                      <div className="absolute right-[calc(100%+6px)] top-0 w-[125px] bg-[#18181A]/98 backdrop-blur-2xl border border-white/[0.12] rounded-xl p-1 shadow-[0_12px_32px_rgba(0,0,0,0.65)] animate-in fade-in duration-150 z-50">
+                        {GEMINI_THINKING_LEVELS.map((lvl) => {
+                          const isSelected = isFlash38 && currentLevelObj.id === lvl.id
+                          return (
+                            <button
+                              key={lvl.id}
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                onModelChange?.('gemini-3.8-flash')
+                                onThinkingBudgetChange?.(lvl.budget)
+                                setIsSubmenuOpen(false)
+                                setIsModelMenuOpen(false)
+                              }}
+                              className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-[13px] transition-colors cursor-pointer select-none ${
+                                isSelected
+                                  ? 'text-white font-medium bg-white/[0.08]'
+                                  : 'text-white/70 hover:text-white hover:bg-white/[0.04]'
+                              }`}
+                            >
+                              <span>{lvl.label}</span>
+                              {isSelected && <Check size={14} className="text-white stroke-[2.5]" />}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 2. 3.5 Flash Lite (Zero Latency / Thinking 0) */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onModelChange?.('gemini-3.5-flash-lite')
+                      onThinkingBudgetChange?.(0)
+                      setIsSubmenuOpen(false)
+                      setIsModelMenuOpen(false)
+                    }}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[13px] transition-colors cursor-pointer select-none ${
+                      isFlashLite
+                        ? 'bg-white/[0.08] text-white font-medium'
+                        : 'text-white/80 hover:text-white hover:bg-white/[0.06]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="font-normal text-[#F1F1F1]">3.5 Flash Lite</span>
+                      <span className="text-[11px] text-white/40 font-mono">คิด 0</span>
+                    </div>
+                    {isFlashLite && <Check size={14} className="text-white stroke-[2.5]" />}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* ปุ่มด้านขวามือในกล่องพิมพ์: Waveform ตอนว่างเปล่า vs. Carmine Send Arrow ตอนมีข้อความ */}
           {hasText ? (
             <button 
@@ -293,11 +380,14 @@ export function ChatInputBar({
           ) : (
             <button 
               type="button"
-              disabled
-              title="การส่งเสียง (Voice Input)"
-              className="w-[32px] h-[32px] sm:w-[34px] sm:h-[34px] rounded-full flex items-center justify-center bg-white/[0.06] border border-white/[0.10] text-white/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-all shrink-0 cursor-default"
+              onClick={onSendMessage}
+              disabled={isStreaming}
+              title="รันจำลองการแสดง (Run Simulation)"
+              className={`w-[32px] h-[32px] sm:w-[34px] sm:h-[34px] rounded-full flex items-center justify-center bg-white/[0.08] hover:bg-white/[0.16] border border-white/[0.12] hover:border-white/25 text-white/80 hover:text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] active:scale-95 transition-all shrink-0 cursor-pointer ${
+                isStreaming ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
-              <AudioLines size={16} strokeWidth={1.8} />
+              <Play size={13} fill="currentColor" className="ml-0.5 text-white/80" />
             </button>
           )}
         </div>

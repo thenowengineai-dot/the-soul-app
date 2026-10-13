@@ -338,6 +338,8 @@ class ActorAgent:
             }
             if "gemini" in self.model_name.lower():
                 tb = thinking_budget if thinking_budget is not None else int(os.getenv("ACTOR_THINKING_BUDGET", "256"))
+                if "flash-lite" in self.model_name.lower():
+                    tb = 0
                 config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_budget=tb)
                 
             # ใช้ Vertex AI โดยบังคับให้ออกเป็น JSON เท่านั้น

@@ -149,6 +149,9 @@ export interface ChatInputBarProps {
   availableModels?: Array<{ id: string; name: string; tag?: string }>
   thinkingBudget?: number
   onThinkingBudgetChange?: (budget: number) => void
+  onViewUsage?: () => void
+  latencyMs?: number
+  elapsedSeconds?: number
 }
 
 export interface ChatRoomProps {

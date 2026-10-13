@@ -6,8 +6,7 @@ import {
   RotateCcw,
   FileCode2,
   Info,
-  ArrowLeft,
-  Layers
+  ArrowLeft
 } from 'lucide-react'
 import {
   DEFAULT_BASE_PROMPT,
@@ -122,8 +121,8 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   ])
 
   // 5. Execution & Telemetry State
-  const [selectedModel] = useState<string>('gemini-2.5-flash')
-  const [thinkingBudget, setThinkingBudget] = useState<number>(128)
+  const [selectedModel, setSelectedModel] = useState<string>('gemini-3.8-flash')
+  const [thinkingBudget, setThinkingBudget] = useState<number>(256)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0)
   const [simulationResult, setSimulationResult] = useState<SandboxSimulateResponse | null>(null)
@@ -483,38 +482,24 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   }, [activeCardId, parrySpacing, parryBoundaryLevel])
 
   return (
-    <div className="h-screen w-screen flex bg-app-bg text-[#F1F1F1] overflow-hidden select-none font-sans">
+    <div className="h-screen w-screen flex bg-app-bg text-[#F1F1F1] overflow-hidden select-none font-sans relative">
+      {/* ✦ AMBIENT BACKDROP LIGHT (MATCHING CREATOR STUDIO BENTO CANVAS) */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[350px] bg-gradient-to-b from-[#EF264C]/[0.05] via-white/[0.02] to-transparent pointer-events-none blur-3xl z-0" />
+
       {/* ======================================================================= */}
       {/* 1. LEFT ASIDE: THE STAGE CONTROLLER (370px with 346px Apple Bento Card)  */}
       {/* ======================================================================= */}
-      <aside className="w-[370px] shrink-0 h-full p-3.5 flex flex-col justify-start items-center overflow-y-auto no-scrollbar border-r border-white/[0.08] bg-app-bg z-20">
+      <aside className="w-[370px] shrink-0 h-full p-3.5 flex flex-col justify-start items-center overflow-y-auto no-scrollbar border-r border-white/[0.08] bg-app-bg/90 backdrop-blur-xl z-20">
         {/* Universal Top Toolbar (Outside Cards) */}
-        <div className="w-[346px] mb-3.5 flex items-center justify-between gap-2 shrink-0">
+        <div className="w-[346px] mb-3.5 flex items-center justify-between shrink-0">
           <button
             type="button"
             onClick={onBackToHome}
-            className="h-8 px-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-white/60 hover:text-white text-[11px] font-medium flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+            className="h-8 px-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-white/60 hover:text-white text-[11px] font-medium flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
             title="กลับสู่หน้าหลัก"
           >
             <ArrowLeft size={13} />
             <span>หน้าหลัก</span>
-          </button>
-
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-            <Layers size={12} className="text-white/40" />
-            <span className="text-[10.5px] font-mono text-white/50 tracking-wider">
-              FOUNDRY (3 CARDS)
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setIsPromptInspectorOpen(true)}
-            className="h-8 px-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-white/70 hover:text-white text-[11px] font-medium flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
-            title="ดูพิมพ์เขียว Prompt ที่ถูกประกอบขึ้นสด"
-          >
-            <FileCode2 size={13} className="text-[#38bdf8]" />
-            <span>Prompt Studio</span>
           </button>
         </div>
 
@@ -530,9 +515,6 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
             onSpacingChange={setParrySpacing}
             boundaryLevel={parryBoundaryLevel}
             onBoundaryChange={setParryBoundaryLevel}
-            isLoading={isLoading}
-            elapsedSeconds={elapsedSeconds}
-            onSimulate={handleSimulate}
           />
 
           {/* Card 2: Kinetic Continuity & Cinematic Pacing */}
@@ -549,9 +531,6 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
               setPlayerInput(actionText)
               executeSimulation(actionText)
             }}
-            isLoading={isLoading}
-            elapsedSeconds={elapsedSeconds}
-            onSimulate={handleSimulate}
           />
 
           {/* Card 3: Unified Fusion (Physical Parry + Kinetic Continuity) */}
@@ -570,9 +549,6 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
               setPlayerInput(actionText)
               executeSimulation(actionText)
             }}
-            isLoading={isLoading}
-            elapsedSeconds={elapsedSeconds}
-            onSimulate={handleSimulate}
           />
         </div>
       </aside>
@@ -583,6 +559,17 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       <main className="flex-1 h-full flex flex-col relative overflow-hidden bg-app-bg">
         {/* Top Minimal Utility Bar */}
         <div className="h-10 px-6 flex items-center justify-end gap-2 shrink-0 z-20">
+          {/* Prompt Studio Button */}
+          <button
+            type="button"
+            onClick={() => setIsPromptInspectorOpen(true)}
+            className="h-7 px-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-white/70 hover:text-white text-[10.5px] font-mono flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+            title="ดูพิมพ์เขียว Prompt ที่ถูกประกอบขึ้นสด"
+          >
+            <FileCode2 size={12} className="text-[#38bdf8]" />
+            <span>Prompt Studio</span>
+          </button>
+
           {/* Micro Gateway Toggle */}
           <div className="flex items-center p-0.5 rounded-full bg-white/[0.04] border border-white/10 text-[10px] font-mono">
             <button
@@ -616,7 +603,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
               setChatLog([])
               setSimulationResult(null)
             }}
-            className="px-2 py-0.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/40 hover:text-white text-[10px] font-mono transition-all cursor-pointer"
+            className="h-7 px-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/40 hover:text-white text-[10px] font-mono transition-all cursor-pointer flex items-center"
             title="ล้างข้อความในห้องแชทและรีเซ็ตท่าทาง"
           >
             Clear
@@ -666,8 +653,12 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
             onSendMessage={handleSimulate}
             isStreaming={isLoading}
             chatName="Actor"
+            selectedModel={selectedModel}
+            onModelChange={setSelectedModel}
             thinkingBudget={thinkingBudget}
             onThinkingBudgetChange={setThinkingBudget}
+            latencyMs={simulationResult?.telemetry?.latency_ms}
+            elapsedSeconds={elapsedSeconds}
           />
         </div>
       </main>

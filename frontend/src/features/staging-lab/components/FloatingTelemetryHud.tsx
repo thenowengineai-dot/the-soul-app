@@ -124,24 +124,20 @@ export function FloatingTelemetryHud({
   // Expanded MSI Afterburner Style OSD (Ultra-Translucent)
   return (
     <div className="absolute top-[52px] right-6 z-30 w-[310px] sm:w-[330px] rounded-2xl bg-black/35 backdrop-blur-xl border border-white/10 shadow-2xl p-3.5 select-none transition-all">
-      {/* Top Header: Active Feature HUD Badge + Controls */}
+      {/* Top Header: Somatic Telemetry Pulse Indicator + Controls */}
       <div className="flex items-center justify-between gap-1 mb-2">
         <div className="flex items-center gap-1.5">
           <span
             className={`w-1.5 h-1.5 rounded-full ${
               activeCardId === 'card1'
-                ? 'bg-[#38bdf8] shadow-[0_0_8px_rgba(56,189,248,0.5)]'
+                ? 'bg-[#38bdf8]'
                 : activeCardId === 'card2'
-                ? 'bg-[#34d399] shadow-[0_0_8px_rgba(52,211,153,0.5)]'
-                : 'bg-[#c084fc] shadow-[0_0_8px_rgba(192,132,252,0.5)]'
+                ? 'bg-[#34d399]'
+                : 'bg-[#c084fc]'
             }`}
           />
-          <span className="text-[10px] font-mono uppercase font-bold text-white/70 tracking-wider">
-            {activeCardId === 'card1'
-              ? 'HUD 1 · ขอบเขตสัมผัส'
-              : activeCardId === 'card2'
-              ? 'HUD 2 · สรีระและแรงเฉื่อย'
-              : 'HUD 3 · ระบบรวมร่าง'}
+          <span className="text-[10px] font-mono uppercase text-white/50 tracking-wider">
+            SOMATIC HUD
           </span>
         </div>
 
@@ -208,34 +204,9 @@ export function FloatingTelemetryHud({
 
       {/* Monospace Telemetry Grid */}
       <div className="font-mono text-[11px] leading-relaxed space-y-1.5">
-        {/* Row 1: Pipeline Latency */}
-        {visibleRows.latency && (
-          <div className="flex items-center justify-between">
-            <span className="text-[#38bdf8] font-bold">LATENCY</span>
-            <div className="flex items-center gap-2">
-              <span className={`font-semibold ${latencyColor}`}>
-                {latency > 0 ? `${latency} ms` : 'STANDBY'}
-              </span>
-              <span className="text-[9.5px] text-white/30">
-                {latency > 0 && latency < 500 ? 'OPTIMAL' : ''}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Row 2: Target Model */}
-        {visibleRows.model && (
-          <div className="flex items-center justify-between">
-            <span className="text-[#34d399] font-bold">ENGINE</span>
-            <span className="text-white/80 truncate max-w-[170px]">
-              {telemetry?.model || 'Gemini 3.8 Flash'}
-            </span>
-          </div>
-        )}
-
-        {/* Row 3: Hitbox / Real Telemetry Verdict */}
+        {/* Row 1: Hitbox / Real Telemetry Verdict */}
         {isBoundaryContext && visibleRows.hitbox && (
-          <div className="flex items-start justify-between gap-2 pt-1 border-t border-white/[0.06]">
+          <div className="flex items-start justify-between gap-2">
             <span className="text-[#fb923c] font-bold shrink-0">VERDICT</span>
             <span className={`text-right font-medium text-[10.5px] ${hitbox.color}`}>
               {hitbox.text}

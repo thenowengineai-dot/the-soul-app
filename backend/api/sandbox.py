@@ -388,7 +388,7 @@ async def simulate_turn(req: SandboxSimulateRequest):
     if req.model_name and req.model_name.strip() and req.model_name.strip() != actor.model_name:
         actor = ActorAgent(model_name=req.model_name.strip())
 
-    if req.thinking_budget:
+    if req.thinking_budget is not None:
         os.environ["ACTOR_THINKING_BUDGET"] = str(req.thinking_budget)
         
     try:

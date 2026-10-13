@@ -1,8 +1,5 @@
 import { useState } from 'react'
 import {
-  RotateCcw,
-  Zap,
-  Sparkles,
   Play,
   ChevronDown,
   ChevronUp
@@ -28,9 +25,9 @@ interface UnifiedFusionCardProps {
   originPosture: string
   onOriginPostureChange: (posture: string) => void
   onSelectVelocityAction: (actionText: string) => void
-  isLoading: boolean
-  elapsedSeconds: number
-  onSimulate: () => void
+  isLoading?: boolean
+  elapsedSeconds?: number
+  onSimulate?: () => void
 }
 
 export function UnifiedFusionCard({
@@ -45,9 +42,6 @@ export function UnifiedFusionCard({
   originPosture,
   onOriginPostureChange,
   onSelectVelocityAction,
-  isLoading,
-  elapsedSeconds,
-  onSimulate,
 }: UnifiedFusionCardProps) {
   const boundaryInfo = getBoundaryBrief(boundaryLevel)
   const [activeSubTab, setActiveSubTab] = useState<'boundary' | 'kinetic'>('boundary')
@@ -62,44 +56,37 @@ export function UnifiedFusionCard({
 
   return (
     <div
-      className={`w-[346px] rounded-[24px] transition-all select-none border backdrop-blur-2xl ${
+      className={`w-[346px] rounded-[28px] transition-all select-none border backdrop-blur-2xl relative overflow-hidden ${
         isActive
-          ? 'bg-white/[0.07] border-[#c084fc]/40 shadow-[0_0_24px_rgba(192,132,252,0.12)]'
-          : 'bg-white/[0.04] hover:bg-white/[0.06] border-white/[0.08] hover:border-white/15'
+          ? 'bg-white/[0.08] border-[#c084fc]/40 shadow-[inset_0_1px_0_rgba(192,132,252,0.30),0_0_24px_rgba(192,132,252,0.12)]'
+          : 'bg-white/[0.06] hover:bg-white/[0.09] border-white/[0.10] hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]'
       }`}
     >
-      {/* 1. Accordion Header Row */}
-      <div className="p-4 flex items-center justify-between gap-2">
+      {/* 1. Accordion Header Row (Ruthless Subtraction to Essence - Apple Style) */}
+      <div className="px-4 py-3.5 flex items-center justify-between gap-2">
         <button
           type="button"
           onClick={onToggleExpand}
-          className="flex-1 flex items-center gap-2.5 text-left cursor-pointer group"
+          className="flex-1 flex items-center gap-2 text-left cursor-pointer group min-w-0"
         >
-          <div
-            className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all shrink-0 ${
+          <span
+            className={`w-2 h-2 rounded-full shrink-0 transition-all ${
               isActive
-                ? 'bg-[#c084fc]/15 border-[#c084fc]/40 text-[#c084fc]'
-                : 'bg-white/[0.05] border-white/10 text-white/50 group-hover:text-white/80'
+                ? 'bg-[#c084fc] shadow-[0_0_8px_rgba(192,132,252,0.8)]'
+                : 'bg-[#c084fc]/40 group-hover:bg-[#c084fc]/70'
             }`}
-          >
-            <Sparkles size={14} strokeWidth={2.2} />
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-mono uppercase px-1.5 py-0.2 rounded bg-white/10 text-[#c084fc] font-bold">
-                การ์ดที่ 3
-              </span>
-              <h2 className="text-[14.5px] font-semibold text-[#F1F1F1] tracking-tight leading-none">
-                ระบบรวมร่างสรีระและขอบเขต
-              </h2>
-            </div>
-            <p className="text-[10.5px] font-normal text-white/40 mt-1">
-              Unified Fusion Engine (1 + 2)
-            </p>
+          />
+          <div className="flex items-baseline gap-1.5 truncate">
+            <span className="text-[15px] sm:text-[15.5px] font-semibold text-[#F1F1F1] tracking-tight">
+              ระบบผสานสรีระ
+            </span>
+            <span className="text-[11px] font-normal text-white/40 truncate">
+              (ขอบเขต + ต่อเนื่อง)
+            </span>
           </div>
         </button>
 
-        {/* Right Header Actions: Activation Pill + Chevron */}
+        {/* Right Header Actions: Tactile Status Pill + Chevron */}
         <div className="flex items-center gap-1.5 shrink-0">
           <button
             type="button"
@@ -107,28 +94,23 @@ export function UnifiedFusionCard({
               e.stopPropagation()
               onActivate()
             }}
-            className={`px-2.5 py-1 rounded-full text-[10px] font-mono font-medium border transition-all cursor-pointer flex items-center gap-1.5 ${
+            className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-medium transition-all cursor-pointer flex items-center gap-1 select-none ${
               isActive
-                ? 'bg-[#c084fc]/20 text-[#e9d5ff] border-[#c084fc]/50 shadow-[0_0_12px_rgba(192,132,252,0.25)]'
-                : 'bg-white/[0.04] text-white/40 border-white/10 hover:text-white/70 hover:bg-white/[0.08]'
+                ? 'bg-[#c084fc]/15 text-[#c084fc] border border-[#c084fc]/35 shadow-[inset_0_1px_0_rgba(192,132,252,0.20)]'
+                : 'bg-white/[0.04] hover:bg-white/[0.08] text-white/45 hover:text-white/80 border border-white/10 hover:border-white/20'
             }`}
             title={isActive ? 'การ์ดนี้กำลังถูกทดสอบ' : 'คลิกเพื่อเลือกทดสอบการ์ดนี้'}
           >
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${
-                isActive ? 'bg-[#c084fc] animate-pulse' : 'bg-white/30'
-              }`}
-            />
-            {isActive ? 'ACTIVE' : 'เลือกทดสอบ'}
+            <span>{isActive ? 'กำลังใช้' : 'เลือกใช้'}</span>
           </button>
 
           <button
             type="button"
             onClick={onToggleExpand}
-            className="w-7 h-7 rounded-full bg-white/[0.04] hover:bg-white/[0.10] text-white/40 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+            className="w-6 h-6 rounded-full bg-white/[0.04] hover:bg-white/[0.10] text-white/35 hover:text-white/80 flex items-center justify-center transition-all cursor-pointer"
             title={isExpanded ? 'พับเก็บการ์ด' : 'คลี่ออกดูการ์ด'}
           >
-            {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
           </button>
         </div>
       </div>
@@ -256,30 +238,6 @@ export function UnifiedFusionCard({
               ))}
             </div>
           </div>
-
-          {/* Action CTA (รันโหมดรวมร่าง) */}
-          <button
-            type="button"
-            onClick={onSimulate}
-            disabled={isLoading}
-            className={`w-full h-10 rounded-full font-medium text-[12.5px] tracking-tight transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-[0.98] ${
-              isLoading
-                ? 'bg-white/10 text-white/50 border border-white/10 cursor-not-allowed'
-                : 'bg-[#F1F1F1] hover:bg-white text-black border border-white/40 hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]'
-            }`}
-          >
-            {isLoading ? (
-              <>
-                <RotateCcw size={13} className="animate-spin text-white/60" />
-                <span>กำลังจำลองระบบรวมร่าง... ({elapsedSeconds.toFixed(1)}s)</span>
-              </>
-            ) : (
-              <>
-                <Zap size={13} fill="currentColor" />
-                <span>รันจำลองระบบรวมร่าง (Card 3)</span>
-              </>
-            )}
-          </button>
         </div>
       )}
     </div>

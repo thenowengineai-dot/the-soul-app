@@ -27,9 +27,24 @@ import type { PromptModule, SandboxSimulateResponse, SandboxSimulateRequest } fr
 import { MessageList } from '../../chat/components/chat-room/MessageList'
 import { ChatInputBar } from '../../chat/components/chat-room/ChatInputBar'
 import type { ChatMessage } from '../../chat/types'
+import { CharacterStateCard } from './CharacterStateCard'
 import { StageControllerCard } from './StageControllerCard'
 import { KineticContinuityCard } from './KineticContinuityCard'
+import { PersonaArchetypeCard } from './PersonaArchetypeCard'
+import { InhibitionShieldCard } from './InhibitionShieldCard'
+import {
+  type PersonaArchetype,
+  CANONICAL_PERSONA_PRESETS,
+  generatePersonaPromptSnippet
+} from '../modules/personaArchetypeModule'
+import {
+  type InhibitionShieldConfig,
+  ARCHETYPE_SHIELD_DEFAULTS,
+  generateInhibitionShieldPromptSnippet,
+  getShieldStateMeta
+} from '../modules/inhibitionShieldModule'
 import { FloatingTelemetryHud } from './FloatingTelemetryHud'
+import { CentralDockIsland } from './CentralDockIsland'
 
 interface StagingLabViewProps {
   onBackToHome: () => void
@@ -60,6 +75,13 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   const [basePrompt, setBasePrompt] = useState<string>(DEFAULT_BASE_PROMPT)
   const [featureModules] = useState<PromptModule[]>(INITIAL_FEATURE_MODULES)
 
+  // 3.0 Card 0: Persona Archetype Controls (DNA & Defense Mechanics)
+  const [currentArchetype, setCurrentArchetype] = useState<PersonaArchetype>(
+    CANONICAL_PERSONA_PRESETS[0]
+  )
+  const [isArchetypeActive, setIsArchetypeActive] = useState<boolean>(true)
+  const [isArchetypeExpanded, setIsArchetypeExpanded] = useState<boolean>(true)
+
   // 3.1 Card 1: Physical Boundary Controls
   const [parrySpacing, setParrySpacing] = useState<SpatialSpacing>('reach')
   const [parryBoundaryLevel, setParryBoundaryLevel] = useState<number>(10)
@@ -73,21 +95,94 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   )
 
   // 3.3 Dynamic Signal Chain States (The Effect Rack / Pedalboard Architecture)
+  const [isCharacterStateActive, setIsCharacterStateActive] = useState<boolean>(true)
   const [isBoundaryActive, setIsBoundaryActive] = useState<boolean>(true)
   const [isKineticActive, setIsKineticActive] = useState<boolean>(true)
+  const [isKineticLinkedToBoundary, setIsKineticLinkedToBoundary] = useState<boolean>(true)
+  const [isCharacterStateExpanded, setIsCharacterStateExpanded] = useState<boolean>(true)
   const [isBoundaryExpanded, setIsBoundaryExpanded] = useState<boolean>(true)
   const [isKineticExpanded, setIsKineticExpanded] = useState<boolean>(true)
+
+  // 3.4 Card 3: Inhibition Shield & Armor Break Controls (Effect Rack Pedal 3)
+  const [isShieldActive, setIsShieldActive] = useState<boolean>(true)
+  const [isShieldExpanded, setIsShieldExpanded] = useState<boolean>(true)
+  const [shieldConfig, setShieldConfig] = useState<InhibitionShieldConfig>(() => {
+    const defaults = ARCHETYPE_SHIELD_DEFAULTS.cool_aloof
+    return {
+      enabled: true,
+      state: 'active',
+      autoProgress: true,
+      trigger: defaults?.trigger ?? '',
+      shift: defaults?.shift ?? '',
+      postShatterReaction: defaults?.postShatterReaction ?? '',
+    }
+  })
+
+  const handleArchetypeChange = (nextArchetype: PersonaArchetype) => {
+    setCurrentArchetype(nextArchetype)
+    const defaults = ARCHETYPE_SHIELD_DEFAULTS[nextArchetype.id]
+    if (defaults) {
+      setShieldConfig(prev => ({
+        ...prev,
+        trigger: defaults.trigger,
+        shift: defaults.shift,
+        postShatterReaction: defaults.postShatterReaction,
+      }))
+    }
+  }
+
+  // Deterministic connection handlers
+  const handleToggleBoundary = () => {
+    setIsBoundaryActive((prev) => {
+      const next = !prev
+      if (next && !isCharacterStateActive) {
+        setIsCharacterStateActive(true)
+      }
+      return next
+    })
+  }
+
+  const handleToggleCharacterState = () => {
+    setIsCharacterStateActive((prev) => {
+      const next = !prev
+      if (!next && isBoundaryActive) {
+        setIsBoundaryActive(false)
+      }
+      return next
+    })
+  }
+
+  const handleToggleKineticLink = () => {
+    setIsKineticLinkedToBoundary((prev) => {
+      const next = !prev
+      if (next && !isCharacterStateActive) {
+        setIsCharacterStateActive(true)
+      }
+      return next
+    })
+  }
+
+  const handleBypassAll = () => {
+    setIsArchetypeActive(false)
+    setIsCharacterStateActive(false)
+    setIsBoundaryActive(false)
+    setIsKineticActive(false)
+    setIsKineticLinkedToBoundary(false)
+    setIsShieldActive(false)
+  }
 
   const handleOriginPostureChange = (newPosture: string) => {
     setInitialPosture(newPosture)
     setCurrentPosture(newPosture)
   }
 
+  const resetCountRef = useRef(0)
   const handleResetPosture = () => {
     setCurrentPosture(initialPosture)
+    resetCountRef.current += 1
     setChatLog([
       {
-        id: `reset-vo-${Date.now()}`,
+        id: `reset-vo-${resetCountRef.current}`,
         type: 'vo',
         text: `รีเซ็ตสรีระกลับสู่ท่าตั้งต้นเรียบร้อย: "${initialPosture}"`,
       },
@@ -130,17 +225,31 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [chatLog, isLoading])
 
+  // Persona Archetype brief computed string (Card 0)
+  const personaPromptSnippet = useMemo(() => {
+    return generatePersonaPromptSnippet(currentArchetype, isArchetypeActive)
+  }, [currentArchetype, isArchetypeActive])
+
   // Physical brief computed string (Card 1)
   const parryBriefSnippet = useMemo(() => {
     return generatePhysicalParryBrief(parrySpacing, parryBoundaryLevel, playerInput, currentPosture)
   }, [parrySpacing, parryBoundaryLevel, playerInput, currentPosture])
 
+  const isKineticSomaticEffective = isCharacterStateActive && isKineticLinkedToBoundary
+
   // Kinetic Pacing brief computed string (Card 2)
   const kineticPromptSnippet = useMemo(() => {
-    return generateKineticPacingPrompt(currentPosture, isKineticActive)
-  }, [currentPosture, isKineticActive])
+    return generateKineticPacingPrompt(
+      currentPosture,
+      isKineticActive,
+      isKineticSomaticEffective ? parryBoundaryLevel : undefined
+    )
+  }, [currentPosture, isKineticActive, isKineticSomaticEffective, parryBoundaryLevel])
 
-
+  // Inhibition Shield brief computed string (Card 3 / Pedal 3)
+  const shieldPromptSnippet = useMemo(() => {
+    return generateInhibitionShieldPromptSnippet(shieldConfig, isShieldActive)
+  }, [shieldConfig, isShieldActive])
 
   // Close on Escape key
   useEffect(() => {
@@ -176,6 +285,22 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     }
 
     // Layer 2: Injected Feature Modules (The Effect Rack / Signal Chain)
+    if (isArchetypeActive && personaPromptSnippet.trim()) {
+      layers.push({
+        id: 'persona_archetype',
+        title: `Signal Chain: Pedal 0 (Persona Archetype: ${currentArchetype.name})`,
+        sourceTag: 'PEDAL 0: PERSONA',
+        sourceLabel: `แม่พิมพ์ตัวตน 5 เสาหลัก: ${currentArchetype.tagline} (Psychology & Somatics)`,
+        badgeBg: 'bg-[#818cf8]/10',
+        badgeText: 'text-[#818cf8]',
+        badgeBorder: 'border-[#818cf8]/30',
+        borderClass: 'border-[#818cf8]/20',
+        bgClass: 'bg-[#818cf8]/[0.03]',
+        textClass: 'text-[#e0e7ff]',
+        content: personaPromptSnippet.trim(),
+      })
+    }
+
     if (isBoundaryActive && parryBriefSnippet.trim()) {
       layers.push({
         id: 'physical_reality',
@@ -195,16 +320,37 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     if (isKineticActive && kineticPromptSnippet.trim()) {
       layers.push({
         id: 'kinetic_pacing_module',
-        title: 'Signal Chain: Pedal 2 (Kinetic Continuity & Pacing)',
-        sourceTag: 'PEDAL 2: KINETIC',
-        sourceLabel: 'กฎแห่งแรงเฉื่อยและจังหวะภาพยนตร์',
-        badgeBg: 'bg-[#34d399]/10',
-        badgeText: 'text-[#34d399]',
-        badgeBorder: 'border-[#34d399]/30',
-        borderClass: 'border-[#34d399]/20',
-        bgClass: 'bg-[#34d399]/[0.03]',
-        textClass: 'text-[#a7f3d0]',
+        title: isKineticSomaticEffective
+          ? 'Signal Chain: Pedal 2 (Kinetic Continuity & Somatic Friction)'
+          : 'Signal Chain: Pedal 2 (Kinetic Continuity & Pacing)',
+        sourceTag: isKineticSomaticEffective ? 'PEDAL 2: KINETIC + SOMATIC' : 'PEDAL 2: KINETIC',
+        sourceLabel: isKineticSomaticEffective
+          ? 'กฎแห่งแรงเฉื่อยและจังหวะภาพยนตร์ (ผสานแรงเสียดทานทางอารมณ์)'
+          : 'กฎแห่งแรงเฉื่อยและจังหวะภาพยนตร์ (กายภาพล้วน)',
+        badgeBg: isKineticSomaticEffective ? 'bg-[#f59e0b]/10' : 'bg-[#34d399]/10',
+        badgeText: isKineticSomaticEffective ? 'text-[#f59e0b]' : 'text-[#34d399]',
+        badgeBorder: isKineticSomaticEffective ? 'border-[#f59e0b]/30' : 'border-[#34d399]/30',
+        borderClass: isKineticSomaticEffective ? 'border-[#f59e0b]/20' : 'border-[#34d399]/20',
+        bgClass: isKineticSomaticEffective ? 'bg-[#f59e0b]/[0.02]' : 'bg-[#34d399]/[0.03]',
+        textClass: isKineticSomaticEffective ? 'text-[#fef3c7]' : 'text-[#a7f3d0]',
         content: kineticPromptSnippet.trim(),
+      })
+    }
+
+    if (isShieldActive && shieldPromptSnippet.trim()) {
+      const shieldMeta = getShieldStateMeta(shieldConfig.state)
+      layers.push({
+        id: 'inhibition_shield_module',
+        title: `Signal Chain: Pedal 3 (Inhibition Shield: ${shieldMeta.tag})`,
+        sourceTag: `PEDAL 3: SHIELD [${shieldConfig.state.toUpperCase()}]`,
+        sourceLabel: `กลไกเกราะสติและการแตกหัก (${shieldMeta.label})`,
+        badgeBg: shieldMeta.badgeBg,
+        badgeText: shieldMeta.badgeText,
+        badgeBorder: shieldMeta.badgeBorder,
+        borderClass: shieldMeta.badgeBorder.replace('/30', '/20'),
+        bgClass: shieldMeta.badgeBg.replace('/10', '/[0.03]'),
+        textClass: 'text-[#F1F1F1]',
+        content: shieldPromptSnippet.trim(),
       })
     }
 
@@ -278,12 +424,18 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     return layers
   }, [
     basePrompt,
+    isArchetypeActive,
+    currentArchetype,
+    personaPromptSnippet,
     isBoundaryActive,
     isKineticActive,
+    isKineticSomaticEffective,
+    isShieldActive,
+    shieldConfig,
     parryBriefSnippet,
     kineticPromptSnippet,
+    shieldPromptSnippet,
     featureModules,
-    simulationResult,
     isTelemetryContractEnabled,
   ])
 
@@ -359,6 +511,14 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     // 2. Prepare payload - Dynamic Signal Chain (The Effect Rack Architecture)
     const activeSnippets: Array<{ id: string; name: string; prompt_snippet: string }> = []
 
+    if (isArchetypeActive && personaPromptSnippet.trim()) {
+      activeSnippets.push({
+        id: 'persona_archetype',
+        name: `PERSONA ARCHETYPE: ${currentArchetype.name}`,
+        prompt_snippet: personaPromptSnippet.trim(),
+      })
+    }
+
     if (isBoundaryActive) {
       const turnBrief = generatePhysicalParryBrief(effectiveSpacing, effectiveBoundary, trimmed, currentPosture)
       activeSnippets.push({
@@ -373,6 +533,14 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
         id: 'kinetic_pacing',
         name: 'CINEMATIC KINETIC CONTINUITY & PACING',
         prompt_snippet: kineticPromptSnippet.trim(),
+      })
+    }
+
+    if (isShieldActive && shieldPromptSnippet.trim()) {
+      activeSnippets.push({
+        id: 'inhibition_shield',
+        name: `INHIBITION SHIELD: ${shieldConfig.state.toUpperCase()}`,
+        prompt_snippet: shieldPromptSnippet.trim(),
       })
     }
 
@@ -428,6 +596,11 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
         setCurrentPosture(data.telemetry.a_pos.trim())
       }
 
+      // Auto-Progression Valve: Advance from SHATTERED to POST-SHATTER after 1 round completes
+      if (isShieldActive && shieldConfig.state === 'shattered' && shieldConfig.autoProgress) {
+        setShieldConfig(prev => ({ ...prev, state: 'post_shatter' }))
+      }
+
       // 3. Append actor response sequence to chat log
       if (data.response_sequence && data.response_sequence.length > 0) {
         const actorMsgs: ChatMessage[] = data.response_sequence.map((seg, idx) => ({
@@ -454,13 +627,19 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   // Sensory context pulse snippet for HUD
   const sensoryPulseText = useMemo(() => {
     if (isBoundaryActive && isKineticActive) {
-      return 'Dual signal chain active: Physical boundary arbitration and kinetic inertia continuity.'
+      return isKineticSomaticEffective
+        ? 'Dual signal chain active: Physical boundary arbitration and kinetic inertia infused with somatic friction.'
+        : 'Dual signal chain active: Physical boundary arbitration and kinetic inertia continuity.'
     }
-    if (isKineticActive) return 'Kinetic tempo and cinematic silhouette continuity active.'
+    if (isKineticActive) {
+      return isKineticSomaticEffective
+        ? 'Kinetic tempo and somatic friction active.'
+        : 'Kinetic tempo and cinematic silhouette continuity active.'
+    }
     if (parrySpacing === 'distant') return 'Player reaches from distant range. Trajectory clutches only empty air.'
     if (parryBoundaryLevel <= 30) return 'Immediate reflexive boundary. Pre-contact interception in transit.'
     return 'Boundary receptive. Physical proximity acknowledged.'
-  }, [isBoundaryActive, isKineticActive, parrySpacing, parryBoundaryLevel])
+  }, [isBoundaryActive, isKineticActive, isKineticSomaticEffective, parrySpacing, parryBoundaryLevel])
 
   return (
     <div className="h-screen w-screen flex bg-app-bg text-[#F1F1F1] overflow-hidden select-none font-sans relative">
@@ -484,18 +663,45 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
           </button>
         </div>
 
-        {/* Vertical Card Stack (The Effect Rack / Pedalboard Architecture) */}
+        {/* Two-Tier Deck: Upper Deck (Character Essence & Archetype) + Lower Deck (Processors / Pedals) */}
         <div className="w-[346px] flex flex-col gap-3 pb-8">
+          {/* Card 0: Persona Archetype & Coping Mechanics */}
+          <PersonaArchetypeCard
+            isActive={isArchetypeActive}
+            onActivate={() => setIsArchetypeActive(prev => !prev)}
+            currentArchetype={currentArchetype}
+            onArchetypeChange={handleArchetypeChange}
+            isExpanded={isArchetypeExpanded}
+            onToggleExpand={() => setIsArchetypeExpanded(prev => !prev)}
+          />
+
+          {/* Card 1: Boundary & Receptivity Level */}
+          <CharacterStateCard
+            isActive={isCharacterStateActive}
+            onActivate={handleToggleCharacterState}
+            boundaryLevel={parryBoundaryLevel}
+            onBoundaryChange={setParryBoundaryLevel}
+            isExpanded={isCharacterStateExpanded}
+            onToggleExpand={() => setIsCharacterStateExpanded(prev => !prev)}
+          />
+
+          {/* Lower Deck Divider / Section Label */}
+          <div className="flex items-center gap-2 pt-1 pb-0.5 px-1">
+            <span className="w-1 h-1 rounded-full bg-white/30" />
+            <span className="text-[10px] font-mono uppercase tracking-wider text-white/40">
+              SOMATIC PROCESSORS (EFFECT RACK)
+            </span>
+            <div className="flex-1 h-[1px] bg-white/[0.06]" />
+          </div>
+
           {/* Pedal 1: Physical Boundary & Parry */}
           <StageControllerCard
             isActive={isBoundaryActive}
-            onActivate={() => setIsBoundaryActive(prev => !prev)}
+            onActivate={handleToggleBoundary}
             isExpanded={isBoundaryExpanded}
             onToggleExpand={() => setIsBoundaryExpanded(prev => !prev)}
             spacing={parrySpacing}
             onSpacingChange={setParrySpacing}
-            boundaryLevel={parryBoundaryLevel}
-            onBoundaryChange={setParryBoundaryLevel}
           />
 
           {/* Pedal 2: Kinetic Continuity & Cinematic Pacing */}
@@ -516,6 +722,17 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
               executeSimulation(actionText)
             }}
           />
+
+          {/* Pedal 3: Inhibition Shield & Armor Break */}
+          <InhibitionShieldCard
+            isActive={isShieldActive}
+            onActivate={() => setIsShieldActive(prev => !prev)}
+            isExpanded={isShieldExpanded}
+            onToggleExpand={() => setIsShieldExpanded(prev => !prev)}
+            config={shieldConfig}
+            onChange={setShieldConfig}
+            baseDefenseStage={currentArchetype.baseDefenseStage}
+          />
         </div>
       </aside>
 
@@ -523,6 +740,26 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       {/* 2. RIGHT CANVAS: THE LIVE CHAT ROOM (100% Production Chat Parity)       */}
       {/* ======================================================================= */}
       <main className="flex-1 h-full flex flex-col relative overflow-hidden bg-app-bg">
+        {/* Central Dock Island (iPhone Dock / Apple Dynamic Island Floating at Top Center) */}
+        <CentralDockIsland
+          isArchetypeActive={isArchetypeActive}
+          onToggleArchetype={() => setIsArchetypeActive(prev => !prev)}
+          archetypeName={currentArchetype.name}
+          isCharacterStateActive={isCharacterStateActive}
+          onToggleCharacterState={handleToggleCharacterState}
+          characterStateLevel={parryBoundaryLevel}
+          isBoundaryActive={isBoundaryActive}
+          onToggleBoundary={handleToggleBoundary}
+          isKineticActive={isKineticActive}
+          onToggleKinetic={() => setIsKineticActive(prev => !prev)}
+          isKineticLinkedToBoundary={isKineticSomaticEffective}
+          onToggleKineticLink={handleToggleKineticLink}
+          isShieldActive={isShieldActive}
+          onToggleShield={() => setIsShieldActive(prev => !prev)}
+          shieldState={shieldConfig.state}
+          onBypassAll={handleBypassAll}
+        />
+
         {/* Top Minimal Utility Bar */}
         <div className="h-10 px-6 flex items-center justify-end gap-2 shrink-0 z-20">
           {/* Prompt Studio Button */}
@@ -771,6 +1008,11 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
                   <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-white/10 text-white/70 border border-white/15">
                     Core
                   </span>
+                  {isArchetypeActive && (
+                    <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-[#818cf8]/15 text-[#818cf8] border border-[#818cf8]/30">
+                      Pedal 0 (Persona)
+                    </span>
+                  )}
                   {isBoundaryActive && (
                     <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-[#38bdf8]/15 text-[#38bdf8] border border-[#38bdf8]/30">
                       Pedal 1 (Boundary)
@@ -779,6 +1021,11 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
                   {isKineticActive && (
                     <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-[#34d399]/15 text-[#34d399] border border-[#34d399]/30">
                       Pedal 2 (Kinetic)
+                    </span>
+                  )}
+                  {isShieldActive && (
+                    <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-[#f43f5e]/15 text-[#f43f5e] border border-[#f43f5e]/30">
+                      Pedal 3 (Shield: {shieldConfig.state})
                     </span>
                   )}
                   {isTelemetryContractEnabled && (

@@ -3,7 +3,6 @@ import {
   ChevronUp
 } from 'lucide-react'
 import type { SpatialSpacing } from '../modules/physicalParryModule'
-import { getBoundaryBrief } from '../modules/physicalParryModule'
 
 interface StageControllerCardProps {
   isActive: boolean
@@ -12,11 +11,6 @@ interface StageControllerCardProps {
   onToggleExpand: () => void
   spacing: SpatialSpacing
   onSpacingChange: (spacing: SpatialSpacing) => void
-  boundaryLevel: number
-  onBoundaryChange: (level: number) => void
-  isLoading?: boolean
-  elapsedSeconds?: number
-  onSimulate?: () => void
 }
 
 export function StageControllerCard({
@@ -26,11 +20,7 @@ export function StageControllerCard({
   onToggleExpand,
   spacing,
   onSpacingChange,
-  boundaryLevel,
-  onBoundaryChange,
 }: StageControllerCardProps) {
-  const boundaryInfo = getBoundaryBrief(boundaryLevel)
-
   return (
     <div
       className={`w-[346px] rounded-[28px] transition-all select-none border backdrop-blur-2xl relative overflow-hidden ${
@@ -98,7 +88,7 @@ export function StageControllerCard({
       {/* 2. Expandable Body Content */}
       {isExpanded && (
         <div className="px-4 pb-4 pt-1 space-y-4 border-t border-white/[0.06]">
-          {/* Widget A: Spatial Distance (Segmented Switcher) */}
+          {/* Spatial Distance (Segmented Switcher) */}
           <div className="space-y-1.5 pt-1">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-medium text-white/50 tracking-wider">
@@ -138,50 +128,9 @@ export function StageControllerCard({
               })}
             </div>
           </div>
-
-          {/* Widget B: Physical Boundary Slider */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-medium text-white/50 tracking-wider">
-                ระดับการหวงตัว <span className="text-[9.5px] text-white/30 font-mono">(BOUNDARY)</span>
-              </span>
-              <span className="text-[11.5px] font-mono font-medium text-[#F1F1F1]">
-                {boundaryLevel}%
-              </span>
-            </div>
-
-            <div className="px-1 py-1">
-              <input
-                type="range"
-                min="0"
-                max="100"
-                step="5"
-                value={boundaryLevel}
-                onChange={(e) => onBoundaryChange(Number(e.target.value))}
-                className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#38bdf8]"
-              />
-              <div className="flex justify-between text-[9px] font-mono text-white/30 mt-1">
-                <span>0% (หวงตัวเด็ดขาด)</span>
-                <span>50%</span>
-                <span>100% (ยินยอม)</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Widget C: Active Posture Badge */}
-          <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] space-y-1">
-            <div className="flex items-center justify-between text-[10.5px]">
-              <span className="font-medium text-white/70">สภาวะจิตใจและผัสสะ:</span>
-              <span className="font-mono text-[10px] text-[#38bdf8] font-bold">
-                {boundaryInfo.stageName}
-              </span>
-            </div>
-            <p className="text-[11px] text-white/80 leading-relaxed font-sans">
-              {boundaryInfo.brief}
-            </p>
-          </div>
         </div>
       )}
     </div>
   )
 }
+

@@ -150,7 +150,8 @@ export const VELOCITY_PRESETS: VelocityPreset[] = [
 
 export function generateKineticPacingPrompt(
   originPosture: string,
-  isEnabled: boolean
+  isEnabled: boolean,
+  boundaryBusLevel?: number
 ): string {
   if (!isEnabled) {
     return `# KINETIC PACING MODULE: BYPASSED
@@ -158,6 +159,29 @@ export function generateKineticPacingPrompt(
   }
 
   const cleanOrigin = (originPosture || '').trim() || STANCE_PRESETS[0].snapshot
+
+  let somaticFrictionDirective = ''
+  if (typeof boundaryBusLevel === 'number') {
+    if (boundaryBusLevel <= 35) {
+      somaticFrictionDirective = `
+
+4. SOMATIC FRICTION (สภาวะจิตใจและสรีระ: GUARDED เข้มงวด/หวงแหนตัวเด็ดขาด - LEVEL ${boundaryBusLevel}%):
+- สภาวะจิตใจ: มีเกราะป้องกันตัวสูงลิบลิ่ว ระแวดระวัง ไม่อนุญาตให้เข้าใกล้หรือสัมผัสตัวเด็ดขาด
+- สรีระและแรงเฉื่อย: รักษาระยะห่างเด็ดขาด กล้ามเนื้อเกร็งตรึง ร่างกายถอยหนีหรือกอดอกแน่น หากถูกรุกรานในระยะประชิด จงแสดงปฏิกิริยาต่อต้าน ชะงัก ปฏิเสธ หรือสั่งให้ถอยห่างทันที (ห้ามยินยอมรับสัมผัสเด็ดขาด)`
+    } else if (boundaryBusLevel <= 75) {
+      somaticFrictionDirective = `
+
+4. SOMATIC FRICTION (สภาวะจิตใจและสรีระ: HESITANT ลังเล/หวั่นไหว - LEVEL ${boundaryBusLevel}%):
+- สภาวะจิตใจ: กำแพงใจเริ่มแตกร้าว กึ่งรับกึ่งถอย สับสนระหว่างความกลัวกับความต้องการ
+- สรีระและแรงเฉื่อย: สะท้อนผ่าน 'อาการชะงักเกร็ง (Hesitation Lag)' ปลายนิ้วขยับลังเล กล้ามเนื้อเกร็งสลับคลาย สัมผัสโดนเพียงเฉียดผิวแล้วสะดุ้งชะงัก หรือสบตานิ่งด้วยความสับสนก่อนเบนหลบ`
+    } else {
+      somaticFrictionDirective = `
+
+4. SOMATIC FRICTION (สภาวะจิตใจและสรีระ: RECEPTIVE / OPEN เปิดรับ/ยินยอม - LEVEL ${boundaryBusLevel}%):
+- สภาวะจิตใจ: เกราะป้องกันสลายลง กำแพงใจเปิดออก ยินยอมให้เข้าใกล้และยินยอมรับสัมผัส
+- สรีระและแรงเฉื่อย: กล้ามเนื้อที่เคยเกร็งเริ่มคลายตัวลงอย่างเป็นธรรมชาติ (Unhook) ยินยอมคลายแขนที่กอดอก ยื่นมือออกมารับ หรือโอนอ่อนตามแรงสัมผัส ยอมสบตาตรงอย่างเปิดเผย ไม่แสดงอาการผลักไสหรือสั่งให้ถอยหนีเด็ดขาด`
+    }
+  }
 
   return `# ACTIVE MODULE: CINEMATIC KINETIC CONTINUITY & PACING
 [KINETIC ORIGIN: ท่าทางตั้งต้นก่อนรับการกระทำนี้]
@@ -176,5 +200,6 @@ export function generateKineticPacingPrompt(
 - LOW VELOCITY (จังหวะละเมียดละไม/ลังเล/เสียดาย): จงบรรยายแรงเสียดทานของการผละออกอย่างประณีต ปล่อยให้ความเชื่องช้าทำหน้าที่บอกอารมณ์
 
 3. ANTI-TELEPORT SANCTUARY:
-- ท่าใหม่ของคุณต้องมีทิศทางที่สอดคล้องกับ [a_pos ตั้งต้น] ห้ามวาร์ปข้ามห้องหรือเปลี่ยนท่าย้อนแย้งโดยไร้แรงส่ง`
+- ท่าใหม่ของคุณต้องมีทิศทางที่สอดคล้องกับ [a_pos ตั้งต้น] ห้ามวาร์ปข้ามห้องหรือเปลี่ยนท่าย้อนแย้งโดยไร้แรงส่ง${somaticFrictionDirective}`
 }
+

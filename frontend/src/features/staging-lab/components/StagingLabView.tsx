@@ -114,7 +114,6 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       autoProgress: true,
       faultLine: defaults?.faultLine ?? '',
       polarInversion: defaults?.polarInversion ?? '',
-      softSpotEquilibrium: defaults?.softSpotEquilibrium ?? '',
     }
   })
 
@@ -126,7 +125,6 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
         ...prev,
         faultLine: defaults.faultLine,
         polarInversion: defaults.polarInversion,
-        softSpotEquilibrium: defaults.softSpotEquilibrium,
       }))
     }
   }

@@ -208,7 +208,7 @@ export function MagmaCoreCard({
             </button>
           </div>
 
-          {/* Section C: The 3 Core Magma Specifications */}
+          {/* Section C: The 2 Core Magma Vectors */}
           <div className="flex flex-col gap-2.5">
             {/* 1. The Fault Line (จุดชนวนสะกิดตาย) */}
             <div className="flex flex-col gap-1 text-left">
@@ -237,21 +237,6 @@ export function MagmaCoreCard({
                 rows={2}
                 className="w-full p-2.5 rounded-xl bg-black/40 border border-white/10 hover:border-white/20 focus:border-[#EF264C]/50 text-white/90 text-[11px] font-sans leading-relaxed resize-none focus:outline-none transition-all no-scrollbar"
                 placeholder="ระบุการกลับขั้วอารมณ์จากหน้ามือเป็นหลังมือเมื่อเกราะแตก..."
-              />
-            </div>
-
-            {/* 3. The Permanent Soft Spot (สภาวะแพ้ทางถาวร) */}
-            <div className="flex flex-col gap-1 text-left">
-              <label className="text-[10px] font-mono font-medium text-white/50 uppercase tracking-wider flex items-center justify-between">
-                <span>3. The Soft Spot (สภาวะแพ้ทางถาวร)</span>
-                <span className="text-[9px] text-[#c084fc]/70">Post-Breakdown</span>
-              </label>
-              <textarea
-                value={config.softSpotEquilibrium}
-                onChange={(e) => handleFieldChange('softSpotEquilibrium', e.target.value)}
-                rows={2}
-                className="w-full p-2.5 rounded-xl bg-black/40 border border-white/10 hover:border-white/20 focus:border-[#c084fc]/50 text-white/90 text-[11px] font-sans leading-relaxed resize-none focus:outline-none transition-all no-scrollbar"
-                placeholder="ระบุอาการเขินอายกอบกู้มาด หรือสภาวะยอมรับความผูกพันหลังผ่านจุดแตกหัก..."
               />
             </div>
           </div>

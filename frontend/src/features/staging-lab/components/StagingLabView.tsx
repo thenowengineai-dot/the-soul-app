@@ -31,18 +31,18 @@ import { CharacterStateCard } from './CharacterStateCard'
 import { StageControllerCard } from './StageControllerCard'
 import { KineticContinuityCard } from './KineticContinuityCard'
 import { PersonaArchetypeCard } from './PersonaArchetypeCard'
-import { InhibitionShieldCard } from './InhibitionShieldCard'
+import { MagmaCoreCard } from './MagmaCoreCard'
 import {
   type PersonaArchetype,
   CANONICAL_PERSONA_PRESETS,
   generatePersonaPromptSnippet
 } from '../modules/personaArchetypeModule'
 import {
-  type InhibitionShieldConfig,
-  ARCHETYPE_SHIELD_DEFAULTS,
-  generateInhibitionShieldPromptSnippet,
-  getShieldStateMeta
-} from '../modules/inhibitionShieldModule'
+  type MagmaCoreConfig,
+  ARCHETYPE_MAGMA_DEFAULTS,
+  generateMagmaCorePromptSnippet,
+  getMagmaPhaseMeta
+} from '../modules/magmaCoreModule'
 import { FloatingTelemetryHud } from './FloatingTelemetryHud'
 import { CentralDockIsland } from './CentralDockIsland'
 
@@ -103,30 +103,30 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   const [isBoundaryExpanded, setIsBoundaryExpanded] = useState<boolean>(true)
   const [isKineticExpanded, setIsKineticExpanded] = useState<boolean>(true)
 
-  // 3.4 Card 3: Inhibition Shield & Armor Break Controls (Effect Rack Pedal 3)
-  const [isShieldActive, setIsShieldActive] = useState<boolean>(true)
-  const [isShieldExpanded, setIsShieldExpanded] = useState<boolean>(true)
-  const [shieldConfig, setShieldConfig] = useState<InhibitionShieldConfig>(() => {
-    const defaults = ARCHETYPE_SHIELD_DEFAULTS.cool_aloof
+  // 3.4 Card 3: The Magma Core Controls (Effect Rack Pedal 3)
+  const [isMagmaActive, setIsMagmaActive] = useState<boolean>(true)
+  const [isMagmaExpanded, setIsMagmaExpanded] = useState<boolean>(true)
+  const [magmaConfig, setMagmaConfig] = useState<MagmaCoreConfig>(() => {
+    const defaults = ARCHETYPE_MAGMA_DEFAULTS.cool_aloof
     return {
       enabled: true,
-      state: 'active',
+      phase: 'sealed',
       autoProgress: true,
-      trigger: defaults?.trigger ?? '',
-      shift: defaults?.shift ?? '',
-      postShatterReaction: defaults?.postShatterReaction ?? '',
+      faultLine: defaults?.faultLine ?? '',
+      polarInversion: defaults?.polarInversion ?? '',
+      softSpotEquilibrium: defaults?.softSpotEquilibrium ?? '',
     }
   })
 
   const handleArchetypeChange = (nextArchetype: PersonaArchetype) => {
     setCurrentArchetype(nextArchetype)
-    const defaults = ARCHETYPE_SHIELD_DEFAULTS[nextArchetype.id]
+    const defaults = ARCHETYPE_MAGMA_DEFAULTS[nextArchetype.id]
     if (defaults) {
-      setShieldConfig(prev => ({
+      setMagmaConfig(prev => ({
         ...prev,
-        trigger: defaults.trigger,
-        shift: defaults.shift,
-        postShatterReaction: defaults.postShatterReaction,
+        faultLine: defaults.faultLine,
+        polarInversion: defaults.polarInversion,
+        softSpotEquilibrium: defaults.softSpotEquilibrium,
       }))
     }
   }
@@ -168,7 +168,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     setIsBoundaryActive(false)
     setIsKineticActive(false)
     setIsKineticLinkedToBoundary(false)
-    setIsShieldActive(false)
+    setIsMagmaActive(false)
   }
 
   const handleOriginPostureChange = (newPosture: string) => {
@@ -246,10 +246,10 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     )
   }, [currentPosture, isKineticActive, isKineticSomaticEffective, parryBoundaryLevel])
 
-  // Inhibition Shield brief computed string (Card 3 / Pedal 3)
-  const shieldPromptSnippet = useMemo(() => {
-    return generateInhibitionShieldPromptSnippet(shieldConfig, isShieldActive)
-  }, [shieldConfig, isShieldActive])
+  // The Magma Core brief computed string (Card 3 / Pedal 3)
+  const magmaPromptSnippet = useMemo(() => {
+    return generateMagmaCorePromptSnippet(magmaConfig, isMagmaActive)
+  }, [magmaConfig, isMagmaActive])
 
   // Close on Escape key
   useEffect(() => {
@@ -337,20 +337,20 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       })
     }
 
-    if (isShieldActive && shieldPromptSnippet.trim()) {
-      const shieldMeta = getShieldStateMeta(shieldConfig.state)
+    if (isMagmaActive && magmaPromptSnippet.trim()) {
+      const magmaMeta = getMagmaPhaseMeta(magmaConfig.phase)
       layers.push({
-        id: 'inhibition_shield_module',
-        title: `Signal Chain: Pedal 3 (Inhibition Shield: ${shieldMeta.tag})`,
-        sourceTag: `PEDAL 3: SHIELD [${shieldConfig.state.toUpperCase()}]`,
-        sourceLabel: `กลไกเกราะสติและการแตกหัก (${shieldMeta.label})`,
-        badgeBg: shieldMeta.badgeBg,
-        badgeText: shieldMeta.badgeText,
-        badgeBorder: shieldMeta.badgeBorder,
-        borderClass: shieldMeta.badgeBorder.replace('/30', '/20'),
-        bgClass: shieldMeta.badgeBg.replace('/10', '/[0.03]'),
+        id: 'magma_core_module',
+        title: `Signal Chain: Pedal 3 (The Magma Core: ${magmaMeta.tag})`,
+        sourceTag: `PEDAL 3: MAGMA [${magmaConfig.phase.toUpperCase()}]`,
+        sourceLabel: `การสลับขั้วอารมณ์และสภาวะแพ้ทางถาวร (${magmaMeta.label})`,
+        badgeBg: magmaMeta.badgeBg,
+        badgeText: magmaMeta.badgeText,
+        badgeBorder: magmaMeta.badgeBorder,
+        borderClass: magmaMeta.badgeBorder.replace('/35', '/20').replace('/40', '/20').replace('/30', '/20'),
+        bgClass: magmaMeta.badgeBg.replace('/15', '/[0.03]').replace('/20', '/[0.03]'),
         textClass: 'text-[#F1F1F1]',
-        content: shieldPromptSnippet.trim(),
+        content: magmaPromptSnippet.trim(),
       })
     }
 
@@ -430,11 +430,11 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     isBoundaryActive,
     isKineticActive,
     isKineticSomaticEffective,
-    isShieldActive,
-    shieldConfig,
+    isMagmaActive,
+    magmaConfig,
     parryBriefSnippet,
     kineticPromptSnippet,
-    shieldPromptSnippet,
+    magmaPromptSnippet,
     featureModules,
     isTelemetryContractEnabled,
   ])
@@ -536,11 +536,11 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       })
     }
 
-    if (isShieldActive && shieldPromptSnippet.trim()) {
+    if (isMagmaActive && magmaPromptSnippet.trim()) {
       activeSnippets.push({
-        id: 'inhibition_shield',
-        name: `INHIBITION SHIELD: ${shieldConfig.state.toUpperCase()}`,
-        prompt_snippet: shieldPromptSnippet.trim(),
+        id: 'magma_core',
+        name: `THE MAGMA CORE: ${magmaConfig.phase.toUpperCase()}`,
+        prompt_snippet: magmaPromptSnippet.trim(),
       })
     }
 
@@ -596,9 +596,9 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
         setCurrentPosture(data.telemetry.a_pos.trim())
       }
 
-      // Auto-Progression Valve: Advance from SHATTERED to POST-SHATTER after 1 round completes
-      if (isShieldActive && shieldConfig.state === 'shattered' && shieldConfig.autoProgress) {
-        setShieldConfig(prev => ({ ...prev, state: 'post_shatter' }))
+      // Auto-Progression Valve: Advance from ERUPTED to COOLED_MAGMA after 1 round completes
+      if (isMagmaActive && magmaConfig.phase === 'erupted' && magmaConfig.autoProgress) {
+        setMagmaConfig(prev => ({ ...prev, phase: 'cooled_magma' }))
       }
 
       // 3. Append actor response sequence to chat log
@@ -723,14 +723,14 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
             }}
           />
 
-          {/* Pedal 3: Inhibition Shield & Armor Break */}
-          <InhibitionShieldCard
-            isActive={isShieldActive}
-            onActivate={() => setIsShieldActive(prev => !prev)}
-            isExpanded={isShieldExpanded}
-            onToggleExpand={() => setIsShieldExpanded(prev => !prev)}
-            config={shieldConfig}
-            onChange={setShieldConfig}
+          {/* Pedal 3: The Magma Core (Soul Eruption & Polar Inversion) */}
+          <MagmaCoreCard
+            isActive={isMagmaActive}
+            onActivate={() => setIsMagmaActive(prev => !prev)}
+            isExpanded={isMagmaExpanded}
+            onToggleExpand={() => setIsMagmaExpanded(prev => !prev)}
+            config={magmaConfig}
+            onChange={setMagmaConfig}
             baseDefenseStage={currentArchetype.baseDefenseStage}
           />
         </div>
@@ -754,9 +754,9 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
           onToggleKinetic={() => setIsKineticActive(prev => !prev)}
           isKineticLinkedToBoundary={isKineticSomaticEffective}
           onToggleKineticLink={handleToggleKineticLink}
-          isShieldActive={isShieldActive}
-          onToggleShield={() => setIsShieldActive(prev => !prev)}
-          shieldState={shieldConfig.state}
+          isShieldActive={isMagmaActive}
+          onToggleShield={() => setIsMagmaActive(prev => !prev)}
+          shieldState={magmaConfig.phase}
           onBypassAll={handleBypassAll}
         />
 
@@ -1023,9 +1023,9 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
                       Pedal 2 (Kinetic)
                     </span>
                   )}
-                  {isShieldActive && (
-                    <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-[#f43f5e]/15 text-[#f43f5e] border border-[#f43f5e]/30">
-                      Pedal 3 (Shield: {shieldConfig.state})
+                  {isMagmaActive && (
+                    <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-[#EF264C]/15 text-[#EF264C] border border-[#EF264C]/30">
+                      Pedal 3 (Magma: {magmaConfig.phase === 'cooled_magma' ? 'Soft Spot' : magmaConfig.phase})
                     </span>
                   )}
                   {isTelemetryContractEnabled && (

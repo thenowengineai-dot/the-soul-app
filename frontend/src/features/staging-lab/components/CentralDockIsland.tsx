@@ -230,19 +230,19 @@ export function CentralDockIsland({
               </button>
             )}
 
-            {/* Module 3: Inhibition Shield Pill (Appears when active) */}
+            {/* Module 3: The Magma Core Pill (Appears when active) */}
             {isShieldActive && onToggleShield && (
               <button
                 type="button"
                 onClick={onToggleShield}
-                className="h-6 px-2.5 rounded-full text-[10px] font-mono font-medium transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 bg-[#f43f5e]/15 text-[#f43f5e] border border-[#f43f5e]/35 shadow-[0_0_10px_rgba(244,63,94,0.25)]"
-                title="เกราะสติและการแตกหักเปิดใช้งานอยู่ (คลิกเพื่อปิด)"
+                className="h-6 px-2.5 rounded-full text-[10px] font-mono font-medium transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 bg-[#EF264C]/15 text-[#EF264C] border border-[#EF264C]/35 shadow-[0_0_10px_rgba(239,38,76,0.25)]"
+                title="แกนลาวาและการปะทุเปิดใช้งานอยู่ (คลิกเพื่อปิด)"
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-[#f43f5e] shadow-[0_0_6px_rgba(244,63,94,0.8)]" />
-                <span>03 SHIELD</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#EF264C] shadow-[0_0_6px_rgba(239,38,76,0.8)]" />
+                <span>03 MAGMA</span>
                 {shieldState && (
                   <span className="text-[9px] opacity-80 uppercase font-mono">
-                    {shieldState.replace('_', '-')}
+                    {shieldState === 'cooled_magma' ? 'SOFT SPOT' : shieldState.replace('_', '-')}
                   </span>
                 )}
               </button>

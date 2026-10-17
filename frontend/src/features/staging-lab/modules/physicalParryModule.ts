@@ -4,39 +4,48 @@ export type BoundaryPosture = 'guarded' | 'hesitant' | 'open'
 export interface PhysicalParryConfig {
   enabled: boolean
   spacing: SpatialSpacing
-  boundaryLevel: number // 0 - 100
+  boundaryLevel: number // 0 - 100 (Desire & Sensory Heat Level)
 }
 
 export function getBoundaryPosture(level: number): BoundaryPosture {
   if (level <= 35) return 'guarded'
-  if (level <= 75) return 'hesitant'
+  if (level <= 70) return 'hesitant'
   return 'open'
 }
 
 export function getBoundaryBrief(level: number): {
   badge: string
   stageName: string
+  sensoryHeat: string
   brief: string
 } {
   const posture = getBoundaryPosture(level)
   if (posture === 'guarded') {
     return {
-      badge: 'หวงแหนเด็ดขาด (Parry 100%)',
-      stageName: 'GUARD_UP',
-      brief: 'กำแพงปิดสนิท สัญชาตญาณหวงแหนพื้นที่ส่วนตัวและร่างกายทำงานเต็มร้อย ไม่อนุญาตให้สัมผัส ปัดป้องหรือสกัดมือทิ้งกลางอากาศทันที'
+      badge: 'สติครบ / เยือกเย็น (Cold & Composed)',
+      stageName: 'COMPOSED (สติครบ)',
+      sensoryHeat: 'อุณหภูมิร่างกายปกติ ลมหายใจนิ่งสม่ำเสมอ ควบคุมสติและสรีระได้ 100%',
+      brief:
+        'ลมหายใจนิ่ง สติสัมปชัญญะครบถ้วน ขีดเส้นกั้นตามระดับความสัมพันธ์ หากผู้เล่นล้ำเส้นเกินสถานะ จะเบี่ยงตัวหลบหรือปัดมือออกทันที'
     }
   }
   if (posture === 'hesitant') {
     return {
-      badge: 'ลังเลหวั่นไหว (Hesitant / Graze)',
-      stageName: 'HESITANT',
-      brief: 'เริ่มหวั่นไหว ลังเล สับสน อนุญาตให้เกิดสัมผัสเฉียดผิวหรือโดนบางเบาแล้วสะดุ้งชะงัก ค่อยๆ ดึงมือถอยหนี'
+      badge: 'หวั่นไหว / ใจเต้นรัว (Warming & Racing Heart)',
+      stageName: 'WARMING (ใจเต้นรัว)',
+      sensoryHeat:
+        'หัวใจเริ่มเต้นแรงผิดจังหวะ ลมหายใจสะดุดเมื่ออยู่ใกล้ ผิวบริเวณที่ถูกเฉียดร้อนวูบวาบ ต้องแอบกลืนน้ำลาย',
+      brief:
+        'หัวใจเต้นแรงผิดจังหวะ ลมหายใจสะดุด ผิวร้อนวูบวาบเมื่อถูกเฉียดใกล้ เริ่มลังเลที่จะปัดป้อง ยอมให้แตะตัวหรือขยับเข้าใกล้โดยร่างกายชะงักเกร็งด้วยความตื่นเต้น'
     }
   }
   return {
-    badge: 'เกราะสลายยินยอม (Open / Latched)',
-    stageName: 'OPEN',
-    brief: 'กำแพงใจเปิดออก ร่างกายยินยอมและโอนอ่อนตาม ยอมให้เกิดการกุมมือ โอบกอด หรือสัมผัสแนบแน่นค้างไว้'
+    badge: 'เร่าร้อน / ไวสัมผัสขั้นสุด (Burning & Sweaty Heat)',
+    stageName: 'BURNING (เร่าร้อน)',
+    sensoryHeat:
+      'ร่างกายร้อนผ่าวไวต่อสัมผัสขั้นสุด เหงื่อเม็ดเล็กซึมตามไรผมและลำคอ ลมหายใจหอบร้อน หัวใจเต้นระรัวจนแผ่นอกกระเพื่อม สั่นสะท้านทุกครั้งที่ถูกแตะหรือถูกลมหายใจเป่ารด',
+    brief:
+      'ไฟปรารถนาลุกโชน ร่างกายร้อนผ่าว เหงื่อซึมตามไรผมและลำคอ ลมหายใจหอบร้อน ใจเต้นระรัว ไวต่อทุกปลายนิ้วและลมหายใจ เรี่ยวแรงที่จะผลักไสละลายหายไป ยอมให้กอดแนบชิดหรือสัมผัสลึกซึ้ง'
   }
 }
 
@@ -47,35 +56,40 @@ export function generatePhysicalParryBrief(
   originPosture?: string
 ): string {
   const posture = getBoundaryPosture(boundaryLevel)
+  const briefInfo = getBoundaryBrief(boundaryLevel)
 
   let distDesc = 'Reach (1 ช่วงแขน เอื้อมถึงกันได้)'
-  let distDirective = 'อยู่ในระยะวิกฤต สามารถยกแขนปัดป้อง สกัดกั้น หรือเบี่ยงตัวหลบได้ทันควัน'
+  let distDirective = 'อยู่ในระยะเอื้อมถึง สามารถสัมผัส ปัดป้อง หรือเบี่ยงตัวหลบได้ตามระดับไฟปรารถนา'
   if (spacing === 'distant') {
     distDesc = 'Distant (ห่าง 2-3 ก้าว อยู่นอกระยะเอื้อม)'
     distDirective = 'เป้าหมายอยู่นอกระยะเอื้อม มือตัดผ่านอากาศธาตุ เกิดผลลัพธ์วืด (MISSED) ห้ามเกิดการสัมผัส 100%'
   } else if (spacing === 'intimate') {
     distDesc = 'Intimate (ประชิดตัว แนบชิดศูนย์ก้าว)'
-    distDirective = 'อยู่ในระยะแนบชิด การเคลื่อนไหวส่งผลต่อสรีระและร่างกายโดยตรงทันที'
+    distDirective = 'อยู่ในระยะแนบชิด ลมหายใจและอุณหภูมิร่างกายส่งผลต่อประสาทสัมผัสโดยตรงทันที'
   }
 
-  let boundaryDesc = 'Guarded (หวงตัวเด็ดขาด 100% ป้องกันตัวเต็มที่)'
-  let boundaryDirective = 'ไม่อนุญาตให้เกิดการสัมผัสเด็ดขาด ยกแขนปัดทิ้งหรือสกัดกั้นกลางอากาศก่อนถึงตัว (PARRIED)'
+  let boundaryDesc = `Composed (${boundaryLevel}% - สติครบ 100% ป้องกันตัวตามระยะความสัมพันธ์)`
+  let boundaryDirective =
+    'ไม่อนุญาตให้ล้ำเส้นเกินสถานะ ยกแขนปัดทิ้งหรือเบี่ยงตัวหลบก่อนถึงตัว (PARRIED)'
   if (posture === 'hesitant') {
-    boundaryDesc = 'Hesitant (หวั่นไหว ลังเล สับสน กำแพงจิตใจแตกร้าว)'
-    boundaryDirective = 'สัมผัสโดนเพียงผิวเผินหรือเฉียดปลายนิ้วแล้วสะดุ้งชะงัก ดึงมือถอยหนีด้วยความสับสน (GRAZED)'
+    boundaryDesc = `Warming (${boundaryLevel}% - หวั่นไหว ใจเต้นรัว ผิวร้อนวูบวาบ)`
+    boundaryDirective =
+      'สัมผัสโดนผิวหรือเฉียดปลายนิ้วแล้วสะดุ้งชะงัก ลมหายใจสะดุด หัวใจเต้นแรง ดึงมือถอยช้าๆ ด้วยความสับสน (GRAZED)'
   } else if (posture === 'open') {
-    boundaryDesc = 'Open (ยินยอม กำแพงใจพังทลาย)'
-    boundaryDirective = 'ยินยอมรับสัมผัส ร่างกายโอนอ่อนตาม เกิดการกุมมือหรือโอบกอดแนบแน่น (LATCHED)'
+    boundaryDesc = `Burning (${boundaryLevel}% - เร่าร้อน ไวสัมผัสขั้นสุด เหงื่อซึม ใจเต้นระรัว)`
+    boundaryDirective =
+      'ร่างกายพ่ายแพ้ต่อไฟปรารถนา เหงื่อซึม ลมหายใจหอบร้อน ไร้เรี่ยวแรงผลักไส ยอมรับสัมผัสแนบแน่น (LATCHED)'
   }
 
   const postureLine = originPosture?.trim()
     ? `\n- Actor Origin Stance: "${originPosture.trim()}" (สรีระและท่วงท่าปัจจุบันของนักแสดงก่อนการเคลื่อนไหว เริ่มต้นปฏิกิริยาจากท่านี้)`
     : ''
 
-  return `[PHYSICAL REALITY]
+  return `[PHYSICAL REALITY & SENSORY HEAT]
 - Distance: ${distDesc}
-- Character Boundary Posture: ${boundaryDesc}${postureLine}
+- Desire & Sensory Heat Level: ${boundaryDesc}
+- Somatic Temperature & Pulse: ${briefInfo.sensoryHeat}${postureLine}
 - Player Attempt: ${playerInput || 'เคลื่อนไหวเข้าหาเป้าหมาย'}
-- Physical Directive: ${distDirective}
-- Boundary Directive: ${boundaryDirective}`
+- Spatial Directive: ${distDirective}
+- Touch & Reflex Directive: ${boundaryDirective}`
 }

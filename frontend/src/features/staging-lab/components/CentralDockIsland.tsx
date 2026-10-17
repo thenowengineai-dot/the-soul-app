@@ -6,6 +6,11 @@ interface CentralDockIslandProps {
   onToggleArchetype?: () => void
   archetypeName?: string
 
+  isRelationshipActive?: boolean
+  onToggleRelationship?: () => void
+  relationshipLabel?: string
+  relationshipImprintCount?: number
+
   isCharacterStateActive: boolean
   onToggleCharacterState: () => void
   characterStateLevel: number
@@ -30,6 +35,10 @@ export function CentralDockIsland({
   isArchetypeActive,
   onToggleArchetype,
   archetypeName,
+  isRelationshipActive,
+  onToggleRelationship,
+  relationshipLabel,
+  relationshipImprintCount = 0,
   isCharacterStateActive,
   onToggleCharacterState,
   characterStateLevel,
@@ -44,12 +53,13 @@ export function CentralDockIsland({
   shieldState,
   onBypassAll,
 }: CentralDockIslandProps) {
-  const stateKey = `${isArchetypeActive ? 1 : 0}-${isCharacterStateActive ? 1 : 0}-${isBoundaryActive ? 1 : 0}-${isKineticActive ? 1 : 0}-${isKineticLinkedToBoundary ? 1 : 0}-${isShieldActive ? 1 : 0}`
+  const stateKey = `${isArchetypeActive ? 1 : 0}-${isRelationshipActive ? 1 : 0}-${isCharacterStateActive ? 1 : 0}-${isBoundaryActive ? 1 : 0}-${isKineticActive ? 1 : 0}-${isKineticLinkedToBoundary ? 1 : 0}-${isShieldActive ? 1 : 0}`
   const [dismissedKey, setDismissedKey] = useState<string | null>(null)
   const isTipDismissed = dismissedKey === stateKey
 
   const activeCount =
     (isArchetypeActive ? 1 : 0) +
+    (isRelationshipActive ? 1 : 0) +
     (isCharacterStateActive ? 1 : 0) +
     (isBoundaryActive ? 1 : 0) +
     (isKineticActive ? 1 : 0) +
@@ -188,16 +198,34 @@ export function CentralDockIsland({
               </button>
             )}
 
-            {/* Module 0: Boundary Level Pill (Appears when active) */}
+            {/* Module 0.5: Relationship & Special Imprints Pill (Appears when active) */}
+            {isRelationshipActive && onToggleRelationship && (
+              <button
+                type="button"
+                onClick={onToggleRelationship}
+                className="h-6 px-2.5 rounded-full text-[10px] font-mono font-medium transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 bg-[#f472b6]/15 text-[#f472b6] border border-[#f472b6]/35 shadow-[0_0_10px_rgba(244,114,182,0.25)]"
+                title={`ความสัมพันธ์: ${relationshipLabel || 'Relationship'} (คลิกเพื่อปิด)`}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-[#f472b6] shadow-[0_0_6px_rgba(244,114,182,0.8)]" />
+                <span>{relationshipLabel || 'RELATION'}</span>
+                {relationshipImprintCount > 0 && (
+                  <span className="text-[9px] opacity-85 font-mono">
+                    +{relationshipImprintCount}
+                  </span>
+                )}
+              </button>
+            )}
+
+            {/* Module 0: Desire & Sensory Heat Pill (Appears when active) */}
             {isCharacterStateActive && (
               <button
                 type="button"
                 onClick={onToggleCharacterState}
                 className="h-6 px-2.5 rounded-full text-[10px] font-mono font-medium transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 bg-[#f59e0b]/15 text-[#f59e0b] border border-[#f59e0b]/35 shadow-[0_0_10px_rgba(245,158,11,0.25)]"
-                title="ระดับความหวงตัวเปิดใช้งานอยู่ (คลิกเพื่อปิด)"
+                title="ไฟปรารถนาและความไวสัมผัสเปิดใช้งานอยู่ (คลิกเพื่อปิด)"
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b] shadow-[0_0_6px_rgba(245,158,11,0.8)]" />
-                <span>BOUNDARY</span>
+                <span>DESIRE</span>
                 <span className="text-[9px] opacity-75 font-mono">
                   {characterStateLevel}%
                 </span>

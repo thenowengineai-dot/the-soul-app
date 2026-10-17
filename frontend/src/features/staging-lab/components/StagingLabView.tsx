@@ -32,6 +32,7 @@ import { StageControllerCard } from './StageControllerCard'
 import { KineticContinuityCard } from './KineticContinuityCard'
 import { PersonaArchetypeCard } from './PersonaArchetypeCard'
 import { MagmaCoreCard } from './MagmaCoreCard'
+import { RelationshipCard } from './RelationshipCard'
 import {
   type PersonaArchetype,
   CANONICAL_PERSONA_PRESETS,
@@ -43,6 +44,11 @@ import {
   generateMagmaCorePromptSnippet,
   getMagmaPhaseMeta
 } from '../modules/magmaCoreModule'
+import {
+  type RelationshipConfig,
+  generateRelationshipPromptSnippet,
+  getRelationshipStageMeta
+} from '../modules/relationshipModule'
 import { FloatingTelemetryHud } from './FloatingTelemetryHud'
 import { CentralDockIsland } from './CentralDockIsland'
 
@@ -82,6 +88,15 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   const [isArchetypeActive, setIsArchetypeActive] = useState<boolean>(true)
   const [isArchetypeExpanded, setIsArchetypeExpanded] = useState<boolean>(true)
 
+  // 3.05 Card 0.5: Relationship & Special Imprints Controls
+  const [isRelationshipActive, setIsRelationshipActive] = useState<boolean>(true)
+  const [isRelationshipExpanded, setIsRelationshipExpanded] = useState<boolean>(true)
+  const [relationshipConfig, setRelationshipConfig] = useState<RelationshipConfig>({
+    stage: 'familiar',
+    nightFriction: false,
+    softSpot: false,
+  })
+
   // 3.1 Card 1: Physical Boundary Controls
   const [parrySpacing, setParrySpacing] = useState<SpatialSpacing>('reach')
   const [parryBoundaryLevel, setParryBoundaryLevel] = useState<number>(10)
@@ -117,6 +132,35 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     }
   })
 
+  const handleRelationshipChange = (nextRel: RelationshipConfig) => {
+    setRelationshipConfig(nextRel)
+    // Sync Soft Spot imprint with Magma Core phase
+    const meta = getRelationshipStageMeta(nextRel.stage)
+    const effectiveSoftSpot = meta.allowsImprints && (nextRel.softSpot || Boolean(meta.requiresSoftSpot))
+    if (effectiveSoftSpot && magmaConfig.phase === 'sealed') {
+      setMagmaConfig(prev => ({ ...prev, phase: 'cooled_magma' }))
+    } else if (!effectiveSoftSpot && magmaConfig.phase === 'cooled_magma') {
+      setMagmaConfig(prev => ({ ...prev, phase: 'sealed' }))
+    }
+  }
+
+  const handleMagmaConfigChange = (nextMagma: MagmaCoreConfig) => {
+    setMagmaConfig(nextMagma)
+    // Sync Cooled Magma phase with Relationship Soft Spot imprint
+    if (nextMagma.phase === 'cooled_magma') {
+      setRelationshipConfig(prev => ({
+        ...prev,
+        stage: prev.stage === 'stranger' ? 'familiar' : prev.stage,
+        softSpot: true,
+      }))
+    } else if (nextMagma.phase === 'sealed' && relationshipConfig.stage !== 'deep_bond') {
+      setRelationshipConfig(prev => ({
+        ...prev,
+        softSpot: false,
+      }))
+    }
+  }
+
   const handleArchetypeChange = (nextArchetype: PersonaArchetype) => {
     setCurrentArchetype(nextArchetype)
     const defaults = ARCHETYPE_MAGMA_DEFAULTS[nextArchetype.id]
@@ -133,8 +177,15 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   const handleToggleBoundary = () => {
     setIsBoundaryActive((prev) => {
       const next = !prev
-      if (next && !isCharacterStateActive) {
-        setIsCharacterStateActive(true)
+      if (next) {
+        if (!isCharacterStateActive) {
+          setIsCharacterStateActive(true)
+          setIsCharacterStateExpanded(true)
+        }
+        if (!isRelationshipActive) {
+          setIsRelationshipActive(true)
+          setIsRelationshipExpanded(true)
+        }
       }
       return next
     })
@@ -142,6 +193,16 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
 
   const handleToggleCharacterState = () => {
     setIsCharacterStateActive((prev) => {
+      const next = !prev
+      if (!next && isBoundaryActive) {
+        setIsBoundaryActive(false)
+      }
+      return next
+    })
+  }
+
+  const handleToggleRelationship = () => {
+    setIsRelationshipActive((prev) => {
       const next = !prev
       if (!next && isBoundaryActive) {
         setIsBoundaryActive(false)
@@ -162,6 +223,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
 
   const handleBypassAll = () => {
     setIsArchetypeActive(false)
+    setIsRelationshipActive(false)
     setIsCharacterStateActive(false)
     setIsBoundaryActive(false)
     setIsKineticActive(false)
@@ -227,6 +289,24 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   const personaPromptSnippet = useMemo(() => {
     return generatePersonaPromptSnippet(currentArchetype, isArchetypeActive)
   }, [currentArchetype, isArchetypeActive])
+
+  // Relationship & Special Imprints computed string (Card 0.5)
+  const relationshipPromptSnippet = useMemo(() => {
+    return generateRelationshipPromptSnippet(
+      relationshipConfig,
+      isRelationshipActive,
+      parryBoundaryLevel,
+      isCharacterStateActive
+    )
+  }, [relationshipConfig, isRelationshipActive, parryBoundaryLevel, isCharacterStateActive])
+
+  const relationshipMeta = useMemo(() => {
+    return getRelationshipStageMeta(relationshipConfig.stage)
+  }, [relationshipConfig.stage])
+
+  const activeImprintCount =
+    (relationshipMeta.allowsImprints && relationshipConfig.nightFriction ? 1 : 0) +
+    (relationshipMeta.allowsImprints && (relationshipConfig.softSpot || relationshipMeta.requiresSoftSpot) ? 1 : 0)
 
   // Physical brief computed string (Card 1)
   const parryBriefSnippet = useMemo(() => {
@@ -296,6 +376,22 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
         bgClass: 'bg-[#818cf8]/[0.03]',
         textClass: 'text-[#e0e7ff]',
         content: personaPromptSnippet.trim(),
+      })
+    }
+
+    if (isRelationshipActive && relationshipPromptSnippet.trim()) {
+      layers.push({
+        id: 'relationship_imprint',
+        title: `Signal Chain: Relationship (${relationshipMeta.label} • ${relationshipMeta.subLabel})`,
+        sourceTag: `RELATION: ${relationshipMeta.tag}`,
+        sourceLabel: `คลื่นความผูกพันและตราประทับพิเศษ (+${activeImprintCount} Imprints)`,
+        badgeBg: 'bg-[#f472b6]/10',
+        badgeText: 'text-[#f472b6]',
+        badgeBorder: 'border-[#f472b6]/30',
+        borderClass: 'border-[#f472b6]/20',
+        bgClass: 'bg-[#f472b6]/[0.03]',
+        textClass: 'text-[#fce7f3]',
+        content: relationshipPromptSnippet.trim(),
       })
     }
 
@@ -425,6 +521,10 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     isArchetypeActive,
     currentArchetype,
     personaPromptSnippet,
+    isRelationshipActive,
+    relationshipPromptSnippet,
+    relationshipMeta,
+    activeImprintCount,
     isBoundaryActive,
     isKineticActive,
     isKineticSomaticEffective,
@@ -517,6 +617,14 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       })
     }
 
+    if (isRelationshipActive && relationshipPromptSnippet.trim()) {
+      activeSnippets.push({
+        id: 'relationship_imprint',
+        name: `RELATIONSHIP & IMPRINTS: ${relationshipMeta.tag}`,
+        prompt_snippet: relationshipPromptSnippet.trim(),
+      })
+    }
+
     if (isBoundaryActive) {
       const turnBrief = generatePhysicalParryBrief(effectiveSpacing, effectiveBoundary, trimmed, currentPosture)
       activeSnippets.push({
@@ -594,9 +702,14 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
         setCurrentPosture(data.telemetry.a_pos.trim())
       }
 
-      // Auto-Progression Valve: Advance from ERUPTED to COOLED_MAGMA after 1 round completes
+      // Auto-Progression Valve: Advance from ERUPTED to COOLED_MAGMA after 1 round completes & stamp Soft Spot
       if (isMagmaActive && magmaConfig.phase === 'erupted' && magmaConfig.autoProgress) {
         setMagmaConfig(prev => ({ ...prev, phase: 'cooled_magma' }))
+        setRelationshipConfig(prev => ({
+          ...prev,
+          stage: prev.stage === 'stranger' ? 'familiar' : prev.stage,
+          softSpot: true,
+        }))
       }
 
       // 3. Append actor response sequence to chat log
@@ -645,92 +758,203 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[350px] bg-gradient-to-b from-[#EF264C]/[0.05] via-white/[0.02] to-transparent pointer-events-none blur-3xl z-0" />
 
       {/* ======================================================================= */}
-      {/* 1. LEFT ASIDE: THE STAGE CONTROLLER (370px with 346px Apple Bento Card)  */}
+      {/* 1. LEFT ASIDE: THE STAGE CONTROLLER (410px with 382px Apple Bento Card)  */}
       {/* ======================================================================= */}
-      <aside className="w-[370px] shrink-0 h-full p-3.5 flex flex-col justify-start items-center overflow-y-auto no-scrollbar border-r border-white/[0.08] bg-app-bg/90 backdrop-blur-xl z-20">
+      <aside className="w-[410px] shrink-0 h-full p-3.5 flex flex-col justify-start items-center overflow-y-auto no-scrollbar border-r border-white/[0.08] bg-app-bg/90 backdrop-blur-xl z-20">
         {/* Universal Top Toolbar (Outside Cards) */}
-        <div className="w-[346px] mb-3.5 flex items-center justify-between shrink-0">
+        <div className="w-[382px] mb-3.5 flex items-center justify-between shrink-0">
+          {/* Minimal Back Button (Icon only) */}
           <button
             type="button"
             onClick={onBackToHome}
-            className="h-8 px-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-white/60 hover:text-white text-[11px] font-medium flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+            className="w-8 h-8 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-white/60 hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95"
             title="กลับสู่หน้าหลัก"
           >
-            <ArrowLeft size={13} />
-            <span>หน้าหลัก</span>
+            <ArrowLeft size={14} />
           </button>
+
+          {/* Universal Minimal Segmented Control: [ ALL | CLEAR ] */}
+          <div className="h-7 p-0.5 rounded-full bg-white/[0.04] border border-white/10 flex items-center gap-0.5 text-[10px] font-mono select-none">
+            <button
+              type="button"
+              onClick={() => {
+                setIsArchetypeActive(true)
+                setIsArchetypeExpanded(true)
+                setIsRelationshipActive(true)
+                setIsRelationshipExpanded(true)
+                setIsCharacterStateActive(true)
+                setIsCharacterStateExpanded(true)
+                setIsBoundaryActive(true)
+                setIsBoundaryExpanded(true)
+                setIsKineticActive(true)
+                setIsKineticExpanded(true)
+                setIsMagmaActive(true)
+                setIsMagmaExpanded(true)
+              }}
+              className="h-full px-2.5 rounded-full text-white/50 hover:text-white hover:bg-white/[0.08] transition-all cursor-pointer active:scale-95 font-medium tracking-wider"
+              title="เปิดและคลี่การ์ดทั้งหมด (Engage All)"
+            >
+              ALL
+            </button>
+            <div className="w-[1px] h-3 bg-white/10" />
+            <button
+              type="button"
+              onClick={() => {
+                setIsArchetypeActive(false)
+                setIsArchetypeExpanded(false)
+                setIsRelationshipActive(false)
+                setIsRelationshipExpanded(false)
+                setIsCharacterStateActive(false)
+                setIsCharacterStateExpanded(false)
+                setIsBoundaryActive(false)
+                setIsBoundaryExpanded(false)
+                setIsKineticActive(false)
+                setIsKineticExpanded(false)
+                setIsMagmaActive(false)
+                setIsMagmaExpanded(false)
+              }}
+              className="h-full px-2.5 rounded-full text-white/40 hover:text-white/80 hover:bg-white/[0.08] transition-all cursor-pointer active:scale-95 font-medium tracking-wider"
+              title="ปิดและพับการ์ดทั้งหมด (Clear All)"
+            >
+              CLEAR
+            </button>
+          </div>
         </div>
 
-        {/* Two-Tier Deck: Upper Deck (Character Essence & Archetype) + Lower Deck (Processors / Pedals) */}
-        <div className="w-[346px] flex flex-col gap-3 pb-8">
-          {/* Card 0: Persona Archetype & Coping Mechanics */}
-          <PersonaArchetypeCard
-            isActive={isArchetypeActive}
-            onActivate={() => setIsArchetypeActive(prev => !prev)}
-            currentArchetype={currentArchetype}
-            onArchetypeChange={handleArchetypeChange}
-            isExpanded={isArchetypeExpanded}
-            onToggleExpand={() => setIsArchetypeExpanded(prev => !prev)}
-          />
-
-          {/* Card 1: Boundary & Receptivity Level */}
-          <CharacterStateCard
-            isActive={isCharacterStateActive}
-            onActivate={handleToggleCharacterState}
-            boundaryLevel={parryBoundaryLevel}
-            onBoundaryChange={setParryBoundaryLevel}
-            isExpanded={isCharacterStateExpanded}
-            onToggleExpand={() => setIsCharacterStateExpanded(prev => !prev)}
-          />
-
-          {/* Lower Deck Divider / Section Label */}
-          <div className="flex items-center gap-2 pt-1 pb-0.5 px-1">
-            <span className="w-1 h-1 rounded-full bg-white/30" />
-            <span className="text-[10px] font-mono uppercase tracking-wider text-white/40">
-              SOMATIC PROCESSORS (EFFECT RACK)
-            </span>
-            <div className="flex-1 h-[1px] bg-white/[0.06]" />
-          </div>
-
-          {/* Pedal 1: Physical Boundary & Parry */}
-          <StageControllerCard
-            isActive={isBoundaryActive}
-            onActivate={handleToggleBoundary}
-            isExpanded={isBoundaryExpanded}
-            onToggleExpand={() => setIsBoundaryExpanded(prev => !prev)}
-            spacing={parrySpacing}
-            onSpacingChange={setParrySpacing}
-          />
-
-          {/* Pedal 2: Kinetic Continuity & Cinematic Pacing */}
-          <KineticContinuityCard
-            isActive={isKineticActive}
-            onActivate={() => setIsKineticActive(prev => !prev)}
-            isExpanded={isKineticExpanded}
-            onToggleExpand={() => setIsKineticExpanded(prev => !prev)}
-            initialPosture={initialPosture}
-            currentPosture={currentPosture}
-            onOriginPostureChange={handleOriginPostureChange}
-            onResetPosture={handleResetPosture}
-            onPreFillAction={(actionText) => {
-              setPlayerInput(actionText)
-            }}
-            onSelectVelocityAction={(actionText) => {
-              setPlayerInput(actionText)
-              executeSimulation(actionText)
-            }}
-          />
-
-          {/* Pedal 3: The Magma Core (Soul Eruption & Polar Inversion) */}
-          <MagmaCoreCard
-            isActive={isMagmaActive}
-            onActivate={() => setIsMagmaActive(prev => !prev)}
-            isExpanded={isMagmaExpanded}
-            onToggleExpand={() => setIsMagmaExpanded(prev => !prev)}
-            config={magmaConfig}
-            onChange={setMagmaConfig}
-            baseDefenseStage={currentArchetype.baseDefenseStage}
-          />
+        {/* Unified Card Deck: Active cards float to the top, Inactive cards stay at the bottom */}
+        <div className="w-[382px] flex flex-col gap-2.5 pb-8">
+          {[
+            {
+              id: 'archetype',
+              isActive: isArchetypeActive,
+              node: (
+                <PersonaArchetypeCard
+                  key="archetype"
+                  isActive={isArchetypeActive}
+                  onActivate={() => {
+                    const next = !isArchetypeActive
+                    setIsArchetypeActive(next)
+                    if (next) setIsArchetypeExpanded(true)
+                  }}
+                  currentArchetype={currentArchetype}
+                  onArchetypeChange={handleArchetypeChange}
+                  isExpanded={isArchetypeExpanded}
+                  onToggleExpand={() => setIsArchetypeExpanded(prev => !prev)}
+                />
+              ),
+            },
+            {
+              id: 'relationship',
+              isActive: isRelationshipActive,
+              node: (
+                <RelationshipCard
+                  key="relationship"
+                  isActive={isRelationshipActive}
+                  onActivate={() => {
+                    const next = !isRelationshipActive
+                    handleToggleRelationship()
+                    if (next) setIsRelationshipExpanded(true)
+                  }}
+                  config={relationshipConfig}
+                  onChange={handleRelationshipChange}
+                  isExpanded={isRelationshipExpanded}
+                  onToggleExpand={() => setIsRelationshipExpanded(prev => !prev)}
+                />
+              ),
+            },
+            {
+              id: 'desire',
+              isActive: isCharacterStateActive,
+              node: (
+                <CharacterStateCard
+                  key="desire"
+                  isActive={isCharacterStateActive}
+                  onActivate={() => {
+                    const next = !isCharacterStateActive
+                    handleToggleCharacterState()
+                    if (next) setIsCharacterStateExpanded(true)
+                  }}
+                  boundaryLevel={parryBoundaryLevel}
+                  onBoundaryChange={setParryBoundaryLevel}
+                  isExpanded={isCharacterStateExpanded}
+                  onToggleExpand={() => setIsCharacterStateExpanded(prev => !prev)}
+                  relationshipStage={relationshipConfig.stage}
+                  isRelationshipActive={isRelationshipActive}
+                />
+              ),
+            },
+            {
+              id: 'boundary',
+              isActive: isBoundaryActive,
+              node: (
+                <StageControllerCard
+                  key="boundary"
+                  isActive={isBoundaryActive}
+                  onActivate={() => {
+                    const next = !isBoundaryActive
+                    handleToggleBoundary()
+                    if (next) setIsBoundaryExpanded(true)
+                  }}
+                  isExpanded={isBoundaryExpanded}
+                  onToggleExpand={() => setIsBoundaryExpanded(prev => !prev)}
+                  spacing={parrySpacing}
+                  onSpacingChange={setParrySpacing}
+                />
+              ),
+            },
+            {
+              id: 'kinetic',
+              isActive: isKineticActive,
+              node: (
+                <KineticContinuityCard
+                  key="kinetic"
+                  isActive={isKineticActive}
+                  onActivate={() => {
+                    const next = !isKineticActive
+                    setIsKineticActive(next)
+                    if (next) setIsKineticExpanded(true)
+                  }}
+                  isExpanded={isKineticExpanded}
+                  onToggleExpand={() => setIsKineticExpanded(prev => !prev)}
+                  initialPosture={initialPosture}
+                  currentPosture={currentPosture}
+                  onOriginPostureChange={handleOriginPostureChange}
+                  onResetPosture={handleResetPosture}
+                  onPreFillAction={(actionText) => {
+                    setPlayerInput(actionText)
+                  }}
+                  onSelectVelocityAction={(actionText) => {
+                    setPlayerInput(actionText)
+                    executeSimulation(actionText)
+                  }}
+                />
+              ),
+            },
+            {
+              id: 'magma',
+              isActive: isMagmaActive,
+              node: (
+                <MagmaCoreCard
+                  key="magma"
+                  isActive={isMagmaActive}
+                  onActivate={() => {
+                    const next = !isMagmaActive
+                    setIsMagmaActive(next)
+                    if (next) setIsMagmaExpanded(true)
+                  }}
+                  isExpanded={isMagmaExpanded}
+                  onToggleExpand={() => setIsMagmaExpanded(prev => !prev)}
+                  config={magmaConfig}
+                  onChange={handleMagmaConfigChange}
+                />
+              ),
+            },
+          ]
+            .sort((a, b) => {
+              if (a.isActive === b.isActive) return 0
+              return a.isActive ? -1 : 1
+            })
+            .map(item => item.node)}
         </div>
       </aside>
 
@@ -743,6 +967,10 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
           isArchetypeActive={isArchetypeActive}
           onToggleArchetype={() => setIsArchetypeActive(prev => !prev)}
           archetypeName={currentArchetype.name}
+          isRelationshipActive={isRelationshipActive}
+          onToggleRelationship={() => setIsRelationshipActive(prev => !prev)}
+          relationshipLabel={relationshipMeta.label}
+          relationshipImprintCount={activeImprintCount}
           isCharacterStateActive={isCharacterStateActive}
           onToggleCharacterState={handleToggleCharacterState}
           characterStateLevel={parryBoundaryLevel}

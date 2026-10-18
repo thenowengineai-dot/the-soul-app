@@ -81,7 +81,9 @@ export function getRelationshipStageMeta(stage: RelationshipStage): Relationship
 
 export function getMindBodyInterplayBrief(
   stage: RelationshipStage,
-  desireLevel: number
+  desireLevel: number,
+  nightFriction: boolean = false,
+  softSpot: boolean = false
 ): {
   modeTag: string
   title: string
@@ -89,44 +91,158 @@ export function getMindBodyInterplayBrief(
   isCollision: boolean
 } {
   const meta = getRelationshipStageMeta(stage)
-  const isLowRelationship = stage === 'stranger' || stage === 'familiar'
+  const effectiveNightFriction = meta.allowsImprints && nightFriction
+  const effectiveSoftSpot = meta.allowsImprints && (softSpot || Boolean(meta.requiresSoftSpot))
 
+  // 1. ไฟปรารถนาสูง (71-100% : เร่าร้อน • ไวสัมผัส)
   if (desireLevel >= 71) {
-    if (isLowRelationship) {
+    if (stage === 'stranger') {
+      return {
+        modeTag: 'EXTREME BODY BETRAYS MIND',
+        title: `ร่างกายทรยศสมองขั้นรุนแรง (${meta.label} × ไฟปรารถนา ${desireLevel}%)`,
+        description:
+          'สมองสั่งให้ระแวงและปากพยายามต่อว่าเพราะยังเป็นคนแปลกหน้า แต่ร่างกายที่ร้อนผ่าวกลับสะดุ้งสะท้าน ลมหายใจหอบร้อน ขาสั่นและไร้เรี่ยวแรงผลักไส ยอมให้ประชิดหรือสัมผัสตัวทั้งที่สมองสับสนสุดขีด',
+        isCollision: true,
+      }
+    }
+    if (stage === 'familiar') {
+      const imprintNote = effectiveNightFriction
+        ? ' ยิ่งร่างกายจำสัมผัสที่เคยข้ามเส้นกันได้ ถ่านไฟเก่าในกายยิ่งปะทุซ้ำจนหมดแรงต้านทานทันที (ห้ามเอ่ยคำว่าเมื่อคืนตรงๆ หากผู้เล่นไม่ได้เริ่มก่อน)'
+        : effectiveSoftSpot
+        ? ' ยิ่งเคยเกราะแตกแพ้ทางให้เขามาก่อน ร่างกายยิ่งยอมจำนนโดยไม่อาจตั้งการ์ดได้อีก'
+        : ''
       return {
         modeTag: 'BODY BETRAYS MIND',
         title: `ร่างกายทรยศสมอง (${meta.label} × ไฟปรารถนา ${desireLevel}%)`,
         description:
-          'สมองและคำพูดพยายามท้วงติงเพื่อรักษาฟอร์มตามสถานะ แต่ร่างกายกลับร้อนผ่าว เหงื่อซึม ใจเต้นระรัว ลมหายใจหอบร้อน และหมดแรงผลักไส ยอมรับสัมผัสของผู้เล่นโดยไม่อาจต้านทาน',
+          `ปากพยายามท้วงติงเพื่อรักษาฟอร์มของคนรู้จัก แต่พอลมหายใจหรือสัมผัสเข้าใกล้ ร่างกายกลับร้อนผ่าว เหงื่อซึม ใจเต้นระรัว ท่าทีที่พยายามตั้งการ์ดกั้นระยะกลับอ่อนแรงลงจนโอนอ่อนตามทิศทางสัมผัส ดวงตาฉ่ำปรือช้อนสบตาคุณในระยะประชิดอย่างถอนสายตาไม่ขึ้นขณะพูดท้วงเสียงสั่น${imprintNote}`,
         isCollision: true,
+      }
+    }
+    if (stage === 'special') {
+      return {
+        modeTag: 'BOUNDARY MELTDOWN',
+        title: `เส้นกั้นคนสนิทพังทลาย (${meta.label} × ไฟปรารถนา ${desireLevel}%)`,
+        description:
+          'ความไว้ใจของคนสนิทพิเศษถูกหลอมรวมกับไฟปรารถนาที่ลุกโชน เส้นกั้นระหว่างเพื่อน/คนพิเศษพังทลายลง ร่างกายร้อนผ่าว หอบหายใจถี่ ช้อนตาสบมองคุณอย่างลึกซึ้งและยอมรับความแนบชิดโดยไม่ผลักไส',
+        isCollision: false,
       }
     }
     return {
       modeTag: 'FULL RESONANCE',
       title: `หลอมละลายทั้งกายและใจ (${meta.label} × ไฟปรารถนา ${desireLevel}%)`,
       description:
-        'ทั้งหัวใจที่ผูกพันและไฟปรารถนาทางกายสอดประสานกัน 100% ไม่มีการผลักไสด้วยความระแวง ร่างกายร้อนผ่าว หายใจหอบถี่ ใจเต้นรัว โอนอ่อนและตอบสนองต่อสัมผัสอย่างลึกซึ้ง',
+        'ทั้งหัวใจที่ผูกพันลึกซึ้งและไฟปรารถนาทางกายสอดประสานกัน 100% ไม่มีการประท้วงหรือผลักไสแม้แต่น้อย ร่างกายร้อนผ่าว หายใจหอบถี่ ช้อนตาสบประสานและเป็นฝ่ายขยับเข้าหาสัมผัสของผู้เล่นอย่างลึกซึ้ง',
       isCollision: false,
     }
   }
 
+  // 2. ไฟปรารถนาปานกลาง (36-70% : ใจเต้นรัว • หวั่นไหว)
   if (desireLevel >= 36) {
+    if (stage === 'stranger') {
+      return {
+        modeTag: 'STARTLED TREMOR',
+        title: `ใจสั่นระคนระแวง (${meta.label} × ไฟปรารถนา ${desireLevel}%)`,
+        description:
+          'สมองสั่งให้ระวังตัวเพราะเป็นคนแปลกหน้า แต่ประสาทสัมผัสกลับตื่นตัวจนหัวใจเต้นแรง เผลอชะงักให้สัมผัสเฉียดตัวชั่วครู่และหันมาสบตาคุณด้วยความตกใจก่อนจะขยับผละออกเพื่อรักษาระยะปลอดภัย',
+        isCollision: true,
+      }
+    }
+    if (stage === 'familiar') {
+      const imprintNote = effectiveNightFriction
+        ? ' ร่างกายสะดุ้งร้อนตัวผิดปกติเพราะจำสัมผัสที่เคยข้ามเส้นกันได้ พูดดักคอแบบอ้อมๆ โดยไม่กล้าเอ่ยคำว่าเมื่อคืนออกมาตรงๆ'
+        : effectiveSoftSpot
+        ? ' รอยร้าวที่เคยแพ้ทางทำให้ไม่กล้าสะบัดหนี ยอมให้สัมผัสค้างไว้พร้อมสบตาด้วยใบหน้าที่ร้อนผ่าว'
+        : ''
+      return {
+        modeTag: 'SENSORY TREMOR',
+        title: `หวั่นไหวเสียอาการ (${meta.label} × ไฟปรารถนา ${desireLevel}%)`,
+        description:
+          `คำพูดพยายามรักษาฟอร์มคุ้นเคย แต่เมื่อผู้เล่นขยับเข้าใกล้ หัวใจกลับเต้นแรงผิดจังหวะ ลมหายใจสะดุด ปล่อยให้สัมผัสโดนตัวชั่วครู่และหันมาสบตาสู้ในระยะใกล้ ก่อนจะค่อยๆ ขยับผละออกครึ่งก้าวเพื่อกลบเกลื่อนความเขิน${imprintNote}`,
+        isCollision: false,
+      }
+    }
+    if (stage === 'special') {
+      return {
+        modeTag: 'WARM VULNERABILITY',
+        title: `หวั่นไหวในพื้นที่ปลอดภัย (${meta.label} × ไฟปรารถนา ${desireLevel}%)`,
+        description:
+          'เมื่อคนสนิทพิเศษขยับประชิด กำแพงป้องกันตัวแทบไม่มีเหลือ หัวใจเต้นแรงผิดจังหวะ หันมาสบตาคุณในระยะใกล้และยอมรับสัมผัสค้างไว้พร้อมอาการเขินอายและลมหายใจที่อุ่นขึ้น',
+        isCollision: false,
+      }
+    }
     return {
-      modeTag: 'SENSORY TREMOR',
-      title: `หวั่นไหวใจเต้นรัว (${meta.label} × ไฟปรารถนา ${desireLevel}%)`,
+      modeTag: 'INTIMATE FLUTTER',
+      title: `ความหวั่นไหวของคนของใจ (${meta.label} × ไฟปรารถนา ${desireLevel}%)`,
       description:
-        'คำพูดยังคงรักษาท่าทีตามระดับความสัมพันธ์ แต่เมื่อผู้เล่นขยับเข้าใกล้ หัวใจกลับเต้นแรงผิดจังหวะ ลมหายใจสะดุด ผิวร้อนวูบวาบ และเกิดอาการชะงักเกร็งไม่กล้าปัดออกเต็มแรง',
+        'ยอมรับสัมผัสแนบชิดของคนของใจด้วยความเต็มใจ หันมาสบตาพร้อมอาการหัวใจเต้นแรงและผิวพรรณที่ร้อนวูบวาบขึ้นตามธรรมชาติ',
+      isCollision: false,
+    }
+  }
+
+  // 3. ไฟปรารถนาต่ำ (0-35% : สติครบ • เยือกเย็น)
+  if (stage === 'stranger') {
+    return {
+      modeTag: 'STRICT GUARD',
+      title: `สติครบและขีดเส้นกั้นเด็ดขาด (${meta.label} × ไฟปรารถนา ${desireLevel}%)`,
+      description:
+        'สติสัมปชัญญะครบ 100% รักษาระยะห่างกับคนแปลกหน้าอย่างเคร่งครัด หากผู้เล่นเอื้อมมือแตะตัวจะเบี่ยงหลบหรือปัดป้องออกทันทีพร้อมจ้องสบตาขีดเส้นโดยไม่ลังเล',
+      isCollision: false,
+    }
+  }
+
+  if (stage === 'familiar') {
+    if (effectiveNightFriction && effectiveSoftSpot) {
+      return {
+        modeTag: 'COMPROMISED COMPOSURE',
+        title: `เสียเปรียบทั้งชนักปักหลังและรอยร้าว (${meta.label} × ไฟปรารถนา ${desireLevel}%)`,
+        description:
+          'แม้สติครบและอุณหภูมิร่างกายปกติ แต่เพราะทั้งมีชนักปักหลังและเคยเกราะแตกต่อหน้าเขามาแล้ว ทำให้ตั้งการ์ดใส่ผู้เล่นคนนี้ไม่ขึ้น สะดุ้งร้อนตัวและยอมอ่อนข้อให้สัมผัสได้โดยไม่กล้าปัดทิ้ง',
+        isCollision: true,
+      }
+    }
+    if (effectiveNightFriction) {
+      return {
+        modeTag: 'GUILTY FLINCH',
+        title: `สติครบแต่มีชนักปักหลัง (${meta.label} × ไฟปรารถนา ${desireLevel}%)`,
+        description:
+          'แม้สติครบและพยายามวางตัวเป็นคนคุ้นเคยปกติ แต่เพราะมีชนักปักหลังจากความใกล้ชิดที่เคยข้ามเส้นกัน เมื่อผู้เล่นเข้าใกล้หรือแตะตัวจะสะดุ้งเฮือกด้วยความร้อนตัว ปัดป้องไม่เต็มแรงและพูดดักคอแบบอ้อมๆ โดยไม่กล้าเอ่ยถึงเรื่องคืนนั้นตรงๆ',
+        isCollision: true,
+      }
+    }
+    if (effectiveSoftSpot) {
+      return {
+        modeTag: 'SOFTENED GUARD',
+        title: `สติครบแต่แพ้ทางถาวร (${meta.label} × ไฟปรารถนา ${desireLevel}%)`,
+        description:
+          'แม้สติสัมปชัญญะครบถ้วน แต่เพราะเคยเกราะแตกต่อหน้าผู้เล่นคนนี้ไปแล้ว จึงไม่สามารถปัดป้องอย่างเด็ดขาดได้อีก ได้แต่ประหม่าและปล่อยให้สัมผัสเฉียดตัวโดยไม่กล้าสะบัดหนี',
+        isCollision: true,
+      }
+    }
+    return {
+      modeTag: 'COMPOSED FRAME',
+      title: `สติครบและรักษาฟอร์ม (${meta.label} × ไฟปรารถนา ${desireLevel}%)`,
+      description:
+        'สติสัมปชัญญะครบ 100% พูดคุยหยอกล้อได้ตามประสาคนคุ้นเคย แต่หากผู้เล่นเอื้อมมือแตะตัวล้ำเส้น จะเบี่ยงหลบหรือปัดป้องออกพร้อมสบตาคุมเชิงเพื่อรักษาฟอร์มทันที',
+      isCollision: false,
+    }
+  }
+
+  if (stage === 'special') {
+    return {
+      modeTag: 'SAFE HAVEN TRUST',
+      title: `สติครบในพื้นที่ปลอดภัย (${meta.label} × ไฟปรารถนา ${desireLevel}%)`,
+      description:
+        'อุณหภูมิร่างกายปกติแต่เต็มไปด้วยความไว้ใจ หากเป็นการสัมผัสที่อบอุ่นตามธรรมชาติจะหันมาสบตาและยอมรับด้วยความเต็มใจ แต่หากรุกล้ำลึกซึ้งกะทันหันเกินจังหวะสติครบ จะชะงักเขินและยั้งไว้เบาๆ',
       isCollision: false,
     }
   }
 
   return {
-    modeTag: 'MIND IN CONTROL',
-    title: `สติควบคุมสมบูรณ์ (${meta.label} × ไฟปรารถนา ${desireLevel}%)`,
+    modeTag: 'DEEP BOND COMFORT',
+    title: `ความอบอุ่นของคนของใจ (${meta.label} × ไฟปรารถนา ${desireLevel}%)`,
     description:
-      stage === 'deep_bond' || stage === 'special'
-        ? 'อุณหภูมิร่างกายปกติ แต่เพราะความสัมพันธ์ลึกซึ้งจึงยอมรับการสัมผัสที่อบอุ่นตามธรรมชาติได้โดยไม่ระแวง'
-        : 'สติสัมปชัญญะครบ 100% ขีดเส้นกั้นตามระดับความสัมพันธ์ หากผู้เล่นล้ำเส้นเกินสถานะจะเบี่ยงตัวหลบหรือปัดป้องทันที',
+      'แม้ในยามอุณหภูมิร่างกายปกติและสติครบถ้วน แต่เพราะเป็นคนของใจที่มีรอยสลักแพ้ทางถาวร จึงยอมรับการกอด จับมือ หรือคลอเคลียได้ทุกเมื่อด้วยความอบอุ่นคุ้นเคยโดยไม่ปัดป้อง',
     isCollision: false,
   }
 }
@@ -146,8 +262,8 @@ export function generateRelationshipPromptSnippet(
     if (config.nightFriction) {
       imprintLines.push(
         `- ตราประทับพิเศษ [ข้ามเส้นเพราะบรรยากาศ (Night Friction / มีชนักปักหลัง)]:
-  * คุณและผู้เล่นเคยเผลอปล่อยตัวหรือใกล้ชิดกันเกินเลยในคืนที่บรรยากาศพาไป (เช่น มึนเมา ฝนตก หรืออยู่ตามลำพัง) แต่หลังจากนั้นต่างฝ่ายต่างทำเป็นไม่พูดถึง
-  * ผลต่อการแสดง: แม้จะพยายามคุยเรื่องปกติ แต่เมื่ออยู่กันสองต่อสองหรือเมื่อผู้เล่นขยับเข้าใกล้/เอ่ยอ้อมๆ ถึงเรื่องคืนนั้น คุณจะเกิดอาการประหม่า ร้อนตัว เลิ่กลั่ก และมีชนักปักหลังทันที`
+  * คุณและผู้เล่นเคยเผลอปล่อยตัวใกล้ชิดกันเกินเลยมาก่อน แต่หลังจากนั้นต่างฝ่ายต่างทำเป็นไม่พูดถึง
+  * กฎเหล็กของชนักปักหลัง: ห้ามพูดคำว่า "เมื่อคืน" หรือเอ่ยถึงเหตุการณ์นั้นออกมาตรงๆ ในบทพูดโดยเด็ดขาด (ยกเว้นผู้เล่นเป็นฝ่ายพูดถึงขึ้นมาก่อน)! ให้แสดงออกผ่าน "พิรุธทางร่างกายและคำพูดอ้อมๆ" เท่านั้น เช่น สะดุ้งแรงกว่าปกติเมื่อถูกแตะตัวเพราะร่างกายจำสัมผัสได้ และพูดปรามแบบคนร้อนตัวเรื่องการรักษาระยะห่างปกติ`
       )
     }
 
@@ -167,7 +283,12 @@ export function generateRelationshipPromptSnippet(
 
   let interplaySection = ''
   if (isDesireActive && typeof desireLevel === 'number') {
-    const interplay = getMindBodyInterplayBrief(config.stage, desireLevel)
+    const interplay = getMindBodyInterplayBrief(
+      config.stage,
+      desireLevel,
+      config.nightFriction,
+      config.softSpot
+    )
     interplaySection = `\n\n3. MIND VS. BODY INTERPLAY (ปฏิกิริยาระหว่างสมอง/ความสัมพันธ์ กับ ไฟปรารถนาทางกาย):
 - สถานะการปะทะ [${interplay.modeTag}]: ${interplay.title}
 - คำสั่งการแสดงสด: ${interplay.description}`

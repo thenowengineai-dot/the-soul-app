@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import type { SandboxTelemetry } from '../types'
 import type { SpatialSpacing } from '../modules/physicalParryModule'
+import type { RelationshipConfig } from '../modules/relationshipModule'
 import { BoundaryHudLens, KineticHudLens } from '../cartridges'
 
 interface FloatingTelemetryHudProps {
@@ -22,6 +23,8 @@ interface FloatingTelemetryHudProps {
   sensoryPulseText?: string
   isTelemetryContractEnabled?: boolean
   onToggleTelemetryContract?: () => void
+  relationshipConfig?: RelationshipConfig
+  isRelationshipActive?: boolean
 }
 
 export function FloatingTelemetryHud({
@@ -34,6 +37,8 @@ export function FloatingTelemetryHud({
   sensoryPulseText = '',
   isTelemetryContractEnabled = true,
   onToggleTelemetryContract,
+  relationshipConfig,
+  isRelationshipActive = true,
 }: FloatingTelemetryHudProps) {
   const [isOpen, setIsOpen] = useState(true)
   const [showSettings, setShowSettings] = useState(false)
@@ -184,6 +189,8 @@ export function FloatingTelemetryHud({
             spacing={spacing}
             boundaryLevel={boundaryLevel}
             isParryEnabled={isBoundaryActive}
+            relationshipConfig={relationshipConfig}
+            isRelationshipActive={isRelationshipActive}
           />
         )}
         {isKineticActive && (

@@ -1,10 +1,16 @@
 import type { BaseHudLensProps } from '../types'
-import type { SpatialSpacing } from '../physical-boundary/engine'
+import {
+  type SpatialSpacing,
+  resolveTouchReflexDirective,
+} from '../../modules/physicalParryModule'
+import type { RelationshipConfig } from '../../modules/relationshipModule'
 
 export interface BoundaryHudLensProps extends BaseHudLensProps {
   spacing?: SpatialSpacing
   boundaryLevel?: number
   isParryEnabled?: boolean
+  relationshipConfig?: RelationshipConfig
+  isRelationshipActive?: boolean
 }
 
 export function BoundaryHudLens({
@@ -13,6 +19,8 @@ export function BoundaryHudLens({
   spacing = 'reach',
   boundaryLevel = 25,
   isParryEnabled = true,
+  relationshipConfig,
+  isRelationshipActive = true,
 }: BoundaryHudLensProps) {
   const resolveHitboxStatus = () => {
     if (telemetry?.verdict?.outcome) {
@@ -31,13 +39,28 @@ export function BoundaryHudLens({
       }
     }
     if (!isParryEnabled) return { text: 'COLLIDED (UNGUARDED)', color: 'text-amber-400' }
-    if (spacing === 'distant') return { text: 'MISSED (คว้าได้แค่อากาศ)', color: 'text-[#38bdf8]' }
-    if (boundaryLevel <= 35) return { text: 'PARRIED (สกัดกั้นก่อนถึงตัว)', color: 'text-emerald-400' }
-    if (boundaryLevel <= 75) return { text: 'GRAZED (เฉียดผิวชะงัก)', color: 'text-[#fbbf24]' }
-    return { text: 'LATCHED (ยินยอมสัมผัส)', color: 'text-[#fb7185]' }
+
+    const resolved = resolveTouchReflexDirective(
+      spacing,
+      boundaryLevel,
+      relationshipConfig,
+      isRelationshipActive
+    )
+    switch (resolved.expectedVerdict) {
+      case 'MISSED':
+        return { text: 'MISSED (คว้าได้แค่อากาศ)', color: 'text-[#38bdf8]' }
+      case 'PARRIED':
+        return { text: 'PARRIED (สกัดกั้นก่อนถึงตัว)', color: 'text-emerald-400' }
+      case 'GRAZED':
+        return { text: 'GRAZED (เฉียดผิวชะงัก)', color: 'text-[#fbbf24]' }
+      case 'LATCHED':
+        return { text: 'LATCHED (ยินยอมสัมผัส)', color: 'text-[#fb7185]' }
+    }
   }
 
   const hitbox = resolveHitboxStatus()
+  const desireStateLabel =
+    boundaryLevel <= 35 ? 'Composed' : boundaryLevel <= 70 ? 'Warming' : 'Burning'
 
   return (
     <div className="space-y-1.5 font-mono text-[11px] leading-relaxed">
@@ -82,12 +105,12 @@ export function BoundaryHudLens({
         </div>
       )}
 
-      {/* Row 4: Boundary State */}
+      {/* Row 4: Desire & Sensory Heat State */}
       {visibleRows.boundary && (
         <div className="flex items-center justify-between">
-          <span className="text-[#f472b6] font-bold">BOUNDARY</span>
+          <span className="text-[#f59e0b] font-bold">DESIRE</span>
           <span className="text-white/80">
-            {boundaryLevel}% ({isParryEnabled ? 'Active' : 'Bypassed'})
+            {boundaryLevel}% ({desireStateLabel})
           </span>
         </div>
       )}

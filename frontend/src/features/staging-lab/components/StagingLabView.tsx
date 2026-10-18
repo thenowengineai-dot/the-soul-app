@@ -17,7 +17,8 @@ import {
 import { INITIAL_FEATURE_MODULES } from '../mockPresets'
 import {
   type SpatialSpacing,
-  generatePhysicalParryBrief
+  generatePhysicalParryBrief,
+  generateDesirePromptSnippet
 } from '../modules/physicalParryModule'
 import {
   generateKineticPacingPrompt,
@@ -237,6 +238,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   }
 
   const resetCountRef = useRef(0)
+  const tetherCooldownRef = useRef(0)
   const handleResetPosture = () => {
     setCurrentPosture(initialPosture)
     resetCountRef.current += 1
@@ -308,10 +310,22 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     (relationshipMeta.allowsImprints && relationshipConfig.nightFriction ? 1 : 0) +
     (relationshipMeta.allowsImprints && (relationshipConfig.softSpot || relationshipMeta.requiresSoftSpot) ? 1 : 0)
 
+  // Desire & Sensory Heat standalone computed string
+  const desirePromptSnippet = useMemo(() => {
+    return generateDesirePromptSnippet(parryBoundaryLevel, isCharacterStateActive)
+  }, [parryBoundaryLevel, isCharacterStateActive])
+
   // Physical brief computed string (Card 1)
   const parryBriefSnippet = useMemo(() => {
-    return generatePhysicalParryBrief(parrySpacing, parryBoundaryLevel, playerInput, currentPosture)
-  }, [parrySpacing, parryBoundaryLevel, playerInput, currentPosture])
+    return generatePhysicalParryBrief(
+      parrySpacing,
+      parryBoundaryLevel,
+      playerInput,
+      currentPosture,
+      relationshipConfig,
+      isRelationshipActive
+    )
+  }, [parrySpacing, parryBoundaryLevel, playerInput, currentPosture, relationshipConfig, isRelationshipActive])
 
   const isKineticSomaticEffective = isCharacterStateActive && isKineticLinkedToBoundary
 
@@ -395,12 +409,28 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       })
     }
 
+    if (!isBoundaryActive && isCharacterStateActive && desirePromptSnippet.trim()) {
+      layers.push({
+        id: 'desire_heat',
+        title: `Signal Chain: Desire & Sensory Heat (${parryBoundaryLevel}%)`,
+        sourceTag: `DESIRE: ${parryBoundaryLevel}%`,
+        sourceLabel: 'อุณหภูมิร่างกาย เหงื่อ หัวใจ และความไวต่อสัมผัส',
+        badgeBg: 'bg-[#f59e0b]/10',
+        badgeText: 'text-[#f59e0b]',
+        badgeBorder: 'border-[#f59e0b]/30',
+        borderClass: 'border-[#f59e0b]/20',
+        bgClass: 'bg-[#f59e0b]/[0.03]',
+        textClass: 'text-[#fef3c7]',
+        content: desirePromptSnippet.trim(),
+      })
+    }
+
     if (isBoundaryActive && parryBriefSnippet.trim()) {
       layers.push({
         id: 'physical_reality',
         title: 'Signal Chain: Pedal 1 (Physical Reality & Boundary)',
         sourceTag: 'PEDAL 1: BOUNDARY',
-        sourceLabel: 'คำนวณสดจาก Spacing & Boundary Slider',
+        sourceLabel: 'คำนวณสดจากระยะห่าง × ความสัมพันธ์ × ไฟปรารถนา',
         badgeBg: 'bg-[#38bdf8]/10',
         badgeText: 'text-[#38bdf8]',
         badgeBorder: 'border-[#38bdf8]/30',
@@ -525,6 +555,9 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     relationshipPromptSnippet,
     relationshipMeta,
     activeImprintCount,
+    isCharacterStateActive,
+    parryBoundaryLevel,
+    desirePromptSnippet,
     isBoundaryActive,
     isKineticActive,
     isKineticSomaticEffective,
@@ -609,12 +642,26 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     // 2. Prepare payload - Dynamic Signal Chain (The Effect Rack Architecture)
     const activeSnippets: Array<{ id: string; name: string; prompt_snippet: string }> = []
 
-    if (isArchetypeActive && personaPromptSnippet.trim()) {
-      activeSnippets.push({
-        id: 'persona_archetype',
-        name: `PERSONA ARCHETYPE: ${currentArchetype.name}`,
-        prompt_snippet: personaPromptSnippet.trim(),
-      })
+    if (isArchetypeActive) {
+      let shouldTriggerTether = false
+      if (tetherCooldownRef.current > 0) {
+        tetherCooldownRef.current -= 1
+      } else if (effectiveBoundary <= 70 && Math.random() < 0.18) {
+        shouldTriggerTether = true
+        tetherCooldownRef.current = 3
+      }
+      const turnPersonaSnippet = generatePersonaPromptSnippet(
+        currentArchetype,
+        isArchetypeActive,
+        shouldTriggerTether
+      )
+      if (turnPersonaSnippet.trim()) {
+        activeSnippets.push({
+          id: 'persona_archetype',
+          name: `PERSONA ARCHETYPE: ${currentArchetype.name}`,
+          prompt_snippet: turnPersonaSnippet.trim(),
+        })
+      }
     }
 
     if (isRelationshipActive && relationshipPromptSnippet.trim()) {
@@ -625,8 +672,26 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       })
     }
 
+    if (!isBoundaryActive && isCharacterStateActive) {
+      const standaloneDesire = generateDesirePromptSnippet(effectiveBoundary, true)
+      if (standaloneDesire.trim()) {
+        activeSnippets.push({
+          id: 'desire_heat',
+          name: `DESIRE & SENSORY HEAT: ${effectiveBoundary}%`,
+          prompt_snippet: standaloneDesire.trim(),
+        })
+      }
+    }
+
     if (isBoundaryActive) {
-      const turnBrief = generatePhysicalParryBrief(effectiveSpacing, effectiveBoundary, trimmed, currentPosture)
+      const turnBrief = generatePhysicalParryBrief(
+        effectiveSpacing,
+        effectiveBoundary,
+        trimmed,
+        currentPosture,
+        relationshipConfig,
+        isRelationshipActive
+      )
       activeSnippets.push({
         id: 'physical_parry',
         name: 'PHYSICAL BOUNDARY & EMBODIED REFLEX',
@@ -968,7 +1033,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
           onToggleArchetype={() => setIsArchetypeActive(prev => !prev)}
           archetypeName={currentArchetype.name}
           isRelationshipActive={isRelationshipActive}
-          onToggleRelationship={() => setIsRelationshipActive(prev => !prev)}
+          onToggleRelationship={handleToggleRelationship}
           relationshipLabel={relationshipMeta.label}
           relationshipImprintCount={activeImprintCount}
           isCharacterStateActive={isCharacterStateActive}
@@ -1050,6 +1115,8 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
           sensoryPulseText={sensoryPulseText}
           isTelemetryContractEnabled={isTelemetryContractEnabled}
           onToggleTelemetryContract={() => setIsTelemetryContractEnabled(!isTelemetryContractEnabled)}
+          relationshipConfig={relationshipConfig}
+          isRelationshipActive={isRelationshipActive}
         />
 
         {/* Ambient Top Glow (Subtle Dark Apple Radial) */}

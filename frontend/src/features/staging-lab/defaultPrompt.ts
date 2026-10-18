@@ -36,16 +36,16 @@ You must output ONLY a valid JSON object matching this structure:
 - Output strictly 1 cohesive natural Thai sentence (approx 8-15 syllables / 6-10 words).
 - Must be an instant visual snapshot rendering a clear 3D image in the mind in 0.1 seconds.
 - Weave together 3 essential physical elements into 1 sentence:
-  1. Silhouette & Stance: Center of gravity and footwork (ยืนหันข้าง / ถอยผละครึ่งก้าว / ยืนชิดในระยะประชิด / ก้าวประชิด)
-  2. Upper-Body & Limb Response: Natural posture responding to the actual touch zone and resistance level without robotic stiffness
-  3. Gaze & Eye Contact: Head angle and eye contact with the player (หันขวับมาสบตาคมกริบ / ช้อนตาสบมองสั่นไหว / จ้องสบตาในระยะลมหายใจรดกัน)
+  1. Silhouette & Stance: Center of gravity and footwork (ยืนหันข้าง / เบี่ยงตัวถอยครึ่งก้าว / ยืนชิดในอ้อมแขน / ก้าวประชิด)
+  2. Hands & Upper-Body Buffer: Realistic arm position between both bodies based on resistance (กอดอกกั้นระยะ / ยกฝ่ามือยันแผงอกคุณไว้เบาๆ / วางมือทาบแผ่นอกคุณอย่างอ่อนแรง)
+  3. Gaze & Eye Contact: Head angle and eye contact with the player (หันขวับมาสบตาคมกริบ / ช้อนตาสบมองสั่นไหวในระยะประชิด / จ้องริมฝีปากคุณด้วยลมหายใจหอบร้อน)
 - Ruthlessly subtract all abstract emotion words (no 'ด้วยความกลัว', no 'อย่างหวาดระแวง') and decorative room adjectives!
 - Never use technical symbols like '+' or '·' or brackets!
-- Canonical Golden Examples (Adapt posture to the exact body part touched):
+- Canonical Golden Examples (Do not copy verbatim; adapt to actual touch and resistance):
   * PARRIED: "เบี่ยงตัวหลบระยะเอื้อม กอดอกแน่นหันมาสบตานิ่ง"
-  * GRAZED: "ชะงักถอยครึ่งก้าว หันมาสบตาด้วยแววตาสั่นไหว"
-  * LATCHED: "ยืนชิดในระยะประชิด ช้อนตาสบมองอย่างโอนอ่อน"
-  * COUNTER: "ก้าวประชิดตัว เชิดหน้าจ้องสบตาในระยะลมหายใจรดกัน"
+  * GRAZED: "ถอยผละครึ่งก้าว ยกมือแตะกั้นอกคุณพร้อมสบตาสั่นไหว"
+  * LATCHED: "ยืนชิดในอ้อมแขน ฝ่ามือทาบแผ่นอกคุณช้อนตาสบมอง"
+  * COUNTER: "ก้าวประชิดตัว เชิดหน้าจ้องสบตาคุณในระยะลมหายใจรดกัน"
 
 # CANONICAL 4-STATE VERDICT OUTCOMES:
 - "MISSED": When the player reaches from a distant spacing and clutches only empty air. (contact_occurred: false, active_contacts: [])
@@ -85,16 +85,16 @@ You must output ONLY a valid JSON object matching this structure:
 - Output strictly 1 cohesive natural Thai sentence (approx 8-15 syllables / 6-10 words).
 - Must be an instant visual snapshot rendering a clear 3D image in the mind in 0.1 seconds.
 - Weave together 3 essential physical elements into 1 sentence:
-  1. Silhouette & Stance: Center of gravity and footwork (ยืนหันข้าง / ถอยผละครึ่งก้าว / ยืนชิดในระยะประชิด / ก้าวประชิด)
-  2. Upper-Body & Limb Response: Natural posture responding to the actual touch zone and resistance level without robotic stiffness
-  3. Gaze & Eye Contact: Head angle and eye contact with the player (หันขวับมาสบตาคมกริบ / ช้อนตาสบมองสั่นไหว / จ้องสบตาในระยะลมหายใจรดกัน)
+  1. Silhouette & Stance: Center of gravity and footwork (ยืนหันข้าง / เบี่ยงตัวถอยครึ่งก้าว / ยืนชิดในอ้อมแขน / ก้าวประชิด)
+  2. Hands & Upper-Body Buffer: Realistic arm position between both bodies based on resistance (กอดอกกั้นระยะ / ยกฝ่ามือยันแผงอกคุณไว้เบาๆ / วางมือทาบแผ่นอกคุณอย่างอ่อนแรง)
+  3. Gaze & Eye Contact: Head angle and eye contact with the player (หันขวับมาสบตาคมกริบ / ช้อนตาสบมองสั่นไหวในระยะประชิด / จ้องริมฝีปากคุณด้วยลมหายใจหอบร้อน)
 - Ruthlessly subtract all abstract emotion words (no 'ด้วยความกลัว', no 'อย่างหวาดระแวง') and decorative room adjectives!
 - Never use technical symbols like '+' or '·' or brackets!
-- Canonical Golden Examples (Adapt posture to the exact body part touched):
+- Canonical Golden Examples (Do not copy verbatim; adapt to actual touch and resistance):
   * "เบี่ยงตัวหลบระยะเอื้อม กอดอกแน่นหันมาสบตานิ่ง"
-  * "ชะงักถอยครึ่งก้าว หันมาสบตาด้วยแววตาสั่นไหว"
-  * "ยืนชิดในระยะประชิด ช้อนตาสบมองอย่างโอนอ่อน"
-  * "ก้าวประชิดตัว เชิดหน้าจ้องสบตาในระยะลมหายใจรดกัน"`
+  * "ถอยผละครึ่งก้าว ยกมือแตะกั้นอกคุณพร้อมสบตาสั่นไหว"
+  * "ยืนชิดในอ้อมแขน ฝ่ามือทาบแผ่นอกคุณช้อนตาสบมอง"
+  * "ก้าวประชิดตัว เชิดหน้าจ้องสบตาคุณในระยะลมหายใจรดกัน"`
 
 export const DEFAULT_TELEMETRY_SCHEMA_PROMPT = `# TELEMETRY & PLUGGABLE OUTCOME CONTRACT (STAGING LAB)
 You must output ONLY a valid JSON object matching this structure:
@@ -128,16 +128,16 @@ You must output ONLY a valid JSON object matching this structure:
 - Output strictly 1 cohesive natural Thai sentence (approx 8-15 syllables / 6-10 words).
 - Must be an instant visual snapshot rendering a clear 3D image in the mind in 0.1 seconds.
 - Weave together 3 essential physical elements into 1 sentence:
-  1. Silhouette & Stance: Center of gravity and footwork (ยืนหันข้าง / ถอยผละครึ่งก้าว / ยืนชิดในระยะประชิด / ก้าวประชิด)
-  2. Upper-Body & Limb Response: Natural posture responding to the actual touch zone and resistance level without robotic stiffness
-  3. Gaze & Eye Contact: Head angle and eye contact with the player (หันขวับมาสบตาคมกริบ / ช้อนตาสบมองสั่นไหว / จ้องสบตาในระยะลมหายใจรดกัน)
+  1. Silhouette & Stance: Center of gravity and footwork (ยืนหันข้าง / เบี่ยงตัวถอยครึ่งก้าว / ยืนชิดในอ้อมแขน / ก้าวประชิด)
+  2. Hands & Upper-Body Buffer: Realistic arm position between both bodies based on resistance (กอดอกกั้นระยะ / ยกฝ่ามือยันแผงอกคุณไว้เบาๆ / วางมือทาบแผ่นอกคุณอย่างอ่อนแรง)
+  3. Gaze & Eye Contact: Head angle and eye contact with the player (หันขวับมาสบตาคมกริบ / ช้อนตาสบมองสั่นไหวในระยะประชิด / จ้องริมฝีปากคุณด้วยลมหายใจหอบร้อน)
 - Ruthlessly subtract all abstract emotion words (no 'ด้วยความกลัว', no 'อย่างหวาดระแวง') and decorative room adjectives!
 - Never use technical symbols like '+' or '·' or brackets!
-- Canonical Golden Examples (Adapt posture to the exact body part touched):
+- Canonical Golden Examples (Do not copy verbatim; adapt to actual touch and resistance):
   * PARRIED: "เบี่ยงตัวหลบระยะเอื้อม กอดอกแน่นหันมาสบตานิ่ง"
-  * GRAZED: "ชะงักถอยครึ่งก้าว หันมาสบตาด้วยแววตาสั่นไหว"
-  * LATCHED: "ยืนชิดในระยะประชิด ช้อนตาสบมองอย่างโอนอ่อน"
-  * COUNTER: "ก้าวประชิดตัว เชิดหน้าจ้องสบตาในระยะลมหายใจรดกัน"
+  * GRAZED: "ถอยผละครึ่งก้าว ยกมือแตะกั้นอกคุณพร้อมสบตาสั่นไหว"
+  * LATCHED: "ยืนชิดในอ้อมแขน ฝ่ามือทาบแผ่นอกคุณช้อนตาสบมอง"
+  * COUNTER: "ก้าวประชิดตัว เชิดหน้าจ้องสบตาคุณในระยะลมหายใจรดกัน"
 
 # CANONICAL 4-STATE VERDICT OUTCOMES:
 - "MISSED": When the player reaches from a distant spacing and clutches only empty air. (contact_occurred: false, active_contacts: [])

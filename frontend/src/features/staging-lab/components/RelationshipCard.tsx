@@ -45,10 +45,11 @@ export function RelationshipCard({
     }
 
     if (nextMeta.requiresSoftSpot) {
-      // Natural rule: Deep Bond ("คนของใจ") always includes The Soft Spot
+      // Natural rule: Deep Bond ("คนของใจ") always includes The Soft Spot and clears Night Friction
       onChange({
         ...config,
         stage: nextStage,
+        nightFriction: false,
         softSpot: true,
       })
       return
@@ -65,6 +66,14 @@ export function RelationshipCard({
       onChange({
         ...config,
         stage: 'familiar',
+        nightFriction: true,
+      })
+      return
+    }
+    if (config.stage === 'deep_bond') {
+      onChange({
+        ...config,
+        stage: 'special',
         nightFriction: true,
       })
       return
@@ -95,7 +104,8 @@ export function RelationshipCard({
 
   const isSoftSpotEffective =
     currentMeta.allowsImprints && (config.softSpot || Boolean(currentMeta.requiresSoftSpot))
-  const isNightFrictionEffective = currentMeta.allowsImprints && config.nightFriction
+  const isNightFrictionEffective =
+    currentMeta.allowsImprints && !currentMeta.requiresSoftSpot && config.nightFriction
 
   return (
     <div

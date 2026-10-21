@@ -3,10 +3,11 @@ import {
   X,
   Copy,
   Check,
-  RotateCcw,
   FileCode2,
   Info,
-  ArrowLeft
+  ArrowLeft,
+  User,
+  Globe,
 } from 'lucide-react'
 import {
   DEFAULT_BASE_PROMPT,
@@ -34,6 +35,7 @@ import { KineticContinuityCard } from './KineticContinuityCard'
 import { PersonaArchetypeCard } from './PersonaArchetypeCard'
 import { MagmaCoreCard } from './MagmaCoreCard'
 import { RelationshipCard } from './RelationshipCard'
+import { WorldStageCard } from './WorldStageCard'
 import {
   type PersonaArchetype,
   CANONICAL_PERSONA_PRESETS,
@@ -50,8 +52,10 @@ import {
   generateRelationshipPromptSnippet,
   getRelationshipStageMeta
 } from '../modules/relationshipModule'
-import { FloatingTelemetryHud } from './FloatingTelemetryHud'
+import { FloatingHudStack } from './FloatingHudStack'
 import { CentralDockIsland } from './CentralDockIsland'
+import { CAMPUS_QUADRANT_PRESET } from '../spatialMockPresets'
+import type { StageCellCluster } from '../spatialStageTypes'
 
 interface StagingLabViewProps {
   onBackToHome: () => void
@@ -73,33 +77,32 @@ interface PromptLayerItem {
 
 export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   // 1. Target Gateway & Modal States
-  const [serverTarget, setServerTarget] = useState<'local' | 'cloud'>('local')
   const [isPromptInspectorOpen, setIsPromptInspectorOpen] = useState(false)
   const [isTelemetryContractEnabled, setIsTelemetryContractEnabled] = useState<boolean>(true)
   const [copiedPrompt, setCopiedPrompt] = useState(false)
 
   // 2. Base Canvas & Modular Prompt State
-  const [basePrompt, setBasePrompt] = useState<string>(DEFAULT_BASE_PROMPT)
+  const [basePrompt] = useState<string>(DEFAULT_BASE_PROMPT)
   const [featureModules] = useState<PromptModule[]>(INITIAL_FEATURE_MODULES)
 
   // 3.0 Card 0: Persona Archetype Controls (DNA & Defense Mechanics)
   const [currentArchetype, setCurrentArchetype] = useState<PersonaArchetype>(
     CANONICAL_PERSONA_PRESETS[0]
   )
-  const [isArchetypeActive, setIsArchetypeActive] = useState<boolean>(true)
-  const [isArchetypeExpanded, setIsArchetypeExpanded] = useState<boolean>(true)
+  const [isArchetypeActive, setIsArchetypeActive] = useState<boolean>(false)
+  const [isArchetypeExpanded, setIsArchetypeExpanded] = useState<boolean>(false)
 
   // 3.05 Card 0.5: Relationship & Special Imprints Controls
-  const [isRelationshipActive, setIsRelationshipActive] = useState<boolean>(true)
-  const [isRelationshipExpanded, setIsRelationshipExpanded] = useState<boolean>(true)
+  const [isRelationshipActive, setIsRelationshipActive] = useState<boolean>(false)
+  const [isRelationshipExpanded, setIsRelationshipExpanded] = useState<boolean>(false)
   const [relationshipConfig, setRelationshipConfig] = useState<RelationshipConfig>({
-    stage: 'familiar',
+    stage: 'stranger',
     nightFriction: false,
     softSpot: false,
   })
 
   // 3.1 Card 1: Physical Boundary Controls
-  const [parrySpacing, setParrySpacing] = useState<SpatialSpacing>('reach')
+  const [parrySpacing, setParrySpacing] = useState<SpatialSpacing>('distant')
   const [parryBoundaryLevel, setParryBoundaryLevel] = useState<number>(10)
 
   // 3.2 Card 2: Kinetic Continuity & Pacing Controls (Dual-State In-Memory)
@@ -111,21 +114,21 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   )
 
   // 3.3 Dynamic Signal Chain States (The Effect Rack / Pedalboard Architecture)
-  const [isCharacterStateActive, setIsCharacterStateActive] = useState<boolean>(true)
-  const [isBoundaryActive, setIsBoundaryActive] = useState<boolean>(true)
-  const [isKineticActive, setIsKineticActive] = useState<boolean>(true)
-  const [isKineticLinkedToBoundary, setIsKineticLinkedToBoundary] = useState<boolean>(true)
-  const [isCharacterStateExpanded, setIsCharacterStateExpanded] = useState<boolean>(true)
-  const [isBoundaryExpanded, setIsBoundaryExpanded] = useState<boolean>(true)
-  const [isKineticExpanded, setIsKineticExpanded] = useState<boolean>(true)
+  const [isCharacterStateActive, setIsCharacterStateActive] = useState<boolean>(false)
+  const [isBoundaryActive, setIsBoundaryActive] = useState<boolean>(false)
+  const [isKineticActive, setIsKineticActive] = useState<boolean>(false)
+  const [isKineticLinkedToBoundary, setIsKineticLinkedToBoundary] = useState<boolean>(false)
+  const [isCharacterStateExpanded, setIsCharacterStateExpanded] = useState<boolean>(false)
+  const [isBoundaryExpanded, setIsBoundaryExpanded] = useState<boolean>(false)
+  const [isKineticExpanded, setIsKineticExpanded] = useState<boolean>(false)
 
   // 3.4 Card 3: The Magma Core Controls (Effect Rack Pedal 3)
-  const [isMagmaActive, setIsMagmaActive] = useState<boolean>(true)
-  const [isMagmaExpanded, setIsMagmaExpanded] = useState<boolean>(true)
+  const [isMagmaActive, setIsMagmaActive] = useState<boolean>(false)
+  const [isMagmaExpanded, setIsMagmaExpanded] = useState<boolean>(false)
   const [magmaConfig, setMagmaConfig] = useState<MagmaCoreConfig>(() => {
     const defaults = ARCHETYPE_MAGMA_DEFAULTS.cool_aloof
     return {
-      enabled: true,
+      enabled: false,
       phase: 'sealed',
       autoProgress: true,
       faultLine: defaults?.faultLine ?? '',
@@ -235,8 +238,11 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   const handleOriginPostureChange = (newPosture: string) => {
     setInitialPosture(newPosture)
     setCurrentPosture(newPosture)
+    setSimulationResult(null)
   }
 
+  const [activeDockTab, setActiveDockTab] = useState<'actor' | 'stage'>('actor')
+  const [spatialCluster, setSpatialCluster] = useState<StageCellCluster>(CAMPUS_QUADRANT_PRESET)
   const resetCountRef = useRef(0)
   const tetherCooldownRef = useRef(0)
   const handleResetPosture = () => {
@@ -252,15 +258,9 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     setSimulationResult(null)
   }
 
-  // 4. Player Input & Chat History State
+  // 4. Player Input & Chat History State (Pristine Canvas)
   const [playerInput, setPlayerInput] = useState<string>('')
-  const [chatLog, setChatLog] = useState<ChatMessage[]>([
-    {
-      id: 'init-vo',
-      type: 'vo',
-      text: 'การจำลองสภาวะทางกายภาพในห้องทดลองกำลังเริ่มต้นขึ้น นักแสดงพร้อมรับรู้เจตนาและท่วงท่าของคุณ',
-    },
-  ])
+  const [chatLog, setChatLog] = useState<ChatMessage[]>([])
 
   // 5. Execution & Telemetry State
   const [selectedModel, setSelectedModel] = useState<string>('gemini-3.8-flash')
@@ -359,13 +359,13 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   const promptLayers = useMemo<PromptLayerItem[]>(() => {
     const layers: PromptLayerItem[] = []
 
-    // Layer 1: Core Base Prompt (Neutral Zinc / White)
+    // 1. Core Base Prompt (Neutral Zinc / White)
     if (basePrompt.trim()) {
       layers.push({
         id: 'core_base',
-        title: 'Layer 1: Core Base Prompt (The Embodied Backbone)',
+        title: 'ตัวตนตั้งต้น (The Embodied Actor)',
         sourceTag: 'CORE BACKBONE',
-        sourceLabel: 'ตัวตน จิตวิทยา และกฎการแสดงดั้งเดิม',
+        sourceLabel: 'จิตวิญญาณ กฎฟิสิกส์ และสัจธรรมของเวที',
         badgeBg: 'bg-white/10',
         badgeText: 'text-[#F1F1F1]',
         badgeBorder: 'border-white/20',
@@ -376,12 +376,12 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       })
     }
 
-    // Layer 2: Injected Feature Modules (The Effect Rack / Signal Chain)
+    // 2. Persona Archetype Module
     if (isArchetypeActive && personaPromptSnippet.trim()) {
       layers.push({
         id: 'persona_archetype',
-        title: `Signal Chain: Pedal 0 (Persona Archetype: ${currentArchetype.name})`,
-        sourceTag: 'PEDAL 0: PERSONA',
+        title: `สายตัวละคร: ${currentArchetype.name}`,
+        sourceTag: 'PERSONA ARCHETYPE',
         sourceLabel: `แม่พิมพ์ตัวตน 5 เสาหลัก: ${currentArchetype.tagline} (Psychology & Somatics)`,
         badgeBg: 'bg-[#818cf8]/10',
         badgeText: 'text-[#818cf8]',
@@ -393,11 +393,30 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       })
     }
 
+    // 3. Magma Core Module
+    if (isMagmaActive && magmaPromptSnippet.trim()) {
+      const magmaMeta = getMagmaPhaseMeta(magmaConfig.phase)
+      layers.push({
+        id: 'magma_core_module',
+        title: `แกนลาวา: ${magmaMeta.label}`,
+        sourceTag: 'MAGMA CORE',
+        sourceLabel: `การสลับขั้วอารมณ์และสภาวะจิตใจเบื้องลึก (${magmaMeta.tag})`,
+        badgeBg: magmaMeta.badgeBg,
+        badgeText: magmaMeta.badgeText,
+        badgeBorder: magmaMeta.badgeBorder,
+        borderClass: magmaMeta.badgeBorder.replace('/35', '/20').replace('/40', '/20').replace('/30', '/20'),
+        bgClass: magmaMeta.badgeBg.replace('/15', '/[0.03]').replace('/20', '/[0.03]'),
+        textClass: 'text-[#F1F1F1]',
+        content: magmaPromptSnippet.trim(),
+      })
+    }
+
+    // 4. Relationship & Special Imprints Module
     if (isRelationshipActive && relationshipPromptSnippet.trim()) {
       layers.push({
         id: 'relationship_imprint',
-        title: `Signal Chain: Relationship (${relationshipMeta.label} • ${relationshipMeta.subLabel})`,
-        sourceTag: `RELATION: ${relationshipMeta.tag}`,
+        title: `ความสัมพันธ์: ${relationshipMeta.label}`,
+        sourceTag: 'RELATIONSHIP',
         sourceLabel: `คลื่นความผูกพันและตราประทับพิเศษ (+${activeImprintCount} Imprints)`,
         badgeBg: 'bg-[#f472b6]/10',
         badgeText: 'text-[#f472b6]',
@@ -409,11 +428,13 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       })
     }
 
+    // 5. Desire & Sensory Heat Module
     if (!isBoundaryActive && isCharacterStateActive && desirePromptSnippet.trim()) {
+      const desireLabel = parryBoundaryLevel <= 20 ? 'สติครบ' : parryBoundaryLevel <= 60 ? 'ใจเต้นรัว' : 'เร่าร้อน'
       layers.push({
         id: 'desire_heat',
-        title: `Signal Chain: Desire & Sensory Heat (${parryBoundaryLevel}%)`,
-        sourceTag: `DESIRE: ${parryBoundaryLevel}%`,
+        title: `ไฟปรารถนา: ${desireLabel} (${parryBoundaryLevel}%)`,
+        sourceTag: 'DESIRE & HEAT',
         sourceLabel: 'อุณหภูมิร่างกาย เหงื่อ หัวใจ และความไวต่อสัมผัส',
         badgeBg: 'bg-[#f59e0b]/10',
         badgeText: 'text-[#f59e0b]',
@@ -425,11 +446,18 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       })
     }
 
+    // 6. Physical Boundary Module
     if (isBoundaryActive && parryBriefSnippet.trim()) {
+      const spacingLabel =
+        parrySpacing === 'distant'
+          ? 'ระยะปลอดภัย 2-3 ก้าว (Distant)'
+          : parrySpacing === 'reach'
+          ? 'ระยะเอื้อมถึง (Reach)'
+          : 'ประชิดตัว (Intimate)'
       layers.push({
         id: 'physical_reality',
-        title: 'Signal Chain: Pedal 1 (Physical Reality & Boundary)',
-        sourceTag: 'PEDAL 1: BOUNDARY',
+        title: `ขอบเขตและระยะห่าง: ${spacingLabel}`,
+        sourceTag: 'PHYSICAL BOUNDARY',
         sourceLabel: 'คำนวณสดจากระยะห่าง × ความสัมพันธ์ × ไฟปรารถนา',
         badgeBg: 'bg-[#38bdf8]/10',
         badgeText: 'text-[#38bdf8]',
@@ -441,13 +469,12 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       })
     }
 
+    // 7. Kinetic Continuity Module
     if (isKineticActive && kineticPromptSnippet.trim()) {
       layers.push({
         id: 'kinetic_pacing_module',
-        title: isKineticSomaticEffective
-          ? 'Signal Chain: Pedal 2 (Kinetic Continuity & Somatic Friction)'
-          : 'Signal Chain: Pedal 2 (Kinetic Continuity & Pacing)',
-        sourceTag: isKineticSomaticEffective ? 'PEDAL 2: KINETIC + SOMATIC' : 'PEDAL 2: KINETIC',
+        title: `แรงเฉื่อยสรีระ: ${currentPosture}`,
+        sourceTag: isKineticSomaticEffective ? 'KINETIC + SOMATIC' : 'KINETIC CONTINUITY',
         sourceLabel: isKineticSomaticEffective
           ? 'กฎแห่งแรงเฉื่อยและจังหวะภาพยนตร์ (ผสานแรงเสียดทานทางอารมณ์)'
           : 'กฎแห่งแรงเฉื่อยและจังหวะภาพยนตร์ (กายภาพล้วน)',
@@ -461,30 +488,13 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       })
     }
 
-    if (isMagmaActive && magmaPromptSnippet.trim()) {
-      const magmaMeta = getMagmaPhaseMeta(magmaConfig.phase)
-      layers.push({
-        id: 'magma_core_module',
-        title: `Signal Chain: Pedal 3 (The Magma Core: ${magmaMeta.tag})`,
-        sourceTag: `PEDAL 3: MAGMA [${magmaConfig.phase.toUpperCase()}]`,
-        sourceLabel: `การสลับขั้วอารมณ์และสภาวะแพ้ทางถาวร (${magmaMeta.label})`,
-        badgeBg: magmaMeta.badgeBg,
-        badgeText: magmaMeta.badgeText,
-        badgeBorder: magmaMeta.badgeBorder,
-        borderClass: magmaMeta.badgeBorder.replace('/35', '/20').replace('/40', '/20').replace('/30', '/20'),
-        bgClass: magmaMeta.badgeBg.replace('/15', '/[0.03]').replace('/20', '/[0.03]'),
-        textClass: 'text-[#F1F1F1]',
-        content: magmaPromptSnippet.trim(),
-      })
-    }
-
-    // Layer 3: Active Feature Modules (Purple)
+    // 8. Active Feature Modules (Purple)
     const activeMods = featureModules.filter(m => m.enabled)
     for (const mod of activeMods) {
       if (mod.prompt_snippet.trim()) {
         layers.push({
           id: `module_${mod.id}`,
-          title: `Layer 3: Feature Module (${mod.name})`,
+          title: `โมดูลเสริม: ${mod.name}`,
           sourceTag: 'FEATURE MODULE',
           sourceLabel: 'โมดูลเสริมที่เปิดใช้งาน',
           badgeBg: 'bg-[#a78bfa]/10',
@@ -498,7 +508,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       }
     }
 
-    // Layer 3 (or 4 with extra modules): Right HUD Telemetry Contract (Amber - Pluggable)
+    // 9. Right HUD Telemetry Contract (Amber - Pluggable)
     if (isTelemetryContractEnabled) {
       const activeTelemetrySchema =
         isBoundaryActive && isKineticActive
@@ -511,22 +521,8 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
 
       layers.push({
         id: 'hud_telemetry',
-        title:
-          isBoundaryActive && isKineticActive
-            ? 'Signal Chain: Telemetry Contract (Dual Modular: Boundary + Kinetic)'
-            : isBoundaryActive
-            ? 'Signal Chain: Telemetry Contract (Pedal 1: Boundary & Posture Schema)'
-            : isKineticActive
-            ? 'Signal Chain: Telemetry Contract (Pedal 2: Kinetic Pacing Schema)'
-            : 'Signal Chain: Telemetry Contract (Outcome & Posture Schema)',
-        sourceTag:
-          isBoundaryActive && isKineticActive
-            ? 'DUAL TELEMETRY (PLUGGABLE)'
-            : isBoundaryActive
-            ? 'PEDAL 1 TELEMETRY (PLUGGABLE)'
-            : isKineticActive
-            ? 'PEDAL 2 TELEMETRY (PLUGGABLE)'
-            : 'RIGHT HUD TELEMETRY (PLUGGABLE)',
+        title: 'สัญญาส่งออกค่า HUD (JSON Schema)',
+        sourceTag: 'HUD CONTRACT',
         sourceLabel:
           isBoundaryActive && isKineticActive
             ? 'สัญญาสั่ง AI คายค่าขอบเขตการสัมผัสและจังหวะแรงเฉื่อยสรีระพร้อมกัน'
@@ -568,6 +564,8 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     magmaPromptSnippet,
     featureModules,
     isTelemetryContractEnabled,
+    parrySpacing,
+    currentPosture,
   ])
 
   // Full Assembled Prompt string
@@ -575,18 +573,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     return promptLayers.map(l => l.content).join('\n\n')
   }, [promptLayers])
 
-  // Current API Base URL
-  const currentBaseUrl = useMemo(() => {
-    if (serverTarget === 'local') {
-      return 'http://localhost:8000'
-    }
-    return 'https://the-soul-backend-330377476882.asia-southeast1.run.app'
-  }, [serverTarget])
 
-  // Reset Base Prompt
-  const handleResetBasePrompt = () => {
-    setBasePrompt(DEFAULT_BASE_PROMPT)
-  }
 
   // Copy prompt to clipboard
   const handleCopyPrompt = async () => {
@@ -664,6 +651,14 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       }
     }
 
+    if (isMagmaActive && magmaPromptSnippet.trim()) {
+      activeSnippets.push({
+        id: 'magma_core',
+        name: `THE MAGMA CORE: ${magmaConfig.phase.toUpperCase()}`,
+        prompt_snippet: magmaPromptSnippet.trim(),
+      })
+    }
+
     if (isRelationshipActive && relationshipPromptSnippet.trim()) {
       activeSnippets.push({
         id: 'relationship_imprint',
@@ -707,14 +702,6 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       })
     }
 
-    if (isMagmaActive && magmaPromptSnippet.trim()) {
-      activeSnippets.push({
-        id: 'magma_core',
-        name: `THE MAGMA CORE: ${magmaConfig.phase.toUpperCase()}`,
-        prompt_snippet: magmaPromptSnippet.trim(),
-      })
-    }
-
     featureModules
       .filter(m => m.enabled)
       .forEach(m => {
@@ -746,13 +733,26 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     }
 
     try {
-      const response = await fetch(`${currentBaseUrl}/api/sandbox/simulate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      })
+      let response: Response
+      try {
+        // 1. Try Localhost :8000 first (zero latency dev)
+        response = await fetch('http://localhost:8000/api/sandbox/simulate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        })
+      } catch {
+        // 2. Invisible auto-fallback to Cloud backend
+        response = await fetch('https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/simulate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        })
+      }
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}))
@@ -886,30 +886,89 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
           </div>
         </div>
 
-        {/* Unified Card Deck: Active cards float to the top, Inactive cards stay at the bottom */}
-        <div className="w-[382px] flex flex-col gap-2.5 pb-8">
-          {[
+        {/* Category Segmented Control: [ สรีระ & จิตวิทยา (Actor) | ผืนเวที & โลก (Stage) ] */}
+        <div className="w-[382px] mb-3 p-1 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center gap-1 font-mono text-[11px] select-none shrink-0 shadow-sm">
+          <button
+            type="button"
+            onClick={() => setActiveDockTab('actor')}
+            className={`flex-1 py-1.5 rounded-xl transition-all cursor-pointer font-medium flex items-center justify-center gap-1.5 ${
+              activeDockTab === 'actor'
+                ? 'bg-white/20 text-white shadow-sm font-semibold'
+                : 'text-white/40 hover:text-white/70'
+            }`}
+          >
+            <User size={12} />
+            <span>สรีระ & จิตวิทยา (Actor)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveDockTab('stage')}
+            className={`flex-1 py-1.5 rounded-xl transition-all cursor-pointer font-medium flex items-center justify-center gap-1.5 ${
+              activeDockTab === 'stage'
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 font-semibold shadow-sm'
+                : 'text-white/40 hover:text-white/70'
+            }`}
+          >
+            <Globe size={12} />
+            <span>ผืนเวที & โลก (Stage)</span>
+          </button>
+        </div>
+
+        {/* Dynamic Card Deck based on active tab */}
+        {activeDockTab === 'stage' ? (
+          <div className="w-[382px] flex flex-col gap-2.5 pb-8">
+            <WorldStageCard
+              cluster={spatialCluster}
+              onClusterChange={setSpatialCluster}
+            />
+          </div>
+        ) : (
+          /* Unified Card Deck: Active cards float to the top, Inactive cards stay at the bottom */
+          <div className="w-[382px] flex flex-col gap-2.5 pb-8">
+            {[
+              {
+                id: 'archetype',
+                order: 1,
+                isActive: isArchetypeActive,
+                node: (
+                  <PersonaArchetypeCard
+                    key="archetype"
+                    isActive={isArchetypeActive}
+                    onActivate={() => {
+                      const next = !isArchetypeActive
+                      setIsArchetypeActive(next)
+                      if (next) setIsArchetypeExpanded(true)
+                    }}
+                    currentArchetype={currentArchetype}
+                    onArchetypeChange={handleArchetypeChange}
+                    isExpanded={isArchetypeExpanded}
+                    onToggleExpand={() => setIsArchetypeExpanded(prev => !prev)}
+                  />
+                ),
+              },
             {
-              id: 'archetype',
-              isActive: isArchetypeActive,
+              id: 'magma',
+              order: 2,
+              isActive: isMagmaActive,
               node: (
-                <PersonaArchetypeCard
-                  key="archetype"
-                  isActive={isArchetypeActive}
+                <MagmaCoreCard
+                  key="magma"
+                  isActive={isMagmaActive}
                   onActivate={() => {
-                    const next = !isArchetypeActive
-                    setIsArchetypeActive(next)
-                    if (next) setIsArchetypeExpanded(true)
+                    const next = !isMagmaActive
+                    setIsMagmaActive(next)
+                    if (next) setIsMagmaExpanded(true)
                   }}
-                  currentArchetype={currentArchetype}
-                  onArchetypeChange={handleArchetypeChange}
-                  isExpanded={isArchetypeExpanded}
-                  onToggleExpand={() => setIsArchetypeExpanded(prev => !prev)}
+                  isExpanded={isMagmaExpanded}
+                  onToggleExpand={() => setIsMagmaExpanded(prev => !prev)}
+                  config={magmaConfig}
+                  onChange={handleMagmaConfigChange}
                 />
               ),
             },
             {
               id: 'relationship',
+              order: 3,
               isActive: isRelationshipActive,
               node: (
                 <RelationshipCard
@@ -929,6 +988,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
             },
             {
               id: 'desire',
+              order: 4,
               isActive: isCharacterStateActive,
               node: (
                 <CharacterStateCard
@@ -950,6 +1010,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
             },
             {
               id: 'boundary',
+              order: 5,
               isActive: isBoundaryActive,
               node: (
                 <StageControllerCard
@@ -969,6 +1030,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
             },
             {
               id: 'kinetic',
+              order: 6,
               isActive: isKineticActive,
               node: (
                 <KineticContinuityCard
@@ -985,42 +1047,27 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
                   currentPosture={currentPosture}
                   onOriginPostureChange={handleOriginPostureChange}
                   onResetPosture={handleResetPosture}
-                  onPreFillAction={(actionText) => {
+                  onSpacingChange={setParrySpacing}
+                  onPreFillAction={(actionText, spacing) => {
+                    if (spacing) setParrySpacing(spacing)
                     setPlayerInput(actionText)
                   }}
-                  onSelectVelocityAction={(actionText) => {
+                  onSelectVelocityAction={(actionText, spacing) => {
+                    if (spacing) setParrySpacing(spacing)
                     setPlayerInput(actionText)
-                    executeSimulation(actionText)
+                    executeSimulation(actionText, spacing)
                   }}
-                />
-              ),
-            },
-            {
-              id: 'magma',
-              isActive: isMagmaActive,
-              node: (
-                <MagmaCoreCard
-                  key="magma"
-                  isActive={isMagmaActive}
-                  onActivate={() => {
-                    const next = !isMagmaActive
-                    setIsMagmaActive(next)
-                    if (next) setIsMagmaExpanded(true)
-                  }}
-                  isExpanded={isMagmaExpanded}
-                  onToggleExpand={() => setIsMagmaExpanded(prev => !prev)}
-                  config={magmaConfig}
-                  onChange={handleMagmaConfigChange}
                 />
               ),
             },
           ]
             .sort((a, b) => {
-              if (a.isActive === b.isActive) return 0
+              if (a.isActive === b.isActive) return a.order - b.order
               return a.isActive ? -1 : 1
             })
             .map(item => item.node)}
         </div>
+        )}
       </aside>
 
       {/* ======================================================================= */}
@@ -1041,8 +1088,10 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
           characterStateLevel={parryBoundaryLevel}
           isBoundaryActive={isBoundaryActive}
           onToggleBoundary={handleToggleBoundary}
+          boundarySpacing={parrySpacing}
           isKineticActive={isKineticActive}
           onToggleKinetic={() => setIsKineticActive(prev => !prev)}
+          currentPosture={currentPosture}
           isKineticLinkedToBoundary={isKineticSomaticEffective}
           onToggleKineticLink={handleToggleKineticLink}
           isShieldActive={isMagmaActive}
@@ -1053,42 +1102,16 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
 
         {/* Top Minimal Utility Bar */}
         <div className="h-10 px-6 flex items-center justify-end gap-2 shrink-0 z-20">
-          {/* Prompt Studio Button */}
+          {/* Inspector Button */}
           <button
             type="button"
             onClick={() => setIsPromptInspectorOpen(true)}
             className="h-7 px-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-white/70 hover:text-white text-[10.5px] font-mono flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
-            title="ดูพิมพ์เขียว Prompt ที่ถูกประกอบขึ้นสด"
+            title="เปิดแผงตรวจเช็กพิมพ์เขียว (Inspector)"
           >
             <FileCode2 size={12} className="text-[#38bdf8]" />
-            <span>Prompt Studio</span>
+            <span>Inspector</span>
           </button>
-
-          {/* Micro Gateway Toggle */}
-          <div className="flex items-center p-0.5 rounded-full bg-white/[0.04] border border-white/10 text-[10px] font-mono">
-            <button
-              type="button"
-              onClick={() => setServerTarget('local')}
-              className={`px-2 py-0.5 rounded-full transition-all cursor-pointer ${
-                serverTarget === 'local'
-                  ? 'bg-white/15 text-white font-medium shadow-sm'
-                  : 'text-white/40 hover:text-white/70'
-              }`}
-            >
-              :8000
-            </button>
-            <button
-              type="button"
-              onClick={() => setServerTarget('cloud')}
-              className={`px-2 py-0.5 rounded-full transition-all cursor-pointer ${
-                serverTarget === 'cloud'
-                  ? 'bg-white/15 text-white font-medium shadow-sm'
-                  : 'text-white/40 hover:text-white/70'
-              }`}
-            >
-              Cloud
-            </button>
-          </div>
 
           {/* Clear Chat Log & Reset Posture */}
           <button
@@ -1104,8 +1127,8 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
           </button>
         </div>
 
-        {/* Floating Telemetry HUD (Top-Right) */}
-        <FloatingTelemetryHud
+        {/* Floating Multi-HUD Stack (Top-Right) */}
+        <FloatingHudStack
           telemetry={simulationResult?.telemetry ?? null}
           spacing={parrySpacing}
           boundaryLevel={parryBoundaryLevel}
@@ -1117,6 +1140,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
           onToggleTelemetryContract={() => setIsTelemetryContractEnabled(!isTelemetryContractEnabled)}
           relationshipConfig={relationshipConfig}
           isRelationshipActive={isRelationshipActive}
+          spatialCluster={spatialCluster}
         />
 
         {/* Ambient Top Glow (Subtle Dark Apple Radial) */}
@@ -1161,212 +1185,134 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       </main>
 
       {/* ======================================================================= */}
-      {/* 3. FULL-SCREEN PROMPT BLUEPRINT & ASSEMBLY STUDIO (50/50 DUAL CANVAS)   */}
+      {/* 3. FULL-SCREEN PROMPT BLUEPRINT (CLEAN UNIBODY CANVAS)                  */}
       {/* ======================================================================= */}
       {isPromptInspectorOpen && (
         <div className="fixed inset-0 z-50 bg-[#090909]/98 backdrop-blur-3xl flex flex-col overflow-hidden animate-in fade-in duration-200 select-none font-sans">
-          {/* Top Master Utility Bar */}
-          <header className="h-14 px-6 border-b border-white/[0.08] flex items-center justify-between shrink-0 bg-[#0E0E10]">
-            {/* Left: Studio Identity & Dimension Pill */}
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#38bdf8]/10 border border-[#38bdf8]/30 text-[#38bdf8] flex items-center justify-center">
-                <FileCode2 size={16} />
-              </div>
-              <div>
-                <h3 className="text-[15px] font-semibold text-[#F1F1F1] tracking-tight leading-none">
-                  พิมพ์เขียวของเวที (Prompt Blueprint & Assembly Studio)
-                </h3>
-                <p className="text-[10px] text-white/40 font-mono mt-1">
-                  100% PROMPT TRANSPARENCY • ORIGIN SYNTAX HIGHLIGHTING
-                </p>
-              </div>
-              <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-white/[0.05] border border-white/10 text-[10px] font-mono text-white/40">
-                50/50 DUAL CANVAS
-              </span>
-            </div>
-
-            {/* Center: Pluggable HUD Telemetry Capsule Switcher */}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setIsTelemetryContractEnabled(!isTelemetryContractEnabled)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-mono transition-all cursor-pointer ${
-                  isTelemetryContractEnabled
-                    ? 'bg-[#fb923c]/15 hover:bg-[#fb923c]/25 border-[#fb923c]/30 text-[#fb923c] shadow-[0_0_15px_rgba(251,146,60,0.15)]'
-                    : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/10 text-white/40 hover:text-white/70'
-                }`}
-                title="คลิกเพื่อเสียบ / ถอดหัววัด Telemetry Contract สำหรับ HUD"
-              >
-                <span
-                  className={`w-2 h-2 rounded-full ${
-                    isTelemetryContractEnabled
-                      ? 'bg-[#fb923c] animate-pulse'
-                      : 'bg-white/30'
-                  }`}
-                />
-                <span className="font-semibold">
-                  {isTelemetryContractEnabled
-                    ? 'HUD CONTRACT: PLUGGED (คายค่าส่ง HUD)'
-                    : 'HUD CONTRACT: DETACHED (นักแสดงบริสุทธิ์)'}
-                </span>
-              </button>
-            </div>
-
-            {/* Right: Actions (Stats, Copy, Close) */}
-            <div className="flex items-center gap-2">
-              <span className="hidden md:inline-block text-[11px] font-mono text-white/40 mr-1">
-                {promptLayers.length} Layers • {assembledPrompt.length} Chars
-              </span>
-
-              <button
-                type="button"
-                onClick={handleCopyPrompt}
-                className="px-3.5 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-xs font-medium text-white/90 hover:text-white flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
-              >
-                {copiedPrompt ? (
-                  <Check size={13} className="text-emerald-400" />
-                ) : (
-                  <Copy size={13} />
-                )}
-                <span>{copiedPrompt ? 'Copied' : 'Copy Full Prompt'}</span>
-              </button>
-
+          {/* Top Sticky Frosted Navigation (Ultra-Minimal: Close • Dock • Micro Actions) */}
+          <header className="sticky top-0 z-20 min-h-14 py-2.5 px-4 sm:px-6 flex items-center justify-between gap-3 shrink-0 bg-[#090909]/80 backdrop-blur-2xl">
+            {/* Left: Close Button (Clean Circle) */}
+            <div className="flex items-center shrink-0">
               <button
                 type="button"
                 onClick={() => setIsPromptInspectorOpen(false)}
-                className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 hover:border-white/20 text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95 ml-1"
+                className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 hover:border-white/20 text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95"
                 title="ปิดหน้าต่าง (Esc)"
               >
                 <X size={15} />
               </button>
             </div>
-          </header>
 
-          {/* Body: Exactly 50/50 Split Canvas */}
-          <div className="flex-1 flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-white/[0.08] overflow-hidden">
-            {/* ======================================================= */}
-            {/* LEFT 50%: Core Base Prompt Editor (Backbone)            */}
-            {/* ======================================================= */}
-            <div className="w-full md:w-1/2 h-full flex flex-col bg-[#0B0B0C] overflow-hidden">
-              {/* Column Subheader */}
-              <div className="h-11 px-6 border-b border-white/[0.06] flex items-center justify-between shrink-0 bg-white/[0.01]">
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-semibold text-white/60 uppercase tracking-wider font-mono">
-                    Source Core (Backbone)
-                  </span>
-                  <span className="text-[10px] text-white/30 font-mono">
-                    • แก้ไขได้
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleResetBasePrompt}
-                  className="px-2 py-1 rounded text-[10.5px] font-mono text-white/40 hover:text-white hover:bg-white/10 flex items-center gap-1.5 transition-all cursor-pointer"
-                  title="รีเซ็ตเป็นค่าเริ่มต้น"
-                >
-                  <RotateCcw size={11} />
-                  <span>Reset Default</span>
-                </button>
-              </div>
-
-              {/* Editor Workspace */}
-              <div className="flex-1 p-5 overflow-hidden flex flex-col">
-                <textarea
-                  value={basePrompt}
-                  onChange={e => setBasePrompt(e.target.value)}
-                  className="w-full h-full p-4 rounded-2xl bg-black/40 border border-white/[0.08] hover:border-white/15 focus:border-[#38bdf8]/40 text-xs font-mono text-[#F1F1F1] leading-relaxed resize-none focus:outline-none transition-all no-scrollbar"
-                  placeholder="เขียน Base Prompt โครงร่างตัวตนของนักแสดง..."
-                  spellCheck={false}
-                />
-              </div>
+            {/* Center: Central Dock Island (Hero Focus) */}
+            <div className="flex-1 flex justify-center max-w-xl mx-auto">
+              <CentralDockIsland
+                className="relative top-0 left-0 translate-x-0"
+                isArchetypeActive={isArchetypeActive}
+                onToggleArchetype={() => setIsArchetypeActive(prev => !prev)}
+                archetypeName={currentArchetype.name}
+                isRelationshipActive={isRelationshipActive}
+                onToggleRelationship={handleToggleRelationship}
+                relationshipLabel={relationshipMeta.label}
+                relationshipImprintCount={activeImprintCount}
+                isCharacterStateActive={isCharacterStateActive}
+                onToggleCharacterState={handleToggleCharacterState}
+                characterStateLevel={parryBoundaryLevel}
+                isBoundaryActive={isBoundaryActive}
+                onToggleBoundary={handleToggleBoundary}
+                boundarySpacing={parrySpacing}
+                isKineticActive={isKineticActive}
+                onToggleKinetic={() => setIsKineticActive(prev => !prev)}
+                currentPosture={currentPosture}
+                isKineticLinkedToBoundary={isKineticSomaticEffective}
+                onToggleKineticLink={handleToggleKineticLink}
+                isShieldActive={isMagmaActive}
+                onToggleShield={() => setIsMagmaActive(prev => !prev)}
+                shieldState={magmaConfig.phase}
+                onBypassAll={handleBypassAll}
+              />
             </div>
 
-            {/* ======================================================= */}
-            {/* RIGHT 50%: Live Assembled Prompt (Multi-Layer Render)   */}
-            {/* ======================================================= */}
-            <div className="w-full md:w-1/2 h-full flex flex-col bg-[#080809] overflow-hidden">
-              {/* Column Subheader & Origin Legend */}
-              <div className="h-11 px-6 border-b border-white/[0.06] flex items-center justify-between shrink-0 bg-white/[0.01]">
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-semibold text-white/60 uppercase tracking-wider font-mono">
-                    Live Assembly (Sent to Gemini)
-                  </span>
-                  <span className="text-[10px] text-emerald-400 font-mono">
-                    • 100% Real
-                  </span>
-                </div>
+            {/* Right: Micro Actions (Minimal HUD Switch & Copy Capsule) */}
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Ultra-Minimal HUD Micro-Capsule Switch */}
+              <button
+                type="button"
+                onClick={() => setIsTelemetryContractEnabled(!isTelemetryContractEnabled)}
+                className={`h-7 px-2.5 rounded-full border text-[11px] font-mono transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 select-none ${
+                  isTelemetryContractEnabled
+                    ? 'bg-[#fb923c]/15 hover:bg-[#fb923c]/25 border-[#fb923c]/35 text-[#fb923c] shadow-[0_0_10px_rgba(251,146,60,0.2)]'
+                    : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/10 text-white/40 hover:text-white/70'
+                }`}
+                title={isTelemetryContractEnabled ? 'HUD Telemetry สัญญาเชื่อมต่ออยู่ (คลิกเพื่อถอด)' : 'HUD Telemetry ถอดอยู่ (คลิกเพื่อต่อ)'}
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    isTelemetryContractEnabled ? 'bg-[#fb923c] animate-pulse' : 'bg-white/30'
+                  }`}
+                />
+                <span className="font-semibold tracking-tight">HUD</span>
+              </button>
 
-                {/* Layer Origin Pills Legend */}
-                <div className="flex items-center gap-1.5">
-                  <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-white/10 text-white/70 border border-white/15">
-                    Core
-                  </span>
-                  {isArchetypeActive && (
-                    <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-[#818cf8]/15 text-[#818cf8] border border-[#818cf8]/30">
-                      Pedal 0 (Persona)
-                    </span>
-                  )}
-                  {isBoundaryActive && (
-                    <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-[#38bdf8]/15 text-[#38bdf8] border border-[#38bdf8]/30">
-                      Pedal 1 (Boundary)
-                    </span>
-                  )}
-                  {isKineticActive && (
-                    <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-[#34d399]/15 text-[#34d399] border border-[#34d399]/30">
-                      Pedal 2 (Kinetic)
-                    </span>
-                  )}
-                  {isMagmaActive && (
-                    <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-[#EF264C]/15 text-[#EF264C] border border-[#EF264C]/30">
-                      Pedal 3 (Magma: {magmaConfig.phase === 'cooled_magma' ? 'Soft Spot' : magmaConfig.phase})
-                    </span>
-                  )}
-                  {isTelemetryContractEnabled && (
-                    <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-[#fb923c]/15 text-[#fb923c] border border-[#fb923c]/30">
-                      HUD
-                    </span>
-                  )}
-                </div>
-              </div>
+              {/* Ultra-Minimal Copy Prompt Capsule */}
+              <button
+                type="button"
+                onClick={handleCopyPrompt}
+                className="h-7 px-3 rounded-full bg-white/[0.08] hover:bg-white/[0.14] border border-white/15 text-[11px] font-sans font-medium text-[#F1F1F1] flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 select-none shadow-sm"
+                title="คัดลอก Prompt ทั้งหมด"
+              >
+                {copiedPrompt ? (
+                  <>
+                    <Check size={12} className="text-emerald-400" />
+                    <span className="text-emerald-400">Copied</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy size={12} className="opacity-70" />
+                    <span>Copy</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </header>
 
-              {/* Stacked Layer Cards View */}
-              <div className="flex-1 p-5 overflow-y-auto space-y-3.5 no-scrollbar">
-                {promptLayers.map((layer) => (
-                  <div
-                    key={layer.id}
-                    className={`rounded-2xl border ${layer.borderClass} ${layer.bgClass} p-3.5 transition-all shadow-sm`}
-                  >
-                    {/* Layer Header Row */}
-                    <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-white/[0.06]">
-                      <div className="flex items-center gap-2 truncate">
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-semibold uppercase tracking-wider border ${layer.badgeBg} ${layer.badgeText} ${layer.badgeBorder}`}
-                        >
-                          {layer.sourceTag}
-                        </span>
-                        <span className="text-[11px] font-semibold text-[#F1F1F1] truncate">
-                          {layer.title}
-                        </span>
-                      </div>
-                      <span className="text-[10px] font-mono text-white/35 shrink-0">
-                        {layer.content.length} chars
+          {/* Body: Single Unibody Canvas (Stacked Modular Cards) */}
+          <div className="flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 lg:p-8 bg-[#080809]">
+            <div className="max-w-4xl mx-auto space-y-4">
+              {promptLayers.map((layer) => (
+                <div
+                  key={layer.id}
+                  className={`rounded-2xl border ${layer.borderClass} ${layer.bgClass} p-4 sm:p-5 transition-all shadow-sm`}
+                >
+                  {/* Layer Header Row */}
+                  <div className="flex items-center justify-between gap-2 mb-2 pb-2.5 border-b border-white/[0.06]">
+                    <div className="flex items-center gap-2.5 truncate">
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-semibold uppercase tracking-wider border ${layer.badgeBg} ${layer.badgeText} ${layer.badgeBorder}`}
+                      >
+                        {layer.sourceTag}
+                      </span>
+                      <span className="text-[13px] sm:text-[14px] font-semibold text-[#F1F1F1] tracking-tight truncate">
+                        {layer.title}
                       </span>
                     </div>
-
-                    {/* Micro Source Description */}
-                    <p className="text-[10px] text-white/40 mb-2 font-mono">
-                      {layer.sourceLabel}
-                    </p>
-
-                    {/* Layer Code Content */}
-                    <div
-                      className={`p-3 rounded-xl bg-black/50 border border-white/[0.05] font-mono text-[11px] leading-relaxed whitespace-pre-wrap select-text max-h-72 overflow-y-auto no-scrollbar ${layer.textClass}`}
-                    >
-                      {layer.content}
-                    </div>
+                    <span className="text-[10.5px] font-mono text-white/35 shrink-0">
+                      {layer.content.length} chars
+                    </span>
                   </div>
-                ))}
-              </div>
+
+                  {/* Micro Source Description */}
+                  <p className="text-[11px] text-white/45 mb-2.5 font-sans">
+                    {layer.sourceLabel}
+                  </p>
+
+                  {/* Layer Code Content */}
+                  <div
+                    className={`p-3.5 sm:p-4 rounded-xl bg-black/50 border border-white/[0.05] font-mono text-[11.5px] sm:text-[12px] leading-relaxed whitespace-pre-wrap select-text max-h-[480px] overflow-y-auto no-scrollbar ${layer.textClass}`}
+                  >
+                    {layer.content}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>

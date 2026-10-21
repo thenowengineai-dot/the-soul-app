@@ -1,4 +1,5 @@
 import type { KineticTempoMode } from '../types'
+import type { SpatialSpacing } from './physicalParryModule'
 
 export interface StancePreset {
   id: string
@@ -21,6 +22,7 @@ export interface ChoreographyCue {
   label: string
   actionText: string
   intent: string
+  spacing: SpatialSpacing
 }
 
 export interface KineticScenario {
@@ -29,6 +31,7 @@ export interface KineticScenario {
   title: string
   stance: string
   physicsNote: string
+  defaultSpacing: SpatialSpacing
   cues: ChoreographyCue[]
 }
 
@@ -39,24 +42,28 @@ export const KINETIC_SCENARIOS: KineticScenario[] = [
     title: 'จากการปิดกั้น สู่การคลายตัว (The Guarded Window)',
     stance: 'ยืนกอดอกแน่น แผ่นหลังแนบชิดขอบหน้าต่าง สายตามองเหม่อออกไปข้างนอก',
     physicsNote: 'แขนล็อก หลังพิงหน้าต่าง ต้องคลายแขนก่อนก้าวเท้า',
+    defaultSpacing: 'distant',
     cues: [
       {
         step: 1,
         label: 'หยั่งเชิงระยะห่าง',
         actionText: '*เดินเข้ามาในห้อง วางแก้วกาแฟอุ่นๆ ลงบนโต๊ะ แล้วยืนนิ่งๆ ไม่พูดอะไร*',
         intent: 'AI ควรละสายตามอง แต่ยังไม่ทิ้งหน้าต่าง',
+        spacing: 'distant',
       },
       {
         step: 2,
         label: 'เปิดพื้นที่ปลอดภัย',
         actionText: '*เลื่อนเก้าอี้ตัวข้างๆ ออก แล้วผายมือชวนเธอมานั่ง*',
         intent: 'AI ควรคลายแขนลง และก้าวเท้าสั้นๆ',
+        spacing: 'distant',
       },
       {
         step: 3,
         label: 'เข้าสู่ระยะสัมผัส',
         actionText: '*เดินเข้าไปใกล้ในระยะเอื้อมมือ ยื่นแก้วกาแฟให้ตรงหน้า*',
         intent: 'AI ควรยื่นมือมารับแก้ว สบตาในระยะประชิด',
+        spacing: 'reach',
       },
     ],
   },
@@ -66,24 +73,28 @@ export const KINETIC_SCENARIOS: KineticScenario[] = [
     title: 'ความเปราะบางในพื้นที่ส่วนตัว (The Vulnerable Sofa)',
     stance: 'นั่งกอดเข่าคุดคู้บนโซฟาผ้า ปลายคางเกยบนหัวเข่า สองมือกุมข้อเท้าแน่น',
     physicsNote: 'จุดศูนย์ถ่วงต่ำ ร่างกายพับจมในเบาะ การลุกทันทีเป็นไปไม่ได้',
+    defaultSpacing: 'reach',
     cues: [
       {
         step: 1,
         label: 'แทรกแซงพื้นที่',
         actionText: '*เดินมาทรุดตัวลงนั่งบนโซฟาข้างๆ ในระยะประชิด*',
         intent: 'AI ควรเกร็งไหล่ สะดุ้งเบี่ยงตัวหนี',
+        spacing: 'reach',
       },
       {
         step: 2,
         label: 'สร้างความอบอุ่น',
         actionText: '*หยิบผ้าห่มผืนบางมาคลุมลงบนไหล่ของเธออย่างอ่อนโยน*',
         intent: 'AI ควรคลายมือจากข้อเท้ามาจับผ้าห่ม',
+        spacing: 'reach',
       },
       {
         step: 3,
         label: 'ทดสอบสัมผัสตรง',
         actionText: '*ค่อยๆ เอื้อมมือไปแตะหลังมือที่กุมผ้าห่มไว้เบาๆ*',
         intent: 'AI ปลายนิ้วกระตุกชะงัก ลังเลที่จะดึงมือหนี',
+        spacing: 'intimate',
       },
     ],
   },
@@ -93,24 +104,28 @@ export const KINETIC_SCENARIOS: KineticScenario[] = [
     title: 'สิ่งกีดขวางและการเผชิญหน้า (The Desk Barrier)',
     stance: 'นั่งหลังตรงหน้าโต๊ะทำงาน ปลายนิ้วแตะคีย์บอร์ด สายตาจับจ้องหน้าจอคอมพิวเตอร์',
     physicsNote: 'มีโต๊ะเป็นสิ่งกีดขวาง แขนอยู่ระดับอก ปลายนิ้วพิมพ์งาน',
+    defaultSpacing: 'reach',
     cues: [
       {
         step: 1,
         label: 'กดดันจากด้านหลัง',
         actionText: '*เดินมายืนซ้อนหลังเก้าอี้ โน้มตัวลงมาดูหน้าจอคอมพิวเตอร์*',
         intent: 'AI นิ้วชะงัก แผ่นหลังเกร็งตรง',
+        spacing: 'reach',
       },
       {
         step: 2,
         label: 'ตีกรอบระยะประชิด',
         actionText: '*วางมือข้างหนึ่งบนพนักพิง อีกข้างทาบลงบนโต๊ะข้างคีย์บอร์ด*',
         intent: 'AI โน้มตัวไปข้างหน้า สองมือยันขอบโต๊ะ',
+        spacing: 'intimate',
       },
       {
         step: 3,
         label: 'เปลี่ยนระนาบสรีระ',
         actionText: '*เอื้อมมือไปจับขอบเก้าอี้ ค่อยๆ ดึงหมุนให้หันกลับมาเผชิญหน้า*',
         intent: 'AI หมุนตามแรงดึง จ้องสบตาตรงๆ',
+        spacing: 'intimate',
       },
     ],
   },

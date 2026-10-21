@@ -126,10 +126,10 @@ export function RelationshipCard({
               isActive ? 'bg-[#f472b6]' : 'bg-white/20'
             }`}
           />
-          <span className="text-[15px] sm:text-[15.5px] font-semibold text-[#F1F1F1] tracking-tight shrink-0">
+          <span className="text-[16px] sm:text-[17px] font-semibold text-[#F1F1F1] tracking-tight shrink-0">
             ความสัมพันธ์
           </span>
-          <span className="text-[11px] font-normal text-white/40 truncate">
+          <span className="text-[11.5px] font-normal text-white/45 truncate">
             สมอง • คำพูด • ศักดิ์ศรี
           </span>
         </div>
@@ -142,7 +142,7 @@ export function RelationshipCard({
               e.stopPropagation()
               onActivate()
             }}
-            className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium transition-all cursor-pointer flex items-center gap-1.5 select-none ${
+            className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-mono font-medium transition-all cursor-pointer flex items-center gap-1.5 select-none ${
               isActive
                 ? 'bg-[#f472b6]/15 text-[#f472b6] border border-[#f472b6]/35'
                 : 'bg-white/[0.04] hover:bg-white/[0.08] text-white/40 hover:text-white/70 border border-white/10 hover:border-white/20'
@@ -170,6 +170,12 @@ export function RelationshipCard({
       {/* 2. Expandable Body Content */}
       {isExpanded && (
         <div className="px-4 pb-4 pt-1 space-y-3 select-none animate-in fade-in duration-150">
+          {/* Micro Subtitle Description */}
+          <div className="text-[12px] sm:text-[12.5px] font-sans text-white/60 flex items-center gap-1.5 pt-0.5">
+            <span className="text-[#f472b6]">✦</span>
+            <span>สมอง คำพูด และศักดิ์ศรีตามสถานะ</span>
+          </div>
+
           {/* Frosted Blurred Aura Track (Hides exact % to prevent farming) */}
           <div className="relative h-7 rounded-full bg-black/50 border border-white/10 p-1 flex items-center overflow-hidden">
             {/* Blurred Glowing Aura Fill */}
@@ -220,14 +226,14 @@ export function RelationshipCard({
                   key={s.id}
                   type="button"
                   onClick={() => handleStageSelect(s.id)}
-                  className={`py-1.5 px-1 rounded-xl text-center transition-all cursor-pointer ${
+                  className={`py-2 px-1 rounded-xl text-center transition-all cursor-pointer ${
                     isSelected
                       ? 'bg-white/[0.14] text-[#f472b6] shadow-sm border border-[#f472b6]/30 font-medium'
                       : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]'
                   }`}
                 >
-                  <div className="text-[10.5px] font-sans font-medium leading-tight truncate">{s.label}</div>
-                  <div className="text-[8.5px] font-sans text-white/40 tracking-tight mt-0.5 truncate">
+                  <div className="text-[12px] sm:text-[12.5px] font-sans font-semibold leading-tight truncate">{s.label}</div>
+                  <div className="text-[9.5px] sm:text-[10px] font-sans text-white/45 tracking-tight mt-0.5 truncate">
                     {s.subLabel}
                   </div>
                 </button>
@@ -237,7 +243,7 @@ export function RelationshipCard({
 
           {/* Twin Perk-Style Imprint Capsules */}
           <div className="space-y-1.5 pt-0.5">
-            <div className="text-[10px] font-medium text-white/40 font-sans px-0.5">
+            <div className="text-[11.5px] font-medium text-white/50 font-sans px-0.5">
               ตราประทับพิเศษ
             </div>
             <div className="grid grid-cols-2 gap-1.5">
@@ -252,8 +258,8 @@ export function RelationshipCard({
                 }`}
               >
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <Wine size={12} className={isNightFrictionEffective ? 'text-[#d8b4fe]' : 'text-white/30'} />
-                  <span className="text-[10.5px] font-sans font-medium truncate">
+                  <Wine size={13} className={isNightFrictionEffective ? 'text-[#d8b4fe]' : 'text-white/30'} />
+                  <span className="text-[11.5px] sm:text-[12px] font-sans font-medium truncate">
                     ข้ามเส้นเพราะบรรยากาศ
                   </span>
                 </div>
@@ -275,8 +281,8 @@ export function RelationshipCard({
                 }`}
               >
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <Flame size={12} className={isSoftSpotEffective ? 'text-[#fda4af]' : 'text-white/30'} />
-                  <span className="text-[10.5px] font-sans font-medium truncate">
+                  <Flame size={13} className={isSoftSpotEffective ? 'text-[#fda4af]' : 'text-white/30'} />
+                  <span className="text-[11.5px] sm:text-[12px] font-sans font-medium truncate">
                     แพ้ทางถาวร
                   </span>
                 </div>

@@ -1,3 +1,8 @@
 export { StagingLabView } from './components/StagingLabView'
+export { WorldStageCard } from './components/WorldStageCard'
+export { InteractiveBlueprintViewer } from './components/InteractiveBlueprintViewer'
+export { FloatingHudStack } from './components/FloatingHudStack'
 export * from './types'
+export * from './spatialStageTypes'
+export * from './spatialMockPresets'
 export * from './mockPresets'

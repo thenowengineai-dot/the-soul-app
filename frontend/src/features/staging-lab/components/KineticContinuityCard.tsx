@@ -5,10 +5,11 @@ import {
   Play
 } from 'lucide-react'
 import {
-  KINETIC_SCENARIOS,
   type KineticScenario,
-  type ChoreographyCue
+  type ChoreographyCue,
+  KINETIC_SCENARIOS
 } from '../modules/kineticContinuityModule'
+import type { SpatialSpacing } from '../modules/physicalParryModule'
 
 interface KineticContinuityCardProps {
   isActive: boolean
@@ -19,8 +20,9 @@ interface KineticContinuityCardProps {
   currentPosture: string
   onOriginPostureChange: (posture: string) => void
   onResetPosture?: () => void
-  onSelectVelocityAction?: (actionText: string) => void
-  onPreFillAction?: (actionText: string) => void
+  onSpacingChange?: (spacing: SpatialSpacing) => void
+  onSelectVelocityAction?: (actionText: string, spacing?: SpatialSpacing) => void
+  onPreFillAction?: (actionText: string, spacing?: SpatialSpacing) => void
 }
 
 export function KineticContinuityCard({
@@ -32,6 +34,7 @@ export function KineticContinuityCard({
   currentPosture,
   onOriginPostureChange,
   onResetPosture,
+  onSpacingChange,
   onSelectVelocityAction,
   onPreFillAction,
 }: KineticContinuityCardProps) {
@@ -43,23 +46,29 @@ export function KineticContinuityCard({
 
   const handleSelectScenario = (scenario: KineticScenario) => {
     onOriginPostureChange(scenario.stance)
-    if (onResetPosture) {
-      onResetPosture()
+    if (onSpacingChange && scenario.defaultSpacing) {
+      onSpacingChange(scenario.defaultSpacing)
     }
   }
 
-  const handlePreFill = (actionText: string) => {
+  const handlePreFill = (cue: ChoreographyCue) => {
+    if (onSpacingChange && cue.spacing) {
+      onSpacingChange(cue.spacing)
+    }
     if (onPreFillAction) {
-      onPreFillAction(actionText)
+      onPreFillAction(cue.actionText, cue.spacing)
     } else if (onSelectVelocityAction) {
-      onSelectVelocityAction(actionText)
+      onSelectVelocityAction(cue.actionText, cue.spacing)
     }
   }
 
-  const handleQuickRun = (e: React.MouseEvent, actionText: string) => {
+  const handleQuickRun = (e: React.MouseEvent, cue: ChoreographyCue) => {
     e.stopPropagation()
+    if (onSpacingChange && cue.spacing) {
+      onSpacingChange(cue.spacing)
+    }
     if (onSelectVelocityAction) {
-      onSelectVelocityAction(actionText)
+      onSelectVelocityAction(cue.actionText, cue.spacing)
     }
   }
 
@@ -78,7 +87,7 @@ export function KineticContinuityCard({
         onClick={onToggleExpand}
         className="px-4 py-3.5 flex items-center justify-between gap-2 cursor-pointer select-none"
       >
-        <div className="flex-1 flex items-center gap-2 text-left group min-w-0">
+        <div className="flex-1 flex items-baseline gap-2 text-left group min-w-0 truncate">
           <span
             className={`w-2 h-2 rounded-full shrink-0 transition-all ${
               isActive
@@ -86,8 +95,11 @@ export function KineticContinuityCard({
                 : 'bg-white/20'
             }`}
           />
-          <span className="text-[15px] sm:text-[15.5px] font-semibold text-[#F1F1F1] tracking-tight">
+          <span className="text-[16px] sm:text-[17px] font-semibold text-[#F1F1F1] tracking-tight shrink-0">
             ท่วงท่าต่อเนื่อง
+          </span>
+          <span className="text-[11.5px] font-normal text-white/45 truncate">
+            แรงเฉื่อย • สรีระ
           </span>
         </div>
 
@@ -100,10 +112,10 @@ export function KineticContinuityCard({
                 e.stopPropagation()
                 onResetPosture()
               }}
-              className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/[0.05] hover:bg-white/[0.12] text-white/60 hover:text-white transition-all cursor-pointer border border-white/10 text-[9.5px] font-sans active:scale-95"
+              className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/[0.05] hover:bg-white/[0.12] text-white/60 hover:text-white transition-all cursor-pointer border border-white/10 text-[10px] font-sans active:scale-95"
               title="รีเซ็ตกลับสู่ท่าเริ่มต้น"
             >
-              <RotateCcw size={9} />
+              <RotateCcw size={10} />
               <span>รีเซ็ต</span>
             </button>
           )}
@@ -114,7 +126,7 @@ export function KineticContinuityCard({
               e.stopPropagation()
               onActivate()
             }}
-            className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium transition-all cursor-pointer flex items-center gap-1.5 select-none ${
+            className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-mono font-medium transition-all cursor-pointer flex items-center gap-1.5 select-none ${
               isActive
                 ? 'bg-[#34d399]/15 text-[#34d399] border border-[#34d399]/35 shadow-[inset_0_1px_0_rgba(52,211,153,0.20)]'
                 : 'bg-white/[0.04] hover:bg-white/[0.08] text-white/40 hover:text-white/70 border border-white/10 hover:border-white/20'
@@ -145,7 +157,7 @@ export function KineticContinuityCard({
           {/* Segmented Preset Switcher (3 Main Scenarios) */}
           <div className="grid grid-cols-3 gap-1 p-1 rounded-2xl bg-black/30 border border-white/10">
             {KINETIC_SCENARIOS.map((s) => {
-              const isSelected = activeScenario.id === s.id && !isEvolved
+              const isSelected = activeScenario.id === s.id
 
               return (
                 <button
@@ -158,7 +170,7 @@ export function KineticContinuityCard({
                       : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]'
                   }`}
                 >
-                  <div className="text-[11px] font-sans font-medium">
+                  <div className="text-[12.5px] sm:text-[13px] font-sans font-semibold">
                     {s.shortLabel}
                   </div>
                 </button>
@@ -168,34 +180,46 @@ export function KineticContinuityCard({
 
           {/* Streamlined Choreography Cues (01, 02, 03 style) */}
           <div className="space-y-1.5 pt-0.5">
-            {activeScenario.cues.map((cue: ChoreographyCue) => (
-              <div
-                key={cue.step}
-                onClick={() => handlePreFill(cue.actionText)}
-                className="group p-2 rounded-xl bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] hover:border-[#34d399]/30 transition-all cursor-pointer flex items-center justify-between gap-2 text-left"
-                title="คลิกเพื่อหยอดข้อความนี้ลงในช่องแชท"
-              >
-                <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <span className="px-1.5 py-0.5 rounded-md bg-white/[0.06] text-white/50 text-[9.5px] font-mono shrink-0">
-                    0{cue.step}
-                  </span>
-                  <span className="text-[11px] text-white/75 group-hover:text-white truncate font-sans">
-                    {cue.actionText.replace(/^\*|\*$/g, '')}
-                  </span>
-                </div>
+            {activeScenario.cues.map((cue: ChoreographyCue) => {
+              const spacingText =
+                cue.spacing === 'distant'
+                  ? '2-3 ก้าว'
+                  : cue.spacing === 'reach'
+                  ? 'ช่วงแขน'
+                  : 'แนบชิด'
 
-                {onSelectVelocityAction && (
-                  <button
-                    type="button"
-                    onClick={(e) => handleQuickRun(e, cue.actionText)}
-                    className="w-5 h-5 rounded-full bg-white/[0.04] hover:bg-[#34d399]/20 text-white/40 hover:text-[#34d399] flex items-center justify-center transition-all cursor-pointer shrink-0 opacity-40 group-hover:opacity-100"
-                    title="ส่งเข้าแชททันที"
-                  >
-                    <Play size={9} fill="currentColor" />
-                  </button>
-                )}
-              </div>
-            ))}
+              return (
+                <div
+                  key={cue.step}
+                  onClick={() => handlePreFill(cue)}
+                  className="group p-2 rounded-xl bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] hover:border-[#34d399]/30 transition-all cursor-pointer flex items-center justify-between gap-2 text-left"
+                  title={`คลิกเพื่อหยอดข้อความนี้ลงในช่องแชท (ปรับระยะเป็น ${spacingText} อัตโนมัติ)`}
+                >
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span className="px-1.5 py-0.5 rounded-md bg-white/[0.06] text-white/60 text-[10.5px] font-mono shrink-0">
+                      0{cue.step}
+                    </span>
+                    <span className="px-1.5 py-0.5 rounded-md bg-white/[0.03] text-white/45 text-[10px] sm:text-[10.5px] font-sans shrink-0 border border-white/[0.05]">
+                      {spacingText}
+                    </span>
+                    <span className="text-[12.5px] sm:text-[13px] text-[#EDEDED] group-hover:text-white truncate font-sans">
+                      {cue.actionText.replace(/^\*|\*$/g, '')}
+                    </span>
+                  </div>
+
+                  {onSelectVelocityAction && (
+                    <button
+                      type="button"
+                      onClick={(e) => handleQuickRun(e, cue)}
+                      className="w-5 h-5 rounded-full bg-white/[0.04] hover:bg-[#34d399]/20 text-white/40 hover:text-[#34d399] flex items-center justify-center transition-all cursor-pointer shrink-0 opacity-40 group-hover:opacity-100"
+                      title="ส่งเข้าแชททันที"
+                    >
+                      <Play size={9} fill="currentColor" />
+                    </button>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </div>
       )}

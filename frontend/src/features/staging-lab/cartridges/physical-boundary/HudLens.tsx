@@ -63,12 +63,12 @@ export function BoundaryHudLens({
     boundaryLevel <= 35 ? 'Composed' : boundaryLevel <= 70 ? 'Warming' : 'Burning'
 
   return (
-    <div className="space-y-1.5 font-mono text-[11px] leading-relaxed">
+    <div className="space-y-2 font-mono text-[11.5px] sm:text-[12px] leading-relaxed">
       {/* Row 1: Real Telemetry Verdict */}
       {visibleRows.hitbox && (
         <div className="flex items-start justify-between gap-2">
-          <span className="text-[#fb923c] font-bold shrink-0">VERDICT</span>
-          <span className={`text-right font-medium text-[10.5px] ${hitbox.color}`}>
+          <span className="text-[#fb923c] font-bold shrink-0 tracking-wide">VERDICT</span>
+          <span className={`text-right font-medium text-[11.5px] sm:text-[12px] ${hitbox.color}`}>
             {hitbox.text}
           </span>
         </div>
@@ -77,19 +77,19 @@ export function BoundaryHudLens({
       {/* Row 2: Active Persistent Contacts */}
       {visibleRows.hitbox && (
         <div className="flex items-center justify-between gap-2">
-          <span className="text-white/50 font-bold shrink-0 text-[10px]">CONTACTS</span>
-          <div className="flex items-center gap-1 flex-wrap justify-end">
+          <span className="text-white/50 font-bold shrink-0 text-[11px] tracking-wide">CONTACTS</span>
+          <div className="flex items-center gap-1.5 flex-wrap justify-end">
             {telemetry?.verdict?.active_contacts && telemetry.verdict.active_contacts.length > 0 ? (
               telemetry.verdict.active_contacts.map((c) => (
                 <span
                   key={c}
-                  className="px-1.5 py-0.2 rounded bg-white/10 text-[#F1F1F1] font-mono text-[9.5px] border border-white/15"
+                  className="px-2 py-0.5 rounded bg-white/10 text-[#F1F1F1] font-mono text-[10.5px] sm:text-[11px] border border-white/15"
                 >
                   {c}
                 </span>
               ))
             ) : (
-              <span className="text-white/35 text-[9.5px] font-mono">[ZERO CONTACT]</span>
+              <span className="text-white/40 text-[10.5px] sm:text-[11px] font-mono">[ZERO CONTACT]</span>
             )}
           </div>
         </div>
@@ -98,8 +98,8 @@ export function BoundaryHudLens({
       {/* Row 3: Distance State */}
       {visibleRows.distance && (
         <div className="flex items-center justify-between">
-          <span className="text-[#a78bfa] font-bold">DISTANCE</span>
-          <span className="text-white/80 uppercase">
+          <span className="text-[#a78bfa] font-bold tracking-wide">DISTANCE</span>
+          <span className="text-white/85 uppercase font-medium">
             {spacing === 'distant' ? '2 Steps (Distant)' : spacing === 'reach' ? '1 Arm (Reach)' : 'Intimate'}
           </span>
         </div>
@@ -108,8 +108,8 @@ export function BoundaryHudLens({
       {/* Row 4: Desire & Sensory Heat State */}
       {visibleRows.boundary && (
         <div className="flex items-center justify-between">
-          <span className="text-[#f59e0b] font-bold">DESIRE</span>
-          <span className="text-white/80">
+          <span className="text-[#f59e0b] font-bold tracking-wide">DESIRE</span>
+          <span className="text-white/85 font-medium">
             {boundaryLevel}% ({desireStateLabel})
           </span>
         </div>

@@ -50,7 +50,7 @@ export function MagmaCoreCard({
         onClick={onToggleExpand}
         className="px-4 py-3.5 flex items-center justify-between gap-2 cursor-pointer select-none"
       >
-        <div className="flex-1 flex items-center gap-2 text-left group min-w-0">
+        <div className="flex-1 flex items-baseline gap-2 text-left group min-w-0 truncate">
           <span
             className={`w-2 h-2 rounded-full shrink-0 transition-all ${
               isActive
@@ -58,8 +58,11 @@ export function MagmaCoreCard({
                 : 'bg-white/20'
             }`}
           />
-          <span className="text-[15px] sm:text-[15.5px] font-semibold text-[#F1F1F1] tracking-tight">
+          <span className="text-[16px] sm:text-[17px] font-semibold text-[#F1F1F1] tracking-tight shrink-0">
             แกนลาวา
+          </span>
+          <span className="text-[11.5px] font-normal text-white/45 truncate">
+            สภาวะอารมณ์ • ลาวา
           </span>
         </div>
 
@@ -71,7 +74,7 @@ export function MagmaCoreCard({
               e.stopPropagation()
               onActivate()
             }}
-            className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium transition-all cursor-pointer flex items-center gap-1.5 select-none ${
+            className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-mono font-medium transition-all cursor-pointer flex items-center gap-1.5 select-none ${
               isActive
                 ? 'bg-[#EF264C]/15 text-[#EF264C] border border-[#EF264C]/35 shadow-[inset_0_1px_0_rgba(239,38,76,0.20)]'
                 : 'bg-white/[0.04] hover:bg-white/[0.08] text-white/40 hover:text-white/70 border border-white/10 hover:border-white/20'
@@ -122,8 +125,8 @@ export function MagmaCoreCard({
                       : 'bg-white/[0.04] hover:bg-white/[0.08] text-white/50 hover:text-white/80 border border-white/10'
                   }`}
                 >
-                  <span className="text-[12px] font-semibold tracking-tight">{p.label}</span>
-                  <span className="text-[9.5px] opacity-60 font-sans">{p.sub}</span>
+                  <span className="text-[12.5px] sm:text-[13px] font-semibold tracking-tight">{p.label}</span>
+                  <span className="text-[10px] sm:text-[10.5px] text-white/45 font-sans mt-0.5">{p.sub}</span>
                 </button>
               )
             })}

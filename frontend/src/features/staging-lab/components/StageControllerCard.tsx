@@ -34,7 +34,7 @@ export function StageControllerCard({
         onClick={onToggleExpand}
         className="px-4 py-3.5 flex items-center justify-between gap-2 cursor-pointer select-none"
       >
-        <div className="flex-1 flex items-center gap-2 text-left group min-w-0">
+        <div className="flex-1 flex items-baseline gap-2 text-left group min-w-0 truncate">
           <span
             className={`w-2 h-2 rounded-full shrink-0 transition-all ${
               isActive
@@ -42,8 +42,11 @@ export function StageControllerCard({
                 : 'bg-white/20'
             }`}
           />
-          <span className="text-[15px] sm:text-[15.5px] font-semibold text-[#F1F1F1] tracking-tight">
+          <span className="text-[16px] sm:text-[17px] font-semibold text-[#F1F1F1] tracking-tight shrink-0">
             ขอบเขตสัมผัส
+          </span>
+          <span className="text-[11.5px] font-normal text-white/45 truncate">
+            ระยะห่าง • สัมผัส
           </span>
         </div>
 
@@ -55,7 +58,7 @@ export function StageControllerCard({
               e.stopPropagation()
               onActivate()
             }}
-            className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium transition-all cursor-pointer flex items-center gap-1.5 select-none ${
+            className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-mono font-medium transition-all cursor-pointer flex items-center gap-1.5 select-none ${
               isActive
                 ? 'bg-[#38bdf8]/15 text-[#38bdf8] border border-[#38bdf8]/35 shadow-[inset_0_1px_0_rgba(56,189,248,0.20)]'
                 : 'bg-white/[0.04] hover:bg-white/[0.08] text-white/40 hover:text-white/70 border border-white/10 hover:border-white/20'
@@ -97,16 +100,16 @@ export function StageControllerCard({
                   key={s}
                   type="button"
                   onClick={() => onSpacingChange(s)}
-                  className={`py-1.5 px-2 rounded-xl text-center transition-all cursor-pointer ${
+                  className={`py-2 px-2 rounded-xl text-center transition-all cursor-pointer ${
                     isSelected
                       ? 'bg-white/[0.14] text-white shadow-sm border border-white/15 font-medium'
                       : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]'
                   }`}
                 >
-                  <div className="text-[11px] font-sans font-medium leading-tight">
+                  <div className="text-[12.5px] sm:text-[13px] font-sans font-semibold leading-tight">
                     {labels[s].th}
                   </div>
-                  <div className="text-[9px] font-mono text-white/40 tracking-tight mt-0.5">
+                  <div className="text-[10px] sm:text-[10.5px] font-mono text-white/45 tracking-tight mt-0.5">
                     {labels[s].en}
                   </div>
                 </button>

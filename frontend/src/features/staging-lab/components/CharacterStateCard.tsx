@@ -50,11 +50,11 @@ export function CharacterStateCard({
                 : 'bg-white/20'
             }`}
           />
-          <span className="text-[15px] sm:text-[15.5px] font-semibold text-[#F1F1F1] tracking-tight shrink-0">
+          <span className="text-[16px] sm:text-[17px] font-semibold text-[#F1F1F1] tracking-tight shrink-0">
             ไฟปรารถนา
           </span>
-          <span className="text-[11px] font-normal text-white/40 truncate">
-            อุณหภูมิร่างกาย • เหงื่อ • หัวใจ
+          <span className="text-[11.5px] font-normal text-white/45 truncate">
+            สรีระ • อุณหภูมิ • ชีพจร
           </span>
         </div>
 
@@ -66,7 +66,7 @@ export function CharacterStateCard({
               e.stopPropagation()
               onActivate()
             }}
-            className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium transition-all cursor-pointer flex items-center gap-1.5 select-none ${
+            className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-mono font-medium transition-all cursor-pointer flex items-center gap-1.5 select-none ${
               isActive
                 ? 'bg-[#f59e0b]/15 text-[#f59e0b] border border-[#f59e0b]/35 shadow-[inset_0_1px_0_rgba(245,158,11,0.20)]'
                 : 'bg-white/[0.04] hover:bg-white/[0.08] text-white/40 hover:text-white/70 border border-white/10 hover:border-white/20'
@@ -94,6 +94,12 @@ export function CharacterStateCard({
       {/* 2. Expandable Body Content */}
       {isExpanded && (
         <div className="px-4 pb-4 pt-1 space-y-2.5 select-none animate-in fade-in duration-150">
+          {/* Micro Subtitle Description */}
+          <div className="text-[12px] sm:text-[12.5px] font-sans text-white/60 flex items-center gap-1.5 pt-0.5">
+            <span className="text-[#f59e0b]">✦</span>
+            <span>สรีระ อุณหภูมิ และชีพจรความหวั่นไหว</span>
+          </div>
+
           {/* Quick Preset Segmented Control */}
           <div className="grid grid-cols-3 gap-1 p-1 rounded-2xl bg-black/30 border border-white/10">
             {quickPresets.map((p) => {
@@ -103,14 +109,14 @@ export function CharacterStateCard({
                   key={p.value}
                   type="button"
                   onClick={() => onBoundaryChange(p.value)}
-                  className={`py-1.5 px-2 rounded-xl text-center transition-all cursor-pointer ${
+                  className={`py-2 px-2 rounded-xl text-center transition-all cursor-pointer ${
                     isSelected
                       ? 'bg-white/[0.14] text-[#f59e0b] shadow-sm border border-[#f59e0b]/30 font-medium'
                       : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04]'
                   }`}
                 >
-                  <div className="text-[11px] font-sans font-medium leading-tight">{p.label}</div>
-                  <div className="text-[9px] font-sans text-white/40 tracking-tight mt-0.5">{p.sub}</div>
+                  <div className="text-[12.5px] sm:text-[13px] font-sans font-semibold leading-tight">{p.label}</div>
+                  <div className="text-[10px] sm:text-[10.5px] font-sans text-white/45 tracking-tight mt-0.5">{p.sub}</div>
                 </button>
               )
             })}
@@ -127,7 +133,7 @@ export function CharacterStateCard({
               onChange={(e) => onBoundaryChange(Number(e.target.value))}
               className="flex-1 h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#f59e0b]"
             />
-            <span className="font-mono text-[11px] text-[#f59e0b] font-medium w-8 text-right shrink-0">
+            <span className="font-mono text-[12px] text-[#f59e0b] font-medium w-8 text-right shrink-0">
               {boundaryLevel}%
             </span>
           </div>

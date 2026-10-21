@@ -55,17 +55,17 @@ export function getMagmaPhaseMeta(phase: MagmaPhase): {
   switch (phase) {
     case 'sealed':
       return {
-        label: 'เปลือกหินปิดสนิท (Sealed)',
-        tag: 'MAGMA: SEALED',
+        label: 'เปลือกหินปิดสนิท',
+        tag: 'ปิดผนึก',
         badgeBg: 'bg-[#38bdf8]/15',
         badgeText: 'text-[#38bdf8]',
         badgeBorder: 'border-[#38bdf8]/35',
-        description: 'เปลือกหิน (The Mask) ทำงานเต็มร้อย ป้องกันตนเองอย่างสง่างาม ไม่ยอมจำนนง่ายๆ',
+        description: 'เปลือกหินทำงานเต็มร้อย ป้องกันตนเองอย่างสง่างาม ไม่ยอมจำนนง่ายๆ',
       }
     case 'erupted':
       return {
-        label: 'ลาวาทะลักสดๆ 180° (Erupted)',
-        tag: 'MAGMA: ERUPTED',
+        label: 'ลาวาทะลักสดๆ 180°',
+        tag: 'ปะทุ',
         badgeBg: 'bg-[#EF264C]/20',
         badgeText: 'text-[#EF264C]',
         badgeBorder: 'border-[#EF264C]/40',
@@ -73,8 +73,8 @@ export function getMagmaPhaseMeta(phase: MagmaPhase): {
       }
     case 'cooled_magma':
       return {
-        label: 'สภาวะแพ้ทางถาวร (The Soft Spot)',
-        tag: 'MAGMA: THE SOFT SPOT',
+        label: 'สภาวะ Soft Spot',
+        tag: 'Soft Spot',
         badgeBg: 'bg-[#c084fc]/15',
         badgeText: 'text-[#c084fc]',
         badgeBorder: 'border-[#c084fc]/35',

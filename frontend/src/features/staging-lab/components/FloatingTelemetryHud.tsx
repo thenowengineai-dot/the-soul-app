@@ -24,6 +24,9 @@ interface FloatingTelemetryHudProps {
   onToggleTelemetryContract?: () => void
   relationshipConfig?: RelationshipConfig
   isRelationshipActive?: boolean
+  isOpen?: boolean
+  onToggleOpen?: () => void
+  styleOffsetRight?: string
 }
 
 export function FloatingTelemetryHud({
@@ -38,10 +41,22 @@ export function FloatingTelemetryHud({
   onToggleTelemetryContract,
   relationshipConfig,
   isRelationshipActive = true,
+  isOpen: controlledIsOpen,
+  onToggleOpen,
+  styleOffsetRight = 'right-6',
 }: FloatingTelemetryHudProps) {
-  const [isOpen, setIsOpen] = useState(true)
+  const [internalIsOpen, setInternalIsOpen] = useState(true)
   const [showSettings, setShowSettings] = useState(false)
   const [showThinking, setShowThinking] = useState(false)
+
+  const isHudOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen
+  const handleToggleOpen = () => {
+    if (onToggleOpen) {
+      onToggleOpen()
+    } else {
+      setInternalIsOpen(prev => !prev)
+    }
+  }
 
   // Current Posture Resolution: Fallback to currentPosture on Standby, or AI resultant a_pos on Turn Complete
   const isTransitioned = Boolean(telemetry?.a_pos && telemetry.a_pos.trim())
@@ -75,14 +90,14 @@ export function FloatingTelemetryHud({
       : 'text-rose-400'
 
   // Minimized Floating Pill Badge (Dynamic Somatic Pill)
-  if (!isOpen) {
+  if (!isHudOpen) {
     const hasData = Boolean(telemetry?.latency_ms)
 
     return (
-      <div className="absolute top-[46px] right-6 z-30 select-none">
+      <div className={`absolute top-[46px] ${styleOffsetRight} z-30 select-none`}>
         <button
           type="button"
-          onClick={() => setIsOpen(true)}
+          onClick={handleToggleOpen}
           className={`h-7 px-3 rounded-full backdrop-blur-xl border transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 shadow-sm ${
             hasData
               ? 'bg-black/50 hover:bg-black/70 border-white/15 text-white/90 hover:text-white'
@@ -97,7 +112,7 @@ export function FloatingTelemetryHud({
                 : 'bg-white/30 animate-pulse'
             }`}
           />
-          <span className="text-[11px] sm:text-[11.5px] font-mono font-medium tracking-tight">HUD</span>
+          <span className="text-[11px] sm:text-[11.5px] font-mono font-medium tracking-tight">SOMATIC HUD</span>
           {hasData && (
             <>
               <span className="opacity-30 text-[10px]">•</span>
@@ -113,7 +128,7 @@ export function FloatingTelemetryHud({
 
   // Expanded MSI Afterburner Style OSD (Ultra-Translucent)
   return (
-    <div className="absolute top-[46px] right-6 z-30 w-[320px] sm:w-[350px] rounded-2xl bg-black/40 backdrop-blur-2xl border border-white/10 shadow-2xl p-4 select-none transition-all">
+    <div className={`absolute top-[46px] ${styleOffsetRight} z-30 w-[320px] sm:w-[350px] rounded-2xl bg-black/40 backdrop-blur-2xl border border-white/10 shadow-2xl p-4 select-none transition-all`}>
       {/* Top Header: Somatic Telemetry Pulse Indicator + Controls */}
       <div className="flex items-center justify-between gap-1 mb-2.5">
         <div className="flex items-center gap-1.5">
@@ -144,7 +159,7 @@ export function FloatingTelemetryHud({
           </button>
           <button
             type="button"
-            onClick={() => setIsOpen(false)}
+            onClick={handleToggleOpen}
             className="w-6 h-6 rounded flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
             title="ย่อแผง HUD"
           >

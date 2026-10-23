@@ -5,9 +5,7 @@ import {
   Check,
   FileCode2,
   Info,
-  ArrowLeft,
-  User,
-  Globe,
+  ArrowLeft
 } from 'lucide-react'
 import {
   DEFAULT_BASE_PROMPT,
@@ -25,7 +23,7 @@ import {
   generateKineticPacingPrompt,
   STANCE_PRESETS
 } from '../modules/kineticContinuityModule'
-import type { PromptModule, SandboxSimulateResponse, SandboxSimulateRequest } from '../types'
+import type { PromptModule, SandboxSimulateResponse, SandboxSimulateRequest, LoreCard } from '../types'
 import { MessageList } from '../../chat/components/chat-room/MessageList'
 import { ChatInputBar } from '../../chat/components/chat-room/ChatInputBar'
 import type { ChatMessage } from '../../chat/types'
@@ -35,7 +33,6 @@ import { KineticContinuityCard } from './KineticContinuityCard'
 import { PersonaArchetypeCard } from './PersonaArchetypeCard'
 import { MagmaCoreCard } from './MagmaCoreCard'
 import { RelationshipCard } from './RelationshipCard'
-import { WorldStageCard } from './WorldStageCard'
 import {
   type PersonaArchetype,
   CANONICAL_PERSONA_PRESETS,
@@ -52,10 +49,15 @@ import {
   generateRelationshipPromptSnippet,
   getRelationshipStageMeta
 } from '../modules/relationshipModule'
-import { FloatingHudStack } from './FloatingHudStack'
+import { FloatingTelemetryHud } from './FloatingTelemetryHud'
+import { FloatingStageHud, DEFAULT_WINGARDIUM_CODEX } from './FloatingStageHud'
+import { IncitingSparkCard } from './IncitingSparkCard'
+import { MacroWorldCard } from './MacroWorldCard'
+import { WorldStageCard } from './WorldStageCard'
+import { WorldDissectionTray } from './WorldDissectionTray'
+import { WorldCabinetDrawer } from './WorldCabinetDrawer'
 import { CentralDockIsland } from './CentralDockIsland'
-import { CAMPUS_QUADRANT_PRESET } from '../spatialMockPresets'
-import type { StageCellCluster } from '../spatialStageTypes'
+import { SCENOGRAPHER_SYSTEM_INSTRUCTION } from '../scenographerPrompt'
 
 interface StagingLabViewProps {
   onBackToHome: () => void
@@ -135,6 +137,196 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       polarInversion: defaults?.polarInversion ?? '',
     }
   })
+
+  // 3.5 World & Stage Cell Controls (The Mind Stage Architecture)
+  const [activeDockTab, setActiveDockTab] = useState<'actor' | 'world'>('actor')
+  const [inspectorTab, setInspectorTab] = useState<'actor' | 'stage' | 'director'>('actor')
+  const [isSparkActive, setIsSparkActive] = useState<boolean>(true)
+  const [isSparkExpanded, setIsSparkExpanded] = useState<boolean>(true)
+  const [sparkText, setSparkText] = useState<string>(
+    'ตั้งใจจะใช้ชีวิต ม.ปลาย ปี 1 แบบเงียบๆ ไม่เด่น แต่เพื่อนสนิทจับเซ็นชื่อมัดมือชกเข้าชมรมเครื่องเป่า ยื่นใบสมัครใส่มือแล้วลากเข้าห้องซ้อม ทันทีที่ประตูเปิดออก ดันไปสบตากับเพื่อนเป่าทรัมเป็ตที่เคยร้องไห้แทบขาดใจตอนแข่งแพ้ ม.ต้น และเธอกำลังจ้องมาด้วยสายตาที่เอาจริงจนน่าขนลุก...'
+  )
+  const [isMacroWorldActive, setIsMacroWorldActive] = useState<boolean>(true)
+  const [isMacroWorldExpanded, setIsMacroWorldExpanded] = useState<boolean>(true)
+  const [macroWorldLore, setMacroWorldLore] = useState<string>(
+    'เป็นโรงเรียนเวทมนตร์อันดับหนึ่ง ที่เหล่าพ่อมดแม่มดทุกบ้านต้องเอาลูกมาเรียน โดยต่างจากสังคมมนุษย์ทั่วไป โรงเรียนอายุเกินกว่า 100 ปี มีพ่อมดศาสตร์มืด มีการแบ่งบ้านในโรงเรียน มีอาจารย์ที่ยูนีคทุ่มเทเพื่อเด็กๆ มีโลกของตัวเอง มีสัตว์วิเศษ มีความแฟนตาซี ใช้ไม้กายสิทธิ์เพื่อร่ายคาถา แอบอยู่ในโลกของเราและโดนโลกของเรากีดกัน คนเยอะ ห้องเรียนเยอะ สถานที่ลึกลับ มูดแอนด์โทนของการแข่งขัน ความเป็นเพื่อน ปริศนา และตัวร้าย...'
+  )
+  const [isWorldStageActive, setIsWorldStageActive] = useState<boolean>(true)
+  const [isWorldStageExpanded, setIsWorldStageExpanded] = useState<boolean>(true)
+  const [isStageHudOpen, setIsStageHudOpen] = useState<boolean>(true)
+  const [isSomaticHudOpen, setIsSomaticHudOpen] = useState<boolean>(true)
+  const [stageCodexContent, setStageCodexContent] = useState<string>(DEFAULT_WINGARDIUM_CODEX)
+  const [currentStagePrompt, setCurrentStagePrompt] = useState<string>('ห้องเรียนวิงการ์เดียมเลวิโอซาในปราสาทเวทมนตร์โบราณ บรรยากาศยามบ่าย อัฒจันทร์หินครึ่งวงกลม ขนห่านสีขาวบนโต๊ะเรียนไม้')
+  const [stageCellLatency, setStageCellLatency] = useState<number>(0)
+  const [stageCellModel, setStageCellModel] = useState<string>('gemini-3.8-flash')
+  const [isGeneratingStage, setIsGeneratingStage] = useState<boolean>(false)
+
+  // 3.6 World Dissection & Cabinet States
+  const [isDissecting, setIsDissecting] = useState<boolean>(false)
+  const [isDissectionTrayOpen, setIsDissectionTrayOpen] = useState<boolean>(false)
+  const [dissectedCards, setDissectedCards] = useState<LoreCard[]>([])
+  const [dissectLatency, setDissectLatency] = useState<number>(0)
+  const [dissectModel, setDissectModel] = useState<string>('gemini-3.8-flash')
+  const [isCabinetDrawerOpen, setIsCabinetDrawerOpen] = useState<boolean>(false)
+  const [cabinetCards, setCabinetCards] = useState<LoreCard[]>([])
+  const [pinnedCardIds, setPinnedCardIds] = useState<string[]>([])
+
+  const handleDissectWorldLore = async () => {
+    if (!macroWorldLore.trim() || isDissecting) return
+    setIsDissecting(true)
+    try {
+      let response: Response
+      const payload = { raw_text: macroWorldLore, world_id: 'default_world' }
+      try {
+        response = await fetch('http://localhost:8000/api/sandbox/world/dissect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      } catch {
+        response = await fetch('https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/dissect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      }
+
+      if (response.ok) {
+        const data = await response.json()
+        setDissectedCards(data.cards || [])
+        setDissectLatency(data.latency_ms || 0)
+        setDissectModel(data.model || 'gemini-3.8-flash')
+        setIsDissectionTrayOpen(true)
+      }
+    } catch (err) {
+      console.error('Failed to dissect world lore:', err)
+    } finally {
+      setIsDissecting(false)
+    }
+  }
+
+  const handleSaveCardsToCabinet = async (cardsToSave: LoreCard[]) => {
+    try {
+      let response: Response
+      const payload = { world_id: 'default_world', cards: cardsToSave }
+      try {
+        response = await fetch('http://localhost:8000/api/sandbox/world/cards/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      } catch {
+        response = await fetch('https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/cards/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      }
+
+      if (response.ok) {
+        setCabinetCards(prev => {
+          const map = new Map<string, LoreCard>()
+          prev.forEach(c => map.set(c.id, c))
+          cardsToSave.forEach(c => map.set(c.id, c))
+          return Array.from(map.values())
+        })
+        setPinnedCardIds(prev => {
+          if (prev.length === 0 && cardsToSave.length > 0) {
+            return cardsToSave.slice(0, 2).map(c => c.id)
+          }
+          return prev
+        })
+      }
+    } catch (err) {
+      console.error('Failed to save cards to cabinet:', err)
+    }
+  }
+
+  const handleTogglePinCard = (cardId: string) => {
+    setPinnedCardIds(prev =>
+      prev.includes(cardId) ? prev.filter(id => id !== cardId) : [...prev, cardId]
+    )
+  }
+
+  const handleDeleteCabinetCard = async (cardId: string) => {
+    try {
+      try {
+        await fetch(`http://localhost:8000/api/sandbox/world/default_world/card/${cardId}`, {
+          method: 'DELETE',
+        })
+      } catch {
+        await fetch(`https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/default_world/card/${cardId}`, {
+          method: 'DELETE',
+        })
+      }
+      setCabinetCards(prev => prev.filter(c => c.id !== cardId))
+      setPinnedCardIds(prev => prev.filter(id => id !== cardId))
+    } catch (err) {
+      console.error('Failed to delete cabinet card:', err)
+    }
+  }
+
+  // Initial load of cabinet cards from Redis
+  useEffect(() => {
+    let isCancelled = false
+    const loadCabinet = async () => {
+      try {
+        let res: Response
+        try {
+          res = await fetch('http://localhost:8000/api/sandbox/world/default_world/cards')
+        } catch {
+          res = await fetch('https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/default_world/cards')
+        }
+        if (res.ok && !isCancelled) {
+          const data = await res.json()
+          if (data.cards && Array.isArray(data.cards)) {
+            setCabinetCards(data.cards)
+            if (data.cards.length > 0) {
+              setPinnedCardIds(data.cards.slice(0, 2).map((c: LoreCard) => c.id))
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Could not load cabinet cards on mount:', err)
+      }
+    }
+    loadCabinet()
+    return () => { isCancelled = true }
+  }, [])
+
+  const handleGenerateStageCell = async (prompt: string) => {
+    setIsGeneratingStage(true)
+    setCurrentStagePrompt(prompt)
+    try {
+      let response: Response
+      const payload = { prompt }
+      try {
+        response = await fetch('http://localhost:8000/api/sandbox/stage/cell', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      } catch {
+        response = await fetch('https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/stage/cell', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      }
+
+      if (response.ok) {
+        const data = await response.json()
+        setStageCodexContent(data.raw_text)
+        setStageCellLatency(data.latency_ms)
+        setStageCellModel(data.model)
+        setIsStageHudOpen(true)
+      }
+    } catch (err) {
+      console.error('Failed to generate stage cell:', err)
+    } finally {
+      setIsGeneratingStage(false)
+    }
+  }
 
   const handleRelationshipChange = (nextRel: RelationshipConfig) => {
     setRelationshipConfig(nextRel)
@@ -241,8 +433,6 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     setSimulationResult(null)
   }
 
-  const [activeDockTab, setActiveDockTab] = useState<'actor' | 'stage'>('actor')
-  const [spatialCluster, setSpatialCluster] = useState<StageCellCluster>(CAMPUS_QUADRANT_PRESET)
   const resetCountRef = useRef(0)
   const tetherCooldownRef = useRef(0)
   const handleResetPosture = () => {
@@ -573,12 +763,133 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     return promptLayers.map(l => l.content).join('\n\n')
   }, [promptLayers])
 
+  // Full Assembled Prompt string for Stage Engine
+  const stagePromptLayers = useMemo<PromptLayerItem[]>(() => {
+    const layers: PromptLayerItem[] = [
+      {
+        id: 'stage_params',
+        title: 'พารามิเตอร์สมองกล (Cognitive Execution Engine)',
+        sourceTag: 'VERTEX CONFIG',
+        sourceLabel: 'การกำหนดค่าสมองกล gemini-3.8-flash และ Thinking Budget บน Vertex AI (Location: global)',
+        badgeBg: 'bg-amber-400/10',
+        badgeText: 'text-amber-300',
+        badgeBorder: 'border-amber-400/25',
+        borderClass: 'border-amber-400/20',
+        bgClass: 'bg-amber-400/[0.02]',
+        textClass: 'text-amber-200/90 font-mono',
+        content: `{\n  "model": "${stageCellModel}",\n  "thinking_budget": 1024,\n  "temperature": 0.7,\n  "endpoint": "POST /api/sandbox/stage/cell",\n  "location": "global"\n}`,
+      },
+    ]
 
+    if (isMacroWorldActive && macroWorldLore.trim()) {
+      layers.push({
+        id: 'stage_macro_world',
+        title: 'คัมภีร์จักรวาล (Macro World Bible)',
+        sourceTag: 'MACRO WORLD LORE',
+        sourceLabel: 'ประวัติศาสตร์ กฎเกณฑ์ สังคม และมูดแอนด์โทนใหญ่ของโลกที่ครอบคลุมเวทีนี้',
+        badgeBg: 'bg-sky-500/10',
+        badgeText: 'text-sky-400',
+        badgeBorder: 'border-sky-500/30',
+        borderClass: 'border-sky-500/20',
+        bgClass: 'bg-sky-500/[0.02]',
+        textClass: 'text-[#e0f2fe]',
+        content: macroWorldLore.trim(),
+      })
+    }
+
+    layers.push(
+      {
+        id: 'stage_system_instruction',
+        title: 'คัมภีร์สถาปนิกมโนทัศน์ (Universal Scenographer System Prompt)',
+        sourceTag: '100% REAL SYSTEM PROMPT',
+        sourceLabel: 'System Instruction จริง 100% ที่ส่งให้โมเดลควบคุมกฎ 5 มิติ (Threshold, Volume, Light, Tactility, Power Anchor)',
+        badgeBg: 'bg-sky-400/10',
+        badgeText: 'text-sky-300',
+        badgeBorder: 'border-sky-400/25',
+        borderClass: 'border-sky-400/20',
+        bgClass: 'bg-sky-400/[0.02]',
+        textClass: 'text-[#F1F1F1]/90',
+        content: SCENOGRAPHER_SYSTEM_INSTRUCTION,
+      },
+      {
+        id: 'stage_runtime_payload',
+        title: 'โจทย์และบรีฟฉากสด (Runtime User Payload)',
+        sourceTag: 'RAW USER INPUT',
+        sourceLabel: 'คำสั่งบรีฟจริงที่ผู้กำกับป้อนผ่านการ์ดผืนเวทีฝั่งซ้าย ส่งตรงเข้าโมเดลแบบดิบๆ สดๆ 100% ไร้การครอบคำสั่งเสริม',
+        badgeBg: 'bg-emerald-400/10',
+        badgeText: 'text-emerald-300',
+        badgeBorder: 'border-emerald-400/25',
+        borderClass: 'border-emerald-400/20',
+        bgClass: 'bg-emerald-400/[0.02]',
+        textClass: 'text-emerald-200/90 font-mono',
+        content: currentStagePrompt,
+      },
+      {
+        id: 'stage_resultant_codex',
+        title: 'ผลลัพธ์มโนทัศน์ 5 มิติปัจจุบัน (Resultant Mind Stage Codex)',
+        sourceTag: 'HUD CODEX',
+        sourceLabel: 'ผลลัพธ์ผืนเวทีจริงที่ AI เนรมิตออกมาและกำลังแสดงผลอยู่บน Stage HUD ฝั่งขวา',
+        badgeBg: 'bg-purple-400/10',
+        badgeText: 'text-purple-300',
+        badgeBorder: 'border-purple-400/25',
+        borderClass: 'border-purple-400/20',
+        bgClass: 'bg-purple-400/[0.02]',
+        textClass: 'text-purple-100/90',
+        content: stageCodexContent,
+      }
+    )
+
+    return layers
+  }, [stageCellModel, isMacroWorldActive, macroWorldLore, currentStagePrompt, stageCodexContent])
+
+  // Director Prompt Layers preview (In Media Res Orchestration Engine)
+  const directorPromptLayers = useMemo<PromptLayerItem[]>(() => {
+    const pinnedCards = cabinetCards.filter(c => pinnedCardIds.includes(c.id))
+    const pinnedCardsBlock = pinnedCards.length > 0
+      ? `[SLOT 1: PINNED SCENE LORE CARDS (การ์ดประจำฉากในตู้คลัง)]\n${pinnedCards.map(c => `=== [${c.title}] (${c.category.toUpperCase()}) ===\n${c.content}\nคีย์เวิร์ด: ${c.tags.join(', ')}`).join('\n\n')}\n\n`
+      : ''
+
+    return [
+      {
+        id: 'director_bridge',
+        title: 'โครงร่างผู้กำกับเวที (The Director Orchestration Engine)',
+        sourceTag: 'IN MEDIA RES ENGINE',
+        sourceLabel: 'พิมพ์เขียวเชื่อมต่อ: การนำจุดเริ่มต้นที่ทำให้ทุกอย่างหมุน (The Spark) + จักรวาลแห่งโลก + การ์ดประจำฉากในคลัง + ผืนเวที 5 มิติ มาบัญชาการฉาก In Media Res สไตล์ Dark Souls',
+        badgeBg: 'bg-rose-500/10',
+        badgeText: 'text-rose-300',
+        badgeBorder: 'border-rose-500/25',
+        borderClass: 'border-rose-500/20',
+        bgClass: 'bg-rose-500/[0.02]',
+        textClass: 'text-rose-100/90',
+        content: `[ROLE: THE STAGE DIRECTOR (IN MEDIA RES ENGINE)]
+คุณคือผู้กำกับเวทีที่ทำหน้าที่ผสาน 4 เสาหลัก:
+1. 'จุดเริ่มต้นที่ทำให้ทุกอย่างหมุน (The Inciting Spark)'
+2. 'จักรวาลและบริบทของเรื่อง (Macro World Bible)'
+3. 'การ์ดวัตถุดิบประจำฉากในตู้คลัง (Pinned Scene Lore Cards)'
+4. 'ผืนเวทีทางกายภาพ (Mind Stage Cell 5 มิติ)'
+5. 'จิตวิทยาและสรีระของตัวละคร (Embodied Actor)'
+
+[PRINCIPLE: DARK SOULS / IN MEDIA RES INJECTION]
+ห้ามอารัมภบทช้า ห้ามเสียเวลาบรรยายเปิดฉากยืดยาวแบบหว่านแห แต่จง 'ถีบผู้เล่นเข้าไปในใจกลางสมรภูมิรบทันที' ผ่านแรงเสียดทานเฉพาะหน้า เสียงจอแจ ความตึงเครียด หรือการขัดจังหวะของเหตุการณ์จริงที่กำลังดำเนินอยู่
+
+${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเหตุและวินาทีมัดมือชกที่ถอยไม่ได้]\n${sparkText.trim()}\n\n` : ''}${isMacroWorldActive && macroWorldLore.trim() ? `[MACRO WORLD BIBLE: บริบทและแรงเสียดทานของโลก]\n${macroWorldLore.trim()}\n\n` : ''}${pinnedCardsBlock}[CURRENT MIND STAGE SUBSTRATE: ผืนเวที 5 มิติ]\n${stageCodexContent}
+
+[DIRECTOR INSTRUCTION]
+ดึงเอาจุดปักหลักแห่งอำนาจ กลิ่น สัมผัส เสียงสะท้อน การ์ดประจำฉาก และชนวนเหตุ The Spark มาสร้างจังหวะเปิดฉากที่ตรึงผู้เล่นไว้ตั้งแต่ประโยคแรก...`,
+      },
+    ]
+  }, [cabinetCards, pinnedCardIds, isSparkActive, sparkText, isMacroWorldActive, macroWorldLore, stageCodexContent])
 
   // Copy prompt to clipboard
   const handleCopyPrompt = async () => {
     try {
-      await navigator.clipboard.writeText(assembledPrompt)
+      let textToCopy = assembledPrompt
+      if (inspectorTab === 'stage') {
+        textToCopy = stagePromptLayers.map(l => `=== [${l.title}] ===\n${l.content}`).join('\n\n')
+      } else if (inspectorTab === 'director') {
+        textToCopy = directorPromptLayers.map(l => `=== [${l.title}] ===\n${l.content}`).join('\n\n')
+      }
+      await navigator.clipboard.writeText(textToCopy)
       setCopiedPrompt(true)
       setTimeout(() => setCopiedPrompt(false), 2000)
     } catch {
@@ -838,114 +1149,190 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
             <ArrowLeft size={14} />
           </button>
 
-          {/* Universal Minimal Segmented Control: [ ALL | CLEAR ] */}
-          <div className="h-7 p-0.5 rounded-full bg-white/[0.04] border border-white/10 flex items-center gap-0.5 text-[10px] font-mono select-none">
+          {/* Category Segmented Control: [ ✦ ตัวละคร | 🏛️ โลกและฉาก ] */}
+          <div className="h-7 p-0.5 rounded-full bg-white/[0.04] border border-white/10 flex items-center gap-0.5 text-[11px] font-mono select-none">
             <button
               type="button"
-              onClick={() => {
-                setIsArchetypeActive(true)
-                setIsArchetypeExpanded(true)
-                setIsRelationshipActive(true)
-                setIsRelationshipExpanded(true)
-                setIsCharacterStateActive(true)
-                setIsCharacterStateExpanded(true)
-                setIsBoundaryActive(true)
-                setIsBoundaryExpanded(true)
-                setIsKineticActive(true)
-                setIsKineticExpanded(true)
-                setIsMagmaActive(true)
-                setIsMagmaExpanded(true)
-              }}
-              className="h-full px-2.5 rounded-full text-white/50 hover:text-white hover:bg-white/[0.08] transition-all cursor-pointer active:scale-95 font-medium tracking-wider"
-              title="เปิดและคลี่การ์ดทั้งหมด (Engage All)"
+              onClick={() => setActiveDockTab('actor')}
+              className={`h-full px-2.5 rounded-full transition-all cursor-pointer active:scale-95 flex items-center gap-1.5 font-medium ${
+                activeDockTab === 'actor'
+                  ? 'bg-white/10 text-white shadow-sm'
+                  : 'text-white/40 hover:text-white/70'
+              }`}
             >
-              ALL
+              <span className={`w-1.5 h-1.5 rounded-full ${activeDockTab === 'actor' ? 'bg-[#818cf8]' : 'bg-white/30'}`} />
+              <span>ตัวละคร</span>
             </button>
-            <div className="w-[1px] h-3 bg-white/10" />
             <button
               type="button"
-              onClick={() => {
-                setIsArchetypeActive(false)
-                setIsArchetypeExpanded(false)
-                setIsRelationshipActive(false)
-                setIsRelationshipExpanded(false)
-                setIsCharacterStateActive(false)
-                setIsCharacterStateExpanded(false)
-                setIsBoundaryActive(false)
-                setIsBoundaryExpanded(false)
-                setIsKineticActive(false)
-                setIsKineticExpanded(false)
-                setIsMagmaActive(false)
-                setIsMagmaExpanded(false)
-              }}
-              className="h-full px-2.5 rounded-full text-white/40 hover:text-white/80 hover:bg-white/[0.08] transition-all cursor-pointer active:scale-95 font-medium tracking-wider"
-              title="ปิดและพับการ์ดทั้งหมด (Clear All)"
+              onClick={() => setActiveDockTab('world')}
+              className={`h-full px-2.5 rounded-full transition-all cursor-pointer active:scale-95 flex items-center gap-1.5 font-medium ${
+                activeDockTab === 'world'
+                  ? 'bg-amber-400/15 text-amber-300 border border-amber-400/20 shadow-sm'
+                  : 'text-white/40 hover:text-white/70'
+              }`}
             >
-              CLEAR
+              <span className={`w-1.5 h-1.5 rounded-full ${activeDockTab === 'world' ? 'bg-amber-400' : 'bg-white/30'}`} />
+              <span>โลกและฉาก</span>
             </button>
           </div>
+
+          {/* Right Toolbar Slot: [ ALL | CLEAR ] */}
+          {activeDockTab === 'actor' ? (
+            <div className="h-7 p-0.5 rounded-full bg-white/[0.04] border border-white/10 flex items-center gap-0.5 text-[10px] font-mono select-none">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsArchetypeActive(true)
+                  setIsArchetypeExpanded(true)
+                  setIsRelationshipActive(true)
+                  setIsRelationshipExpanded(true)
+                  setIsCharacterStateActive(true)
+                  setIsCharacterStateExpanded(true)
+                  setIsBoundaryActive(true)
+                  setIsBoundaryExpanded(true)
+                  setIsKineticActive(true)
+                  setIsKineticExpanded(true)
+                  setIsMagmaActive(true)
+                  setIsMagmaExpanded(true)
+                }}
+                className="h-full px-2 rounded-full text-white/50 hover:text-white hover:bg-white/[0.08] transition-all cursor-pointer active:scale-95 font-medium tracking-wider"
+                title="เปิดและคลี่การ์ดตัวละครทั้งหมด (Engage All)"
+              >
+                ALL
+              </button>
+              <div className="w-[1px] h-3 bg-white/10" />
+              <button
+                type="button"
+                onClick={() => {
+                  setIsArchetypeActive(false)
+                  setIsArchetypeExpanded(false)
+                  setIsRelationshipActive(false)
+                  setIsRelationshipExpanded(false)
+                  setIsCharacterStateActive(false)
+                  setIsCharacterStateExpanded(false)
+                  setIsBoundaryActive(false)
+                  setIsBoundaryExpanded(false)
+                  setIsKineticActive(false)
+                  setIsKineticExpanded(false)
+                  setIsMagmaActive(false)
+                  setIsMagmaExpanded(false)
+                }}
+                className="h-full px-2 rounded-full text-white/40 hover:text-white/80 hover:bg-white/[0.08] transition-all cursor-pointer active:scale-95 font-medium tracking-wider"
+                title="ปิดและพับการ์ดตัวละครทั้งหมด (Clear All)"
+              >
+                CLEAR
+              </button>
+            </div>
+          ) : (
+            <div className="h-7 p-0.5 rounded-full bg-white/[0.04] border border-white/10 flex items-center gap-0.5 text-[10px] font-mono select-none">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSparkActive(true)
+                  setIsSparkExpanded(true)
+                  setIsMacroWorldActive(true)
+                  setIsMacroWorldExpanded(true)
+                  setIsWorldStageActive(true)
+                  setIsWorldStageExpanded(true)
+                }}
+                className="h-full px-2 rounded-full text-white/50 hover:text-white hover:bg-white/[0.08] transition-all cursor-pointer active:scale-95 font-medium tracking-wider"
+                title="เปิดและคลี่การ์ดโลกทั้งหมด (Engage All)"
+              >
+                ALL
+              </button>
+              <div className="w-[1px] h-3 bg-white/10" />
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSparkActive(false)
+                  setIsSparkExpanded(false)
+                  setIsMacroWorldActive(false)
+                  setIsMacroWorldExpanded(false)
+                  setIsWorldStageActive(false)
+                  setIsWorldStageExpanded(false)
+                }}
+                className="h-full px-2 rounded-full text-white/40 hover:text-white/80 hover:bg-white/[0.08] transition-all cursor-pointer active:scale-95 font-medium tracking-wider"
+                title="ปิดและพับการ์ดโลกทั้งหมด (Clear All)"
+              >
+                CLEAR
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Category Segmented Control: [ สรีระ & จิตวิทยา (Actor) | ผืนเวที & โลก (Stage) ] */}
-        <div className="w-[382px] mb-3 p-1 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center gap-1 font-mono text-[11px] select-none shrink-0 shadow-sm">
-          <button
-            type="button"
-            onClick={() => setActiveDockTab('actor')}
-            className={`flex-1 py-1.5 rounded-xl transition-all cursor-pointer font-medium flex items-center justify-center gap-1.5 ${
-              activeDockTab === 'actor'
-                ? 'bg-white/20 text-white shadow-sm font-semibold'
-                : 'text-white/40 hover:text-white/70'
-            }`}
-          >
-            <User size={12} />
-            <span>สรีระ & จิตวิทยา (Actor)</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveDockTab('stage')}
-            className={`flex-1 py-1.5 rounded-xl transition-all cursor-pointer font-medium flex items-center justify-center gap-1.5 ${
-              activeDockTab === 'stage'
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 font-semibold shadow-sm'
-                : 'text-white/40 hover:text-white/70'
-            }`}
-          >
-            <Globe size={12} />
-            <span>ผืนเวที & โลก (Stage)</span>
-          </button>
-        </div>
+        {/* Unified Card Deck: Active cards float to the top, Inactive cards stay at the bottom */}
+        <div className="w-[382px] flex flex-col gap-2.5 pb-8">
+          {activeDockTab === 'world' ? (
+            <>
+              {/* Card 0: The Inciting Spark (จุดเริ่มต้นที่ทำให้ทุกอย่างหมุน) */}
+              <IncitingSparkCard
+                isActive={isSparkActive}
+                onActivate={() => {
+                  const next = !isSparkActive
+                  setIsSparkActive(next)
+                  if (next) setIsSparkExpanded(true)
+                }}
+                isExpanded={isSparkExpanded}
+                onToggleExpand={() => setIsSparkExpanded(prev => !prev)}
+                sparkText={sparkText}
+                onSparkChange={setSparkText}
+              />
 
-        {/* Dynamic Card Deck based on active tab */}
-        {activeDockTab === 'stage' ? (
-          <div className="w-[382px] flex flex-col gap-2.5 pb-8">
-            <WorldStageCard
-              cluster={spatialCluster}
-              onClusterChange={setSpatialCluster}
-            />
-          </div>
-        ) : (
-          /* Unified Card Deck: Active cards float to the top, Inactive cards stay at the bottom */
-          <div className="w-[382px] flex flex-col gap-2.5 pb-8">
-            {[
-              {
-                id: 'archetype',
-                order: 1,
-                isActive: isArchetypeActive,
-                node: (
-                  <PersonaArchetypeCard
-                    key="archetype"
-                    isActive={isArchetypeActive}
-                    onActivate={() => {
-                      const next = !isArchetypeActive
-                      setIsArchetypeActive(next)
-                      if (next) setIsArchetypeExpanded(true)
-                    }}
-                    currentArchetype={currentArchetype}
-                    onArchetypeChange={handleArchetypeChange}
-                    isExpanded={isArchetypeExpanded}
-                    onToggleExpand={() => setIsArchetypeExpanded(prev => !prev)}
-                  />
-                ),
-              },
+              {/* Card 1: Macro World Bible (ภาพรวมจักรวาลแห่งโลก) */}
+              <MacroWorldCard
+                isActive={isMacroWorldActive}
+                onActivate={() => {
+                  const next = !isMacroWorldActive
+                  setIsMacroWorldActive(next)
+                  if (next) setIsMacroWorldExpanded(true)
+                }}
+                isExpanded={isMacroWorldExpanded}
+                onToggleExpand={() => setIsMacroWorldExpanded(prev => !prev)}
+                loreText={macroWorldLore}
+                onLoreChange={setMacroWorldLore}
+                onDissect={handleDissectWorldLore}
+                isDissecting={isDissecting}
+                cabinetCardCount={cabinetCards.length}
+                onOpenCabinet={() => setIsCabinetDrawerOpen(true)}
+              />
+
+              {/* Card 2: Micro Stage Cell (ผืนเวทีมโนทัศน์ 5 มิติ) */}
+              <WorldStageCard
+                isActive={isWorldStageActive}
+                onActivate={() => {
+                  const next = !isWorldStageActive
+                  setIsWorldStageActive(next)
+                  if (next) setIsWorldStageExpanded(true)
+                }}
+                isExpanded={isWorldStageExpanded}
+                onToggleExpand={() => setIsWorldStageExpanded(prev => !prev)}
+                onGenerate={handleGenerateStageCell}
+                isGenerating={isGeneratingStage}
+              />
+            </>
+          ) : (
+            [
+            {
+              id: 'archetype',
+              order: 1,
+              isActive: isArchetypeActive,
+              node: (
+                <PersonaArchetypeCard
+                  key="archetype"
+                  isActive={isArchetypeActive}
+                  onActivate={() => {
+                    const next = !isArchetypeActive
+                    setIsArchetypeActive(next)
+                    if (next) setIsArchetypeExpanded(true)
+                  }}
+                  currentArchetype={currentArchetype}
+                  onArchetypeChange={handleArchetypeChange}
+                  isExpanded={isArchetypeExpanded}
+                  onToggleExpand={() => setIsArchetypeExpanded(prev => !prev)}
+                />
+              ),
+            },
             {
               id: 'magma',
               order: 2,
@@ -1065,9 +1452,9 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
               if (a.isActive === b.isActive) return a.order - b.order
               return a.isActive ? -1 : 1
             })
-            .map(item => item.node)}
+            .map(item => item.node)
+          )}
         </div>
-        )}
       </aside>
 
       {/* ======================================================================= */}
@@ -1105,7 +1492,10 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
           {/* Inspector Button */}
           <button
             type="button"
-            onClick={() => setIsPromptInspectorOpen(true)}
+            onClick={() => {
+              setInspectorTab(activeDockTab === 'world' ? 'stage' : 'actor')
+              setIsPromptInspectorOpen(true)
+            }}
             className="h-7 px-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-white/70 hover:text-white text-[10.5px] font-mono flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
             title="เปิดแผงตรวจเช็กพิมพ์เขียว (Inspector)"
           >
@@ -1127,21 +1517,81 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
           </button>
         </div>
 
-        {/* Floating Multi-HUD Stack (Top-Right) */}
-        <FloatingHudStack
-          telemetry={simulationResult?.telemetry ?? null}
-          spacing={parrySpacing}
-          boundaryLevel={parryBoundaryLevel}
-          isBoundaryActive={isBoundaryActive}
-          isKineticActive={isKineticActive}
-          currentPosture={currentPosture}
-          sensoryPulseText={sensoryPulseText}
-          isTelemetryContractEnabled={isTelemetryContractEnabled}
-          onToggleTelemetryContract={() => setIsTelemetryContractEnabled(!isTelemetryContractEnabled)}
-          relationshipConfig={relationshipConfig}
-          isRelationshipActive={isRelationshipActive}
-          spatialCluster={spatialCluster}
-        />
+        {/* Dual-HUD Controller & Placement Island (Top-Right) */}
+        <div className="absolute top-[46px] right-6 z-30 select-none flex items-center gap-1.5 pointer-events-auto">
+          {(!isSomaticHudOpen || !isStageHudOpen) && (
+            <div className="h-7 p-0.5 rounded-full bg-black/50 backdrop-blur-xl border border-white/15 shadow-sm flex items-center gap-1 text-[10.5px] font-mono">
+              {!isSomaticHudOpen && (
+                <button
+                  type="button"
+                  onClick={() => setIsSomaticHudOpen(true)}
+                  className="h-full px-2.5 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+                  title="คลิกเพื่อเปิด SOMATIC HUD"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span>SOMATIC</span>
+                </button>
+              )}
+              {!isStageHudOpen && (
+                <button
+                  type="button"
+                  onClick={() => setIsStageHudOpen(true)}
+                  className="h-full px-2.5 rounded-full text-amber-300/70 hover:text-amber-200 hover:bg-amber-400/10 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+                  title="คลิกเพื่อเปิด STAGE HUD"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  <span>STAGE</span>
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Floating Somatic Telemetry HUD */}
+        {isSomaticHudOpen && (
+          <FloatingTelemetryHud
+            telemetry={simulationResult?.telemetry ?? null}
+            spacing={parrySpacing}
+            boundaryLevel={parryBoundaryLevel}
+            isBoundaryActive={isBoundaryActive}
+            isKineticActive={isKineticActive}
+            currentPosture={currentPosture}
+            sensoryPulseText={sensoryPulseText}
+            isTelemetryContractEnabled={isTelemetryContractEnabled}
+            onToggleTelemetryContract={() => setIsTelemetryContractEnabled(!isTelemetryContractEnabled)}
+            relationshipConfig={relationshipConfig}
+            isRelationshipActive={isRelationshipActive}
+            isOpen={isSomaticHudOpen}
+            onToggleOpen={() => setIsSomaticHudOpen(prev => !prev)}
+            styleOffsetRight="right-6"
+          />
+        )}
+
+        {/* Floating Stage Scenography HUD */}
+        {isStageHudOpen && (
+          <FloatingStageHud
+            content={stageCodexContent}
+            latencyMs={stageCellLatency}
+            modelName={stageCellModel}
+            isOpen={isStageHudOpen}
+            onToggleOpen={() => setIsStageHudOpen(prev => !prev)}
+            onRunDirector={() => {
+              const directorNotice: ChatMessage = {
+                id: `director-${Date.now()}`,
+                text: `🎬 [DIRECTOR BRIDGE: STAGE CELL INJECTED]\nผืนเวทีมโนทัศน์ถูกส่งเข้าสู่ฉากเรียบร้อยแล้ว`,
+                sender: 'them',
+                type: 'msg',
+                read: true,
+              }
+              setChatLog(prev => [...prev, directorNotice])
+            }}
+            styleOffsetRight={
+              isSomaticHudOpen
+                ? 'right-[340px] sm:right-[380px]'
+                : 'right-6'
+            }
+          />
+        )}
 
         {/* Ambient Top Glow (Subtle Dark Apple Radial) */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[250px] bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none blur-3xl -z-10" />
@@ -1189,10 +1639,10 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       {/* ======================================================================= */}
       {isPromptInspectorOpen && (
         <div className="fixed inset-0 z-50 bg-[#090909]/98 backdrop-blur-3xl flex flex-col overflow-hidden animate-in fade-in duration-200 select-none font-sans">
-          {/* Top Sticky Frosted Navigation (Ultra-Minimal: Close • Dock • Micro Actions) */}
-          <header className="sticky top-0 z-20 min-h-14 py-2.5 px-4 sm:px-6 flex items-center justify-between gap-3 shrink-0 bg-[#090909]/80 backdrop-blur-2xl">
+          {/* Top Sticky Frosted Navigation (Ultra-Minimal: Close • Triple Engine Selector • Micro Actions) */}
+          <header className="sticky top-0 z-20 min-h-14 py-2.5 px-4 sm:px-6 flex items-center justify-between gap-3 shrink-0 bg-[#090909]/80 backdrop-blur-2xl border-b border-white/[0.08]">
             {/* Left: Close Button (Clean Circle) */}
-            <div className="flex items-center shrink-0">
+            <div className="flex items-center gap-3 shrink-0">
               <button
                 type="button"
                 onClick={() => setIsPromptInspectorOpen(false)}
@@ -1201,57 +1651,73 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
               >
                 <X size={15} />
               </button>
+              <div className="text-[12px] font-mono text-white/50 tracking-wider uppercase hidden sm:block">
+                BLUEPRINT INSPECTOR
+              </div>
             </div>
 
-            {/* Center: Central Dock Island (Hero Focus) */}
-            <div className="flex-1 flex justify-center max-w-xl mx-auto">
-              <CentralDockIsland
-                className="relative top-0 left-0 translate-x-0"
-                isArchetypeActive={isArchetypeActive}
-                onToggleArchetype={() => setIsArchetypeActive(prev => !prev)}
-                archetypeName={currentArchetype.name}
-                isRelationshipActive={isRelationshipActive}
-                onToggleRelationship={handleToggleRelationship}
-                relationshipLabel={relationshipMeta.label}
-                relationshipImprintCount={activeImprintCount}
-                isCharacterStateActive={isCharacterStateActive}
-                onToggleCharacterState={handleToggleCharacterState}
-                characterStateLevel={parryBoundaryLevel}
-                isBoundaryActive={isBoundaryActive}
-                onToggleBoundary={handleToggleBoundary}
-                boundarySpacing={parrySpacing}
-                isKineticActive={isKineticActive}
-                onToggleKinetic={() => setIsKineticActive(prev => !prev)}
-                currentPosture={currentPosture}
-                isKineticLinkedToBoundary={isKineticSomaticEffective}
-                onToggleKineticLink={handleToggleKineticLink}
-                isShieldActive={isMagmaActive}
-                onToggleShield={() => setIsMagmaActive(prev => !prev)}
-                shieldState={magmaConfig.phase}
-                onBypassAll={handleBypassAll}
-              />
+            {/* Center: Triple Engine Segmented Control */}
+            <div className="flex items-center gap-1 p-1 rounded-full bg-white/[0.04] border border-white/10 select-none">
+              <button
+                type="button"
+                onClick={() => setInspectorTab('actor')}
+                className={`h-7 px-3 rounded-full text-[11px] font-mono transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 ${
+                  inspectorTab === 'actor'
+                    ? 'bg-white/10 text-white font-semibold shadow-sm'
+                    : 'text-white/40 hover:text-white/70'
+                }`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${inspectorTab === 'actor' ? 'bg-[#818cf8]' : 'bg-white/30'}`} />
+                <span>👤 นักแสดง (Actor)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setInspectorTab('stage')}
+                className={`h-7 px-3 rounded-full text-[11px] font-mono transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 ${
+                  inspectorTab === 'stage'
+                    ? 'bg-amber-400/15 text-amber-300 font-semibold border border-amber-400/30 shadow-sm'
+                    : 'text-white/40 hover:text-white/70'
+                }`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${inspectorTab === 'stage' ? 'bg-amber-400' : 'bg-white/30'}`} />
+                <span>🏛️ ผืนเวที (Stage)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setInspectorTab('director')}
+                className={`h-7 px-3 rounded-full text-[11px] font-mono transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 ${
+                  inspectorTab === 'director'
+                    ? 'bg-rose-500/15 text-rose-300 font-semibold border border-rose-500/30 shadow-sm'
+                    : 'text-white/30 hover:text-white/50'
+                }`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${inspectorTab === 'director' ? 'bg-rose-500' : 'bg-white/20'}`} />
+                <span>🎬 ผู้กำกับ (Director)</span>
+              </button>
             </div>
 
             {/* Right: Micro Actions (Minimal HUD Switch & Copy Capsule) */}
             <div className="flex items-center gap-2 shrink-0">
-              {/* Ultra-Minimal HUD Micro-Capsule Switch */}
-              <button
-                type="button"
-                onClick={() => setIsTelemetryContractEnabled(!isTelemetryContractEnabled)}
-                className={`h-7 px-2.5 rounded-full border text-[11px] font-mono transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 select-none ${
-                  isTelemetryContractEnabled
-                    ? 'bg-[#fb923c]/15 hover:bg-[#fb923c]/25 border-[#fb923c]/35 text-[#fb923c] shadow-[0_0_10px_rgba(251,146,60,0.2)]'
-                    : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/10 text-white/40 hover:text-white/70'
-                }`}
-                title={isTelemetryContractEnabled ? 'HUD Telemetry สัญญาเชื่อมต่ออยู่ (คลิกเพื่อถอด)' : 'HUD Telemetry ถอดอยู่ (คลิกเพื่อต่อ)'}
-              >
-                <span
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    isTelemetryContractEnabled ? 'bg-[#fb923c] animate-pulse' : 'bg-white/30'
+              {/* Ultra-Minimal HUD Micro-Capsule Switch (Actor only) */}
+              {inspectorTab === 'actor' && (
+                <button
+                  type="button"
+                  onClick={() => setIsTelemetryContractEnabled(!isTelemetryContractEnabled)}
+                  className={`h-7 px-2.5 rounded-full border text-[11px] font-mono transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 select-none ${
+                    isTelemetryContractEnabled
+                      ? 'bg-[#fb923c]/15 hover:bg-[#fb923c]/25 border-[#fb923c]/35 text-[#fb923c] shadow-[0_0_10px_rgba(251,146,60,0.2)]'
+                      : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/10 text-white/40 hover:text-white/70'
                   }`}
-                />
-                <span className="font-semibold tracking-tight">HUD</span>
-              </button>
+                  title={isTelemetryContractEnabled ? 'HUD Telemetry สัญญาเชื่อมต่ออยู่ (คลิกเพื่อถอด)' : 'HUD Telemetry ถอดอยู่ (คลิกเพื่อต่อ)'}
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      isTelemetryContractEnabled ? 'bg-[#fb923c] animate-pulse' : 'bg-white/30'
+                    }`}
+                  />
+                  <span className="font-semibold tracking-tight">HUD</span>
+                </button>
+              )}
 
               {/* Ultra-Minimal Copy Prompt Capsule */}
               <button
@@ -1278,7 +1744,12 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
           {/* Body: Single Unibody Canvas (Stacked Modular Cards) */}
           <div className="flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 lg:p-8 bg-[#080809]">
             <div className="max-w-4xl mx-auto space-y-4">
-              {promptLayers.map((layer) => (
+              {(inspectorTab === 'stage'
+                ? stagePromptLayers
+                : inspectorTab === 'director'
+                ? directorPromptLayers
+                : promptLayers
+              ).map((layer) => (
                 <div
                   key={layer.id}
                   className={`rounded-2xl border ${layer.borderClass} ${layer.bgClass} p-4 sm:p-5 transition-all shadow-sm`}
@@ -1317,6 +1788,27 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
           </div>
         </div>
       )}
+
+      {/* World Dissection Tray (Review & Edit newly dissected cards) */}
+      <WorldDissectionTray
+        key={dissectedCards.map(c => c.id).join('-') || 'dissection-tray'}
+        isOpen={isDissectionTrayOpen}
+        onClose={() => setIsDissectionTrayOpen(false)}
+        initialCards={dissectedCards}
+        latencyMs={dissectLatency}
+        modelName={dissectModel}
+        onSaveToCabinet={handleSaveCardsToCabinet}
+      />
+
+      {/* World Cabinet Drawer (View all stored cards & toggle stage pinning) */}
+      <WorldCabinetDrawer
+        isOpen={isCabinetDrawerOpen}
+        onClose={() => setIsCabinetDrawerOpen(false)}
+        cards={cabinetCards}
+        pinnedCardIds={pinnedCardIds}
+        onTogglePin={handleTogglePinCard}
+        onDeleteCard={handleDeleteCabinetCard}
+      />
     </div>
   )
 }

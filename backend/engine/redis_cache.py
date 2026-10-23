@@ -476,4 +476,81 @@ class RedisHotCache:
             logger.error(f"Failed to clear coin cache for {user_id}: {e}")
             return False
 
+    # -------------------------------------------------------------------------
+    # WORLD LORE CABINET (Modular Lore Cards)
+    # -------------------------------------------------------------------------
+    def save_world_cards(self, world_id: str, cards: List[Dict[str, Any]]) -> bool:
+        """
+        Saves modular lore cards to Upstash Redis RAM.
+        - Sets world:{world_id}:cards (Set of card IDs)
+        - Sets world:{world_id}:card:{card_id} (JSON string)
+        - Indexes tags: world:{world_id}:tag:{tag} (Set of card IDs)
+        """
+        if not cards:
+            return True
+        registry_key = f"world:{world_id}:cards"
+        commands = []
+        for card in cards:
+            card_id = card.get("id")
+            if not card_id:
+                continue
+            card_key = f"world:{world_id}:card:{card_id}"
+            commands.append(["SET", card_key, json.dumps(card, ensure_ascii=False)])
+            commands.append(["SADD", registry_key, card_id])
+            for tag in card.get("tags", []):
+                cleaned_tag = str(tag).strip().lower()
+                if cleaned_tag:
+                    commands.append(["SADD", f"world:{world_id}:tag:{cleaned_tag}", card_id])
+
+        if commands:
+            try:
+                self.execute_pipeline(commands)
+                return True
+            except Exception as e:
+                logger.error(f"Failed to save world cards for {world_id}: {e}")
+                return False
+        return True
+
+    def get_world_cards(self, world_id: str) -> List[Dict[str, Any]]:
+        """
+        Retrieves all lore cards for a world from Upstash Redis RAM.
+        """
+        registry_key = f"world:{world_id}:cards"
+        try:
+            card_ids = self.execute_command(["SMEMBERS", registry_key])
+            if not card_ids or not isinstance(card_ids, list):
+                return []
+            
+            # Fetch all cards via pipeline
+            commands = [["GET", f"world:{world_id}:card:{cid}"] for cid in card_ids]
+            raw_cards = self.execute_pipeline(commands)
+            cards = []
+            for raw in raw_cards:
+                if raw:
+                    try:
+                        cards.append(json.loads(raw))
+                    except Exception:
+                        pass
+            return cards
+        except Exception as e:
+            logger.error(f"Failed to fetch world cards for {world_id}: {e}")
+            return []
+
+    def delete_world_card(self, world_id: str, card_id: str) -> bool:
+        """
+        Deletes a lore card from Upstash Redis RAM and removes it from registry.
+        """
+        registry_key = f"world:{world_id}:cards"
+        card_key = f"world:{world_id}:card:{card_id}"
+        try:
+            commands = [
+                ["DEL", card_key],
+                ["SREM", registry_key, card_id]
+            ]
+            self.execute_pipeline(commands)
+            return True
+        except Exception as e:
+            logger.error(f"Failed to delete world card {card_id} for {world_id}: {e}")
+            return False
+
 

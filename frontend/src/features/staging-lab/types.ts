@@ -98,3 +98,52 @@ export interface SandboxMatrixResponse {
   all_passed: boolean
   results: MatrixCaseResult[]
 }
+
+export interface StagePreset {
+  id: string
+  title: string
+  desc: string
+  prompt: string
+  genre: string
+}
+
+export interface WorldStageConfig {
+  prompt: string
+  genreHint?: string
+  lastGeneratedText?: string
+  latencyMs?: number
+  modelUsed?: string
+}
+
+export interface MacroWorldPreset {
+  id: string
+  title: string
+  subtitle: string
+  lore: string
+}
+
+export interface IncitingSparkPreset {
+  id: string
+  title: string
+  subtitle: string
+  spark: string
+}
+
+export interface LoreCard {
+  id: string
+  title: string
+  category: 'faction' | 'location' | 'rule' | 'lore' | string
+  summary?: string
+  content: string
+  tags: string[]
+  created_at?: number
+  isPinnedToStage?: boolean
+}
+
+export interface WorldDissectResponse {
+  cards: LoreCard[]
+  latency_ms: number
+  model: string
+}
+
+

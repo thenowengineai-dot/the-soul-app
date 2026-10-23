@@ -138,6 +138,37 @@ export interface LoreCard {
   tags: string[]
   created_at?: number
   isPinnedToStage?: boolean
+  isSavedToCabinet?: boolean
+  sourceNoteId?: string
+}
+
+export interface ExpansionNote {
+  id: string
+  title: string
+  content: string
+  tags: string[]
+  childCards: LoreCard[]
+  created_at: number
+}
+
+export interface StageCellItem {
+  id: string
+  title: string
+  description: string
+  pinnedCardIds: string[]
+  created_at: number
+}
+
+export interface WorldWorkspace {
+  id: string
+  title: string
+  rawLore: string
+  sparkText: string
+  notes: ExpansionNote[]
+  stageCells: StageCellItem[]
+  cabinetCards: LoreCard[]
+  pinnedCardIds: string[]
+  created_at: number
 }
 
 export interface WorldDissectResponse {

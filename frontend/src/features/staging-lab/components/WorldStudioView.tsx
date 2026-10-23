@@ -9,7 +9,6 @@ import {
   PanelLeft,
   Clock,
   ChevronRight,
-  X,
   CheckCircle2,
   Share2,
   Mic,
@@ -704,14 +703,20 @@ export function WorldStudioView({
         </header>
 
         {/* Scrollable Center Content */}
-        <main className="flex-1 overflow-y-auto px-6 py-8 flex flex-col items-center justify-center relative">
+        <main className={`flex-1 overflow-y-auto px-6 py-8 flex flex-col relative ${
+          activeView.type === 'master' ? 'items-center justify-center' : 'items-center justify-start'
+        }`}>
           
           {/* ✦ GEMINI AMBIENT AURA: ONLY ON MASTER WELCOME SCREEN */}
           {activeView.type === 'master' && (
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[750px] sm:w-[950px] h-[450px] sm:h-[580px] bg-[radial-gradient(ellipse_at_center,_rgba(239,38,76,0.32)_0%,_rgba(239,38,76,0.14)_35%,_rgba(239,38,76,0.03)_65%,_transparent_75%)] blur-3xl pointer-events-none z-0 animate-in fade-in duration-300" />
           )}
 
-          <div className="w-full max-w-xl space-y-6 -mt-8 relative z-10">
+          <div className={`w-full relative z-10 transition-all duration-200 ${
+            activeView.type === 'master'
+              ? 'max-w-xl space-y-6 -mt-8'
+              : 'max-w-[860px] space-y-7 py-3'
+          }`}>
 
             {/* Notification Toast */}
             {justSavedNotification && (
@@ -857,17 +862,6 @@ export function WorldStudioView({
                     {/* Google-style Floating Dropdown */}
                     {isDropdownOpen && (
                       <div className="absolute left-0 right-0 top-full mt-2.5 z-40 bg-[#18181A]/95 border border-white/[0.10] rounded-2xl shadow-2xl overflow-hidden backdrop-blur-2xl animate-in fade-in slide-in-from-top-1 duration-150">
-                        <div className="px-3.5 py-2 border-b border-white/[0.05] flex items-center justify-between text-[11px] text-white/40">
-                          <span>แม่แบบจุดประกายความคิด:</span>
-                          <button
-                            type="button"
-                            onClick={() => setIsDropdownOpen(false)}
-                            className="hover:text-white p-0.5 rounded cursor-pointer"
-                          >
-                            <X size={12} />
-                          </button>
-                        </div>
-
                         <div className="divide-y divide-white/[0.04]">
                           {CURATED_WORLD_SEEDS.map((seed) => (
                             <div
@@ -955,84 +949,70 @@ export function WorldStudioView({
                     className="w-full bg-transparent text-[13.5px] text-[#F1F1F1] focus:outline-none resize-none leading-relaxed font-sans placeholder-white/20"
                   />
 
-                  <div className="flex items-center justify-between pt-2 border-t border-white/[0.04]">
+                  <div className="flex items-center justify-end pt-2 border-t border-white/[0.04]">
                     <button
                       type="button"
                       onClick={handleExtractSpark}
                       disabled={isExtractingSpark || !activeWorld.rawLore.trim()}
-                      className="px-3 py-1 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-[11.5px] text-white/70 hover:text-white transition-all cursor-pointer"
+                      className="px-3.5 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-[11.5px] text-white/70 hover:text-white transition-all cursor-pointer"
                     >
                       {isExtractingSpark ? 'กำลังสกัด...' : 'สกัดอัตโนมัติ'}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setActiveView({ type: 'master' })}
-                      className="text-[11.5px] text-white/40 hover:text-white transition-colors cursor-pointer"
-                    >
-                      กลับไปหน้าหลัก
                     </button>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* VIEW C: EXPANSION NOTE */}
+            {/* VIEW C: EXPANSION NOTE (Apple Notes / Notion Markdown Canvas) */}
             {activeView.type === 'note' && currentNote && (
-              <div className="space-y-5 animate-in fade-in duration-150">
-                <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
-                  <button
-                    type="button"
-                    onClick={() => setActiveView({ type: 'master' })}
-                    className="text-[12px] text-white/40 hover:text-white flex items-center gap-1.5 cursor-pointer transition-colors"
-                  >
-                    <ArrowLeft size={13} />
-                    <span>กลับไปหน้าหลัก</span>
-                  </button>
+              <div className="space-y-6 animate-in fade-in duration-200">
+                
+                {/* Note Surface: Expansive, Borderless Typography, Pure Markdown */}
+                <div className="rounded-2xl p-6 sm:p-8 bg-[#161618] border border-white/[0.07] space-y-4 shadow-sm relative group">
+                  <div className="flex items-start justify-between gap-4">
+                    <input
+                      type="text"
+                      value={currentNote.title}
+                      onChange={(e) => handleUpdateNote(currentNote.id, { title: e.target.value })}
+                      placeholder="ชื่อส่วนขยาย..."
+                      className="w-full text-[24px] sm:text-[28px] font-semibold text-[#F1F1F1] bg-transparent outline-none border-none p-0 placeholder-white/20 leading-tight"
+                    />
 
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteNote(currentNote.id)}
-                    className="text-white/30 hover:text-rose-400 text-[11px] cursor-pointer transition-colors"
-                  >
-                    ลบโน้ตนี้
-                  </button>
-                </div>
-
-                {/* Note Body */}
-                <div className="rounded-2xl p-5 bg-[#161618] border border-white/[0.08] space-y-3">
-                  <input
-                    type="text"
-                    value={currentNote.title}
-                    onChange={(e) => handleUpdateNote(currentNote.id, { title: e.target.value })}
-                    placeholder="ชื่อส่วนขยาย..."
-                    className="w-full text-[18px] font-medium text-[#F1F1F1] bg-transparent border-b border-white/[0.06] pb-2 focus:outline-none"
-                  />
+                    {/* Subtle, Discreet Delete Note Button */}
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteNote(currentNote.id)}
+                      className="opacity-0 group-hover:opacity-100 text-white/20 hover:text-rose-400 p-1.5 rounded-lg hover:bg-white/[0.04] transition-all cursor-pointer shrink-0"
+                      title="ลบโน้ตนี้"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
 
                   <textarea
-                    rows={7}
+                    rows={6}
                     value={currentNote.content}
                     onChange={(e) => handleUpdateNote(currentNote.id, { content: e.target.value })}
-                    placeholder="พิมพ์ขยายความรายละเอียดของส่วนขยายนี้..."
-                    className="w-full text-[13.5px] text-white/80 bg-transparent focus:outline-none resize-none leading-relaxed font-sans placeholder-white/20"
+                    placeholder="พิมพ์ขยายความรายละเอียดของส่วนขยายนี้ได้อย่างอิสระ..."
+                    className="w-full text-[14.5px] sm:text-[15.5px] text-[#F1F1F1] bg-transparent focus:outline-none resize-none leading-relaxed font-sans placeholder-white/20 border-none p-0 min-h-[140px]"
                   />
                 </div>
 
-                {/* In-Note Child Cards */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[13px] text-white/60">
+                {/* In-Note Child Cards Section */}
+                <div className="space-y-3.5">
+                  <div className="flex items-center justify-between px-1">
+                    <span className="text-[13.5px] font-medium text-white/60">
                       การ์ดในส่วนขยาย ({currentNote.childCards.length})
                     </span>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       <button
                         type="button"
                         onClick={() => handleDissectCurrentNote(currentNote)}
                         disabled={isDissectingNote || !currentNote.content.trim()}
-                        className="px-2.5 py-1 rounded-full text-[11px] bg-white/[0.06] hover:bg-white/[0.12] text-white/70 hover:text-white transition-all cursor-pointer"
+                        className="px-3 py-1 rounded-full text-[11.5px] bg-white/[0.05] hover:bg-white/[0.10] text-white/70 hover:text-white border border-white/[0.08] transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
                       >
-                        {isDissectingNote ? 'กำลังสกัด...' : 'สกัดการ์ด'}
+                        <span>{isDissectingNote ? 'กำลังสกัด...' : 'สกัดการ์ด'}</span>
                       </button>
 
                       <button
@@ -1051,82 +1031,92 @@ export function WorldStudioView({
                             childCards: [newChild, ...currentNote.childCards]
                           })
                         }}
-                        className="px-2.5 py-1 rounded-full text-[11px] bg-white/[0.04] hover:bg-white/[0.08] text-white/50 hover:text-white transition-all cursor-pointer"
+                        className="px-3 py-1 rounded-full text-[11.5px] bg-white/[0.04] hover:bg-white/[0.08] text-white/50 hover:text-white border border-white/[0.06] transition-all cursor-pointer flex items-center gap-1 active:scale-95"
                       >
-                        เพิ่มการ์ด
+                        <Plus size={12} />
+                        <span>เพิ่มการ์ด</span>
                       </button>
                     </div>
                   </div>
 
                   {currentNote.childCards.length === 0 ? (
-                    <div className="p-6 rounded-xl border border-dashed border-white/[0.06] text-center text-white/30 text-[11.5px]">
-                      ยังไม่มีการ์ดในส่วนขยายนี้
+                    <div className="p-8 rounded-2xl border border-dashed border-white/[0.06] text-center text-white/30 text-[12px]">
+                      ยังไม่มีการ์ดในส่วนขยายนี้ กดปุ่ม <span className="text-white/60">สกัดการ์ด</span> หรือ <span className="text-white/60">เพิ่มการ์ด</span>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
                       {currentNote.childCards.map((card) => {
                         return (
                           <div
                             key={card.id}
-                            className={`rounded-xl p-3 border transition-all flex flex-col gap-2 bg-[#161618] ${
+                            className={`rounded-2xl p-5 border transition-all flex flex-col justify-between group bg-[#161618] relative min-h-[165px] ${
                               card.isSavedToCabinet
-                                ? 'border-emerald-500/30'
-                                : 'border-white/[0.06]'
+                                ? 'border-emerald-500/25 shadow-sm'
+                                : 'border-white/[0.07] hover:border-white/[0.14]'
                             }`}
                           >
-                            <div className="flex items-center justify-between">
-                              <span className="text-[9.5px] font-mono text-white/40">
-                                {CATEGORY_NAMES[card.category] || 'ทั่วไป'}
-                              </span>
+                            <div className="space-y-2.5 flex-1 flex flex-col">
+                              {/* Top Category & Seamless Ghost Action Bar */}
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10.5px] font-mono text-white/40 uppercase tracking-wider">
+                                  {CATEGORY_NAMES[card.category] || 'ทั่วไป'}
+                                </span>
 
-                              <div className="flex items-center gap-1">
-                                {card.isSavedToCabinet ? (
-                                  <span className="text-[9.5px] text-emerald-400">บันทึกแล้ว</span>
-                                ) : (
+                                <div className="flex items-center gap-1.5">
+                                  {card.isSavedToCabinet ? (
+                                    <span className="text-[11px] text-emerald-400 font-mono flex items-center gap-1">
+                                      <CheckCircle2 size={12} />
+                                      <span>บันทึกแล้ว</span>
+                                    </span>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSaveChildCardToCabinet(currentNote.id, card)}
+                                      className="text-[11.5px] text-white/40 hover:text-white flex items-center gap-1 px-2.5 py-0.5 rounded-full hover:bg-white/[0.06] transition-all cursor-pointer"
+                                    >
+                                      <Save size={12} />
+                                      <span>เซฟ</span>
+                                    </button>
+                                  )}
                                   <button
                                     type="button"
-                                    onClick={() => handleSaveChildCardToCabinet(currentNote.id, card)}
-                                    className="text-[9.5px] text-white/50 hover:text-white flex items-center gap-0.5"
+                                    onClick={() => handleDeleteChildCard(currentNote.id, card.id)}
+                                    className="opacity-0 group-hover:opacity-100 text-white/20 hover:text-rose-400 p-1 rounded-md hover:bg-white/[0.04] transition-all cursor-pointer"
+                                    title="ลบการ์ดนี้"
                                   >
-                                    <Save size={10} />
-                                    <span>เซฟ</span>
+                                    <Trash2 size={13} />
                                   </button>
-                                )}
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteChildCard(currentNote.id, card.id)}
-                                  className="text-white/20 hover:text-rose-400 p-0.5"
-                                >
-                                  <Trash2 size={11} />
-                                </button>
+                                </div>
                               </div>
+
+                              {/* Pure Markdown Title (Seamless, Borderless) */}
+                              <input
+                                type="text"
+                                value={card.title}
+                                onChange={(e) => {
+                                  const newTitle = e.target.value
+                                  handleUpdateNote(currentNote.id, {
+                                    childCards: currentNote.childCards.map(c => c.id === card.id ? { ...c, title: newTitle } : c)
+                                  })
+                                }}
+                                placeholder="ชื่อการ์ด..."
+                                className="w-full text-[14.5px] font-medium text-[#F1F1F1] bg-transparent outline-none border-none p-0 placeholder-white/20"
+                              />
+
+                              {/* Pure Markdown Content (Seamless, Borderless) */}
+                              <textarea
+                                rows={3}
+                                value={card.content}
+                                onChange={(e) => {
+                                  const newContent = e.target.value
+                                  handleUpdateNote(currentNote.id, {
+                                    childCards: currentNote.childCards.map(c => c.id === card.id ? { ...c, content: newContent } : c)
+                                  })
+                                }}
+                                placeholder="เนื้อหาของการ์ด..."
+                                className="w-full text-[13px] text-white/75 bg-transparent outline-none resize-none leading-relaxed font-sans border-none p-0 placeholder-white/20 flex-1 min-h-[65px]"
+                              />
                             </div>
-
-                            <input
-                              type="text"
-                              value={card.title}
-                              onChange={(e) => {
-                                const newTitle = e.target.value
-                                handleUpdateNote(currentNote.id, {
-                                  childCards: currentNote.childCards.map(c => c.id === card.id ? { ...c, title: newTitle } : c)
-                                })
-                              }}
-                              placeholder="ชื่อการ์ด..."
-                              className="w-full text-[12px] font-medium text-[#F1F1F1] bg-black/20 px-2 py-0.5 rounded border border-white/[0.04] focus:outline-none"
-                            />
-
-                            <textarea
-                              rows={2}
-                              value={card.content}
-                              onChange={(e) => {
-                                const newContent = e.target.value
-                                handleUpdateNote(currentNote.id, {
-                                  childCards: currentNote.childCards.map(c => c.id === card.id ? { ...c, content: newContent } : c)
-                                })
-                              }}
-                              placeholder="เนื้อหาของการ์ด..."
-                              className="w-full text-[11px] text-white/70 bg-black/20 px-2 py-1 rounded border border-white/[0.04] focus:outline-none resize-none leading-relaxed font-sans"
-                            />
                           </div>
                         )
                       })}

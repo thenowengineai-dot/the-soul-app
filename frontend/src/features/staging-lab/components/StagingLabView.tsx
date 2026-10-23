@@ -5,7 +5,8 @@ import {
   Check,
   FileCode2,
   Info,
-  ArrowLeft
+  ArrowLeft,
+  BookOpen
 } from 'lucide-react'
 import {
   DEFAULT_BASE_PROMPT,
@@ -56,6 +57,7 @@ import { MacroWorldCard } from './MacroWorldCard'
 import { WorldStageCard } from './WorldStageCard'
 import { WorldDissectionTray } from './WorldDissectionTray'
 import { WorldCabinetDrawer } from './WorldCabinetDrawer'
+import { WorldStudioView } from './WorldStudioView'
 import { CentralDockIsland } from './CentralDockIsland'
 import { SCENOGRAPHER_SYSTEM_INSTRUCTION } from '../scenographerPrompt'
 
@@ -78,6 +80,9 @@ interface PromptLayerItem {
 }
 
 export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
+  // 0. Workspace Mode: Studio-First Mode (The Muse / Notebook style) vs Stage Arena
+  const [workspaceMode, setWorkspaceMode] = useState<'studio' | 'stage'>('studio')
+
   // 1. Target Gateway & Modal States
   const [isPromptInspectorOpen, setIsPromptInspectorOpen] = useState(false)
   const [isTelemetryContractEnabled, setIsTelemetryContractEnabled] = useState<boolean>(true)
@@ -1128,6 +1133,24 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
     return 'Boundary receptive. Physical proximity acknowledged.'
   }, [isBoundaryActive, isKineticActive, isKineticSomaticEffective, parrySpacing, parryBoundaryLevel])
 
+  if (workspaceMode === 'studio') {
+    return (
+      <WorldStudioView
+        macroWorldLore={macroWorldLore}
+        onMacroWorldLoreChange={setMacroWorldLore}
+        sparkText={sparkText}
+        onSparkChange={setSparkText}
+        cabinetCards={cabinetCards}
+        pinnedCardIds={pinnedCardIds}
+        onTogglePin={handleTogglePinCard}
+        onDeleteCabinetCard={handleDeleteCabinetCard}
+        onSaveCardsToCabinet={handleSaveCardsToCabinet}
+        onEnterStage={() => setWorkspaceMode('stage')}
+        onBackToHome={onBackToHome}
+      />
+    )
+  }
+
   return (
     <div className="h-screen w-screen flex bg-app-bg text-[#F1F1F1] overflow-hidden select-none font-sans relative">
       {/* ✦ AMBIENT BACKDROP LIGHT (MATCHING CREATOR STUDIO BENTO CANVAS) */}
@@ -1139,15 +1162,28 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
       <aside className="w-[410px] shrink-0 h-full p-3.5 flex flex-col justify-start items-center overflow-y-auto no-scrollbar border-r border-white/[0.08] bg-app-bg/90 backdrop-blur-xl z-20">
         {/* Universal Top Toolbar (Outside Cards) */}
         <div className="w-[382px] mb-3.5 flex items-center justify-between shrink-0">
-          {/* Minimal Back Button (Icon only) */}
-          <button
-            type="button"
-            onClick={onBackToHome}
-            className="w-8 h-8 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-white/60 hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95"
-            title="กลับสู่หน้าหลัก"
-          >
-            <ArrowLeft size={14} />
-          </button>
+          <div className="flex items-center gap-1.5">
+            {/* Minimal Back Button (Icon only) */}
+            <button
+              type="button"
+              onClick={onBackToHome}
+              className="w-8 h-8 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-white/60 hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95"
+              title="กลับสู่หน้าหลัก"
+            >
+              <ArrowLeft size={14} />
+            </button>
+
+            {/* Switch back to Studio button */}
+            <button
+              type="button"
+              onClick={() => setWorkspaceMode('studio')}
+              className="h-8 px-2.5 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-200 text-[11px] font-medium flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+              title="สลับกลับไปที่ The World Studio (ห้องปั้นเรื่องเล่า)"
+            >
+              <BookOpen size={12} className="text-purple-300" />
+              <span>สตูดิโอ</span>
+            </button>
+          </div>
 
           {/* Category Segmented Control: [ ✦ ตัวละคร | 🏛️ โลกและฉาก ] */}
           <div className="h-7 p-0.5 rounded-full bg-white/[0.04] border border-white/10 flex items-center gap-0.5 text-[11px] font-mono select-none">

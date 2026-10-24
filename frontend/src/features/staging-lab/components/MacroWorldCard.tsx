@@ -143,7 +143,7 @@ export function MacroWorldCard({
           <div>
             <div className="text-[11px] font-mono text-white/50 mb-1.5 flex items-center gap-1">
               <BookOpen size={11} className="text-[#38bdf8]/80" />
-              <span>แรงบันดาลใจมหาภพ (World Archetypes):</span>
+              <span>แรงบันดาลใจโลก (World Archetypes):</span>
             </div>
             <div className="grid grid-cols-1 gap-1.5">
               {MACRO_WORLD_PRESETS.map((preset) => {
@@ -202,7 +202,7 @@ export function MacroWorldCard({
             <div className="flex items-center justify-between">
               <label className="text-[11px] font-mono text-white/50 flex items-center gap-1">
                 <Globe2 size={11} className="text-[#38bdf8]/70" />
-                <span>คัมภีร์มหาภพ (Macro World Bible):</span>
+                <span>คัมภีร์โลก (World Bible):</span>
               </label>
               <span className="text-[10px] font-mono text-white/35">
                 {loreText.length} อักษร

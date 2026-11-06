@@ -1424,6 +1424,7 @@ export function WorldStudioView({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         })
+        if (!res.ok) throw new Error('Local backend returned non-200, switching to Cloud Run')
       } catch {
         res = await fetch('https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/stage/cell', {
           method: 'POST',

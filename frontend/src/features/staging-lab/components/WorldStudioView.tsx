@@ -18,7 +18,8 @@ import {
   ArrowUpRight,
   FileCode2,
   Copy,
-  Check
+  Check,
+  Shirt,
 } from 'lucide-react'
 import type { LoreCard, ExpansionNote, StageCellItem, WorldWorkspace, WorldLoreBlock } from '../types'
 
@@ -34,7 +35,9 @@ interface WorldStudioViewProps {
   onSaveCardsToCabinet: (cards: LoreCard[]) => Promise<void>
   onEnterStage: () => void
   onBackToHome: () => void
+  onSelectStageCell?: (cell: StageCellItem) => void
 }
+
 
 type StudioActiveView =
   | { type: 'welcome' }
@@ -72,7 +75,9 @@ export function WorldStudioView({
   onSaveCardsToCabinet,
   onEnterStage,
   onBackToHome,
+  onSelectStageCell,
 }: WorldStudioViewProps) {
+
   // Navigation & Workspace State
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [activeView, setActiveView] = useState<StudioActiveView>({ type: 'welcome' })
@@ -3297,7 +3302,45 @@ ${savedCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(c.
                     placeholder="บรรยายบรรยากาศ สถาปัตยกรรม และรายละเอียดของสถานที่นี้ได้อย่างอิสระ..."
                     className="w-full text-[14.5px] sm:text-[15.5px] text-[#F1F1F1] bg-transparent focus:outline-none resize-none leading-relaxed font-sans placeholder-white/20 border-none p-0 min-h-[90px] overflow-hidden"
                   />
+
+                  {/* Scene Attire & Fast Enter Stage Action Bar */}
+                  <div className="pt-3 border-t border-white/[0.08] flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-sky-500/10 border border-sky-400/20 text-sky-300 flex items-center justify-center shrink-0">
+                        <Shirt size={14} />
+                      </div>
+                      <div className="text-left">
+                        <div className="text-[12px] font-medium text-white/90">
+                          ชุดประจำสถานที่ (Scene Attire):
+                        </div>
+                        <div className="text-[10.5px] text-white/45 font-mono">
+                          {currentCell.title.includes('คราม') || currentCell.description.includes('คราม') || currentCell.description.includes('ลำธาร')
+                            ? 'โรงย้อมผ้าครามริมลำธาร (เชิ้ตขาว + ถอดรองเท้าสาน)'
+                            : currentCell.title.includes('ฝน') || currentCell.description.includes('ฝน')
+                            ? 'เสื้อ 2 ชั้นหลบฝน (คาร์ดิแกนเปียก + เสื้อในแห้ง)'
+                            : 'ชุดและสรีระ 4 โซนตามธรรมชาติ'}
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (onSelectStageCell) {
+                          onSelectStageCell(currentCell)
+                        } else {
+                          onEnterStage()
+                        }
+                      }}
+                      className="px-4 py-2 rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 hover:from-sky-400 hover:to-indigo-400 text-white text-[12px] font-medium transition-all cursor-pointer flex items-center gap-2 active:scale-95 shadow-[0_0_20px_rgba(56,189,248,0.35)]"
+                      title="ก้าวขึ้นสู่เวทีแสดงสดพร้อมพิกัดสถานที่และชุดประจำฉากนี้ทันที"
+                    >
+                      <Sparkles size={13} />
+                      <span>ก้าวขึ้นสู่เวทีด้วยสถานที่นี้ ↵</span>
+                    </button>
+                  </div>
                 </div>
+
 
                 {/* Linked Cards Section (Active State Emerald Illumination) */}
                 <div className="space-y-3.5">

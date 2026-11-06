@@ -173,7 +173,10 @@ export interface StageCellItem {
   description: string
   pinnedCardIds: string[]
   created_at: number
+  attirePresetId?: string
+  attireCustomState?: any
 }
+
 
 export interface WorldLoreBlock {
   id: string

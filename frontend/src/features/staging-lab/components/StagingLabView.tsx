@@ -1197,8 +1197,25 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
           setActiveDockTab('actor')
           setWorkspaceMode('stage')
         }}
+        onSelectStageCell={(cell) => {
+          // Set current stage cell prompt to location description
+          const promptText = cell.description?.trim() || cell.title
+          setCurrentStagePrompt(promptText)
+          handleGenerateStageCell(promptText)
+
+          // Auto-configure matching attire preset based on location keywords
+          if (promptText.includes('คราม') || promptText.includes('ลำธาร') || cell.title.includes('คราม')) {
+            setLivingAttireState(createIndigoStreamAttireState())
+          }
+
+          setIsAttireActive(true)
+          setIsAttireExpanded(true)
+          setActiveDockTab('actor')
+          setWorkspaceMode('stage')
+        }}
         onBackToHome={onBackToHome}
       />
+
     )
   }
 

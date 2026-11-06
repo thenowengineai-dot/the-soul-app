@@ -40,6 +40,16 @@ export interface KineticDecision {
   somatic_tension?: string
 }
 
+export type AttireZoneId = 'head_hair_face' | 'upper_body' | 'lower_body' | 'feet_footwear'
+
+export type AttireLifecycleStage = 'DORMANT' | 'FRESH' | 'LINGERING'
+
+export interface SurfaceMutationItem {
+  target: 'actor' | 'player' | string
+  zone: AttireZoneId | string
+  condition: string
+}
+
 export interface SandboxTelemetry {
   latency_ms: number
   model: string
@@ -48,7 +58,9 @@ export interface SandboxTelemetry {
   p_pos?: string
   kinetic_decision?: KineticDecision | null
   verdict?: TelemetryVerdict | null
+  surface_mutations?: SurfaceMutationItem[] | null
 }
+
 
 export interface SandboxResponseSegment {
   type: string

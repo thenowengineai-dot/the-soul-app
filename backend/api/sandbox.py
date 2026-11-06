@@ -101,11 +101,20 @@ You must output ONLY a valid JSON object matching this structure:
     "contact_occurred": false,
     "active_contacts": []
   },
+  "surface_mutations": [],
   "response_sequence": [
     {"type": "action", "content": "Somatic physical reaction honest to sensory reality"},
     {"type": "dialogue", "content": "Spoken boundary response reflecting your personality and emotion"}
   ]
 }
+
+# SURFACE MUTATIONS RULE (ONLY WHEN NEW PHYSICAL / CLOTHING STATE OCCURS THIS TURN):
+- "surface_mutations": Array of objects reporting ONLY zones whose physical/wet/disheveled/removed state NEWLY changed during this turn.
+- If no clothing or body surface state newly changed this turn, output an empty array: [].
+- Do NOT repeat lingering states that were already present before this turn!
+- Valid "target": "actor" or "player".
+- Valid "zone": "head_hair_face" | "upper_body" | "lower_body" | "feet_footwear".
+- Example when splashed on chest: [{"target": "actor", "zone": "upper_body", "condition": "เสื้อเชิ้ตขาวช่วงอกเปียกชุ่มน้ำ แนบลู่ติดผิวจนโปร่งแสงเห็นเงาบราสีเข้มข้างใต้"}]
 
 # KINETIC DECISION RULES:
 - "tempo": Choose strictly 1 mode reflecting your physical pacing:
@@ -154,6 +163,12 @@ class TelemetryVerdict(BaseModel):
     active_contacts: List[str] = Field(default_factory=list, description="จุดสรีระที่สัมผัสค้างอยู่จริง ณ ท้ายเทิร์น (สูงสุด 3 จุด)")
 
 
+class SurfaceMutationModel(BaseModel):
+    target: str = Field(default="actor", description="actor หรือ player")
+    zone: str = Field(default="upper_body", description="head_hair_face, upper_body, lower_body, feet_footwear")
+    condition: str = Field(default="", description="สภาพพื้นผิวที่เพิ่งเปลี่ยนในเทิร์นนี้")
+
+
 class SandboxSimulateRequest(BaseModel):
     player_input: str = Field(default="(ฉันก้าวเข้าไปคว้าข้อมือเธอไว้แน่น)", description="ข้อความหรือการกระทำของผู้เล่น")
     base_prompt: Optional[str] = Field(default=None, description="Core Base Prompt หากต้องการปรับแต่งจากค่าเริ่มต้น")
@@ -178,6 +193,8 @@ class SandboxTelemetry(BaseModel):
     p_pos: Optional[str] = None
     kinetic_decision: Optional[KineticDecisionModel] = None
     verdict: Optional[TelemetryVerdict] = None
+    surface_mutations: Optional[List[SurfaceMutationModel]] = Field(default_factory=list)
+
 
 
 class SandboxSimulateResponse(BaseModel):
@@ -260,6 +277,28 @@ def extract_kinetic_decision(actor_output: Any) -> Optional[KineticDecisionModel
             somatic_tension=tension_str
         )
     return None
+
+
+def extract_surface_mutations(actor_output: Any) -> List[SurfaceMutationModel]:
+    """ดึงรายการ surface_mutations ที่เพิ่งเปลี่ยนสภาพในเทิร์นนี้จาก ActorOutput"""
+    raw_muts = getattr(actor_output, "surface_mutations", None)
+    results: List[SurfaceMutationModel] = []
+    if isinstance(raw_muts, list):
+        for item in raw_muts:
+            if isinstance(item, dict):
+                target = str(item.get("target", "actor")).lower().strip()
+                zone = str(item.get("zone", "")).lower().strip()
+                condition = str(item.get("condition", "")).strip()
+                if zone and condition:
+                    results.append(
+                        SurfaceMutationModel(
+                            target=target if target in ("actor", "player") else "actor",
+                            zone=zone,
+                            condition=condition,
+                        )
+                    )
+    return results
+
 
 
 def generate_card1_physical_reality(spacing: str = "reach", boundary: str = "guarded", player_input: str = "") -> str:
@@ -414,6 +453,7 @@ async def simulate_turn(req: SandboxSimulateRequest):
             
     verdict = extract_telemetry_verdict(actor_output)
     kinetic_decision = extract_kinetic_decision(actor_output)
+    surface_mutations = extract_surface_mutations(actor_output)
 
     telemetry = SandboxTelemetry(
         latency_ms=latency_ms,
@@ -422,8 +462,10 @@ async def simulate_turn(req: SandboxSimulateRequest):
         a_pos=actor_output.a_pos,
         p_pos=actor_output.p_pos,
         kinetic_decision=kinetic_decision,
-        verdict=verdict
+        verdict=verdict,
+        surface_mutations=surface_mutations
     )
+
     
     return SandboxSimulateResponse(
         status="success",

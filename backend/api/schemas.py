@@ -163,6 +163,11 @@ class ActorOutput(BaseModel):
         default=None,
         description="การตัดสินใจจังหวะสรีระภาพยนตร์: tempo (STILLNESS, MICRO_SHIFT, HIGH_VELOCITY_SNAP, LOW_VELOCITY_UNHOOK), somatic_tension"
     )
+    surface_mutations: Optional[List[Dict[str, Any]]] = Field(
+        default=None,
+        description="รายการการเปลี่ยนแปลงสภาพชุดหรือพื้นผิวกายที่เพิ่งเกิดใหม่ในเทิร์นนี้: [{'target': 'actor'|'player', 'zone': 'head_hair_face'|'upper_body'|'lower_body'|'feet_footwear', 'condition': '...'}]"
+    )
+
 
     @field_validator("p_pos", mode="before")
     @classmethod

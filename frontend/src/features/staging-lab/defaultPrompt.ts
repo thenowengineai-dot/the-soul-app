@@ -110,11 +110,20 @@ You must output ONLY a valid JSON object matching this structure:
     "contact_occurred": false,
     "active_contacts": []
   },
+  "surface_mutations": [],
   "response_sequence": [
     {"type": "action", "content": "Somatic physical reaction honest to sensory reality"},
     {"type": "dialogue", "content": "Spoken boundary response reflecting your personality and emotion"}
   ]
 }
+
+# SURFACE MUTATIONS RULE (ONLY WHEN NEW PHYSICAL / CLOTHING STATE OCCURS THIS TURN):
+- "surface_mutations": Array of objects reporting ONLY zones whose physical/wet/disheveled/removed state NEWLY changed during this turn.
+- If no clothing or body surface state newly changed this turn, output an empty array: [].
+- Do NOT repeat lingering states that were already present before this turn!
+- Valid "target": "actor" or "player".
+- Valid "zone": "head_hair_face" | "upper_body" | "lower_body" | "feet_footwear".
+- Example when splashed on chest: [{"target": "actor", "zone": "upper_body", "condition": "เสื้อเชิ้ตขาวช่วงอกเปียกชุ่มน้ำ แนบลู่ติดผิวจนโปร่งแสงเห็นเงาบราสีเข้มข้างใต้"}]
 
 # KINETIC DECISION RULES:
 - "tempo": Choose strictly 1 mode reflecting your physical pacing:

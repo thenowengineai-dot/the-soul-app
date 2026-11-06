@@ -4,7 +4,7 @@ import time
 import asyncio
 import logging
 from typing import Dict, Any, Optional, List
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from agents.actor_agent import ActorAgent
@@ -681,6 +681,60 @@ def get_redis_cache() -> RedisHotCache:
         redis_hot_cache = RedisHotCache()
     return redis_hot_cache
 
+class WorldSparkRequest(BaseModel):
+    raw_text: str = Field(..., description="Raw narrative text poured out by creator")
+    world_id: Optional[str] = Field("default_world", description="World ID")
+    draft_spark: Optional[str] = Field(None, description="Player-written draft spark to polish and amplify")
+    previous_spark: Optional[str] = Field(None, description="Previously generated spark to regenerate a new fresh angle")
+    previous_sparks: Optional[List[str]] = Field(default_factory=list, description="History of previously generated sparks to avoid repeating the same character or hook")
+
+class WorldSparkResponse(BaseModel):
+    spark_text: str
+    latency_ms: int
+    model: str
+
+SPARK_EXTRACTOR_SYSTEM_INSTRUCTION = """[ROLE: THE SPARK ARCHITECT — สถาปนิกผู้สกัดจุดเริ่มต้นที่ทำให้ทุกอย่างหมุน & ฉากชนกัน In Medias Res]
+หน้าที่ของคุณคือการอ่านข้อมูลโลกหลัก ([WORLD_LORE]) ของผู้เล่น แล้วสกัดหรือจุดประกาย "The Spark That Sets Everything in Motion (จุดเริ่มต้นที่ทำให้ทุกอย่างหมุน)" โดยคิดตามโครงสร้างแม่พิมพ์ระดับตำนาน แล้วส่งออก Output เป็น "เหตุการณ์ In Medias Res วินาทีที่ตัวละครชนกันและถอยกลับไม่ได้อีก" ด้วยภาษาง่ายๆ คมๆ ที่อ่านเข้าใจทันที
+
+[แม่พิมพ์วิธีคิด 6 จังหวะ (Thinking Framework — ต้องคิดตามลำดับนี้ก่อนเขียนเสมอ)]:
+เรื่องราวที่อิมแพ็คไม่ได้เริ่มจากประวัติศาสตร์ 1,000 ปี หรือระบบโลกใบใหญ่ แต่เริ่มจากจุดประกายเล็กๆ ของคน ดังตัวอย่างแม่แบบทั้ง 4 เรื่องนี้:
+
+ตัวอย่างที่ 1 (Pirates of the Caribbean):
+* ไม่ได้เริ่มจากประวัติศาสตร์ของราชนาวีอังกฤษ หรือแผนที่หมู่เกาะแคริบเบียน
+* แต่มันเริ่มจาก "คนพิลึกคนหนึ่ง" ที่ยืนอยู่บนยอดเสากระโดงของเรือเล็กๆ ที่กำลังจะจมน้ำ แต่ยังทำท่าสง่างาม ก้าวขาเหยียบสะพานเทียบท่าพอดีตอนเรือมิดน้ำ พกเข็มทิศที่ไม่ชี้ทิศเหนือและปืนที่มีกระสุนแค่นัดเดียว
+* แล้วดันไป "ชน" กับช่างตีเหล็กหนุ่มธรรมดา (วิลล์) ที่แอบรักคุณหนูเอลิซาเบธ
+* แล้วดันมี "เหรียญทองเหรียญเดียว" ที่ไปปลุกคำสาปเรือผีแบล็กเพิร์ลขึ้นมา จนทั้งคู่ต้องจับมือกันออกทะเลและถอยกลับไปใช้ชีวิตเดิมไม่ได้อีก
+* พอประกายไฟเม็ดนี้ติดปุ๊บ... โลกที่เหลือทั้งการดวลดาบ ทอร์ทูกา เหล้ารัม และปืนใหญ่ ก็ค่อยๆ ไหลตามมา
+
+ตัวอย่างที่ 2 (Harry Potter):
+* ไม่ได้เริ่มจากระบบเวทมนตร์ 1,000 ปี หรือผังโรงเรียนฮอกวอตส์
+* แต่มันเริ่มจากเด็กแว่นผอมๆ นอนห้องใต้บันได โดนญาติแกล้ง
+* แล้วมี "จดหมายปริศนาฉบับหนึ่ง" ที่ส่งมาไม่หยุด บินว่อนเต็มบ้าน
+* แล้วชนกับคนตัวยักษ์พังประตูเข้ามาในคืนพายุ บอกว่า "แฮร์รี่ เธอเป็นพ่อมด" จนถอยกลับไปเป็นเด็กธรรมดาไม่ได้อีก
+* พอประกายไฟนี้ติด... ไม้กายสิทธิ์ ชานชาลา 9¾ และปราสาท ก็ค่อยๆ เปิดม่านตามมาทีละฉาก
+
+ตัวอย่างที่ 3 (Hibike! Euphonium):
+* ไม่ได้เริ่มจากระบบวงดนตรี หรือวิชาดนตรีเครื่องเป่า
+* แต่มันเริ่มจากเด็กสาวที่อยากอยู่เงียบๆ ไม่อยากเด่น ไม่อยากมีเรื่องกับใครหลังเคยผิดหวังตอน ม.ต้น
+* แล้วมี "เพื่อนดึงมือไปเซ็นชื่อเข้าชมรมวงโยธวาทิต"
+* แล้วดันไป "ชน" กับเรย์นะ มือทรัมเป็ตสาวที่เคยเห็นร้องไห้แทบขาดใจตอนแข่งแพ้ ม.ต้น พร้อมเป้าหมาย "เหรียญทองระดับประเทศ" จนถอยกลับไม่ได้เพราะเซ็นชื่อไปแล้วและไฟในใจกลับมาเต้นแรงอีกครั้ง
+
+ตัวอย่างที่ 4 (Seasons Change):
+* ไม่ได้เริ่มจากหลักสูตรดนตรีคลาสสิก หรือประวัติศาสตร์วงออร์เคสตรา
+* แต่มันเริ่มจากเด็กหนุ่มที่ตีเป็นแค่กลองร็อกบ้านๆ อ่านโน้ตดนตรีไม่เป็นสักตัว
+* แล้วดันแอบหนีที่บ้านไปสอบออดิชั่นเข้าโรงเรียนดนตรี เพียงเพราะแอบหลงรัก "เด็กสาวผู้เป็นเหมือนดอกฟ้า"
+* แล้วดันสอบติดเข้าไป "ชน" กับทั้งดอกฟ้าที่แอบชอบ และเพื่อนสาวมือเพอร์คัชชันสุดโหดในห้องซ้อมเดียวกัน จนลาออกหรือถอยกลับไม่ได้อีก เพราะก้าวเข้ามาเป็นนักดนตรีเต็มตัวแล้ว
+
+[กฎเหล็กในการเขียน Output]:
+1. ห้ามใช้ภาษาเรียงความนิยายที่เวิ่นเว้อซับซ้อนเด็ดขาด! (เช่น ห้ามเขียนว่า "ในฐานะนักเรียนใหม่ผู้ปรารถนาความสงบ ความสงบของคุณกลับมลายหายไปเมื่อ...") ให้ใช้คำพูดง่ายๆ สั้นๆ เห็นภาพเป็นช็อตๆ ทันที
+2. หากผู้เล่นเขียนมาแค่ฉากหลังโลกกว้างๆ (เช่น เขียนแค่เรื่องโรงเรียนเวทมนตร์ หรือโลกใบหนึ่งโดยยังไม่มีฉากเปิดเรื่อง) จงใช้จินตนาการแต่ง "จุดตั้งต้นของคนธรรมดา + ของหรือชนวนเหตุเฉพาะหน้า 1 อย่าง + ตัวละครอีกคนที่มาชนกันตรงหน้า + เหตุผลที่ถอยกลับไม่ได้" ที่อยู่ในโลกใบนั้นขึ้นมาได้เลย!
+3. ส่งออกผลลัพธ์ (Output Format) เป็น 3 บล็อกสั้นๆ ที่ตัดเข้าฉากเหตุการณ์ตรงหน้า (In Medias Res) วินาทีที่ตัวละครชนกัน ตามโครงสร้างนี้เท่านั้น:
+• เรื่องไม่ได้เริ่มจาก [ระบบใหญ่/ประวัติศาสตร์โลก] — แต่มันเริ่มจากคุณที่เป็น [ตัวเราในมุมคนธรรมดาที่เข้าใจง่าย + ชนวนเหตุเฉพาะหน้า/สิ่งของ/การตัดสินใจที่พามาถึงจุดนี้]
+• วินาทีที่ชนกัน (In Medias Res): [ฉากเหตุการณ์ตรงหน้าที่กำลังเกิดขึ้นเดี๋ยวนี้ วินาทีที่คุณพุ่งชนเข้ากับ "ตัวละครสำคัญอีกคน" แบบเห็นภาพการกระทำ สายตา หรือคำพูดตรงหน้าทันที]
+• จุดที่ถอยกลับไม่ได้อีก: [ระบุตรงๆ ว่าทำไมวินาทีนี้คุณถึงถอยกลับไปใช้ชีวิตเดิมไม่ได้แล้ว + เป้าหมาย/ความลับ/ความรู้สึกที่ทำให้โลกทั้งใบเริ่มหมุนตั้งแต่วินาทีนี้]
+
+4. ตอบกลับเฉพาะเนื้อหา 3 บรรทัด (• ...) ข้างต้นเพียวๆ ห้ามมีคำนำหน้าหรือเครื่องหมายคำพูดครอบทั้งหมด"""
+
 class LoreCard(BaseModel):
     id: str = Field(..., description="Unique slug ID for the card")
     title: str = Field(..., description="Card title")
@@ -694,6 +748,9 @@ class WorldDissectRequest(BaseModel):
     raw_text: str = Field(..., description="Raw narrative text poured out by creator")
     world_id: Optional[str] = Field("default_world", description="World ID")
     already_extracted_topics: Optional[List[str]] = Field(default_factory=list, description="Already extracted expansion topics to avoid duplicates")
+    target_topic_title: Optional[str] = Field(None, description="Specific topic title typed by player to generate content for")
+    draft_content: Optional[str] = Field(None, description="Player-written draft inside the expansion note to polish and expand")
+    context_lore: Optional[str] = Field(None, description="Background world lore context when extracting from a specific new lore card")
 
 class WorldDissectResponse(BaseModel):
     cards: List[LoreCard]
@@ -764,7 +821,7 @@ WORLD_DISSECTOR_SYSTEM_INSTRUCTION = """[ROLE: THE WORLD LORE EXPANDER — ส�
 ห้ามมีคำนำหน้าหรือ markdown formatting นอกเหนือจาก JSON code block หรือ raw JSON"""
 
 @router.post("/world/dissect", response_model=WorldDissectResponse)
-def dissect_world_lore(request: WorldDissectRequest):
+def dissect_world_lore(request: WorldDissectRequest, raw_req: Request = None):
     """
     ชำแหละและแตกส่วนขยายโลก (Expansion Notes) อย่างเป็นระบบตามหลัก Progressive Atomic Extraction
     """
@@ -773,8 +830,76 @@ def dissect_world_lore(request: WorldDissectRequest):
     if not raw_text:
         raise HTTPException(status_code=400, detail="raw_text cannot be empty")
 
+    # ⚡ [STRESS TEST MOCK SWITCH] Bypasses Vertex AI when x-mock-llm header or query param is set
+    if raw_req and (raw_req.headers.get("x-mock-llm") == "true" or raw_req.query_params.get("mock") == "true"):
+        mock_cards = [
+            LoreCard(
+                id=f"mock_card_{i}",
+                title=f"ส่วนขยายจำลอง {i+1}",
+                category="lore",
+                content=f"เนื้อหาจำลองสำหรับทดสอบโหลดระบบ Cloud Run Concurrency ชิ้นที่ {i+1}",
+                summary="สรุปจำลองสำหรับทดสอบโหลด",
+                tags=["ทดสอบ", "จำลอง", "Infra"],
+                isSavedToCabinet=False
+            )
+            for i in range(min(request.max_cards or 3, 5))
+        ]
+        return WorldDissectResponse(
+            cards=mock_cards,
+            latency_ms=int((time.time() - start_time) * 1000),
+            model="mock-infra-benchmark"
+        )
+
     extracted_list = request.already_extracted_topics or []
-    if extracted_list:
+    target_topic = (request.target_topic_title or "").strip()
+    draft_content = (request.draft_content or "").strip()
+    context_lore = (request.context_lore or "").strip()
+
+    temp_to_use = 0.4
+
+    if draft_content:
+        has_custom_title = bool(target_topic and target_topic != "ส่วนขยายที่ผู้เล่นเขียน")
+        topic_label = target_topic if has_custom_title else "(ผู้เล่นยังไม่ได้ตั้งชื่อหัวข้อ — ให้ AI ตั้งชื่อหัวข้อให้)"
+        title_instruction = (
+            f'โดยคงชื่อหัวข้อ title เป็น "{target_topic}"'
+            if has_custom_title
+            else "โดยตั้งชื่อหัวข้อ (title) ใหม่ที่คมชัด สละสลวย และสื่อถึงแก่นของเนื้อหานี้เพียงเรื่องเดียว"
+        )
+        prompt_content = f"""[WORLD_LORE (ข้อมูลโลกหลักสำหรับอ้างอิงมูดแอนด์โทนและบรรยากาศ)]:
+{raw_text}
+
+[TARGET_TOPIC_TITLE (ชื่อหัวข้อส่วนขยาย)]:
+{topic_label}
+
+[PLAYER_DRAFT_CONTENT (เนื้อหาที่ผู้เล่นพิมพ์ลงในการ์ดใบนี้โดยตรง — ห้ามตัดทอนประเด็นสำคัญของผู้เล่นทิ้งเด็ดขาด)]:
+{draft_content}
+
+คำสั่งพิเศษ (โหมด ✨ เรียบเรียงเนื้อหาและแต่งต่อ): ผู้เล่นได้พิมพ์เนื้อหาร่างลงในการ์ดส่วนขยายนี้ด้วยตัวเองตาม [PLAYER_DRAFT_CONTENT] จงนำทุกประเด็นและรายละเอียดที่ผู้เล่นเขียนไว้ใน [PLAYER_DRAFT_CONTENT] มาจัดระเบียบโครงสร้าง เรียบเรียงสำนวนภาษาให้สละสลวยลื่นไหล คิดแท็ก (tags) 3-4 แท็ก และช่วยแต่งต่อยอดรายละเอียดล่วงหน้า 1 ก้าวตามกฎข้อ 4 ให้เข้ากับมูดแอนด์โทนของ [WORLD_LORE] เพียง 1 การ์ดเท่านั้น (ตอบกลับเป็น JSON Array ที่มี 1 ออบเจกต์ {title_instruction})"""
+    elif target_topic:
+        prev_variation_note = ""
+        if extracted_list:
+            temp_to_use = 0.65
+            prev_variation_note = f"\n\n[PREVIOUS_GENERATED_VERSION (เนื้อหาเดิมที่เจนไว้ก่อนหน้า — ผู้เล่นกด 'เจนเนื้อหาใหม่' จึงขอให้เรียบเรียงมุมมองหรือรายละเอียดใหม่ที่สดใหม่และแตกต่างจากสำนวนเดิม)]:\n{extracted_list[0]}"
+        prompt_content = f"""[WORLD_LORE (ข้อมูลโลกทั้งใบของผู้เล่น)]:
+{raw_text}
+
+[TARGET_TOPIC_TITLE (ชื่อหัวข้อส่วนขยายที่ผู้เล่นต้องการให้เขียนเนื้อหา)]:
+"{target_topic}"{prev_variation_note}
+
+คำสั่งพิเศษ (โหมด ✨ เจนเนื้อหาตามหัวข้อ): ผู้เล่นได้ตั้งชื่อหัวข้อส่วนขยายที่ต้องการไว้แล้วคือ "{target_topic}" จงอ่านข้อมูลและซึมซับบรรยากาศทั้งหมดใน [WORLD_LORE] แล้วช่วยเขียนขยายเนื้อหา (content), สรุป (summary), และแท็ก (tags) สำหรับหัวข้อ "{target_topic}" นี้เพียง 1 การ์ดเท่านั้น (ตอบกลับเป็น JSON Array ที่มี 1 ออบเจกต์ โดยใช้ title เป็น "{target_topic}") ให้เนื้อหามีความลึก ลื่นไหล เห็นภาพชัดเจน และตรงกับมูดของโลกหลักตามกฎข้อ 1, 2 และ 4"""
+    elif context_lore:
+        already_str = "\n".join(f"- {t}" for t in extracted_list) if extracted_list else "ยังไม่มี"
+        prompt_content = f"""[BACKGROUND_WORLD_CONTEXT (ข้อมูลโลกหลักสำหรับอ้างอิงมูดแอนด์โทนเท่านั้น)]:
+{context_lore}
+
+[TARGET_CARD_LORE (ข้อมูลการ์ดเนื้อหาโลกใบใหม่ที่ต้องดึงส่วนขยายออกมาในรอบนี้)]:
+{raw_text}
+
+[ALREADY_EXTRACTED_TOPICS (หัวข้อและเนื้อหาที่มีอยู่แล้วในโลกนี้ — ห้ามทำซ้ำเด็ดขาด)]:
+{already_str}
+
+คำสั่งพิเศษ (โหมดแตกส่วนขยายเฉพาะการ์ดนี้): จงอ่านเฉพาะเรื่องราวใน [TARGET_CARD_LORE] แล้วชั่งน้ำหนักตามกฎข้อ 3 เพื่อดึงก้อนเรื่องราวออกมาเป็นส่วนขยายไม่เกิน 4-5 หัวข้อ (หากใน [TARGET_CARD_LORE] มีเพียง 1-3 เรื่อง ก็ให้ดึงออกมาตามจำนวนเรื่องที่มีจริง) โดยใช้ [BACKGROUND_WORLD_CONTEXT] เป็นตัวคุมมูดแอนด์โทนให้เข้ากับโลกใบเดิม และห้ามดึงซ้ำกับ [ALREADY_EXTRACTED_TOPICS]"""
+    elif extracted_list:
         already_str = "\n".join(f"- {t}" for t in extracted_list)
         prompt_content = f"""[WORLD_LORE (ข้อมูลโลกทั้งใบของผู้เล่น)]:
 {raw_text}
@@ -810,7 +935,7 @@ def dissect_world_lore(request: WorldDissectRequest):
                 contents=prompt_content,
                 config=types.GenerateContentConfig(
                     system_instruction=WORLD_DISSECTOR_SYSTEM_INSTRUCTION,
-                    temperature=0.4,
+                    temperature=temp_to_use,
                     thinking_config=types.ThinkingConfig(thinking_budget=1024),
                     response_mime_type="application/json",
                 )
@@ -823,7 +948,7 @@ def dissect_world_lore(request: WorldDissectRequest):
                 contents=prompt_content,
                 config=types.GenerateContentConfig(
                     system_instruction=WORLD_DISSECTOR_SYSTEM_INSTRUCTION,
-                    temperature=0.4,
+                    temperature=temp_to_use,
                     thinking_config=types.ThinkingConfig(thinking_budget=1024),
                     response_mime_type="application/json",
                 )
@@ -863,6 +988,129 @@ def dissect_world_lore(request: WorldDissectRequest):
     latency_ms = int((time.time() - start_time) * 1000)
     return WorldDissectResponse(
         cards=cards,
+        latency_ms=latency_ms,
+        model=used_model
+    )
+
+@router.post("/world/spark", response_model=WorldSparkResponse)
+def generate_world_spark(request: WorldSparkRequest, raw_req: Request = None):
+    """
+    สกัดและจุดประกาย The Inciting Spark ตามหลัก 1-on-1 Personal Character Collision & Irreversible Orbit Shift
+    """
+    start_time = time.time()
+    raw_text = (request.raw_text or "").strip()
+    draft_spark = (request.draft_spark or "").strip()
+    previous_spark = (request.previous_spark or "").strip()
+    previous_sparks = [s.strip() for s in (request.previous_sparks or []) if s.strip()]
+    if previous_spark and previous_spark not in previous_sparks:
+        previous_sparks.append(previous_spark)
+
+    if not raw_text and not draft_spark:
+        raise HTTPException(status_code=400, detail="raw_text or draft_spark required")
+
+    # ⚡ [STRESS TEST MOCK SWITCH] Bypasses Vertex AI when x-mock-llm header or query param is set
+    if raw_req and (raw_req.headers.get("x-mock-llm") == "true" or raw_req.query_params.get("mock") == "true"):
+        return WorldSparkResponse(
+            spark_text="• เรื่องไม่ได้เริ่มจากโรงเรียนร้อยปี — แต่มันเริ่มจากเด็กธรรมดาที่ทำกระเป๋าหลุดมือ\n• วินาทีที่ชนกัน (In Medias Res): หมับ! เสียงยูโฟเนียมตกกระทบพื้นหญ้า\n• จุดที่ถอยกลับไม่ได้อีก: ป้ายชื่อนักเรียนม.ปลายปี 1 ร่วงอยู่แทบเท้า",
+            latency_ms=int((time.time() - start_time) * 1000),
+            model="mock-infra-benchmark"
+        )
+
+    temp_to_use = 0.6
+
+    if draft_spark:
+        temp_to_use = 0.45
+        prompt_content = f"""[WORLD_LORE (ข้อมูลโลกหลักสำหรับอ้างอิงมูดแอนด์โทนและบริบทโลก)]:
+{raw_text or draft_spark}
+
+[PLAYER_DRAFT_SPARK (ชนวนเหตุหรือไอเดียจุดเริ่มต้นที่ผู้เล่นพิมพ์ไว้ด้วยตัวเอง)]:
+{draft_spark}
+
+คำสั่งพิเศษ (โหมด ✨ เรียบเรียงสปาร์ค): ผู้เล่นได้พิมพ์ไอเดียจุดเริ่มต้นด้วยตัวเองตาม [PLAYER_DRAFT_SPARK] จงรักษาตัวละคร ชนวนเหตุ และไอเดียของผู้เล่นไว้ครบ 100% แล้วช่วยจัดระเบียบและขยายออกมาเป็นฉากชนกันตรงหน้า (In Medias Res) ด้วยภาษาง่ายๆ คมๆ ไม่เวิ่นเว้อ ตามโครงสร้าง 3 บรรทัดนี้:
+• เรื่องไม่ได้เริ่มจาก... — แต่มันเริ่มจาก...
+• วินาทีที่ชนกัน (In Medias Res): ...
+• จุดที่ถอยกลับไม่ได้อีก: ..."""
+    elif previous_sparks:
+        temp_to_use = 0.82
+        history_str = "\n\n".join(f"--- รอบที่ {idx + 1} ---\n{s}" for idx, s in enumerate(previous_sparks))
+        prompt_content = f"""[WORLD_LORE (ข้อมูลโลกทั้งใบของผู้เล่น)]:
+{raw_text}
+
+[PREVIOUS_SPARKS (รายการสปาร์คเดิมที่เคยสุ่มไปแล้ว — ห้ามใช้จุดตั้งต้นเดิม ชนวนเหตุเดิม หรือเหตุการณ์ชนกันแบบเดิมซ้ำเด็ดขาด)]:
+{history_str}
+
+คำสั่งพิเศษ (โหมด 🔄 สกัดสปาร์คใหม่ — สุ่มจุดประกายแรกและฉากชนกัน In Medias Res มุมใหม่): ผู้เล่นกดสุ่มใหม่เพราะต้องการเห็น "จุดเริ่มต้นที่ทำให้ทุกอย่างหมุน" และ "เหตุการณ์ตอนตัวละครชนกัน" ในมุมใหม่ที่แตกต่างจาก [PREVIOUS_SPARKS] อย่างชัดเจน!
+- สามารถใช้จินตนาการแต่งจุดตั้งต้นของคนธรรมดามุมใหม่ + สิ่งของหรือชนวนเหตุเฉพาะหน้าชิ้นใหม่ + ตัวละครที่มาชนกันตรงหน้ามุมใหม่ (จะหยิบตัวละครอีกมุมใน [WORLD_LORE] หรือแต่งตัวละครและสถานการณ์ใหม่ที่อยู่ในโลกใบเดียวกันก็ได้)
+- ใช้ภาษาง่ายๆ คมๆ เห็นภาพทันที ไม่เวิ่นเว้อ และตอบกลับตามโครงสร้าง 3 บรรทัดเท่านั้น:
+• เรื่องไม่ได้เริ่มจาก... — แต่มันเริ่มจาก...
+• วินาทีที่ชนกัน (In Medias Res): ...
+• จุดที่ถอยกลับไม่ได้อีก: ..."""
+    else:
+        prompt_content = f"""[WORLD_LORE (ข้อมูลโลกทั้งใบของผู้เล่น)]:
+{raw_text}
+
+คำสั่ง (โหมดสกัดสปาร์ค — จุดเริ่มต้นที่ทำให้ทุกอย่างหมุน & ฉากชนกัน In Medias Res): จงอ่าน [WORLD_LORE] แล้วคิดตามแม่พิมพ์ (Pirates / Harry Potter / Hibike! Euphonium / Seasons Change) เพื่อสร้างฉากเหตุการณ์ตอนตัวละครชนกันตรงหน้า:
+- หากผู้เล่นเขียนตัวละครหรือจุดเริ่มต้นปนมาใน [WORLD_LORE] แล้ว ให้ดึงจุดนั้นมาตัดเข้าฉาก In Medias Res วินาทีที่ตัวละครชนกันและถอยกลับไม่ได้ทันที
+- หากผู้เล่นเขียนมาแค่ฉากหลังโลกกว้างๆ ให้ใช้จินตนาการแต่ง "จุดตั้งต้นของคนธรรมดา + ของหรือชนวนเหตุใกล้ตัว 1 อย่าง + ตัวละครอีกคนที่มาชนกันตรงหน้า + เหตุผลที่ถอยกลับไม่ได้" ในโลกใบนั้นขึ้นมาเลย
+- ใช้ภาษาง่ายๆ คมๆ เข้าใจง่ายในเสี้ยววินาที และตอบกลับตามโครงสร้าง 3 บรรทัดเท่านั้น:
+• เรื่องไม่ได้เริ่มจาก... — แต่มันเริ่มจาก...
+• วินาทีที่ชนกัน (In Medias Res): ...
+• จุดที่ถอยกลับไม่ได้อีก: ..."""
+
+    model_name = os.getenv("ACTOR_MODEL", "gemini-3.8-flash")
+    fallback_model = os.getenv("ACTOR_FALLBACK_MODEL", "gemini-2.5-flash")
+    project_id = os.getenv("VERTEX_PROJECT", "project-de5847cd-022d-40ca-ad7")
+    location = os.getenv("VERTEX_LOCATION", "global")
+
+    spark_result = ""
+    used_model = model_name
+
+    try:
+        from google import genai
+        from google.genai import types
+
+        client = genai.Client(vertexai=True, project=project_id, location=location)
+
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt_content,
+                config=types.GenerateContentConfig(
+                    system_instruction=SPARK_EXTRACTOR_SYSTEM_INSTRUCTION,
+                    temperature=temp_to_use,
+                    thinking_config=types.ThinkingConfig(thinking_budget=1024),
+                )
+            )
+            spark_result = (response.text or "").strip()
+        except Exception as primary_err:
+            logger.warning(f"[SPARK] Primary model {model_name} failed: {primary_err}. Falling back to {fallback_model}")
+            response = client.models.generate_content(
+                model=fallback_model,
+                contents=prompt_content,
+                config=types.GenerateContentConfig(
+                    system_instruction=SPARK_EXTRACTOR_SYSTEM_INSTRUCTION,
+                    temperature=temp_to_use,
+                    thinking_config=types.ThinkingConfig(thinking_budget=1024),
+                )
+            )
+            spark_result = (response.text or "").strip()
+            used_model = fallback_model
+
+        # Clean any wrapping quotes or prefix if model outputted them
+        spark_result = spark_result.strip('`"\'').strip()
+        if spark_result.lower().startswith("the inciting spark:"):
+            spark_result = spark_result[19:].strip()
+
+    except Exception as e:
+        logger.error(f"[SPARK] Failed to generate spark: {e}")
+        # Fallback to smart heuristic first sentences
+        sentences = [s.strip() for s in raw_text.splitlines() if s.strip()]
+        spark_result = sentences[0] if sentences else "จุดเริ่มต้นที่ไม่อาจถอยกลับได้"
+        used_model = "fallback-heuristic"
+
+    latency_ms = int((time.time() - start_time) * 1000)
+    return WorldSparkResponse(
+        spark_text=spark_result,
         latency_ms=latency_ms,
         model=used_model
     )

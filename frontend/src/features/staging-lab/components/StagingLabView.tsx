@@ -5,8 +5,7 @@ import {
   Check,
   FileCode2,
   Info,
-  ArrowLeft,
-  BookOpen
+  ArrowLeft
 } from 'lucide-react'
 import {
   DEFAULT_BASE_PROMPT,
@@ -80,8 +79,8 @@ interface PromptLayerItem {
 }
 
 export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
-  // 0. Workspace Mode: Studio-First Mode (The Muse / Notebook style) vs Stage Arena
-  const [workspaceMode, setWorkspaceMode] = useState<'studio' | 'stage'>('studio')
+  // 0. Workspace Mode: Stage Arena (Default: Character + Live Chat) vs World Studio
+  const [workspaceMode, setWorkspaceMode] = useState<'studio' | 'stage'>('stage')
 
   // 1. Target Gateway & Modal States
   const [isPromptInspectorOpen, setIsPromptInspectorOpen] = useState(false)
@@ -158,7 +157,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   )
   const [isWorldStageActive, setIsWorldStageActive] = useState<boolean>(true)
   const [isWorldStageExpanded, setIsWorldStageExpanded] = useState<boolean>(true)
-  const [isStageHudOpen, setIsStageHudOpen] = useState<boolean>(true)
+  const [isStageHudOpen, setIsStageHudOpen] = useState<boolean>(false)
   const [isSomaticHudOpen, setIsSomaticHudOpen] = useState<boolean>(true)
   const [stageCodexContent, setStageCodexContent] = useState<string>(DEFAULT_WINGARDIUM_CODEX)
   const [currentStagePrompt, setCurrentStagePrompt] = useState<string>('ห้องเรียนวิงการ์เดียมเลวิโอซาในปราสาทเวทมนตร์โบราณ บรรยากาศยามบ่าย อัฒจันทร์หินครึ่งวงกลม ขนห่านสีขาวบนโต๊ะเรียนไม้')
@@ -1136,6 +1135,7 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
   if (workspaceMode === 'studio') {
     return (
       <WorldStudioView
+        key={workspaceMode}
         macroWorldLore={macroWorldLore}
         onMacroWorldLoreChange={setMacroWorldLore}
         sparkText={sparkText}
@@ -1145,7 +1145,10 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
         onTogglePin={handleTogglePinCard}
         onDeleteCabinetCard={handleDeleteCabinetCard}
         onSaveCardsToCabinet={handleSaveCardsToCabinet}
-        onEnterStage={() => setWorkspaceMode('stage')}
+        onEnterStage={() => {
+          setActiveDockTab('actor')
+          setWorkspaceMode('stage')
+        }}
         onBackToHome={onBackToHome}
       />
     )
@@ -1157,65 +1160,59 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[350px] bg-gradient-to-b from-[#EF264C]/[0.05] via-white/[0.02] to-transparent pointer-events-none blur-3xl z-0" />
 
       {/* ======================================================================= */}
-      {/* 1. LEFT ASIDE: THE STAGE CONTROLLER (410px with 382px Apple Bento Card)  */}
+      {/* 1. LEFT ASIDE: THE STAGE CONTROLLER (410px with Fixed h-12 Header)      */}
       {/* ======================================================================= */}
-      <aside className="w-[410px] shrink-0 h-full p-3.5 flex flex-col justify-start items-center overflow-y-auto no-scrollbar border-r border-white/[0.08] bg-app-bg/90 backdrop-blur-xl z-20">
-        {/* Universal Top Toolbar (Outside Cards) */}
-        <div className="w-[382px] mb-3.5 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-1.5">
+      <aside className="w-[410px] shrink-0 h-full flex flex-col border-r border-white/[0.08] bg-app-bg/90 backdrop-blur-xl z-20 select-none">
+        {/* Fixed Header Bar: Exact h-12 px-3.5 identical to WorldStudioView */}
+        <div className="h-12 px-3.5 border-b border-white/[0.05] flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2">
             {/* Minimal Back Button (Icon only) */}
             <button
               type="button"
               onClick={onBackToHome}
-              className="w-8 h-8 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-white/60 hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95"
+              className="w-7 h-7 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-white/60 hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95 shrink-0"
               title="กลับสู่หน้าหลัก"
             >
               <ArrowLeft size={14} />
             </button>
 
-            {/* Switch back to Studio button */}
-            <button
-              type="button"
-              onClick={() => setWorkspaceMode('studio')}
-              className="h-8 px-2.5 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-200 text-[11px] font-medium flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
-              title="สลับกลับไปที่ The World Studio (ห้องปั้นเรื่องเล่า)"
-            >
-              <BookOpen size={12} className="text-purple-300" />
-              <span>สตูดิโอ</span>
-            </button>
-          </div>
-
-          {/* Category Segmented Control: [ ✦ ตัวละคร | 🏛️ โลกและฉาก ] */}
-          <div className="h-7 p-0.5 rounded-full bg-white/[0.04] border border-white/10 flex items-center gap-0.5 text-[11px] font-mono select-none">
-            <button
-              type="button"
-              onClick={() => setActiveDockTab('actor')}
-              className={`h-full px-2.5 rounded-full transition-all cursor-pointer active:scale-95 flex items-center gap-1.5 font-medium ${
-                activeDockTab === 'actor'
-                  ? 'bg-white/10 text-white shadow-sm'
-                  : 'text-white/40 hover:text-white/70'
-              }`}
-            >
-              <span className={`w-1.5 h-1.5 rounded-full ${activeDockTab === 'actor' ? 'bg-[#818cf8]' : 'bg-white/30'}`} />
-              <span>ตัวละคร</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveDockTab('world')}
-              className={`h-full px-2.5 rounded-full transition-all cursor-pointer active:scale-95 flex items-center gap-1.5 font-medium ${
-                activeDockTab === 'world'
-                  ? 'bg-amber-400/15 text-amber-300 border border-amber-400/20 shadow-sm'
-                  : 'text-white/40 hover:text-white/70'
-              }`}
-            >
-              <span className={`w-1.5 h-1.5 rounded-full ${activeDockTab === 'world' ? 'bg-amber-400' : 'bg-white/30'}`} />
-              <span>โลกและฉาก</span>
-            </button>
+            {/* Minimal Unified Mode Switcher: [ ตัวละคร | โลก ] */}
+            <div className="h-7 p-0.5 rounded-full bg-white/[0.04] border border-white/10 flex items-center gap-0.5 text-[11.5px] font-sans select-none shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveDockTab('actor')
+                  setWorkspaceMode('stage')
+                }}
+                className="h-full px-2.5 rounded-full transition-all cursor-pointer active:scale-95 flex items-center gap-1.5 font-medium bg-white/[0.10] text-[#F1F1F1] shadow-sm"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-[#818cf8]" />
+                <span>ตัวละคร</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setWorkspaceMode('studio')}
+                className="h-full px-2.5 rounded-full transition-all cursor-pointer active:scale-95 flex items-center gap-1.5 font-medium text-white/45 hover:text-white/85 hover:bg-white/[0.04]"
+                title="เข้าสู่โหมดสร้างโลก (The World Studio)"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-white/30" />
+                <span>โลก</span>
+              </button>
+              {/* Hidden legacy World & Stage tab trigger (kept intact in code, hidden from UI) */}
+              <button
+                type="button"
+                onClick={() => setActiveDockTab('world')}
+                className="hidden"
+                aria-hidden="true"
+              >
+                โลกและฉาก
+              </button>
+            </div>
           </div>
 
           {/* Right Toolbar Slot: [ ALL | CLEAR ] */}
           {activeDockTab === 'actor' ? (
-            <div className="h-7 p-0.5 rounded-full bg-white/[0.04] border border-white/10 flex items-center gap-0.5 text-[10px] font-mono select-none">
+            <div className="h-7 p-0.5 rounded-full bg-white/[0.04] border border-white/10 flex items-center gap-0.5 text-[10px] font-mono select-none shrink-0">
               <button
                 type="button"
                 onClick={() => {
@@ -1261,7 +1258,7 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
               </button>
             </div>
           ) : (
-            <div className="h-7 p-0.5 rounded-full bg-white/[0.04] border border-white/10 flex items-center gap-0.5 text-[10px] font-mono select-none">
+            <div className="h-7 p-0.5 rounded-full bg-white/[0.04] border border-white/10 flex items-center gap-0.5 text-[10px] font-mono select-none shrink-0">
               <button
                 type="button"
                 onClick={() => {
@@ -1297,8 +1294,9 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
           )}
         </div>
 
-        {/* Unified Card Deck: Active cards float to the top, Inactive cards stay at the bottom */}
-        <div className="w-[382px] flex flex-col gap-2.5 pb-8">
+        {/* Scrollable Card Deck below fixed header (382px centered content) */}
+        <div className="flex-1 overflow-y-auto no-scrollbar p-3.5 flex flex-col items-center">
+          <div className="w-[382px] flex flex-col gap-2.5 pb-8">
           {activeDockTab === 'world' ? (
             <>
               {/* Card 0: The Inciting Spark (จุดเริ่มต้นที่ทำให้ทุกอย่างหมุน) */}
@@ -1490,6 +1488,7 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
             })
             .map(item => item.node)
           )}
+          </div>
         </div>
       </aside>
 
@@ -1553,35 +1552,22 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
           </button>
         </div>
 
-        {/* Dual-HUD Controller & Placement Island (Top-Right) */}
-        <div className="absolute top-[46px] right-6 z-30 select-none flex items-center gap-1.5 pointer-events-auto">
-          {(!isSomaticHudOpen || !isStageHudOpen) && (
+        {/* Somatic HUD Controller Pill (Top-Right) */}
+        {!isSomaticHudOpen && (
+          <div className="absolute top-[46px] right-6 z-30 select-none flex items-center gap-1.5 pointer-events-auto">
             <div className="h-7 p-0.5 rounded-full bg-black/50 backdrop-blur-xl border border-white/15 shadow-sm flex items-center gap-1 text-[10.5px] font-mono">
-              {!isSomaticHudOpen && (
-                <button
-                  type="button"
-                  onClick={() => setIsSomaticHudOpen(true)}
-                  className="h-full px-2.5 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
-                  title="คลิกเพื่อเปิด SOMATIC HUD"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  <span>SOMATIC</span>
-                </button>
-              )}
-              {!isStageHudOpen && (
-                <button
-                  type="button"
-                  onClick={() => setIsStageHudOpen(true)}
-                  className="h-full px-2.5 rounded-full text-amber-300/70 hover:text-amber-200 hover:bg-amber-400/10 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
-                  title="คลิกเพื่อเปิด STAGE HUD"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                  <span>STAGE</span>
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => setIsSomaticHudOpen(true)}
+                className="h-full px-2.5 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+                title="คลิกเพื่อเปิด SOMATIC HUD"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <span>SOMATIC</span>
+              </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Floating Somatic Telemetry HUD */}
         {isSomaticHudOpen && (
@@ -1603,7 +1589,7 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
           />
         )}
 
-        {/* Floating Stage Scenography HUD */}
+        {/* Floating Stage Scenography HUD (Kept intact in code, hidden and closed by default) */}
         {isStageHudOpen && (
           <FloatingStageHud
             content={stageCodexContent}
@@ -1621,11 +1607,7 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
               }
               setChatLog(prev => [...prev, directorNotice])
             }}
-            styleOffsetRight={
-              isSomaticHudOpen
-                ? 'right-[340px] sm:right-[380px]'
-                : 'right-6'
-            }
+            styleOffsetRight="right-6"
           />
         )}
 

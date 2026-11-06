@@ -14,12 +14,13 @@ import {
   Archive,
   X,
   Sparkles,
+  RefreshCw,
   ArrowUpRight,
   FileCode2,
   Copy,
   Check
 } from 'lucide-react'
-import type { LoreCard, ExpansionNote, StageCellItem, WorldWorkspace } from '../types'
+import type { LoreCard, ExpansionNote, StageCellItem, WorldWorkspace, WorldLoreBlock } from '../types'
 
 interface WorldStudioViewProps {
   macroWorldLore: string
@@ -43,6 +44,22 @@ type StudioActiveView =
   | { type: 'cell'; cellId: string }
   | { type: 'cabinet' }
 
+// 3 Canonical Story Presets for Google-Style Search Dropdown Expansion
+const WELCOME_STORY_PRESETS = [
+  {
+    id: 'euphonium',
+    fullText: 'เด็กสาว ที่เล่นยูโฟเนียมที่เพิ่งย้ายโรงเรียนเข้า ปี 1 คือเล่นวงโยมาตอนมอต้นแล้ว แต่มอปลา ปี 1 คิดจะใช้ชีวิตธรรมดาๆ แต่เข้าไปวันแรกเจองวงโย และรุ่นพี่ชวนให้เข้าวง จับผลัดจับผลูเพื่อนสนิท จับเซ็นชื่อให้เข้าวงด้วย และวงกำลังเข้าสู่การแข่งขันและต้องการเป็ฯที่ 1 ระดับประเทศ เกี่ยวกับการถ่ายทอดชีวิตประจำวัน พลังของวัยรุ่น ความสดใสและพุล่งพลา่่นของวัยรุ่น ที่มีทั้งน้ำตา ความทุ่มเท การได้ทำเต็มที่เพื่อสิ่งที่เรารัก ความสัมพันของเพื่อน และการมีความรักที่ทำให้หัวใจเต้น เป็นญี่ปุ่น เมืองที่มีหลายฤดูกาล ทั้งใส่ชุดยูกาตะ ดูคบเพลิง ขึ้นไปเล่นเพลงกับเพื่อน การแข่งขันกันในวง มิตรภาพของวงโย การแข่งขันระดับประเทศ และบรรยากาศค่ำคืน ฝนตก บรรยากาศหลังเลิกซ้อม เดิมกลับบ้านกินไอติม บอกรักบนสะพานกลับมาซ้อมที่บ้าน รุ่นที่ที่เป็นไอดอลของเราและถ่ายทอดวิชาที่รักให้ เสียงเพลงที่ทำให้ตื่นเต้น และใจเต้นทุกครั้งที่ได้ยิน บรรยากาศหน้าร้อน เดินข้ามทางรถไฟ คือบรรยากาศเยอะแยะไปหมด',
+  },
+  {
+    id: 'pirates',
+    fullText: 'เริ่มจาก ตำนานเรือ แบลคเพลที่หายไป คนที่ทำตัวแปลกๆ จะตามหาเรือในตำนาน ที่ไม่มีใครเชื่อว่ามีอยู่จริง เข้าไปผัวพัน ฟันดาบกำ วิลเทอร์เนอร์ และเข้าไปผัวพันกับนางเอก ชิงตัวนางเองมา จับผลัดจับผลู เรื่องเกี่ยวกับทองคำต้องสาบ ที่หยิบมาแล้วเป็นอมตะ โครงกระดูก การผจญภัย โจรสลัดที่เป็นตำนาน แล้วเรื่องอื่นๆ ก็จะตามมาเช่น เรือ การผจญภัยอีกเกาะ การหาลูกเรือ ตัวร้าย หรือ ความสัมพันสามเศร้าที่เราลุ้นตลอด การเป็นคู่แข่งแต่ไว้ใจกัน ความหักหลังของโจรสลับ การกลับมาร่วมมือ เพราะตัวร้ายที่เหนือกว่า การไปค้นหาสมบัติ เรือแบลกเพิร์ล ตำนาน ทหาร ลำดับชั้นยศ ราชวง เพลงโจรสลับ คือโลกค่อยๆ ตามมา ขายไปได้เรื่อยๆ ไม่รู้จบว่าโลกโทนสี การผจญภัย ชายหาด ความสดใส ความสนุก การผจญภัย ความรัก',
+  },
+  {
+    id: 'orchestra_conflict',
+    fullText: 'ปมคือการที่อยากเข้ามาเล่นดนตรีสนุกๆ และไม่จริงจัง แต่กลายเป็ฯมาเจอเพื่อนเป่าทรัมเป็ตที่โคตรจริงจังและอยากเป็นนักเป่าทรัมเป็ตอันดับหนึ่งด้วยปมส่วนตัวอะไรในใจตัวเองอีกต่างหาก เพราะฉะนั้นสิ่งเหล่านี้มาถูกผูกกันอยู่ที่ การแข่งขันระดับประเทศที่อยากเอาชนะ และกลายเป็น นี่คือเวที ของที่สิ่งที่มารวมกัน และการได้แข่งแพ้และเห็นเพื่อนเสียน้ำตาในเวทีระดับเขต ทำให้เกิดไฟลุกขึ้นมา เหมือนกัน นี่คือความสัมพันของเพื่อนความเป็นจริงของวงโย และการซ้อมระหว่างรุ่นพี่ นี่คือปมระดับ ชั้นของโรงเรียนหรือระดับที่ใหญ่กว่า แต่ไม่กระทบตัวเราเท่าไหร่ แต่มีมาเสมอๆ บางคนไม่อยากจริงจัง บางคนอยากจริงจัง การอยากเล่น และฉาบด้วยความใกล้ชิดของนางเอกพระเอก ที่พอซ้อมด้วยกัน เข้าค่ายด้วยกันก็ต่างมีใจให้กัน ก็เป็นความรักความใกล้ชิด บรรยากาศ แต่ตอนนี้ต้องซ้อมและแข่ง และนางเอกยังไม่อยากมีความรัก ทุกอย่างถูกฉาบและไปด้วยคือปม ระดับ แต่ละอย่างแต่่ละเรือ่งไม่เหมือนกันเลย เราควรจับคีย์เวิร์ดที่ผู้เล่นพิมพ์แล้วมาขยาายไหม หรือความมีแก่งแบบไหนกันแน่ คือจุดศูนย์กลางของเรื่องราวไม่เหมือนกัน และสิ่งเหล่านี้กลายเป็นเรื่องราว และเรื่องโลกสภาพแวดล้อมอื่นๆ กลายเปนเรื่องประกอบ',
+  },
+]
+
 export function WorldStudioView({
   macroWorldLore,
   onMacroWorldLoreChange,
@@ -58,7 +75,7 @@ export function WorldStudioView({
 }: WorldStudioViewProps) {
   // Navigation & Workspace State
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
-  const [activeView, setActiveView] = useState<StudioActiveView>({ type: 'master' })
+  const [activeView, setActiveView] = useState<StudioActiveView>({ type: 'welcome' })
   const [isInitialBounce, setIsInitialBounce] = useState(true)
 
   useEffect(() => {
@@ -229,7 +246,8 @@ export function WorldStudioView({
   ])
 
   const [activeWorldId, setActiveWorldId] = useState<string>('world_default')
-
+  // Welcome Gate Clean Slate Draft (Gemini-style: draft only, lazy creation on intent)
+  const [welcomeDraftLore, setWelcomeDraftLore] = useState('')
   // Find active world safely
   const activeWorld = useMemo(() => {
     return worlds.find(w => w.id === activeWorldId) || worlds[0]
@@ -237,6 +255,7 @@ export function WorldStudioView({
 
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const welcomeTextareaRef = useRef<HTMLTextAreaElement>(null)
+  const noteTextareaRef = useRef<HTMLTextAreaElement>(null)
 
   // Auto-resize Welcome Textarea dynamically up to max 6 lines (~150px)
   useEffect(() => {
@@ -250,10 +269,32 @@ export function WorldStudioView({
       el.style.height = `${clampedH}px`
       el.style.overflowY = scrollH > maxH ? 'auto' : 'hidden'
     }
-  }, [activeWorld.rawLore, activeView.type])
+  }, [welcomeDraftLore, activeView.type])
+
+  // Auto-resize Master Story Textarea dynamically whenever switching to master view or rawLore changes to show ALL lines
+  useEffect(() => {
+    if (activeView.type === 'master' && textareaRef.current) {
+      const el = textareaRef.current
+      el.style.height = 'auto'
+      el.style.height = `${el.scrollHeight}px`
+      const raf = requestAnimationFrame(() => {
+        if (textareaRef.current) {
+          textareaRef.current.style.height = 'auto'
+          textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
+        }
+      })
+      return () => cancelAnimationFrame(raf)
+    }
+  }, [activeView.type, activeWorld.rawLore, activeWorld.id])
 
   // AI Operation States
   const [isSprouting, setIsSprouting] = useState(false)
+  const [isExtractingSpark, setIsExtractingSpark] = useState(false)
+  const [isSparkPlayerEdited, setIsSparkPlayerEdited] = useState(false)
+  const [sparkHistory, setSparkHistory] = useState<string[]>([])
+  const [generatingNoteId, setGeneratingNoteId] = useState<string | null>(null)
+  const [savingNoteToCabinetId, setSavingNoteToCabinetId] = useState<string | null>(null)
+  const [sproutingBlockId, setSproutingBlockId] = useState<string | null>(null)
   const [isDissectingNote, setIsDissectingNote] = useState(false)
   const [isAutoLinking, setIsAutoLinking] = useState(false)
   const [justSavedNotification, setJustSavedNotification] = useState(false)
@@ -262,6 +303,76 @@ export function WorldStudioView({
   const [isSparkDraftOpen, setIsSparkDraftOpen] = useState(false)
   const [activeTagPopoverCardId, setActiveTagPopoverCardId] = useState<string | null>(null)
   const [newTagInput, setNewTagInput] = useState('')
+
+  // Google-style Inspiration Presets Dropdown on Welcome Screen
+  const [isWelcomeDropdownOpen, setIsWelcomeDropdownOpen] = useState(false)
+  const welcomeCardContainerRef = useRef<HTMLDivElement>(null)
+
+  // Close welcome suggestions on click outside
+  useEffect(() => {
+    if (!isWelcomeDropdownOpen) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        welcomeCardContainerRef.current &&
+        !welcomeCardContainerRef.current.contains(e.target as Node)
+      ) {
+        setIsWelcomeDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isWelcomeDropdownOpen])
+
+  const handleSelectWelcomePreset = (fullText: string) => {
+    setWelcomeDraftLore(fullText)
+    setIsWelcomeDropdownOpen(false)
+    if (welcomeTextareaRef.current) {
+      welcomeTextareaRef.current.style.height = 'auto'
+      welcomeTextareaRef.current.style.height = `${Math.min(welcomeTextareaRef.current.scrollHeight, 240)}px`
+    }
+  }
+
+  // Lazy Creation: Create and select a new world only when the player submits a story from Welcome Gate
+  const handleCreateWorldFromWelcome = (lore: string): WorldWorkspace | null => {
+    const trimmed = lore.trim()
+    if (!trimmed) return null
+
+    const newIdx = worlds.length + 1
+    const firstLine = trimmed.split('\n')[0].trim()
+    const derivedTitle = firstLine.length > 25 ? firstLine.slice(0, 24) + '...' : firstLine || `โลกที่ ${newIdx}`
+
+    const newWorld: WorldWorkspace = {
+      id: `world_${Date.now()}`,
+      title: derivedTitle,
+      rawLore: trimmed,
+      sparkText: '',
+      notes: [],
+      stageCells: [],
+      cabinetCards: [],
+      pinnedCardIds: [],
+      created_at: Date.now(),
+    }
+
+    setWorlds(prev => [newWorld, ...prev])
+    setActiveWorldId(newWorld.id)
+    onMacroWorldLoreChange(trimmed)
+    setWelcomeDraftLore('')
+    setActiveView({ type: 'master' })
+
+    return newWorld
+  }
+
+  // Combined World Lore across Master Card + Extra Lore Cards
+  const combinedWorldLore = useMemo(() => {
+    const blocks = (activeWorld.extraLoreBlocks || [])
+      .map(b => {
+        const text = b.content.trim()
+        if (!text) return ''
+        return b.title?.trim() ? `${b.title.trim()}:\n${text}` : text
+      })
+      .filter(Boolean)
+    return [activeWorld.rawLore.trim(), ...blocks].filter(Boolean).join('\n\n')
+  }, [activeWorld.rawLore, activeWorld.extraLoreBlocks])
 
   // Prompt Inspector State
   const [isPromptInspectorOpen, setIsPromptInspectorOpen] = useState(false)
@@ -286,37 +397,20 @@ export function WorldStudioView({
   const showExpansionsCard = Boolean(activeWorld.notes && activeWorld.notes.length > 0)
 
   // Sync active world updater
-  const updateActiveWorld = (updater: (prev: WorldWorkspace) => WorldWorkspace) => {
+  const updateActiveWorld = (updater: (prev: WorldWorkspace) => WorldWorkspace, targetWorldId?: string) => {
+    const targetId = targetWorldId || activeWorldId
     setWorlds(prev => prev.map(w => {
-      if (w.id === activeWorld.id) {
+      if (w.id === targetId) {
         return updater(w)
       }
       return w
     }))
   }
 
-  // 1. ADD NEW WORLD: Clean Slate 100%
+  // 1. ADD NEW WORLD: Navigate to Welcome Screen Draft (Lazy creation on user intent)
   const handleAddNewWorld = () => {
-    const newIdx = worlds.length + 1
-    const newWorld: WorldWorkspace = {
-      id: `world_${Date.now()}`,
-      title: `โลกที่ ${newIdx}`,
-      rawLore: '',
-      sparkText: '',
-      notes: [],
-      stageCells: [],
-      cabinetCards: [],
-      pinnedCardIds: [],
-      created_at: 1700000000000,
-    }
-
-    setWorlds(prev => [...prev, newWorld])
-    setActiveWorldId(newWorld.id)
-    onMacroWorldLoreChange('')
-    onSparkChange('')
-    setIsSparkDraftOpen(false)
-    setIsInitialBounce(true)
-    setTimeout(() => setIsInitialBounce(false), 2000)
+    setWelcomeDraftLore('')
+    setIsWelcomeDropdownOpen(false)
     setActiveView({ type: 'welcome' })
   }
 
@@ -328,31 +422,106 @@ export function WorldStudioView({
     onMacroWorldLoreChange(target.rawLore)
     onSparkChange(target.sparkText)
     setIsSparkDraftOpen(false)
+    setIsSparkPlayerEdited(false)
+    setSparkHistory(target.sparkText.trim() ? [target.sparkText.trim()] : [])
     setActiveView({ type: 'master' })
   }
 
-  // 3. Unified Genesis: Automatically extract Spark & Sprout Expansion Notes in one go!
-  const handleGenerateWorldGenesis = async (customLore?: string, mode: 'initial' | 'more' = 'initial') => {
-    const textToProcess = (customLore ?? activeWorld.rawLore).trim()
+  // 3a. Extract / Regenerate / Polish Spark via AI (The Inciting Spark Engine: 1-on-1 Personal Character Collision)
+  const handleExtractSpark = async (
+    forceMode?: 'extract' | 'regenerate' | 'polish',
+    customLore?: string,
+    targetWorldId?: string
+  ) => {
+    const targetId = targetWorldId || activeWorldId
+    const targetWorld = worlds.find(w => w.id === targetId) || activeWorld
+    const textToProcess = (customLore ?? (combinedWorldLore || targetWorld.rawLore.trim())).trim()
+    const currentSpark = targetWorld.sparkText.trim()
+    const mode = forceMode || (!currentSpark ? 'extract' : isSparkPlayerEdited ? 'polish' : 'regenerate')
+
+    if (!textToProcess && !currentSpark) {
+      welcomeTextareaRef.current?.focus()
+      return
+    }
+    if (isExtractingSpark) return
+
+    setIsExtractingSpark(true)
+    try {
+      let res: Response
+      const payload: Record<string, unknown> = {
+        raw_text: textToProcess,
+        world_id: targetId,
+      }
+      if (mode === 'polish' && currentSpark) {
+        payload.draft_spark = currentSpark
+      } else if (mode === 'regenerate' && currentSpark) {
+        const mergedHistory = Array.from(new Set([...sparkHistory, currentSpark].filter(Boolean)))
+        payload.previous_spark = currentSpark
+        payload.previous_sparks = mergedHistory
+      }
+
+      try {
+        res = await fetch('http://localhost:8000/api/sandbox/world/spark', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      } catch {
+        res = await fetch('https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/spark', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      }
+
+      if (res.ok) {
+        const data = await res.json()
+        const sparkResult = (data.spark_text || '').trim()
+        if (sparkResult) {
+          updateActiveWorld(prev => ({ ...prev, sparkText: sparkResult }), targetId)
+          onSparkChange(sparkResult)
+          setSparkHistory(prev => Array.from(new Set([...prev, currentSpark, sparkResult].filter(Boolean))))
+          setIsSparkDraftOpen(true)
+          setIsSparkPlayerEdited(false)
+          setNotificationMessage(
+            mode === 'polish'
+              ? 'เรียบเรียงสปาร์คสำเร็จ'
+              : mode === 'regenerate'
+              ? 'สุ่มตัวละครและสปาร์คมุมใหม่สำเร็จ'
+              : 'สกัดสปาร์คสำเร็จ'
+          )
+          setJustSavedNotification(true)
+          setTimeout(() => setJustSavedNotification(false), 2400)
+        }
+      }
+    } catch (e) {
+      console.error('Failed to extract spark:', e)
+    } finally {
+      setIsExtractingSpark(false)
+    }
+  }
+
+  // 3b. Unified Genesis: Automatically extract Spark & Sprout Expansion Notes in one go!
+  const handleGenerateWorldGenesis = async (
+    customLore?: string,
+    mode: 'initial' | 'more' = 'initial',
+    targetWorldId?: string
+  ) => {
+    const targetId = targetWorldId || activeWorldId
+    const targetWorld = worlds.find(w => w.id === targetId) || activeWorld
+    const baseLore = mode === 'more' ? combinedWorldLore : targetWorld.rawLore
+    const textToProcess = (customLore ?? baseLore).trim()
     if (!textToProcess || isSprouting) return
     setIsSprouting(true)
 
-    // 1. Extract Spark immediately from text only on initial run
-    if (mode === 'initial' && !activeWorld.sparkText) {
-      const sentences = textToProcess
-        .split(/[.\n]/)
-        .map(s => s.trim())
-        .filter(Boolean)
-      const extractedSpark = sentences.slice(0, 2).join(' ')
-      if (extractedSpark) {
-        updateActiveWorld(prev => ({ ...prev, sparkText: extractedSpark }))
-        onSparkChange(extractedSpark)
-      }
+    // 1. Extract Spark immediately via AI on initial run if not present
+    if (mode === 'initial' && !targetWorld.sparkText.trim()) {
+      handleExtractSpark('extract', textToProcess, targetId)
     }
 
     // 2. Dissect into Expansion Notes via backend (Progressive Batch: 4-5 items per batch)
     const alreadyExtracted = mode === 'more' 
-      ? activeWorld.notes
+      ? targetWorld.notes
           .filter(n => n.title.trim() || n.content.trim())
           .map(n => n.content.trim() ? `${n.title}: ${n.content}` : n.title)
       : []
@@ -361,7 +530,7 @@ export function WorldStudioView({
       let res: Response
       const payload = { 
         raw_text: textToProcess, 
-        world_id: activeWorld.id, 
+        world_id: targetId, 
         max_cards: 5,
         already_extracted_topics: alreadyExtracted
       }
@@ -388,12 +557,11 @@ export function WorldStudioView({
           id: `note_sprout_${Date.now()}_${idx}`,
           title: c.title,
           content: c.content,
+          category: c.category || 'lore',
+          summary: c.summary || '',
           tags: c.tags || [],
-          childCards: [{
-            ...c,
-            id: `card_${Date.now()}_${idx}`,
-            isSavedToCabinet: false
-          }],
+          isSavedToCabinet: false,
+          childCards: [],
           created_at: Date.now() + idx,
         }))
 
@@ -402,7 +570,7 @@ export function WorldStudioView({
             updateActiveWorld(prev => ({
               ...prev,
               notes: [...prev.notes, ...newNotes]
-            }))
+            }), targetId)
             setNotificationMessage(`สกัดส่วนขยายเพิ่มสำเร็จ (+${newNotes.length} ส่วน)`)
           } else {
             setNotificationMessage('สกัดครบทุกหัวข้อในโลกหลักแล้ว')
@@ -411,7 +579,7 @@ export function WorldStudioView({
           updateActiveWorld(prev => ({
             ...prev,
             notes: newNotes.length > 0 ? newNotes : prev.notes
-          }))
+          }), targetId)
           setNotificationMessage(`สกัดชนวนเหตุและสร้างส่วนขยายสำเร็จ (${newNotes.length} ส่วน)`)
         }
         setJustSavedNotification(true)
@@ -424,24 +592,201 @@ export function WorldStudioView({
     }
   }
 
-  // 4. Extract Spark Only (สกัดเฉพาะสปาร์คจากเนื้อเรื่อง)
-  const handleExtractSparkOnly = () => {
-    const textToProcess = activeWorld.rawLore.trim()
-    if (!textToProcess) {
-      welcomeTextareaRef.current?.focus()
-      return
+  // 3b. Generate / Regenerate / Polish Note Content (✨ เจนเนื้อหา / 🔄 เจนเนื้อหาใหม่ / ✨ เรียบเรียงเนื้อหา)
+  const handleGenerateNoteContentFromTitle = async (
+    note: ExpansionNote,
+    forceMode?: 'generate' | 'regenerate' | 'polish'
+  ) => {
+    const titleToGen = note.title.trim()
+    const currentDraft = note.content.trim()
+    const mode: 'generate' | 'regenerate' | 'polish' =
+      forceMode || (!currentDraft ? 'generate' : note.isPlayerEdited ? 'polish' : 'regenerate')
+
+    const loreToUse = combinedWorldLore || currentDraft || titleToGen
+    if (generatingNoteId || !loreToUse) return
+    if (mode !== 'polish' && !titleToGen) return
+    if (mode === 'polish' && !currentDraft) return
+
+    setGeneratingNoteId(note.id)
+
+    try {
+      let res: Response
+      const payload: Record<string, unknown> = {
+        raw_text: loreToUse,
+        world_id: activeWorld.id,
+        target_topic_title: titleToGen || 'ส่วนขยายที่ผู้เล่นเขียน',
+      }
+      if (mode === 'polish') {
+        payload.draft_content = currentDraft
+      } else if (mode === 'regenerate' && currentDraft) {
+        payload.already_extracted_topics = [currentDraft]
+      }
+
+      try {
+        res = await fetch('http://localhost:8000/api/sandbox/world/dissect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      } catch {
+        res = await fetch('https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/dissect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      }
+
+      if (res.ok) {
+        const data = await res.json()
+        const firstCard: LoreCard | undefined = (data.cards || [])[0]
+        if (firstCard) {
+          const resolvedTitle = note.title.trim() || firstCard.title || 'ส่วนขยาย'
+          const resolvedTags = firstCard.tags?.length ? firstCard.tags : note.tags
+          updateActiveWorld(prev => ({
+            ...prev,
+            cabinetCards: prev.cabinetCards.map(c =>
+              c.id === note.id
+                ? {
+                    ...c,
+                    title: resolvedTitle,
+                    content: firstCard.content,
+                    category: firstCard.category || c.category || 'lore',
+                    summary: firstCard.summary || c.summary || '',
+                    tags: resolvedTags,
+                  }
+                : c
+            ),
+            notes: prev.notes.map(n => {
+              if (n.id !== note.id) return n
+              return {
+                ...n,
+                title: resolvedTitle,
+                content: firstCard.content,
+                category: firstCard.category || n.category || 'lore',
+                summary: firstCard.summary || n.summary || '',
+                isPlayerEdited: false,
+                tags: resolvedTags,
+              }
+            }),
+          }))
+          const actionLabel =
+            mode === 'polish' ? 'เรียบเรียงเนื้อหา' : mode === 'regenerate' ? 'เจนเนื้อหาใหม่' : 'เจนเนื้อหา'
+          setNotificationMessage(`${actionLabel} "${resolvedTitle}" สำเร็จ`)
+          setJustSavedNotification(true)
+          setTimeout(() => setJustSavedNotification(false), 2400)
+        }
+      }
+    } catch (e) {
+      console.error('Generate note content failed:', e)
+    } finally {
+      setGeneratingNoteId(null)
     }
-    const sentences = textToProcess
-      .split(/[.\n]/)
-      .map(s => s.trim())
-      .filter(Boolean)
-    const extractedSpark = sentences.slice(0, 2).join(' ') || textToProcess.slice(0, 100)
-    updateActiveWorld(prev => ({ ...prev, sparkText: extractedSpark }))
-    onSparkChange(extractedSpark)
-    setNotificationMessage('สกัดสปาร์คสำเร็จ')
-    setJustSavedNotification(true)
-    setTimeout(() => setJustSavedNotification(false), 2400)
+  }
+
+  // 3c. Extra World Lore Cards Management (เพิ่มการ์ดเนื้อหาโลกได้ไม่จำกัด & แตกส่วนขยายเฉพาะการ์ดนี้)
+  const handleAddExtraLoreBlock = () => {
+    updateActiveWorld(prev => {
+      const nextIdx = (prev.extraLoreBlocks?.length || 0) + 2
+      const newBlock: WorldLoreBlock = {
+        id: `lore_block_${Date.now()}`,
+        title: `เนื้อหาโลกเพิ่มเติม #${nextIdx}`,
+        content: '',
+        created_at: Date.now(),
+      }
+      return {
+        ...prev,
+        extraLoreBlocks: [...(prev.extraLoreBlocks || []), newBlock],
+      }
+    })
+  }
+
+  const handleUpdateExtraLoreBlock = (blockId: string, updates: Partial<WorldLoreBlock>) => {
+    updateActiveWorld(prev => ({
+      ...prev,
+      extraLoreBlocks: (prev.extraLoreBlocks || []).map(b =>
+        b.id === blockId ? { ...b, ...updates } : b
+      ),
+    }))
+  }
+
+  const handleDeleteExtraLoreBlock = (blockId: string) => {
+    updateActiveWorld(prev => ({
+      ...prev,
+      extraLoreBlocks: (prev.extraLoreBlocks || []).filter(b => b.id !== blockId),
+    }))
+  }
+
+  const handleSproutFromLoreBlock = async (block: WorldLoreBlock) => {
+    const blockText = block.content.trim()
+    if (!blockText || sproutingBlockId || isSprouting) return
+    setSproutingBlockId(block.id)
+
+    const alreadyExtracted = activeWorld.notes
+      .filter(n => n.title.trim() || n.content.trim())
+      .map(n => n.content.trim() ? `${n.title}: ${n.content}` : n.title)
+
+    const fullBlockText = block.title?.trim() ? `${block.title.trim()}\n${blockText}` : blockText
+
+    try {
+      let res: Response
+      const payload = {
+        raw_text: fullBlockText,
+        world_id: activeWorld.id,
+        context_lore: activeWorld.rawLore.trim() || fullBlockText,
+        already_extracted_topics: alreadyExtracted,
+      }
+      try {
+        res = await fetch('http://localhost:8000/api/sandbox/world/dissect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      } catch {
+        res = await fetch('https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/dissect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      }
+
+      if (res.ok) {
+        const data = await res.json()
+        const cards: LoreCard[] = data.cards || []
+        const newNotes: ExpansionNote[] = cards.slice(0, 5).map((c, idx) => ({
+          id: `note_sprout_${Date.now()}_${idx}`,
+          title: c.title,
+          content: c.content,
+          category: c.category || 'lore',
+          summary: c.summary || '',
+          tags: c.tags || [],
+          isSavedToCabinet: false,
+          childCards: [],
+          created_at: Date.now() + idx,
+        }))
+
+        if (newNotes.length > 0) {
+          updateActiveWorld(prev => ({
+            ...prev,
+            notes: [...prev.notes, ...newNotes],
+          }))
+          setNotificationMessage(`แตกส่วนขยายจากการ์ดนี้สำเร็จ (+${newNotes.length} ส่วน)`)
+        } else {
+          setNotificationMessage('สกัดครบทุกหัวข้อจากการ์ดใบนี้แล้ว')
+        }
+        setJustSavedNotification(true)
+        setTimeout(() => setJustSavedNotification(false), 2400)
+      }
+    } catch (e) {
+      console.error('Sprout from lore block failed:', e)
+    } finally {
+      setSproutingBlockId(null)
+    }
+  }
+
+  // 4. Extract Spark Only (สกัดเฉพาะสปาร์คจากเนื้อเรื่องผ่าน AI)
+  const handleExtractSparkOnly = () => {
     setActiveView({ type: 'master' })
+    handleExtractSpark('extract')
   }
 
   // 5. Manual Add Spark (เพิ่มสปาร์คเอง)
@@ -459,13 +804,14 @@ export function WorldStudioView({
   // 6. Add New Expansion Note in this world
   const handleAddNewNote = (stayOnMaster?: boolean | React.MouseEvent) => {
     const isStay = stayOnMaster === true
+    const noteId = `note_manual_${activeWorld.notes.length + 1}_${activeWorld.id}`
     const newNote: ExpansionNote = {
-      id: `note_manual_${Date.now()}`,
+      id: noteId,
       title: '',
       content: '',
       tags: ['ส่วนขยาย'],
       childCards: [],
-      created_at: Date.now(),
+      created_at: 1700000000000 + activeWorld.notes.length,
     }
     updateActiveWorld(prev => ({
       ...prev,
@@ -480,12 +826,13 @@ export function WorldStudioView({
 
   // 6. Add New Stage Cell in this world
   const handleAddNewStageCell = () => {
+    const cellId = `cell_manual_${activeWorld.stageCells.length + 1}_${activeWorld.id}`
     const newCell: StageCellItem = {
-      id: `cell_manual_${Date.now()}`,
+      id: cellId,
       title: 'ผืนเวทีสถานที่ใหม่',
       description: 'กำหนดบรรยากาศ กลิ่นอาย และสิ่งแวดล้อมของห้องนี้...',
       pinnedCardIds: [],
-      created_at: 1700000000000,
+      created_at: 1700000000000 + activeWorld.stageCells.length,
     }
     updateActiveWorld(prev => ({
       ...prev,
@@ -544,7 +891,110 @@ export function WorldStudioView({
     }
   }
 
-  // 8. Toggle Save / Draft for Child Card in Cabinet
+  // 8a. Toggle Save / Draft for Main Expansion Note directly into Cabinet (พร้อมให้ AI ตั้งชื่อหัวข้อและแท็กอัตโนมัติหากหัวข้อว่าง)
+  const handleToggleNoteCabinetSaveState = async (note: ExpansionNote) => {
+    if (savingNoteToCabinetId === note.id) return
+    const isCurrentlySaved = Boolean(note.isSavedToCabinet)
+
+    if (!isCurrentlySaved) {
+      let resolvedTitle = note.title.trim()
+      let resolvedTags = note.tags && note.tags.length > 0 ? note.tags : ['ส่วนขยาย']
+      let resolvedCategory = note.category || 'lore'
+      let resolvedSummary = note.summary || ''
+
+      // หากผู้เล่นพิมพ์แต่เนื้อหาแล้วยังไม่ได้ตั้งชื่อหัวข้อ ให้ AI ตั้งชื่อหัวข้อและคิดแท็กให้อัตโนมัติทันที
+      if (!resolvedTitle && note.content.trim()) {
+        setSavingNoteToCabinetId(note.id)
+        try {
+          let res: Response
+          const payload = {
+            raw_text: combinedWorldLore || note.content.trim(),
+            world_id: activeWorld.id,
+            target_topic_title: '',
+            draft_content: note.content.trim(),
+          }
+          try {
+            res = await fetch('http://localhost:8000/api/sandbox/world/dissect', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            })
+          } catch {
+            res = await fetch('https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/dissect', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            })
+          }
+          if (res.ok) {
+            const data = await res.json()
+            const firstCard: LoreCard | undefined = (data.cards || [])[0]
+            if (firstCard) {
+              resolvedTitle = firstCard.title || note.content.trim().slice(0, 28)
+              if (firstCard.tags?.length) resolvedTags = firstCard.tags
+              if (firstCard.category) resolvedCategory = firstCard.category
+              if (firstCard.summary) resolvedSummary = firstCard.summary
+            }
+          }
+        } catch (err) {
+          console.error('Auto-title on save failed:', err)
+        } finally {
+          setSavingNoteToCabinetId(null)
+        }
+      }
+
+      if (!resolvedTitle) {
+        resolvedTitle = note.content.trim().slice(0, 28) || 'ส่วนขยาย'
+      }
+
+      const cardFromNote: LoreCard = {
+        id: note.id,
+        title: resolvedTitle,
+        category: resolvedCategory,
+        summary: resolvedSummary,
+        content: note.content,
+        tags: resolvedTags,
+        isSavedToCabinet: true,
+        sourceNoteId: note.id,
+      }
+
+      await onSaveCardsToCabinet([cardFromNote])
+      updateActiveWorld(prev => ({
+        ...prev,
+        cabinetCards: [...prev.cabinetCards.filter(c => c.id !== note.id), cardFromNote],
+        notes: prev.notes.map(n =>
+          n.id === note.id
+            ? {
+                ...n,
+                title: resolvedTitle,
+                tags: resolvedTags,
+                category: resolvedCategory,
+                summary: resolvedSummary,
+                isSavedToCabinet: true,
+              }
+            : n
+        ),
+      }))
+      setNotificationMessage(`บันทึก "${resolvedTitle}" เข้าตู้ลิ้นชักเรียบร้อยแล้ว`)
+    } else {
+      await onDeleteCabinetCard(note.id)
+      updateActiveWorld(prev => ({
+        ...prev,
+        cabinetCards: prev.cabinetCards.filter(c => c.id !== note.id),
+        pinnedCardIds: prev.pinnedCardIds.filter(id => id !== note.id),
+        stageCells: prev.stageCells.map(cell => ({
+          ...cell,
+          pinnedCardIds: cell.pinnedCardIds.filter(id => id !== note.id),
+        })),
+        notes: prev.notes.map(n => (n.id === note.id ? { ...n, isSavedToCabinet: false } : n)),
+      }))
+      setNotificationMessage('นำส่วนขยายออกจากตู้ลิ้นชักแล้ว')
+    }
+    setJustSavedNotification(true)
+    setTimeout(() => setJustSavedNotification(false), 2000)
+  }
+
+  // 8b. Toggle Save / Draft for Child Card in Cabinet
   const handleToggleChildCardSaveState = async (noteId: string, card: LoreCard) => {
     const isCurrentlySaved = Boolean(card.isSavedToCabinet)
     if (!isCurrentlySaved) {
@@ -591,12 +1041,22 @@ export function WorldStudioView({
     setTimeout(() => setJustSavedNotification(false), 2000)
   }
 
-  // 9. Update card title/content everywhere (notes + cabinet)
+  // 9. Update card title/content/tags everywhere (notes + childCards + cabinet)
   const handleUpdateCardEverywhere = (cardId: string, updates: Partial<LoreCard>, sourceNoteId?: string) => {
     updateActiveWorld(prev => ({
       ...prev,
       cabinetCards: prev.cabinetCards.map(c => c.id === cardId ? { ...c, ...updates } : c),
       notes: prev.notes.map(n => {
+        if (n.id === cardId) {
+          return {
+            ...n,
+            ...(updates.title !== undefined ? { title: updates.title } : {}),
+            ...(updates.content !== undefined ? { content: updates.content } : {}),
+            ...(updates.tags !== undefined ? { tags: updates.tags } : {}),
+            ...(updates.category !== undefined ? { category: updates.category } : {}),
+            ...(updates.summary !== undefined ? { summary: updates.summary } : {}),
+          }
+        }
         if (!sourceNoteId || n.id === sourceNoteId || n.childCards.some(c => c.id === cardId)) {
           return {
             ...n,
@@ -620,6 +1080,9 @@ export function WorldStudioView({
         pinnedCardIds: cell.pinnedCardIds.filter(id => id !== cardId)
       })),
       notes: prev.notes.map(n => {
+        if (n.id === cardId) {
+          return { ...n, isSavedToCabinet: false }
+        }
         if (!sourceNoteId || n.id === sourceNoteId || n.childCards.some(c => c.id === cardId)) {
           return {
             ...n,
@@ -634,6 +1097,16 @@ export function WorldStudioView({
   const handleUpdateNote = (noteId: string, updates: Partial<ExpansionNote>) => {
     updateActiveWorld(prev => ({
       ...prev,
+      cabinetCards: prev.cabinetCards.map(c =>
+        c.id === noteId
+          ? {
+              ...c,
+              ...(updates.title !== undefined ? { title: updates.title } : {}),
+              ...(updates.content !== undefined ? { content: updates.content } : {}),
+              ...(updates.tags !== undefined ? { tags: updates.tags } : {}),
+            }
+          : c
+      ),
       notes: prev.notes.map(n => n.id === noteId ? { ...n, ...updates } : n)
     }))
   }
@@ -752,12 +1225,41 @@ export function WorldStudioView({
     ? activeWorld.stageCells.find(c => c.id === activeView.cellId)
     : null
 
+  // Auto-resize Note View Content Textarea dynamically whenever switching note or content updates (typing or AI-generated)
+  useEffect(() => {
+    if (activeView.type === 'note' && noteTextareaRef.current) {
+      const el = noteTextareaRef.current
+      el.style.height = 'auto'
+      el.style.height = `${el.scrollHeight}px`
+      const raf = requestAnimationFrame(() => {
+        if (noteTextareaRef.current) {
+          noteTextareaRef.current.style.height = 'auto'
+          noteTextareaRef.current.style.height = `${noteTextareaRef.current.scrollHeight}px`
+        }
+      })
+      return () => cancelAnimationFrame(raf)
+    }
+  }, [activeView.type, currentNote?.id, currentNote?.content])
+
   // Only cards saved to the cabinet in this world (isSavedToCabinet === true)
   const savedCabinetCards = useMemo(() => {
     const cardMap = new Map<string, LoreCard & { sourceNoteTitle?: string }>()
     
-    // 1. Gather all saved child cards from notes
+    // 1. Gather all saved main expansion notes and saved child cards from notes
     activeWorld.notes.forEach(note => {
+      if (note.isSavedToCabinet) {
+        cardMap.set(note.id, {
+          id: note.id,
+          title: note.title || 'ส่วนขยาย',
+          category: note.category || 'lore',
+          summary: note.summary || '',
+          content: note.content,
+          tags: note.tags || [],
+          isSavedToCabinet: true,
+          sourceNoteId: note.id,
+          sourceNoteTitle: note.title,
+        })
+      }
       note.childCards.forEach(c => {
         if (c.isSavedToCabinet) {
           cardMap.set(c.id, {
@@ -777,6 +1279,9 @@ export function WorldStudioView({
         cardMap.set(c.id, {
           ...existing,
           ...c,
+          title: existing.title || c.title,
+          content: existing.content || c.content,
+          tags: existing.tags?.length ? existing.tags : c.tags,
           isSavedToCabinet: true,
           sourceNoteTitle: existing.sourceNoteTitle,
         })
@@ -810,6 +1315,10 @@ export function WorldStudioView({
   const allWorldTags = useMemo(() => {
     const tagSet = new Set<string>()
     activeWorld.notes.forEach(note => {
+      ;(note.tags || []).forEach(t => {
+        const clean = t.trim().replace(/^#+/, '')
+        if (clean) tagSet.add(clean)
+      })
       note.childCards.forEach(card => {
         (card.tags || []).forEach(t => {
           const clean = t.trim().replace(/^#+/, '')
@@ -987,7 +1496,7 @@ export function WorldStudioView({
     const parts: string[] = []
     
     parts.push(`=== WORLD BLUEPRINT: ${activeWorld.title || 'โรงเรียนเวทมนตร์'} ===`)
-    parts.push(`[CORE WORLD LORE]\n${activeWorld.rawLore || '(ยังไม่ได้ระบุแก่นเรื่องโลก)'}`)
+    parts.push(`[CORE WORLD LORE]\n${combinedWorldLore || '(ยังไม่ได้ระบุแก่นเรื่องโลก)'}`)
     
     if (activeWorld.sparkText?.trim()) {
       parts.push(`\n[THE INCITING SPARK · ชนวนเหตุจุดเริ่มต้นที่ไม่อาจถอยกลับได้]\n${activeWorld.sparkText.trim()}`)
@@ -1008,7 +1517,7 @@ export function WorldStudioView({
     }
 
     if (currentCell) {
-      const pinnedCards = currentCabinetCards.filter(c => currentCell.pinnedCardIds.includes(c.id))
+      const pinnedCards = savedCabinetCards.filter(c => currentCell.pinnedCardIds.includes(c.id))
       const cellSummary = `ชื่อสถานที่: ${currentCell.title}\nคำบรรยาย: ${currentCell.description || '(ไม่มีคำบรรยาย)'}\nการ์ดที่ผูกไว้: ${pinnedCards.length > 0 ? pinnedCards.map(c => c.title).join(', ') : 'ยังไม่ได้ผูกการ์ด'}`
       parts.push(`\n[ACTIVE STAGE CELL · จุดเกิดเหตุการณ์ / สถานที่จำลอง]\n${cellSummary}`)
     }
@@ -1016,21 +1525,55 @@ export function WorldStudioView({
     parts.push(`\n[ROLEPLAY & SIMULATION INSTRUCTION]\nให้จำลองบรรยากาศตาม Core World Lore และ The Inciting Spark โดยผูกโยงกับองค์ประกอบและวัตถุดิบที่ผู้กำกับระบุไว้ รักษาความลึกลับ กฎเกณฑ์ และอารมณ์ร่วมของโลกอย่างเคร่งครัด`)
 
     return parts.join('\n')
-  }, [activeWorld, savedCabinetCards, currentCell, currentCabinetCards])
+  }, [activeWorld, combinedWorldLore, savedCabinetCards, currentCell])
 
   const sparkEnginePrompt = useMemo(() => {
-    return `=== SYSTEM PROMPT: THE INCITING SPARK EXTRACTOR ===
-หน้าที่ของคุณคือการวิเคราะห์เนื้อหาของโลก และสกัด "The Inciting Spark" (ชนวนเหตุจุดเริ่มต้นที่ไม่อาจถอยกลับได้) 
-ซึ่งเป็นเหตุการณ์หรือจุดเปลี่ยนสำคัญเพียง 1 ประโยคที่ทำให้โลกที่เคยสงบนิ่งเริ่มหมุนและเกิดความขัดแย้ง/การผจญภัยขึ้น
+    const sparkMode = isSparkPlayerEdited && activeWorld.sparkText.trim()
+      ? 'โหมด ✨ เรียบเรียงสปาร์คที่ผู้เล่นเขียนเอง (Polish into In Medias Res Collision)'
+      : activeWorld.sparkText.trim()
+      ? 'โหมด 🔄 สกัดสปาร์คใหม่ — สุ่มจุดตั้งต้น ชนวนเหตุ และฉากตัวละครชนกันมุมใหม่ (Regenerate Spark)'
+      : 'โหมดสกัดสปาร์ค — จุดเริ่มต้นที่ทำให้ทุกอย่างหมุน & ฉากชนกัน In Medias Res (Extract)'
+
+    const historyStr = sparkHistory.length > 0
+      ? sparkHistory.map((s, idx) => `--- รอบที่ ${idx + 1} ---\n${s}`).join('\n\n')
+      : ''
+
+    return `=== SYSTEM PROMPT: THE SPARK ARCHITECT (IN MEDIAS RES COLLISION ENGINE) ===
+[ROLE: THE SPARK ARCHITECT — สถาปนิกผู้สกัดจุดเริ่มต้นที่ทำให้ทุกอย่างหมุน & ฉากชนกัน In Medias Res]
+หน้าที่ของคุณคือการอ่านข้อมูลโลกหลัก ([WORLD_LORE]) ของผู้เล่น แล้วสกัดหรือจุดประกาย "The Spark That Sets Everything in Motion (จุดเริ่มต้นที่ทำให้ทุกอย่างหมุน)" โดยคิดตามโครงสร้างแม่พิมพ์ระดับตำนาน แล้วส่งออก Output เป็น "เหตุการณ์ In Medias Res วินาทีที่ตัวละครชนกันและถอยกลับไม่ได้อีก" ด้วยภาษาง่ายๆ คมๆ ที่อ่านเข้าใจทันที
+
+[แม่พิมพ์วิธีคิด 6 จังหวะ (Thinking Framework — ต้องคิดตามลำดับนี้ก่อนเขียนเสมอ)]:
+1. เรื่องไม่ได้เริ่มจากระบบใหญ่หรือประวัติศาสตร์โลก
+2. แต่มันเริ่มจาก "ตัวเราในมุมคนธรรมดา" ที่รีเลทง่าย
+3. แล้วมี "ของชิ้นเดียว / ชนวนเหตุเฉพาะหน้า / การตัดสินใจใกล้ตัว"
+4. แล้วดันไป "ชน" กับตัวละครเฉพาะเจาะจงอีก 1 คน (คนที่ไม่น่าจะมาเจอกันได้)
+5. จนมาถึง "จุดที่ถอยกลับไม่ได้อีก" (ใคร ถอยกลับไม่ได้ เพราะอะไร)
+6. พอประกายไฟนี้ติด... โลกที่เหลือก็ค่อยๆ ไหลตามมาเอง
+
+[กฎเหล็กในการเขียน Output (3 บล็อก In Medias Res)]:
+- ห้ามใช้ภาษาเรียงความนิยายที่เวิ่นเว้อซับซ้อนเด็ดขาด ให้ใช้คำพูดง่ายๆ สั้นๆ เห็นภาพเป็นช็อตๆ ทันที
+- หากผู้เล่นเขียนมาแค่ฉากหลังโลกกว้างๆ จงใช้จินตนาการแต่งจุดตั้งต้นของคนธรรมดา + ชนวนเหตุเฉพาะหน้า + ตัวละครที่มาชนกันตรงหน้าในโลกใบนั้นขึ้นมาได้เลย
+- ส่งออกผลลัพธ์เป็น 3 บล็อกสั้นๆ ตามโครงสร้างนี้เท่านั้น:
+• เรื่องไม่ได้เริ่มจาก [ระบบใหญ่/ประวัติศาสตร์โลก] — แต่มันเริ่มจากคุณที่เป็น [ตัวเราในมุมคนธรรมดา + ชนวนเหตุเฉพาะหน้า/สิ่งของ/การตัดสินใจที่พามาถึงจุดนี้]
+• วินาทีที่ชนกัน (In Medias Res): [ฉากเหตุการณ์ตรงหน้าที่กำลังเกิดขึ้นเดี๋ยวนี้ วินาทีที่คุณพุ่งชนเข้ากับ "ตัวละครสำคัญอีกคน" แบบเห็นภาพการกระทำ สายตา หรือคำพูดตรงหน้าทันที]
+• จุดที่ถอยกลับไม่ได้อีก: [ระบุตรงๆ ว่าทำไมวินาทีนี้คุณถึงถอยกลับไปใช้ชีวิตเดิมไม่ได้แล้ว + เป้าหมาย/ความลับ/ความรู้สึกที่ทำให้โลกทั้งใบเริ่มหมุนตั้งแต่วินาทีนี้]
+
+--------------------------------------------------
+[ACTIVE MODE]: ${sparkMode}
 
 [TARGET RAW WORLD LORE]:
-"${activeWorld.rawLore || '(ยังไม่ได้ป้อนแก่นเรื่องโลก)'}"
+"${combinedWorldLore || '(ยังไม่ได้ป้อนแก่นเรื่องโลก)'}"
 
-[OUTPUT SPECIFICATION]:
-- ความยาว 1-2 ประโยคกระชับ ทรงพลัง
-- มีองค์ประกอบของ เวลา + สถานที่ + เหตุการณ์ที่ทิ้งปริศนาหรือความเสี่ยง
-- ห้ามใส่คำสรุปบทเรียน ให้ใส่เฉพาะตัวเหตุการณ์ที่เป็นชนวนเหตุ`
-  }, [activeWorld.rawLore])
+${
+  activeWorld.sparkText.trim()
+    ? `[CURRENT SPARK IN STUDIO]:\n"${activeWorld.sparkText.trim()}"`
+    : ''
+}${
+  historyStr
+    ? `\n\n[PREVIOUS_SPARKS HISTORY]:\n${historyStr}`
+    : ''
+}`
+  }, [combinedWorldLore, isSparkPlayerEdited, activeWorld.sparkText, sparkHistory])
 
   const sproutEnginePrompt = useMemo(() => {
     const extractedList = activeWorld.notes
@@ -1082,11 +1625,11 @@ export function WorldStudioView({
 --------------------------------------------------
 [RUN-TIME PAYLOAD TO AI]:
 [WORLD_LORE (ข้อมูลโลกทั้งใบของผู้เล่น)]:
-"${activeWorld.rawLore || '(ยังไม่ได้ป้อนแก่นเรื่องโลก)'}"
+"${combinedWorldLore || '(ยังไม่ได้ป้อนแก่นเรื่องโลก)'}"
 
 [ALREADY_EXTRACTED_TOPICS (หัวข้อและเนื้อหาที่สกัดไปแล้ว — ห้ามทำซ้ำและห้ามดึงเรื่องย่อยที่อยู่ในเนื้อหาข้างล่างนี้มาตั้งซ้ำเด็ดขาด)]:
 ${alreadyStr}`
-  }, [activeWorld.rawLore, activeWorld.notes])
+  }, [combinedWorldLore, activeWorld.notes])
 
   const dissectEnginePrompt = useMemo(() => {
     const noteTitle = currentNote ? currentNote.title : '(ยังไม่ได้เลือกส่วนขยาย)'
@@ -1120,12 +1663,12 @@ ${alreadyStr}`
 บรรยากาศ: "${cellDesc}"
 
 [AVAILABLE CABINET CARDS]:
-${currentCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(c.tags || []).join(' #')}`).join('\n') || '(ยังไม่มีการ์ดในตู้ลิ้นชัก)'}
+${savedCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(c.tags || []).join(' #')}`).join('\n') || '(ยังไม่มีการ์ดในตู้ลิ้นชัก)'}
 
 [MATCHING ALGORITHM]:
 - คำนวณความสอดคล้องของคำศัพท์และมูดโทนระหว่างคำบรรยายสถานที่กับการ์ด
 - เลือกการ์ดที่มีความสัมพันธ์สูงที่สุด (คะแนนคำพ้องบริบท > 0) เพื่อผูกเข้ากับสถานที่นี้ทันที`
-  }, [currentCell, currentCabinetCards])
+  }, [currentCell, savedCabinetCards])
 
   const activePromptText = useMemo(() => {
     if (inspectorMainTab === 'assembled') {
@@ -1154,20 +1697,43 @@ ${currentCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(
           isSidebarOpen ? 'w-[260px]' : 'w-0 -translate-x-full border-r-0 overflow-hidden'
         }`}
       >
-        {/* Sidebar Header: Unified Back and Collapse Button */}
+        {/* Sidebar Header: Unified Back, Minimal [ ตัวละคร | โลก ] Switcher, and Collapse Button */}
         <div className="h-12 px-3.5 border-b border-white/[0.05] flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onBackToHome}
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.06] transition-all cursor-pointer"
-              title="กลับหน้าหลัก"
+              className="w-7 h-7 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 flex items-center justify-center text-white/60 hover:text-white transition-all cursor-pointer active:scale-95"
+              title="กลับสู่หน้าหลัก"
             >
-              <ArrowLeft size={15} />
+              <ArrowLeft size={14} />
             </button>
-            <span className="text-[12.5px] font-medium text-white/80">
-              The World Studio
-            </span>
+
+            {/* Minimal Unified Mode Switcher: [ ตัวละคร | โลก ] */}
+            <div className="h-7 p-0.5 rounded-full bg-white/[0.04] border border-white/10 flex items-center gap-0.5 text-[11.5px] font-sans select-none">
+              <button
+                type="button"
+                onClick={onEnterStage}
+                className="h-full px-2.5 rounded-full transition-all cursor-pointer active:scale-95 flex items-center gap-1.5 font-medium text-white/45 hover:text-white/85 hover:bg-white/[0.04]"
+                title="สลับไปหน้าตัวละครและหน้าต่างแชทหลัก"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-white/30" />
+                <span>ตัวละคร</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setWelcomeDraftLore('')
+                  setIsWelcomeDropdownOpen(false)
+                  setActiveView({ type: 'welcome' })
+                }}
+                className="h-full px-2.5 rounded-full transition-all cursor-pointer flex items-center gap-1.5 font-medium bg-white/[0.10] text-[#F1F1F1] shadow-sm"
+                title="เข้าสู่หน้าต้อนรับ (Welcome Screen)"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-[#EF264C]" />
+                <span>โลก</span>
+              </button>
+            </div>
           </div>
 
           <button
@@ -1375,45 +1941,66 @@ ${currentCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(
         
         {/* Minimal Quiet Top Header (No Breadcrumb, Quiet Enter Stage Button) */}
         <header className="h-12 px-6 flex items-center justify-between shrink-0">
-          <div>
+          <div className="flex items-center gap-2">
             {!isSidebarOpen && (
-              <button
-                type="button"
-                onClick={() => setIsSidebarOpen(true)}
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.06] transition-all cursor-pointer"
-                title="เปิดแถบข้าง"
-              >
-                <PanelLeft size={14} />
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => setIsSidebarOpen(true)}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.06] transition-all cursor-pointer"
+                  title="เปิดแถบข้าง"
+                >
+                  <PanelLeft size={14} />
+                </button>
+                <div className="h-7 p-0.5 rounded-full bg-white/[0.04] border border-white/10 flex items-center gap-0.5 text-[11.5px] font-sans select-none">
+                  <button
+                    type="button"
+                    onClick={onEnterStage}
+                    className="h-full px-2.5 rounded-full transition-all cursor-pointer active:scale-95 flex items-center gap-1.5 font-medium text-white/45 hover:text-white/85 hover:bg-white/[0.04]"
+                    title="สลับไปหน้าตัวละครและหน้าต่างแชทหลัก"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-white/30" />
+                    <span>ตัวละคร</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="h-full px-2.5 rounded-full transition-all cursor-pointer flex items-center gap-1.5 font-medium bg-white/[0.10] text-[#F1F1F1] shadow-sm"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#EF264C]" />
+                    <span>โลก</span>
+                  </button>
+                </div>
+              </>
             )}
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Inspector Button */}
+            {/* Inspector Button (Identical styling to Character view) */}
             <button
               type="button"
               onClick={() => setIsPromptInspectorOpen(true)}
-              className="h-7 px-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-white/70 hover:text-white text-[11px] font-mono flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+              className="h-7 px-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-white/70 hover:text-white text-[10.5px] font-mono flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
               title="เปิดแผงตรวจเช็กพิมพ์เขียวโลก (Prompt Inspector)"
             >
               <FileCode2 size={12} className="text-[#38bdf8]" />
               <span>Inspector</span>
             </button>
 
-            {/* Quiet White Text Button for Stage Entry (Like Gemini Download App) */}
+            {/* ปุ่ม ก้าวขึ้นสู่เวที (Pill Style เหมือนปุ่ม Clear ในหน้าตัวละคร) */}
             <button
               type="button"
               onClick={onEnterStage}
-              className="text-[12px] text-white/60 hover:text-white px-3 py-1.5 rounded-full hover:bg-white/[0.05] transition-all cursor-pointer font-normal flex items-center gap-1.5"
+              className="h-7 px-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/40 hover:text-white text-[10px] font-sans transition-all cursor-pointer flex items-center active:scale-95"
+              title="สลับไปหน้าตัวละครและหน้าต่างแชทหลัก"
             >
-              <span>ก้าวขึ้นสู่เวที</span>
+              ก้าวขึ้นสู่เวที
             </button>
           </div>
         </header>
 
         {/* Scrollable Center Content */}
         <main className={`flex-1 overflow-y-auto px-4 sm:px-6 py-6 flex flex-col relative ${
-          activeView.type === 'welcome' ? 'items-center justify-center' : 'items-center justify-start'
+          activeView.type === 'welcome' ? 'items-center justify-start pt-[16vh] sm:pt-[18vh]' : 'items-center justify-start'
         }`}>
           
           {/* Keyframes for Konosuba-style Slapstick Elastic Animation */}
@@ -1471,7 +2058,7 @@ ${currentCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(
           `}</style>
 
           <div className={`w-full relative z-10 transition-all duration-200 ${
-            activeView.type === 'welcome' ? 'max-w-2xl py-8' : 'max-w-[860px] space-y-7'
+            activeView.type === 'welcome' ? 'max-w-2xl pb-16' : 'max-w-[860px] space-y-7'
           }`}>
 
             {/* Notification Toast */}
@@ -1484,7 +2071,7 @@ ${currentCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(
 
             {/* VIEW 0: WELCOME GATE SCREEN (Gemini Center Stage + Frosted Glass + Konosuba Eyecatch Physics) */}
             {activeView.type === 'welcome' && (
-              <div className="w-full max-w-[640px] mx-auto text-center animate-in fade-in zoom-in-95 duration-300 relative py-8">
+              <div className="w-full max-w-[640px] mx-auto text-center animate-in fade-in zoom-in-95 duration-300 relative">
                 
                 {/* Center Headline: Calibrated to previous elegant size with relaxed breathing room */}
                 <h1 className="text-[26px] sm:text-[30px] md:text-[33px] font-normal text-[#F2F2F5] tracking-[0.02em] mb-9 sm:mb-10 leading-tight [text-shadow:_0_2px_24px_rgba(0,0,0,0.95)]">
@@ -1532,6 +2119,7 @@ ${currentCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(
 
                   {/* Frosted Glass Rounded-Rectangle (Enters Snappily with Squash & Rebound) */}
                   <div 
+                    ref={welcomeCardContainerRef}
                     className="relative z-10 backdrop-blur-xl bg-white/[0.06] border border-white/[0.18] hover:border-white/[0.28] focus-within:border-white/[0.38] rounded-3xl sm:rounded-[32px] shadow-[inset_0_1px_0_rgba(255,255,255,0.22),inset_0_-1px_0_rgba(255,255,255,0.06),0_20px_50px_rgba(0,0,0,0.85)] min-h-[210px] sm:min-h-[235px] p-6 sm:p-7 flex flex-col justify-between transition-all"
                     style={{
                       animation: isInitialBounce
@@ -1543,11 +2131,25 @@ ${currentCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(
                     {/* Top Text Input Area (Auto-expanding up to 8 lines max with generous breathing room) */}
                     <textarea
                       ref={welcomeTextareaRef}
-                      value={activeWorld.rawLore}
+                      value={welcomeDraftLore}
+                      onFocus={() => {
+                        if (!welcomeDraftLore.trim()) {
+                          setIsWelcomeDropdownOpen(true)
+                        }
+                      }}
+                      onClick={() => {
+                        if (!welcomeDraftLore.trim()) {
+                          setIsWelcomeDropdownOpen(true)
+                        }
+                      }}
                       onChange={(e) => {
                         const val = e.target.value
-                        updateActiveWorld(prev => ({ ...prev, rawLore: val }))
-                        onMacroWorldLoreChange(val)
+                        setWelcomeDraftLore(val)
+                        if (val.trim()) {
+                          setIsWelcomeDropdownOpen(false)
+                        } else {
+                          setIsWelcomeDropdownOpen(true)
+                        }
                       }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
@@ -1557,10 +2159,9 @@ ${currentCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(
                             const target = e.currentTarget
                             const start = target.selectionStart
                             const end = target.selectionEnd
-                            const val = activeWorld.rawLore
+                            const val = welcomeDraftLore
                             const newVal = val.substring(0, start) + '\n' + val.substring(end)
-                            updateActiveWorld(prev => ({ ...prev, rawLore: newVal }))
-                            onMacroWorldLoreChange(newVal)
+                            setWelcomeDraftLore(newVal)
                             setTimeout(() => {
                               target.selectionStart = target.selectionEnd = start + 1
                             }, 0)
@@ -1572,15 +2173,16 @@ ${currentCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(
                           }
                           // Plain Enter -> Send
                           e.preventDefault()
-                          if (activeWorld.rawLore.trim()) {
-                            handleGenerateWorldGenesis()
-                            setActiveView({ type: 'master' })
+                          if (welcomeDraftLore.trim()) {
+                            const created = handleCreateWorldFromWelcome(welcomeDraftLore)
+                            if (created) {
+                              handleGenerateWorldGenesis(created.rawLore, 'initial', created.id)
+                            }
                           }
                         }
                       }}
                       placeholder="เล่าเรื่องราวในหัวของคุณออกมาได้เลย... (กด Cmd+Enter เพื่อขึ้นบรรทัดใหม่)"
                       className="w-full bg-transparent text-[15px] sm:text-[16px] text-white placeholder-white/40 focus:outline-none font-sans resize-none leading-relaxed min-h-[120px] sm:min-h-[140px] max-h-[240px] border-none p-0"
-                      autoFocus
                     />
 
                     {/* Bottom Toolbar: Plus on Left, Primary Pills for Spark & Expansion on Right */}
@@ -1599,21 +2201,31 @@ ${currentCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(
                         {/* ปุ่ม "สกัดสปาร์ค" (Primary Pill ขอบและเส้นสีแดงคาร์ไมน์) */}
                         <button
                           type="button"
-                          onClick={handleExtractSparkOnly}
-                          className="h-[36px] sm:h-[38px] px-4 sm:px-4.5 rounded-full bg-[#EF264C]/10 hover:bg-[#EF264C]/20 border border-[#EF264C]/50 hover:border-[#EF264C] text-[#EF264C] flex items-center gap-2 text-[13px] sm:text-[13.5px] font-medium transition-all cursor-pointer shrink-0 shadow-[0_0_18px_rgba(239,38,76,0.25),inset_0_1px_0_rgba(255,255,255,0.14)] active:scale-95 group select-none"
-                          title="สกัดสปาร์ค"
+                          onClick={() => {
+                            if (welcomeDraftLore.trim()) {
+                              const created = handleCreateWorldFromWelcome(welcomeDraftLore)
+                              if (created) {
+                                handleExtractSpark('extract', created.rawLore, created.id)
+                              }
+                            }
+                          }}
+                          disabled={isExtractingSpark || !welcomeDraftLore.trim()}
+                          className="h-[36px] sm:h-[38px] px-4 sm:px-4.5 rounded-full bg-[#EF264C]/10 hover:bg-[#EF264C]/20 border border-[#EF264C]/50 hover:border-[#EF264C] text-[#EF264C] flex items-center gap-2 text-[13px] sm:text-[13.5px] font-medium transition-all cursor-pointer shrink-0 shadow-[0_0_18px_rgba(239,38,76,0.25),inset_0_1px_0_rgba(255,255,255,0.14)] active:scale-95 group select-none disabled:opacity-40 disabled:cursor-not-allowed"
+                          title="สกัดชนวนเหตุจุดเริ่มต้นที่ไม่อาจถอยกลับได้ (The Inciting Spark)"
                         >
-                          <Sparkles size={15} strokeWidth={2.2} className="text-[#EF264C] group-hover:scale-110 transition-transform" />
-                          <span>สกัดสปาร์ค</span>
+                          <Sparkles size={15} strokeWidth={2.2} className={isExtractingSpark ? 'animate-spin text-[#EF264C]' : 'text-[#EF264C] group-hover:scale-110 transition-transform'} />
+                          <span>{isExtractingSpark ? 'กำลังสกัดสปาร์ค...' : 'สกัดสปาร์ค'}</span>
                         </button>
 
                         {/* ปุ่ม "แตกส่วนขยาย" (Primary Pill สีแดงคาร์ไมน์) */}
                         <button
                           type="button"
                           onClick={() => {
-                            if (activeWorld.rawLore.trim()) {
-                              handleGenerateWorldGenesis()
-                              setActiveView({ type: 'master' })
+                            if (welcomeDraftLore.trim()) {
+                              const created = handleCreateWorldFromWelcome(welcomeDraftLore)
+                              if (created) {
+                                handleGenerateWorldGenesis(created.rawLore, 'initial', created.id)
+                              }
                             } else {
                               welcomeTextareaRef.current?.focus()
                             }
@@ -1633,6 +2245,28 @@ ${currentCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(
                       </div>
                     </div>
 
+                    {/* In-flow Suggestions (Expands the card naturally, pushing bottom pills downwards) */}
+                    {isWelcomeDropdownOpen && !welcomeDraftLore.trim() && (
+                      <div className="pt-3.5 mt-3 border-t border-white/[0.08] space-y-0.5 animate-in fade-in duration-200">
+                        {WELCOME_STORY_PRESETS.map((preset) => (
+                          <button
+                            key={preset.id}
+                            type="button"
+                            onMouseDown={(e) => {
+                              e.preventDefault()
+                              handleSelectWelcomePreset(preset.fullText)
+                            }}
+                            className="w-full text-left py-2 px-3 rounded-xl hover:bg-white/[0.06] transition-colors cursor-pointer flex items-start gap-2.5 group active:scale-[0.99]"
+                          >
+                            <Search size={14} className="text-white/40 shrink-0 mt-0.5 group-hover:text-white/70 transition-colors" />
+                            <p className="text-[12.5px] sm:text-[13px] text-[#F1F1F1] group-hover:text-white line-clamp-2 leading-relaxed font-sans">
+                              {preset.fullText}
+                            </p>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
                   </div>
 
                   {/* แถบปุ่มแคปซูลกระจกคู่ด้านล่าง: ขนาดเล็กลงเพื่อให้ดูถ่อมตน เป็นทางเลือกรอง (Secondary Subordinate Pills) */}
@@ -1642,7 +2276,12 @@ ${currentCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(
                       {!showSparkCard && (
                         <button
                           type="button"
-                          onClick={handleManualAddSpark}
+                          onClick={() => {
+                            if (welcomeDraftLore.trim()) {
+                              handleCreateWorldFromWelcome(welcomeDraftLore)
+                            }
+                            handleManualAddSpark()
+                          }}
                           className="h-[29px] sm:h-[31px] px-3.5 sm:px-4 rounded-full backdrop-blur-md bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.09] hover:border-white/[0.18] text-white/60 hover:text-white/95 text-[11.5px] sm:text-[12px] font-normal flex items-center gap-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_4px_12px_rgba(0,0,0,0.25)] transition-all cursor-pointer active:scale-95 group select-none"
                           title="เพิ่มหรือเขียน The Inciting Spark ด้วยตนเอง"
                         >
@@ -1656,6 +2295,9 @@ ${currentCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(
                         <button
                           type="button"
                           onClick={() => {
+                            if (welcomeDraftLore.trim()) {
+                              handleCreateWorldFromWelcome(welcomeDraftLore)
+                            }
                             handleAddNewNote(true)
                             setActiveView({ type: 'master' })
                           }}
@@ -1719,12 +2361,18 @@ ${currentCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(
                       updateActiveWorld(prev => ({ ...prev, title: newTitle }))
                     }}
                     placeholder="ชื่อโลก..."
-                    className="relative z-10 w-full text-[20px] sm:text-[23px] font-medium text-[#F1F1F1] bg-transparent focus:outline-none placeholder-white/20 border-none p-0 tracking-tight"
+                    className="relative z-10 w-full text-[24px] sm:text-[28px] font-semibold text-[#F1F1F1] bg-transparent focus:outline-none placeholder-white/20 border-none p-0 tracking-tight"
                   />
 
                   {/* Story Textarea (Auto-stretches to Unlimited Length) */}
                   <textarea
-                    ref={textareaRef}
+                    ref={(el) => {
+                      textareaRef.current = el
+                      if (el) {
+                        el.style.height = 'auto'
+                        el.style.height = `${el.scrollHeight}px`
+                      }
+                    }}
                     rows={4}
                     value={activeWorld.rawLore}
                     onInput={(e) => {
@@ -1757,11 +2405,12 @@ ${currentCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(
                       <button
                         type="button"
                         onClick={handleExtractSparkOnly}
-                        className="h-[36px] sm:h-[38px] px-4 sm:px-4.5 rounded-full bg-[#EF264C]/10 hover:bg-[#EF264C]/20 border border-[#EF264C]/50 hover:border-[#EF264C] text-[#EF264C] flex items-center gap-2 text-[13px] sm:text-[13.5px] font-medium transition-all cursor-pointer shrink-0 shadow-[0_0_18px_rgba(239,38,76,0.25),inset_0_1px_0_rgba(255,255,255,0.14)] active:scale-95 group select-none"
-                        title="สกัดสปาร์ค"
+                        disabled={isExtractingSpark || !activeWorld.rawLore.trim()}
+                        className="h-[36px] sm:h-[38px] px-4 sm:px-4.5 rounded-full bg-[#EF264C]/10 hover:bg-[#EF264C]/20 border border-[#EF264C]/50 hover:border-[#EF264C] text-[#EF264C] flex items-center gap-2 text-[13px] sm:text-[13.5px] font-medium transition-all cursor-pointer shrink-0 shadow-[0_0_18px_rgba(239,38,76,0.25),inset_0_1px_0_rgba(255,255,255,0.14)] active:scale-95 group select-none disabled:opacity-40 disabled:cursor-not-allowed"
+                        title="สกัดชนวนเหตุจุดเริ่มต้นที่ไม่อาจถอยกลับได้ (The Inciting Spark)"
                       >
-                        <Sparkles size={15} strokeWidth={2.2} className="text-[#EF264C] group-hover:scale-110 transition-transform" />
-                        <span>สกัดสปาร์ค</span>
+                        <Sparkles size={15} strokeWidth={2.2} className={isExtractingSpark ? 'animate-spin text-[#EF264C]' : 'text-[#EF264C] group-hover:scale-110 transition-transform'} />
+                        <span>{isExtractingSpark ? 'กำลังสกัดสปาร์ค...' : 'สกัดสปาร์ค'}</span>
                       </button>
 
                       {/* ปุ่ม "แตกส่วนขยาย" (Primary Pill สีแดงคาร์ไมน์) */}
@@ -1784,6 +2433,109 @@ ${currentCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(
                       <div className="w-1.5 h-1.5 rounded-full bg-[#EF264C]" />
                     </div>
                   )}
+                </div>
+
+                {/* Extra World Lore Cards (Stackable Unlimited World Lore Blocks) & Add Card Button */}
+                <div className="relative pt-3 space-y-3">
+                  {/* Continuous Vertical Circuit Trunk passing through Extra Lore Cards into Spark/Expansions */}
+                  {(showSparkCard || showExpansionsCard) && (
+                    <div
+                      className="absolute left-[31.5px] sm:left-[35.5px] top-0 -bottom-5 w-[1.5px] bg-[#EF264C]/75 pointer-events-none z-0"
+                      style={{
+                        filter: 'drop-shadow(0 0 3px rgba(239, 38, 76, 0.35))',
+                      }}
+                    />
+                  )}
+
+                  {(activeWorld.extraLoreBlocks || []).map((block, idx) => {
+                    const isBlockSprouting = sproutingBlockId === block.id
+                    const blockTitle = block.title !== undefined ? block.title : `เนื้อหาโลกเพิ่มเติม #${idx + 2}`
+                    return (
+                      <div
+                        key={block.id}
+                        className="relative z-10 rounded-3xl p-6 sm:p-8 backdrop-blur-xl bg-[#141416]/80 hover:bg-[#141416]/85 border border-white/[0.12] hover:border-white/[0.18] shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_20px_45px_rgba(0,0,0,0.6)] space-y-4 transition-all animate-in fade-in duration-200 group overflow-hidden"
+                      >
+                        {/* World Title & Hover-Revealed Discreet Delete Button on Top Right */}
+                        <div className="relative z-10 flex items-start justify-between gap-3">
+                          <input
+                            type="text"
+                            value={blockTitle}
+                            onChange={(e) => handleUpdateExtraLoreBlock(block.id, { title: e.target.value })}
+                            placeholder={`เนื้อหาโลกเพิ่มเติม #${idx + 2}`}
+                            className="w-full text-[17px] sm:text-[18px] font-medium text-[#F1F1F1] bg-transparent focus:outline-none placeholder-white/20 border-none p-0 tracking-tight"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteExtraLoreBlock(block.id)}
+                            className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-rose-400 p-1.5 rounded-lg hover:bg-white/[0.04] transition-all cursor-pointer shrink-0"
+                            title="ลบการ์ดเนื้อหาโลกใบนี้"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+
+                        {/* Story Textarea (Auto-stretches to Unlimited Length) */}
+                        <textarea
+                          ref={(el) => {
+                            if (el) {
+                              el.style.height = 'auto'
+                              el.style.height = `${el.scrollHeight}px`
+                            }
+                          }}
+                          rows={4}
+                          value={block.content}
+                          onInput={(e) => {
+                            e.currentTarget.style.height = 'auto'
+                            e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`
+                          }}
+                          onChange={(e) => handleUpdateExtraLoreBlock(block.id, { content: e.target.value })}
+                          placeholder="เล่าเรื่องราวในหัวของคุณออกมาได้เลย..."
+                          className="relative z-10 w-full bg-transparent text-[15px] sm:text-[16px] text-[#F1F1F1] placeholder-white/20 focus:outline-none font-sans min-h-[110px] resize-none leading-relaxed border-none p-0 overflow-hidden"
+                        />
+
+                        {/* Bottom Toolbar: Plus button on Left (ready for image attachments) & Contextual Sprout Button on Right */}
+                        <div className="relative z-10 flex items-center justify-between pt-3">
+                          <button
+                            type="button"
+                            className="w-9 h-9 sm:w-9.5 sm:h-9.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.09] hover:border-white/20 text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] active:scale-95"
+                            title="เพิ่มวัตถุดิบลงการ์ดนี้"
+                          >
+                            <Plus size={17} strokeWidth={2.2} />
+                          </button>
+
+                          <div className={`transition-all duration-200 ${
+                            isBlockSprouting
+                              ? 'opacity-100 pointer-events-auto'
+                              : 'opacity-0 group-hover:opacity-100 focus-within:opacity-100 pointer-events-none group-hover:pointer-events-auto focus-within:pointer-events-auto'
+                          }`}>
+                            <button
+                              type="button"
+                              onClick={() => handleSproutFromLoreBlock(block)}
+                              disabled={isBlockSprouting || isSprouting || !block.content.trim()}
+                              className="h-[32px] sm:h-[34px] px-3.5 sm:px-4 rounded-full bg-[#EF264C] hover:bg-[#ff2d55] text-white flex items-center gap-1.5 text-[12px] sm:text-[12.5px] font-medium transition-all cursor-pointer shrink-0 active:scale-95 border border-white/20 shadow-[0_0_20px_rgba(239,38,76,0.48),inset_0_1px_0_rgba(255,255,255,0.25)] disabled:opacity-40 disabled:cursor-not-allowed select-none"
+                              title="แตกส่วนขยายเฉพาะการ์ดนี้"
+                            >
+                              <ArrowUp size={14} strokeWidth={2.4} className={isBlockSprouting ? 'animate-spin' : ''} />
+                              <span>{isBlockSprouting ? 'กำลังแตก...' : 'แตกส่วนขยายการ์ดนี้'}</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+
+                  {/* Add Extra World Lore Card Button */}
+                  <div className="relative z-10 flex items-center justify-end">
+                    <button
+                      type="button"
+                      onClick={handleAddExtraLoreBlock}
+                      className="h-[30px] sm:h-[32px] px-3.5 sm:px-4 rounded-full backdrop-blur-md bg-white/[0.03] hover:bg-white/[0.07] border border-dashed border-white/[0.14] hover:border-[#EF264C]/50 text-white/55 hover:text-white text-[12px] font-normal flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 group select-none"
+                      title="เพิ่มการ์ดเนื้อหาโลกใบใหม่ต่อท้าย"
+                    >
+                      <Plus size={13} className="text-white/40 group-hover:text-[#EF264C] transition-colors" strokeWidth={2.2} />
+                      <span>เพิ่มการ์ดเนื้อหาโลก</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Underneath Card 1: Both action pills when neither Spark nor Expansions exist yet */}
@@ -1880,19 +2632,97 @@ ${currentCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(
                             />
                           </svg>
 
-                          <div className="relative z-10 flex items-center justify-between">
+                          <div className="relative z-10 flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-[14px] font-semibold text-[#EF264C] tracking-tight">
-                                The Inciting Spark
+                                The Spark
                               </span>
                               <span className="text-[12.5px] font-normal text-white/50">
-                                (จุดเริ่มต้นที่ไม่อาจถอยกลับได้)
+                                (จุดเริ่มต้นที่ทำให้ทุกอย่างหมุน · In Medias Res)
                               </span>
+                            </div>
+
+                            {/* Smart Spark Action Button (สกัดสปาร์ค / เรียบเรียงสปาร์ค / สกัดสปาร์คใหม่) + Clear */}
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleExtractSpark(
+                                    !activeWorld.sparkText.trim()
+                                      ? 'extract'
+                                      : isSparkPlayerEdited
+                                      ? 'polish'
+                                      : 'regenerate'
+                                  )
+                                }
+                                disabled={isExtractingSpark || (!combinedWorldLore && !activeWorld.sparkText.trim())}
+                                className="h-6.5 px-2.5 rounded-full text-[11px] font-medium bg-[#EF264C]/15 hover:bg-[#EF264C]/25 border border-[#EF264C]/45 text-[#EF264C] flex items-center gap-1 transition-all cursor-pointer active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed select-none"
+                                title={
+                                  !activeWorld.sparkText.trim()
+                                    ? 'ให้ AI สกัดและกึ่งปั้นตัวละครมาชนกับคุณจากเนื้อหาโลกหลัก'
+                                    : isSparkPlayerEdited
+                                    ? 'นำชนวนเหตุที่คุณพิมพ์มาจัดระเบียบและเรียบเรียงให้เข้ากับโลกหลัก'
+                                    : 'สุ่มตัวละครและจุดเริ่มต้นส่วนตัวมุมใหม่จากโลกใบนี้'
+                                }
+                              >
+                                {!activeWorld.sparkText.trim() || isSparkPlayerEdited ? (
+                                  <Sparkles size={11} className={isExtractingSpark ? 'animate-spin text-[#EF264C]' : ''} />
+                                ) : (
+                                  <RefreshCw size={11} className={isExtractingSpark ? 'animate-spin text-[#EF264C]' : ''} />
+                                )}
+                                <span>
+                                  {isExtractingSpark
+                                    ? isSparkPlayerEdited && activeWorld.sparkText.trim()
+                                      ? 'กำลังเรียบเรียง...'
+                                      : activeWorld.sparkText.trim()
+                                      ? 'กำลังสุ่มมุมใหม่...'
+                                      : 'กำลังสกัด...'
+                                    : !activeWorld.sparkText.trim()
+                                    ? 'สกัดสปาร์ค'
+                                    : isSparkPlayerEdited
+                                    ? 'เรียบเรียงสปาร์ค'
+                                    : 'สกัดสปาร์คใหม่'}
+                                </span>
+                              </button>
+
+                              {isSparkPlayerEdited && activeWorld.sparkText.trim() && combinedWorldLore && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleExtractSpark('regenerate')}
+                                  disabled={isExtractingSpark}
+                                  className="w-6.5 h-6.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.10] hover:border-[#EF264C]/45 text-white/50 hover:text-[#EF264C] flex items-center justify-center transition-all cursor-pointer active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
+                                  title="สุ่มตัวละครและสปาร์คมุมใหม่จากโลกหลัก (ล้างข้อความที่พิมพ์)"
+                                >
+                                  <RefreshCw size={11} />
+                                </button>
+                              )}
+
+                              {(activeWorld.sparkText || isSparkDraftOpen) && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    updateActiveWorld(prev => ({ ...prev, sparkText: '' }))
+                                    onSparkChange('')
+                                    setIsSparkDraftOpen(false)
+                                    setIsSparkPlayerEdited(false)
+                                  }}
+                                  className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-rose-400 p-1 rounded-md hover:bg-white/[0.04] transition-all cursor-pointer shrink-0"
+                                  title="ลบสปาร์คนี้"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              )}
                             </div>
                           </div>
 
                           {/* Spark Textarea (Auto-stretches to Unlimited Length) */}
                           <textarea
+                            ref={(el) => {
+                              if (el) {
+                                el.style.height = 'auto'
+                                el.style.height = `${el.scrollHeight}px`
+                              }
+                            }}
                             rows={2}
                             value={activeWorld.sparkText}
                             onInput={(e) => {
@@ -1903,8 +2733,9 @@ ${currentCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(
                               const val = e.target.value
                               updateActiveWorld(prev => ({ ...prev, sparkText: val }))
                               onSparkChange(val)
+                              setIsSparkPlayerEdited(true)
                             }}
-                            placeholder="เขียนจุดเริ่มต้นที่ไม่อาจถอยกลับได้ (The Inciting Spark)..."
+                            placeholder="เขียนจุดเริ่มต้นที่ทำให้ทุกอย่างหมุน หรือกด 'สกัดสปาร์ค' เพื่อสร้างฉากชนกัน (In Medias Res)..."
                             className="relative z-10 w-full bg-transparent text-[14px] sm:text-[14.5px] text-[#F1F1F1] focus:outline-none resize-none leading-relaxed font-sans placeholder-white/20 border-none p-0 min-h-[50px] overflow-hidden"
                             autoFocus={isSparkDraftOpen && !activeWorld.sparkText}
                           />
@@ -1988,48 +2819,89 @@ ${currentCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(
                             <button
                               type="button"
                               onClick={() => handleGenerateWorldGenesis(undefined, 'more')}
-                              disabled={isSprouting || !activeWorld.rawLore.trim()}
+                              disabled={isSprouting || !combinedWorldLore}
                               className="h-[26px] sm:h-[28px] px-2.5 sm:px-3 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.09] hover:border-[#EF264C]/50 text-white/70 hover:text-white text-[11px] font-mono flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed select-none group"
                               title="สกัดหัวข้อที่เหลือจากโลกหลักเพิ่มเติม (ทีละ 4-5 หัวข้อ)"
                             >
                               <Sparkles size={11} className={isSprouting ? 'animate-spin text-[#EF264C]' : 'text-white/40 group-hover:text-[#EF264C] transition-colors'} />
-                              <span>{isSprouting ? 'กำลังสกัดเพิ่ม...' : '+ สกัดเพิ่ม'}</span>
+                              <span>{isSprouting ? 'กำลังสกัดเพิ่ม...' : 'สกัดเพิ่ม'}</span>
                             </button>
                           </div>
 
-                          {/* Grid with Inline Editing of Note Titles + Link Arrow on right */}
+                          {/* Grid with Inline Editing of Note Titles + เจนเนื้อหา + Link Arrow on right */}
                           <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-                            {activeWorld.notes.map((note) => (
-                              <div
-                                key={note.id}
-                                className="px-3.5 py-2.5 rounded-xl backdrop-blur-md bg-white/[0.04] hover:bg-white/[0.07] focus-within:bg-white/[0.08] border border-white/[0.09] hover:border-white/[0.18] focus-within:border-[#EF264C]/50 text-[#F1F1F1] text-[13px] flex items-center justify-between transition-all group shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] gap-2"
-                              >
-                                <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-[#EF264C] shrink-0 group-hover:scale-125 transition-transform" />
-                                  <input
-                                    type="text"
-                                    value={note.title}
-                                    onChange={(e) => {
-                                      const newTitle = e.target.value
-                                      updateActiveWorld(prev => ({
-                                        ...prev,
-                                        notes: prev.notes.map(n => n.id === note.id ? { ...n, title: newTitle } : n)
-                                      }))
-                                    }}
-                                    placeholder="ตั้งชื่อส่วนขยาย..."
-                                    className="bg-transparent text-white/90 placeholder-white/25 focus:text-white focus:outline-none border-none p-0 w-full text-[13px] font-medium"
-                                  />
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => setActiveView({ type: 'note', noteId: note.id })}
-                                  className="w-7 h-7 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.08] active:scale-95 transition-all cursor-pointer shrink-0"
-                                  title={`ไปยังหน้ารายละเอียดส่วนขยาย: ${note.title || 'ไม่มีชื่อ'}`}
+                            {activeWorld.notes.map((note) => {
+                              const isGeneratingThisNote = generatingNoteId === note.id
+                              const isNoteEmpty = !note.content.trim()
+                              const isNoteEdited = Boolean(note.isPlayerEdited && !isNoteEmpty)
+                              return (
+                                <div
+                                  key={note.id}
+                                  className="px-3.5 py-2.5 rounded-xl backdrop-blur-md bg-white/[0.04] hover:bg-white/[0.07] focus-within:bg-white/[0.08] border border-white/[0.09] hover:border-white/[0.18] focus-within:border-[#EF264C]/50 text-[#F1F1F1] text-[13px] flex items-center justify-between transition-all group shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] gap-2"
                                 >
-                                  <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform text-white/50 hover:text-white" />
-                                </button>
-                              </div>
-                            ))}
+                                  <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                                    <span
+                                      className={`w-1.5 h-1.5 rounded-full shrink-0 group-hover:scale-125 transition-transform ${
+                                        note.isSavedToCabinet ? 'bg-emerald-400' : 'bg-[#EF264C]'
+                                      }`}
+                                      title={note.isSavedToCabinet ? 'เก็บเข้าตู้ลิ้นชักแล้ว' : undefined}
+                                    />
+                                    <input
+                                      type="text"
+                                      value={note.title}
+                                      onChange={(e) => {
+                                        const newTitle = e.target.value
+                                        handleUpdateNote(note.id, { title: newTitle })
+                                      }}
+                                      placeholder="ตั้งชื่อส่วนขยาย..."
+                                      className="bg-transparent text-white/90 placeholder-white/25 focus:text-white focus:outline-none border-none p-0 w-full text-[13px] font-medium"
+                                    />
+                                  </div>
+                                  <div className="flex items-center gap-1 shrink-0">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleGenerateNoteContentFromTitle(note)}
+                                      disabled={(!note.title.trim() && !isNoteEdited) || generatingNoteId !== null || (!combinedWorldLore && !isNoteEdited)}
+                                      className={`h-6 px-2 rounded-full text-[10.5px] font-medium flex items-center gap-1 transition-all cursor-pointer active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed select-none ${
+                                        isNoteEmpty || isNoteEdited || isGeneratingThisNote
+                                          ? 'bg-[#EF264C]/15 hover:bg-[#EF264C]/25 border border-[#EF264C]/45 text-[#EF264C]'
+                                          : 'opacity-0 group-hover:opacity-100 bg-white/[0.05] hover:bg-[#EF264C]/20 border border-white/[0.10] hover:border-[#EF264C]/45 text-white/60 hover:text-[#EF264C]'
+                                      }`}
+                                      title={
+                                        isNoteEmpty
+                                          ? 'ให้ AI เจนเนื้อหาส่วนขยายตามหัวข้อนี้จากเนื้อหาโลกหลัก'
+                                          : isNoteEdited
+                                            ? 'นำเนื้อหาที่คุณพิมพ์ในการ์ดนี้ไปจัดระเบียบและแต่งต่อให้เข้ากับโลกหลัก'
+                                            : 'เจนเนื้อหาใหม่จากหัวข้อเดิม'
+                                      }
+                                    >
+                                      {isNoteEmpty || isNoteEdited ? (
+                                        <Sparkles size={10} className={isGeneratingThisNote ? 'animate-spin text-[#EF264C]' : ''} />
+                                      ) : (
+                                        <RefreshCw size={10} className={isGeneratingThisNote ? 'animate-spin text-[#EF264C]' : ''} />
+                                      )}
+                                      <span>
+                                        {isGeneratingThisNote
+                                          ? 'กำลังเจน...'
+                                          : isNoteEmpty
+                                            ? 'เจนเนื้อหา'
+                                            : isNoteEdited
+                                              ? 'เรียบเรียงเนื้อหา'
+                                              : 'เจนเนื้อหาใหม่'}
+                                      </span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setActiveView({ type: 'note', noteId: note.id })}
+                                      className="w-7 h-7 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.08] active:scale-95 transition-all cursor-pointer shrink-0"
+                                      title={`ไปยังหน้ารายละเอียดส่วนขยาย: ${note.title || 'ไม่มีชื่อ'}`}
+                                    >
+                                      <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform text-white/50 hover:text-white" />
+                                    </button>
+                                  </div>
+                                </div>
+                              )
+                            })}
                           </div>
 
                           {/* Add Expansion Bottom Action Slot */}
@@ -2040,7 +2912,7 @@ ${currentCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(
                             title="เพิ่มส่วนขยายใหม่"
                           >
                             <Plus size={14} className="text-white/40 group-hover:text-[#EF264C] transition-colors" />
-                            <span>+ เพิ่มส่วนขยาย</span>
+                            <span>เพิ่มส่วนขยาย</span>
                           </button>
                         </div>
 
@@ -2078,63 +2950,194 @@ ${currentCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(
               <div className="space-y-6 animate-in fade-in duration-200">
                 
                 {/* Note Surface: Expansive, Borderless Typography, Smoked Glass Sanctuary */}
-                <div className="rounded-2xl p-6 sm:p-8 backdrop-blur-xl bg-[#141416]/80 hover:bg-[#141416]/85 border border-white/[0.12] hover:border-white/[0.18] space-y-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_20px_45px_rgba(0,0,0,0.6)] relative group transition-all">
-                  <div className="flex items-start justify-between gap-4">
+                <div
+                  className={`rounded-2xl p-6 sm:p-8 backdrop-blur-xl bg-[#141416]/80 hover:bg-[#141416]/85 border border-white/[0.12] hover:border-white/[0.18] space-y-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_20px_45px_rgba(0,0,0,0.6)] relative group transition-all ${
+                    activeTagPopoverCardId === currentNote.id ? 'overflow-visible z-30' : ''
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
                     <input
                       type="text"
                       value={currentNote.title}
                       onChange={(e) => handleUpdateNote(currentNote.id, { title: e.target.value })}
-                      placeholder="ชื่อส่วนขยาย..."
+                      placeholder="ชื่อส่วนขยาย (เว้นว่างไว้ให้ AI ตั้งชื่อให้ตอนเก็บเข้าตู้ได้)..."
                       className="w-full text-[24px] sm:text-[28px] font-semibold text-[#F1F1F1] bg-transparent outline-none border-none p-0 placeholder-white/20 leading-tight"
                     />
 
-                    {/* Subtle, Discreet Delete Note Button */}
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteNote(currentNote.id)}
-                      className="opacity-0 group-hover:opacity-100 text-white/20 hover:text-rose-400 p-1.5 rounded-lg hover:bg-white/[0.04] transition-all cursor-pointer shrink-0"
-                      title="ลบโน้ตนี้"
-                    >
-                      <Trash2 size={15} />
-                    </button>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {(() => {
+                        const hasNoteContent = Boolean(currentNote.content.trim())
+                        const isNotePlayerEdited = Boolean(currentNote.isPlayerEdited && hasNoteContent)
+                        const isThisNoteGenerating = generatingNoteId === currentNote.id
+
+                        return (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleGenerateNoteContentFromTitle(currentNote)}
+                              disabled={
+                                (!currentNote.title.trim() && !isNotePlayerEdited) ||
+                                generatingNoteId !== null ||
+                                (!combinedWorldLore && !isNotePlayerEdited)
+                              }
+                              className="h-[30px] px-3 rounded-full bg-[#EF264C]/15 hover:bg-[#EF264C]/25 border border-[#EF264C]/45 text-[#EF264C] text-[12px] font-medium flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 disabled:opacity-35 disabled:cursor-not-allowed select-none"
+                              title={
+                                !hasNoteContent
+                                  ? 'ให้ AI เจนเนื้อหาส่วนขยายตามหัวข้อนี้จากเนื้อหาโลกหลัก'
+                                  : isNotePlayerEdited
+                                    ? 'นำเนื้อหาที่คุณพิมพ์ในกล่องนี้ไปจัดระเบียบ เรียบเรียงคำ และแต่งต่อให้เข้ากับโลกหลัก'
+                                    : 'เจนเนื้อหามุมมองใหม่จากหัวข้อเดิม'
+                              }
+                            >
+                              {!hasNoteContent || isNotePlayerEdited ? (
+                                <Sparkles size={12} className={isThisNoteGenerating ? 'animate-spin text-[#EF264C]' : ''} />
+                              ) : (
+                                <RefreshCw size={12} className={isThisNoteGenerating ? 'animate-spin text-[#EF264C]' : ''} />
+                              )}
+                              <span>
+                                {isThisNoteGenerating
+                                  ? isNotePlayerEdited
+                                    ? 'กำลังเรียบเรียง...'
+                                  : hasNoteContent
+                                      ? 'กำลังเจนใหม่...'
+                                      : 'กำลังเจนเนื้อหา...'
+                                  : !hasNoteContent
+                                    ? 'เจนเนื้อหา'
+                                    : isNotePlayerEdited
+                                      ? 'เรียบเรียงเนื้อหา'
+                                      : 'เจนเนื้อหาใหม่'}
+                              </span>
+                            </button>
+
+                            {isNotePlayerEdited && currentNote.title.trim() && combinedWorldLore && (
+                              <button
+                                type="button"
+                                onClick={() => handleGenerateNoteContentFromTitle(currentNote, 'regenerate')}
+                                disabled={generatingNoteId !== null}
+                                className="w-[30px] h-[30px] rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.10] hover:border-[#EF264C]/45 text-white/50 hover:text-[#EF264C] flex items-center justify-center transition-all cursor-pointer active:scale-95 disabled:opacity-35 disabled:cursor-not-allowed shrink-0"
+                                title="เจนเนื้อหาใหม่จากหัวข้อเดิม (ล้างข้อความที่พิมพ์)"
+                              >
+                                <RefreshCw size={12} />
+                              </button>
+                            )}
+                          </>
+                        )
+                      })()}
+
+                      {/* Subtle, Discreet Delete Note Button */}
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteNote(currentNote.id)}
+                        className="opacity-0 group-hover:opacity-100 text-white/20 hover:text-rose-400 p-1.5 rounded-lg hover:bg-white/[0.04] transition-all cursor-pointer shrink-0"
+                        title="ลบโน้ตนี้"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Note Content Textarea (Auto-stretches to Unlimited Length) */}
                   <textarea
+                    ref={(el) => {
+                      noteTextareaRef.current = el
+                      if (el) {
+                        el.style.height = 'auto'
+                        el.style.height = `${el.scrollHeight}px`
+                      }
+                    }}
                     rows={6}
                     value={currentNote.content}
                     onInput={(e) => {
                       e.currentTarget.style.height = 'auto'
                       e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`
                     }}
-                    onChange={(e) => handleUpdateNote(currentNote.id, { content: e.target.value })}
+                    onChange={(e) =>
+                      handleUpdateNote(currentNote.id, {
+                        content: e.target.value,
+                        isPlayerEdited: Boolean(e.target.value.trim()),
+                      })
+                    }
                     placeholder="พิมพ์ขยายความรายละเอียดของส่วนขยายนี้ได้อย่างอิสระ..."
-                    className="w-full text-[14.5px] sm:text-[15.5px] text-[#F1F1F1] bg-transparent focus:outline-none resize-none leading-relaxed font-sans placeholder-white/20 border-none p-0 min-h-[140px] overflow-hidden"
+                    className="w-full text-[15px] sm:text-[16px] text-[#F1F1F1] bg-transparent focus:outline-none resize-none leading-relaxed font-sans placeholder-white/20 border-none p-0 min-h-[140px] overflow-hidden"
                   />
+
+                  {/* Bottom Bar of Main Expansion Card: Left = #Tags, Right = Direct Save to Cabinet */}
+                  <div className="pt-4 mt-2 border-t border-white/[0.08] flex items-center justify-between gap-3 flex-wrap">
+                    {renderCardTags(
+                      {
+                        id: currentNote.id,
+                        title: currentNote.title,
+                        category: currentNote.category || 'lore',
+                        summary: currentNote.summary,
+                        content: currentNote.content,
+                        tags: currentNote.tags || [],
+                        isSavedToCabinet: currentNote.isSavedToCabinet,
+                        sourceNoteId: currentNote.id,
+                      },
+                      currentNote.id
+                    )}
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {savingNoteToCabinetId === currentNote.id ? (
+                        <button
+                          type="button"
+                          disabled
+                          className="h-[30px] px-3.5 rounded-full text-[11.5px] font-medium bg-[#EF264C]/15 text-[#EF264C] border border-[#EF264C]/45 flex items-center gap-1.5 opacity-80 cursor-wait select-none"
+                        >
+                          <Sparkles size={12} className="animate-spin text-[#EF264C]" />
+                          <span>กำลังตั้งชื่อและเก็บเข้าตู้...</span>
+                        </button>
+                      ) : currentNote.isSavedToCabinet ? (
+                        <button
+                          type="button"
+                          onClick={() => handleToggleNoteCabinetSaveState(currentNote)}
+                          className="h-[30px] px-3.5 rounded-full text-[11.5px] font-medium bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 hover:text-emerald-200 border border-emerald-500/30 hover:border-emerald-500/50 flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 select-none"
+                          title="เก็บอยู่ในตู้ลิ้นชักแล้ว (คลิกเพื่อนำออกจากตู้ลิ้นชัก)"
+                        >
+                          <CheckCircle2 size={12} className="text-emerald-400" />
+                          <span>ในตู้ลิ้นชัก</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleToggleNoteCabinetSaveState(currentNote)}
+                          disabled={!currentNote.content.trim() && !currentNote.title.trim()}
+                          className="h-[30px] px-3.5 rounded-full text-[11.5px] font-medium bg-white/[0.06] hover:bg-[#EF264C]/20 text-white/75 hover:text-[#F1F1F1] border border-white/[0.12] hover:border-[#EF264C]/50 flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed group/save select-none"
+                          title="ดึงการ์ดหลักใบนี้เข้าตู้ลิ้นชักโดยตรง (หากยังไม่มีชื่อหัวข้อ AI จะตั้งชื่อและติดแท็กให้อัตโนมัติ)"
+                        >
+                          <Archive size={12} className="text-white/50 group-hover/save:text-[#EF264C] transition-colors" />
+                          <span>เก็บเข้าตู้ลิ้นชัก</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
-                {/* In-Note Child Cards Section: "การ์ดพร้อมเข้าตู้ลิ้นชัก" (Fixed Uniform Height) */}
+                {/* Optional Sub-Cards Section: "แยกการ์ดย่อยเพิ่มเติม" */}
                 <div className="space-y-3.5">
                   <div className="flex items-center justify-between px-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-[13.5px] font-medium text-white/80">
-                        การ์ดพร้อมเข้าตู้ลิ้นชัก
+                      <span className="text-[13px] font-medium text-white/60">
+                        แยกการ์ดย่อยเพิ่มเติม
                       </span>
-                      <span className="px-1.5 py-0.5 rounded text-[10.5px] font-mono bg-white/[0.06] text-white/50">
-                        {currentNote.childCards.length}
-                      </span>
+                      {currentNote.childCards.length > 0 && (
+                        <span className="px-1.5 py-0.5 rounded text-[10.5px] font-mono bg-white/[0.06] text-white/50">
+                          {currentNote.childCards.length}
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {/* สกัดการ์ด Button (Inviting Rose Pill Accent, Clean Text - No Emoji) */}
+                      {/* สกัดการ์ดย่อย Button */}
                       <button
                         type="button"
                         onClick={() => handleDissectCurrentNote(currentNote)}
                         disabled={isDissectingNote || !currentNote.content.trim()}
-                        className="px-3.5 py-1 rounded-full text-[11.5px] font-mono bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 hover:text-rose-200 border border-rose-500/30 hover:border-rose-500/50 transition-all cursor-pointer flex items-center active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_12px_rgba(244,63,94,0.15)]"
-                        title="สกัดวัตถุดิบเป็นการ์ดพร้อมเข้าตู้ลิ้นชัก"
+                        className="px-3 py-1 rounded-full text-[11.5px] bg-white/[0.04] hover:bg-rose-500/20 text-white/60 hover:text-rose-200 border border-white/[0.09] hover:border-rose-500/40 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed select-none"
+                        title="ให้ AI ช่วยหั่นเนื้อหาในโน้ตนี้แยกออกเป็นหลายการ์ดย่อย"
                       >
-                        <span>{isDissectingNote ? 'กำลังสกัด...' : 'สกัดการ์ด'}</span>
+                        <Sparkles size={11} className={isDissectingNote ? 'animate-spin text-rose-300' : 'text-white/40'} />
+                        <span>{isDissectingNote ? 'กำลังสกัด...' : 'สกัดการ์ดย่อย'}</span>
                       </button>
 
                       <button
@@ -2153,20 +3156,16 @@ ${currentCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(
                             childCards: [newChild, ...currentNote.childCards]
                           })
                         }}
-                        className="px-3 py-1 rounded-full text-[11.5px] bg-white/[0.05] hover:bg-white/[0.10] text-white/70 hover:text-white border border-white/[0.10] transition-all cursor-pointer flex items-center gap-1 active:scale-95"
-                        title="เพิ่มการ์ดย่อยใหม่"
+                        className="px-3 py-1 rounded-full text-[11.5px] bg-white/[0.04] hover:bg-white/[0.10] text-white/60 hover:text-white border border-white/[0.09] transition-all cursor-pointer flex items-center gap-1 active:scale-95 select-none"
+                        title="เพิ่มการ์ดย่อยใหม่ด้วยตัวเอง"
                       >
                         <Plus size={12} />
-                        <span>เพิ่มการ์ด</span>
+                        <span>เพิ่มการ์ดย่อย</span>
                       </button>
                     </div>
                   </div>
 
-                  {currentNote.childCards.length === 0 ? (
-                    <div className="p-8 rounded-2xl border border-dashed border-white/[0.06] text-center text-white/30 text-[12px]">
-                      ยังไม่มีการ์ดในส่วนขยายนี้ กดปุ่ม <span className="text-rose-300 font-mono">[ สกัดการ์ด ]</span> หรือ <span className="text-white/60">[ เพิ่มการ์ด ]</span>
-                    </div>
-                  ) : (
+                  {currentNote.childCards.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
                       {currentNote.childCards.map((card) => {
                         const isPopoverOpen = activeTagPopoverCardId === card.id

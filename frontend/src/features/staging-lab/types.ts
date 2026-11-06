@@ -146,6 +146,10 @@ export interface ExpansionNote {
   id: string
   title: string
   content: string
+  category?: string
+  summary?: string
+  isPlayerEdited?: boolean
+  isSavedToCabinet?: boolean
   tags: string[]
   childCards: LoreCard[]
   created_at: number
@@ -159,10 +163,18 @@ export interface StageCellItem {
   created_at: number
 }
 
+export interface WorldLoreBlock {
+  id: string
+  title?: string
+  content: string
+  created_at: number
+}
+
 export interface WorldWorkspace {
   id: string
   title: string
   rawLore: string
+  extraLoreBlocks?: WorldLoreBlock[]
   sparkText: string
   notes: ExpansionNote[]
   stageCells: StageCellItem[]

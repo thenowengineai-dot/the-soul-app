@@ -25,6 +25,12 @@ try:
 except ImportError:
     pass
 
+# แก้ปัญหา httpx parse NO_PROXY ที่มี [::1] ผิดพลาดในบางสภาพแวดล้อม
+for no_proxy_key in ("NO_PROXY", "no_proxy"):
+    val = os.environ.get(no_proxy_key)
+    if val and "[::1]" in val:
+        os.environ[no_proxy_key] = val.replace("[::1]", "").replace(",,", ",").strip(",")
+
 # ==========================================
 # 🔐 AUTHENTICATION (GCP vs GEMINI API KEY)
 # ==========================================

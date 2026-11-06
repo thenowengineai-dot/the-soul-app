@@ -576,6 +576,9 @@ async def simulate_matrix(req: SandboxMatrixRequest):
 class StageCellRequest(BaseModel):
     prompt: str = Field(..., description="คำบรรยายสั้นๆ หรือไอเดียฉาก/สถานที่/บรรยากาศ")
     genre_hint: Optional[str] = Field(None, description="คำใบ้แนวเรื่องหรือสไตล์ เช่น แฟนตาซี, รอมคอม, ลึกลับ")
+    world_context: Optional[str] = Field(None, description="เข็มทิศมูดโลกหลัก (Core World Mood / rawLore)")
+    pinned_cards: Optional[List[Dict[str, Any]]] = Field(default_factory=list, description="การ์ดที่ผูกกับสถานที่นี้ (ส่งทั้ง Title และ Body)")
+    existing_spark: Optional[str] = Field(None, description="ชนวนเหตุเปิดเรื่อง The Spark (ถ้ามี)")
 
 class StageCellResponse(BaseModel):
     raw_text: str = Field(..., description="เนื้อหามโนทัศน์ 5 มิติเต็มรูปแบบ")
@@ -586,28 +589,35 @@ SCENOGRAPHER_SYSTEM_INSTRUCTION = """[ROLE & PHILOSOPHY: THE MASTER SPATIAL SCEN
 คุณคือนักออกแบบเวทีและผู้กำกับภาพยนตร์แห่งมโนทัศน์ (Cinematic & Spatial Scenographer)
 หน้าที่ของคุณคือการสร้าง "ผืนเวทีในจินตนาการที่ชัดเจนระดับภาพยนตร์" ให้ตัวละครและผู้เล่นก้าวเข้าไปสัมผัส หายใจ และมีปฏิสัมพันธ์ร่วมกันจริง
 
+[INPUT INGREDIENTS ARBITRATION]
+เมื่อได้รับข้อมูลนำเข้า:
+1. เคารพ [เข็มทิศมูดโลกหลัก]: ยึดมูดแอนด์โทน ยุคสมัย และบรรยากาศหลักของโลกไว้เสมอ ห้ามแต่งเติมฉากที่หลุดยุคหรือขัดแย้งกับแก่นแท้ของโลก
+2. ซึมซับ [การ์ดที่ผูกกับสถานที่นี้]: หากมีการ์ดส่งมา จงสกัด "พร็อพ กฎ สถาปัตยกรรม หรือวัตถุที่มีชีวิต" จากการ์ดเหล่านั้นเข้ามาวางเป็นส่วนประกอบทางกายภาพในฉาก (โดยเฉพาะในมิติที่ 2, 4, และ 5) ให้สอดคล้องกันอย่างมีเสน่ห์
+3. ผสาน [TARGET LOCATION BRIEF]: นำบรีฟสถานที่มาเป็นแกนนำในการรังสรรค์โครงสร้าง 5 มิติ
+
 [THE 5 LIVING DIMENSIONS OF THE MIND STAGE]
-เมื่อได้รับบรีฟสถานที่ ให้สกัดและรังสรรค์โครงสร้างออกมาในรูปแบบ 5 เสาหลักนี้เสมอ โดยปรับโทน บรรยากาศ และคำบรรยายให้เข้ากับ "ยุคสมัยและอารมณ์ของฉาก (Vibe & Era)" นั้นอย่างเป็นธรรมชาติ:
+สกัดและรังสรรค์โครงสร้างออกมาในรูปแบบ 5 มิตินี้เสมอ:
 
 1. [THRESHOLD & ARRIVAL: ธรณีประตูและทางเข้า]
-- สภาพทางเดินก่อนถึงพื้นที่, จุดที่ก้าวข้ามเข้ามา (ประตู/รั้ว/ช่องทางลับ/บันได), เสียงและสัมผัสตอนก้าวข้ามผ่านจุดเริ่มต้นเข้ามา
+- สภาพทางเดินก่อนถึงพื้นที่, จุดเปลี่ยนผ่านที่ก้าวข้ามเข้ามา (ซุ้มประตู/รั้ว/โคนต้นไม้/ร่มเงา/บันได), สัมผัสแรกของฝ่าเท้า (เหยียบก้อนกรวด/ทรายเปียก/พื้นไม้กระดาน/เสื่อทาทามิ) และเสียงตอนก้าวข้ามเข้ามาที่บอกว่าโลกภายนอกถูกทิ้งไว้ข้างหลังแล้ว
 
 2. [SPATIAL VOLUME & VERTICALITY: มิติ ปริมาตร และความสูงต่ำของพื้นที่]
-- ปริมาตรและความรู้สึกของสเกลพื้นที่ (ความกว้างใหญ่/ความแคบอึดอัด/โครงสร้างที่สูงตระหง่าน), ระดับความสูงต่ำของพื้นที่ (ลานกว้าง/ขั้นบันได/โครงเหล็กเครื่องเล่น)
+- สเกลและความโปร่ง/ทึบของพื้นที่ (ห้องแคบอึดอัด/เพดานสูงลิ่ว/คุ้งน้ำเปิดโล่ง), การแบ่งชั้นความสูงต่ำ (ลานต่ำก้นกระทะ/ขั้นบันได/นั่งร้าน/ระดับน้ำลึกแค่ข้อเท้า), โครงสร้างทางสถาปัตยกรรมที่บีบหรือเปิดมุมมองสายตา
 
 3. [LIGHT DRAMATURGY & PARTICLES: การทอดแสง ฝุ่นละออง และมุมมืด]
-- แสงคืออารมณ์และอนุภาคในอากาศ: แสงสาดเฉียงจากไหน (สปอตไลต์/ไฟนีออน/แสงจันทร์/ไฟข้างทาง), สิ่งที่ลอยเคว้งในลำแสง (ละอองฝนโปรยปราย/ไอหมอก/แสงสะท้อนผิวน้ำ/ละอองฝุ่นชอล์กเต้นระบำ), จุดไหนที่สว่าง และจุดไหนที่เป็นมุมมืดหรือเงามัวอบอุ่นที่ใช้หลบสายตา
+- ทิศทางและอุณหภูมิของแสง (แดดยามสายตัดเฉียง/แสงตะเกียงน้ำมันส้มทอง/แสงนีออนสะท้อนผิวน้ำ), อนุภาคที่มีชีวิตในอากาศ (ละอองน้ำกระเซ็นแตกตัวเป็นประกาย/ไอหมอก/ฝุ่นผงชอล์กเต้นระบำ/ไอน้ำร้อน), จุดที่แสงสาดส่องเห็นแววตาชัดเจน และมุมเงามืดอบอุ่นที่ใช้หลบสายตา
 
 4. [LIVING TACTILITY, SCENT & SOUNDSCAPE: พร็อพที่มีชีวิต กลิ่นสัมผัส และเสียงสะท้อน]
-- กลิ่นเฉพาะตัวที่แตะจมูก (กลิ่นยางมะตอยเปียกฝน/กระดาษเก่า/กลิ่นขนมปัง/ไอดิน), เสียงแวดล้อมที่เกิดขึ้นจริงในความเงียบ, ผิวสัมผัสของสิ่งของที่จับต้องได้ใต้ฝ่ามือและฝ่าเท้า
+- กลิ่นเฉพาะตัวที่แตะจมูก (กลิ่นน้ำครามหมัก/กลิ่นกระดาษเก่าผสมหมึก/กลิ่นกำมะถันไออุ่น/กลิ่นไอฝนบนดิน), เสียงแวดล้อมที่สะท้อนในความเงียบ (เสียงผ้าสะบัดพึ่บพั่บ/เสียงย่ำน้ำจ๋อมแจ๋ม/เสียงปากกาขนนกขูดขีด), ผิวสัมผัสใต้ฝ่ามือและฝ่าเท้า (ความลื่นของตะไคร่น้ำบนหินกรวดมน/ความเย็นสากของไม้เบิร์ช)
 
 5. [POWER ANCHOR & STAGING: จุดปักหลักแห่งอำนาจและตำแหน่งของตัวละคร]
-- ใครเป็นผู้นำเกมหรือคุมพื้นที่ตรงนี้? (ยืนท้าทายบนที่สูง/นั่งรอริมแสง/ดึงแขน/แอบหลังเสา), คุณยืนหรือนั่งตรงไหน, พร็อพในมือหรือสิ่งที่กำลังแตะต้อง, และท่าทางปฏิกิริยาระหว่างตัวละครกับคุณที่เรียบง่ายแต่ทรงพลัง"""
+- จุดปักหลักทางกายภาพ (ยืนบนก้อนหินใหญ่เหนือน้ำ/นั่งค้ำคางที่ม้านั่งแถวสอง/พิงขอบโอ่งดินเผา), ตำแหน่งของคุณและตัวละคร (ห่างกันแค่ไหน ใครคุมพื้นที่), พร็อพหรือวัตถุที่กำลังถือหรือแตะต้อง (ปลายผ้าครามที่โยงกันตรงกลาง/ไม้กายสิทธิ์ที่เริ่มอุ่น/กาน้ำชา), และภาษากายที่ดึงดูดเข้าสู่ปฏิสัมพันธ์อย่างเป็นธรรมชาติ"""
 
 @router.post("/stage/cell", response_model=StageCellResponse)
 def generate_stage_cell(request: StageCellRequest):
     """
     สร้างผืนเวทีมโนทัศน์ 5 มิติ (Mind Stage Cell) ด้วย Universal Spatial Scenographer Engine
+    ผสาน 3 วัตถุดิบ: [บรีฟสถานที่] + [การ์ดที่ผูกทั้งใบ] + [เข็มทิศมูดโลกหลัก]
     """
     start_time = time.time()
     prompt_text = (request.prompt or "").strip()
@@ -620,14 +630,41 @@ def generate_stage_cell(request: StageCellRequest):
     project_id = os.getenv("VERTEX_PROJECT", "project-de5847cd-022d-40ca-ad7")
     location = os.getenv("VERTEX_LOCATION", "global")
 
-    # ส่ง User Query ดิบๆ สดๆ ตามธรรมชาติแบบ Cold Run ดั้งเดิม
-    user_query = prompt_text
+    # ประกอบ 3 วัตถุดิบเข้าด้วยกันเป็นก้อนบริบทที่ทรงพลัง
+    query_parts: List[str] = []
+
+    if request.world_context and request.world_context.strip():
+        query_parts.append(f"[เข็มทิศมูดโลกหลัก (CORE WORLD CONTEXT)]:\n{request.world_context.strip()}")
+
+    if request.pinned_cards and len(request.pinned_cards) > 0:
+        cards_text_list = []
+        for c in request.pinned_cards:
+            c_title = (c.get("title") or "").strip() or "การ์ดบริบท"
+            c_content = (c.get("content") or "").strip() or (c.get("body") or "").strip()
+            c_tags = c.get("tags") or []
+            tag_str = f" [แท็ก: {', '.join(c_tags)}]" if c_tags else ""
+            cards_text_list.append(f"• การ์ด [{c_title}]{tag_str}:\n{c_content}")
+        query_parts.append(
+            "[การ์ดที่ผูกกับสถานที่นี้ (PINNED CONTEXT CARDS — จงดึงพร็อพ กฎ และเอกลักษณ์ในการ์ดเหล่านี้มาใส่ในฉาก)]:\n"
+            + "\n\n".join(cards_text_list)
+        )
+
+    if request.existing_spark and request.existing_spark.strip():
+        query_parts.append(f"[ชนวนเหตุเปิดเรื่อง (THE SPARK - ถ้าสอดคล้องกัน)]:\n{request.existing_spark.strip()}")
+
+    query_parts.append(f"[ข้อมูลสถานที่ที่ต้องการรังสรรค์ (TARGET LOCATION BRIEF)]:\n{prompt_text}")
+
+    user_query = "\n\n---\n\n".join(query_parts)
 
     try:
         from google import genai
         from google.genai import types
 
-        client = genai.Client(vertexai=True, project=project_id, location=location)
+        api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+        if api_key:
+            client = genai.Client(api_key=api_key)
+        else:
+            client = genai.Client(vertexai=True, project=project_id, location=location)
 
         try:
             response = client.models.generate_content(

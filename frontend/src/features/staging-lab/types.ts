@@ -198,6 +198,25 @@ export interface WorldWorkspace {
   created_at: number
 }
 
+export interface GenerateStageCellPayload {
+  prompt: string
+  genre_hint?: string
+  world_context?: string
+  pinned_cards?: Array<{
+    id?: string
+    title: string
+    content: string
+    tags?: string[]
+  }>
+  existing_spark?: string
+}
+
+export interface StageCellGenerateResponse {
+  raw_text: string
+  latency_ms: number
+  model: string
+}
+
 export interface WorldDissectResponse {
   cards: LoreCard[]
   latency_ms: number

@@ -1198,13 +1198,21 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
           setWorkspaceMode('stage')
         }}
         onSelectStageCell={(cell) => {
-          // Set current stage cell prompt to location description
           const promptText = cell.description?.trim() || cell.title
-          setCurrentStagePrompt(promptText)
-          handleGenerateStageCell(promptText)
+          // If already generated as 5D, seed directly into stage codex
+          if (cell.description && cell.description.includes('THRESHOLD & ARRIVAL')) {
+            setStageCodexContent(cell.description)
+            setCurrentStagePrompt(cell.title)
+            setIsStageHudOpen(true)
+          } else {
+            setCurrentStagePrompt(promptText)
+            handleGenerateStageCell(promptText)
+          }
 
-          // Auto-configure matching attire preset based on location keywords
-          if (promptText.includes('คราม') || promptText.includes('ลำธาร') || cell.title.includes('คราม')) {
+          // Auto-configure matching attire: prioritize custom attire state, then keywords
+          if (cell.attireCustomState) {
+            setLivingAttireState(cell.attireCustomState)
+          } else if (promptText.includes('คราม') || promptText.includes('ลำธาร') || cell.title.includes('คราม')) {
             setLivingAttireState(createIndigoStreamAttireState())
           }
 

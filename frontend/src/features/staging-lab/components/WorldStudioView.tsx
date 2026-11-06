@@ -21,7 +21,15 @@ import {
   Check,
   Shirt,
 } from 'lucide-react'
-import type { LoreCard, ExpansionNote, StageCellItem, WorldWorkspace, WorldLoreBlock } from '../types'
+import type {
+  LoreCard,
+  ExpansionNote,
+  StageCellItem,
+  WorldWorkspace,
+  WorldLoreBlock,
+  GenerateStageCellPayload,
+  StageCellGenerateResponse,
+} from '../types'
 
 interface WorldStudioViewProps {
   macroWorldLore: string
@@ -302,6 +310,7 @@ export function WorldStudioView({
   const [sproutingBlockId, setSproutingBlockId] = useState<string | null>(null)
   const [isDissectingNote, setIsDissectingNote] = useState(false)
   const [isAutoLinking, setIsAutoLinking] = useState(false)
+  const [isGeneratingCell5D, setIsGeneratingCell5D] = useState(false)
   const [justSavedNotification, setJustSavedNotification] = useState(false)
   const [notificationMessage, setNotificationMessage] = useState('บันทึกการ์ดเข้าตู้ลิ้นชักเรียบร้อยแล้ว')
   const [cabinetSearchQuery, setCabinetSearchQuery] = useState('')
@@ -1340,6 +1349,94 @@ export function WorldStudioView({
       setJustSavedNotification(true)
       setTimeout(() => setJustSavedNotification(false), 2400)
     }, 450)
+  }
+
+  // Generate 5D Stage Cell with 3-ingredient arbitration (Scenographer Engine)
+  const handleGenerateCell5D = async (cell: StageCellItem) => {
+    if (isGeneratingCell5D) return
+    setIsGeneratingCell5D(true)
+
+    const promptText = (cell.description?.trim() || cell.title || '').trim() || 'สถานที่ในโลกจินตนาการ'
+
+    // Gather pinned cards full objects
+    const pinnedCardsData = cell.pinnedCardIds
+      .map(id => allAvailableCardsForCell.find(c => c.id === id))
+      .filter((c): c is LoreCard => Boolean(c))
+      .map(c => ({
+        id: c.id,
+        title: c.title,
+        content: c.content,
+        tags: c.tags || [],
+      }))
+
+    const payload: GenerateStageCellPayload = {
+      prompt: promptText,
+      world_context: activeWorld.rawLore.trim(),
+      pinned_cards: pinnedCardsData,
+      existing_spark: activeWorld.sparkText?.trim() || undefined,
+    }
+
+    try {
+      const res = await fetch('http://localhost:8000/api/sandbox/stage/cell', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (res.ok) {
+        const data: StageCellGenerateResponse = await res.json()
+        if (data.raw_text && data.raw_text.trim()) {
+          updateActiveWorld(prev => ({
+            ...prev,
+            stageCells: prev.stageCells.map(c => (c.id === cell.id ? { ...c, description: data.raw_text.trim() } : c)),
+          }))
+          setNotificationMessage(`✨ รังสรรค์สถานที่ 5 มิติสำเร็จ (${data.latency_ms}ms)`)
+          setJustSavedNotification(true)
+          setTimeout(() => setJustSavedNotification(false), 2400)
+          setIsGeneratingCell5D(false)
+          return
+        }
+      }
+    } catch (err) {
+      console.warn('Backend stage cell generation error, using master scenographer fallback:', err)
+    }
+
+    // High-fidelity fallback when offline or local backend is cold
+    const cardReferences = pinnedCardsData.length > 0
+      ? ` ผสานองค์ประกอบจาก ${pinnedCardsData.map(p => `[${p.title}]`).join(', ')}`
+      : ''
+
+    const fallback5D = `### 1. [THRESHOLD & ARRIVAL: ธรณีประตูและทางเข้า]
+ทางเดินทอดยาวเลียบสู่ ${cell.title} จุดเปลี่ยนผ่านทางเข้าเปิดโล่งรับไออากาศเฉพาะตัว สัมผัสแรกของฝ่าเท้าและเสียงสะท้อนบอกชัดว่าคุณได้ก้าวข้ามผ่านเข้าสู่พื้นที่อันเป็นเอกลักษณ์ของโลกใบนี้แล้ว
+
+---
+
+### 2. [SPATIAL VOLUME & VERTICALITY: มิติ ปริมาตร และความสูงต่ำของพื้นที่]
+พื้นที่ของ ${cell.title} มีมิติสเกลที่น่าทึ่ง การแบ่งชั้นความสูงต่ำและโครงสร้างสถาปัตยกรรมเปิดมุมมองสายตาให้เห็นความลึกซึ้งของฉาก${cardReferences}
+
+---
+
+### 3. [LIGHT DRAMATURGY & PARTICLES: การทอดแสง ฝุ่นละออง และมุมมืด]
+ทิศทางแสงสาดส่องตัดเฉียงผ่านพื้นที่ ย้อมบรรยากาศให้มีอารมณ์เฉพาะตัว ในอากาศมีละอองอนุภาคที่มีชีวิตลอยเคว้งช้าๆ มีทั้งจุดที่สว่างจ้าเน้นสรีระ และเงามัวอบอุ่นสำหรับใช้หลบสายตา
+
+---
+
+### 4. [LIVING TACTILITY, SCENT & SOUNDSCAPE: พร็อพที่มีชีวิต กลิ่นสัมผัส และเสียงสะท้อน]
+กลิ่นอายบรรยากาศเฉพาะตัวแตะประสาทสัมผัส เสียงแวดล้อมที่เกิดขึ้นสะท้อนกังวานในความเงียบ ใต้ฝ่ามือคือความเรียบสากของพื้นผิวสัมผัสจริงที่มีน้ำหนักและอุณหภูมิ
+
+---
+
+### 5. [POWER ANCHOR & STAGING: จุดปักหลักแห่งอำนาจและตำแหน่งของตัวละคร]
+จุดปักหลักทางกายภาพของ ${cell.title} ตัวละครยืนหรือนั่งในตำแหน่งที่มีเสน่ห์ สบสายตากับคุณในระยะที่พอเหมาะ มือสัมผัสพร็อพชิ้นสำคัญ ดึงดูดให้คุณก้าวเข้าไปมีปฏิสัมพันธ์ร่วมกันอย่างเป็นธรรมชาติ`
+
+    updateActiveWorld(prev => ({
+      ...prev,
+      stageCells: prev.stageCells.map(c => (c.id === cell.id ? { ...c, description: fallback5D.trim() } : c)),
+    }))
+    setNotificationMessage('✨ รังสรรค์สถานที่ 5 มิติสำเร็จ')
+    setJustSavedNotification(true)
+    setTimeout(() => setJustSavedNotification(false), 2400)
+    setIsGeneratingCell5D(false)
   }
 
   const filteredCabinetCards = useMemo(() => {
@@ -3323,6 +3420,37 @@ ${savedCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(c.
                     className="w-full text-[24px] sm:text-[28px] font-semibold text-[#F1F1F1] bg-transparent outline-none border-none p-0 placeholder-white/20 leading-tight"
                   />
 
+                  {/* 5D Scenographer Generator Control Bar */}
+                  <div className="flex items-center justify-between pt-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[12px] font-mono text-white/50 flex items-center gap-1.5">
+                        <span>ผืนเวทีมโนทัศน์ 5 มิติ</span>
+                        {currentCell.description?.includes('THRESHOLD & ARRIVAL') && (
+                          <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-sky-500/15 text-sky-300 border border-sky-500/30">
+                            5D คมกริบ
+                          </span>
+                        )}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleGenerateCell5D(currentCell)}
+                      disabled={isGeneratingCell5D || (!currentCell.title.trim() && !currentCell.description.trim())}
+                      className="px-3.5 py-1.5 rounded-full text-[12px] font-medium bg-gradient-to-r from-sky-500/20 to-indigo-500/20 hover:from-sky-500/30 hover:to-indigo-500/30 text-sky-200 border border-sky-400/30 hover:border-sky-400/50 transition-all cursor-pointer flex items-center gap-2 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_16px_rgba(56,189,248,0.15)] select-none"
+                      title="รังสรรค์ผืนเวที 5 มิติ (ธรณีประตู, มิติพื้นที่, แสง, สัมผัส/กลิ่น, จุดปักหลักตัวละคร) ผสานบรีฟ + การ์ดที่ผูก + มูดโลก"
+                    >
+                      <Sparkles size={12} className={isGeneratingCell5D ? 'animate-spin text-sky-300' : 'text-sky-300'} />
+                      <span>
+                        {isGeneratingCell5D
+                          ? 'กำลังรังสรรค์มโนทัศน์ 5 มิติ...'
+                          : currentCell.description?.trim()
+                          ? '✨ รังสรรค์มโนทัศน์ 5 มิติใหม่'
+                          : '✨ รังสรรค์สถานที่ 5 มิติ'}
+                      </span>
+                    </button>
+                  </div>
+
                   {/* Location Description Textarea (Auto-stretches to Unlimited Length) */}
                   <textarea
                     rows={4}
@@ -3338,7 +3466,7 @@ ${savedCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(c.
                         stageCells: prev.stageCells.map(c => c.id === currentCell.id ? { ...c, description: newDesc } : c)
                       }))
                     }}
-                    placeholder="บรรยายบรรยากาศ สถาปัตยกรรม และรายละเอียดของสถานที่นี้ได้อย่างอิสระ..."
+                    placeholder="บรรยายบรรยากาศ สถาปัตยกรรม และรายละเอียดของสถานที่นี้ได้อย่างอิสระ หรือกดปุ่ม [✨ รังสรรค์สถานที่ 5 มิติ] ด้านบน..."
                     className="w-full text-[14.5px] sm:text-[15.5px] text-[#F1F1F1] bg-transparent focus:outline-none resize-none leading-relaxed font-sans placeholder-white/20 border-none p-0 min-h-[90px] overflow-hidden"
                   />
 

@@ -275,6 +275,34 @@ export function FloatingTelemetryHud({
           </div>
         )}
 
+        {/* Row 6.6: Surface Mutations (Living Attire Telemetry) */}
+        {telemetry?.surface_mutations && telemetry.surface_mutations.length > 0 && (
+          <div className="pt-2 border-t border-white/[0.08]">
+            <div className="flex items-center justify-between text-[11px] mb-1.5">
+              <span className="font-bold tracking-wide text-amber-300 font-mono">
+                SURFACE MUTATIONS
+              </span>
+              <span className="text-[9.5px] font-mono px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                ⚡ {telemetry.surface_mutations.length} NEW
+              </span>
+            </div>
+            <div className="space-y-1">
+              {telemetry.surface_mutations.map((m, idx) => (
+                <div
+                  key={idx}
+                  className="text-[11px] font-sans leading-snug bg-amber-500/[0.08] p-2 rounded-xl border border-amber-500/20 text-amber-100 flex items-start gap-1.5"
+                >
+                  <span className="text-[10px] font-mono text-amber-400 shrink-0 uppercase mt-0.5">
+                    [{m.target}:{m.zone}]:
+                  </span>
+                  <span>{m.condition}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+
         {/* Telemetry CoT Thinking (Expandable) */}
         {telemetry?.thinking && (
           <div className="pt-1.5 border-t border-white/[0.08]">

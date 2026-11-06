@@ -1,5 +1,8 @@
 import type { AttireZoneId, AttireLifecycleStage, SurfaceMutationItem } from '../types'
 
+export type { AttireZoneId, AttireLifecycleStage, SurfaceMutationItem }
+
+
 export interface AttireLayerItem {
   id: string
   slotLabel: string

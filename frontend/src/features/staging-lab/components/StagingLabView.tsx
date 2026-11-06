@@ -51,9 +51,17 @@ import {
 } from '../modules/relationshipModule'
 import { FloatingTelemetryHud } from './FloatingTelemetryHud'
 import { FloatingStageHud, DEFAULT_WINGARDIUM_CODEX } from './FloatingStageHud'
+import { LivingAttireCard } from './LivingAttireCard'
+import {
+  type LivingAttireState,
+  createIndigoStreamAttireState,
+  generateLivingAttirePrompt,
+  reconcilePostTurnAttireState,
+} from '../modules/livingAttireModule'
 import { IncitingSparkCard } from './IncitingSparkCard'
 import { MacroWorldCard } from './MacroWorldCard'
 import { WorldStageCard } from './WorldStageCard'
+
 import { WorldDissectionTray } from './WorldDissectionTray'
 import { WorldCabinetDrawer } from './WorldCabinetDrawer'
 import { WorldStudioView } from './WorldStudioView'
@@ -142,7 +150,15 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     }
   })
 
+  // 3.4 Living Attire & 4-Zone Surface Matrix
+  const [isAttireActive, setIsAttireActive] = useState<boolean>(true)
+  const [isAttireExpanded, setIsAttireExpanded] = useState<boolean>(true)
+  const [livingAttireState, setLivingAttireState] = useState<LivingAttireState>(() =>
+    createIndigoStreamAttireState()
+  )
+
   // 3.5 World & Stage Cell Controls (The Mind Stage Architecture)
+
   const [activeDockTab, setActiveDockTab] = useState<'actor' | 'world'>('actor')
   const [inspectorTab, setInspectorTab] = useState<'actor' | 'stage' | 'director'>('actor')
   const [isSparkActive, setIsSparkActive] = useState<boolean>(true)
@@ -682,6 +698,26 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
       })
     }
 
+    // 7.5 Living Attire & 4-Zone Surface Matrix
+    if (isAttireActive) {
+      const attireSnippet = generateLivingAttirePrompt(livingAttireState, isAttireActive)
+      if (attireSnippet.trim()) {
+        layers.push({
+          id: 'living_attire_surface',
+          title: 'ชุด & ผัสสะ 4 โซน (Living Attire)',
+          sourceTag: 'LIVING ATTIRE',
+          sourceLabel: 'ระบบชุดไร้ขีดจำกัด สลับป้ายเพิ่งเกิด ⚡ สู่ค้างคา ⏳ กันพูดซ้ำ',
+          badgeBg: 'bg-[#38bdf8]/10',
+          badgeText: 'text-[#38bdf8]',
+          badgeBorder: 'border-[#38bdf8]/30',
+          borderClass: 'border-[#38bdf8]/20',
+          bgClass: 'bg-[#38bdf8]/[0.03]',
+          textClass: 'text-[#bae6fd]',
+          content: attireSnippet.trim(),
+        })
+      }
+    }
+
     // 8. Active Feature Modules (Purple)
     const activeMods = featureModules.filter(m => m.enabled)
     for (const mod of activeMods) {
@@ -760,7 +796,10 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     isTelemetryContractEnabled,
     parrySpacing,
     currentPosture,
+    isAttireActive,
+    livingAttireState,
   ])
+
 
   // Full Assembled Prompt string
   const assembledPrompt = useMemo(() => {
@@ -1082,7 +1121,16 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
         setCurrentPosture(data.telemetry.a_pos.trim())
       }
 
+      // Multi-turn Living Attire reconciliation:
+      // Promote all FRESH zones from this turn to LINGERING, and merge any new surface_mutations
+      if (isAttireActive) {
+        setLivingAttireState(prev =>
+          reconcilePostTurnAttireState(prev, data.telemetry?.surface_mutations)
+        )
+      }
+
       // Auto-Progression Valve: Advance from ERUPTED to COOLED_MAGMA after 1 round completes & stamp Soft Spot
+
       if (isMagmaActive && magmaConfig.phase === 'erupted' && magmaConfig.autoProgress) {
         setMagmaConfig(prev => ({ ...prev, phase: 'cooled_magma' }))
         setRelationshipConfig(prev => ({
@@ -1228,6 +1276,8 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
                   setIsKineticExpanded(true)
                   setIsMagmaActive(true)
                   setIsMagmaExpanded(true)
+                  setIsAttireActive(true)
+                  setIsAttireExpanded(true)
                 }}
                 className="h-full px-2 rounded-full text-white/50 hover:text-white hover:bg-white/[0.08] transition-all cursor-pointer active:scale-95 font-medium tracking-wider"
                 title="เปิดและคลี่การ์ดตัวละครทั้งหมด (Engage All)"
@@ -1250,7 +1300,10 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
                   setIsKineticExpanded(false)
                   setIsMagmaActive(false)
                   setIsMagmaExpanded(false)
+                  setIsAttireActive(false)
+                  setIsAttireExpanded(false)
                 }}
+
                 className="h-full px-2 rounded-full text-white/40 hover:text-white/80 hover:bg-white/[0.08] transition-all cursor-pointer active:scale-95 font-medium tracking-wider"
                 title="ปิดและพับการ์ดตัวละครทั้งหมด (Clear All)"
               >
@@ -1481,8 +1534,32 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
                 />
               ),
             },
+            {
+              id: 'attire',
+              order: 7,
+              isActive: isAttireActive,
+              node: (
+                <LivingAttireCard
+                  key="attire"
+                  isActive={isAttireActive}
+                  onActivate={() => {
+                    const next = !isAttireActive
+                    setIsAttireActive(next)
+                    if (next) setIsAttireExpanded(true)
+                  }}
+                  isExpanded={isAttireExpanded}
+                  onToggleExpand={() => setIsAttireExpanded(prev => !prev)}
+                  attireState={livingAttireState}
+                  onChangeAttireState={setLivingAttireState}
+                  onPreFillAction={(actionText) => {
+                    setPlayerInput(actionText)
+                  }}
+                />
+              ),
+            },
           ]
             .sort((a, b) => {
+
               if (a.isActive === b.isActive) return a.order - b.order
               return a.isActive ? -1 : 1
             })

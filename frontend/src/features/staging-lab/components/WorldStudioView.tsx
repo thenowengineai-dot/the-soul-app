@@ -1170,57 +1170,6 @@ export function WorldStudioView({
     }))
   }
 
-  // Auto-Stage / Auto-Link matching cards from Drawer into this Stage Cell
-  const handleAutoStageCards = (cell: StageCellItem) => {
-    if (currentCabinetCards.length === 0 || isAutoLinking) return
-    setIsAutoLinking(true)
-
-    setTimeout(() => {
-      // Analyze text context from cell
-      const contextWords = `${cell.title} ${cell.description}`
-        .toLowerCase()
-        .replace(/[^\u0E00-\u0E7Fa-zA-Z0-9\s]/g, ' ')
-        .split(/\s+/)
-        .filter(w => w.length >= 2)
-
-      // Score each card in cabinet
-      const scoredCards = currentCabinetCards.map(card => {
-        let score = 0
-        const cardText = `${card.title} ${card.content} ${(card.tags || []).join(' ')}`.toLowerCase()
-        
-        contextWords.forEach(word => {
-          if (cardText.includes(word)) score += 1
-          if ((card.tags || []).some(t => t.toLowerCase().includes(word))) score += 2
-        })
-
-        return { cardId: card.id, score }
-      })
-
-      // Sort and pick cards with score > 0 (or top matching candidates if general match)
-      let matches = scoredCards.filter(c => c.score > 0).map(c => c.cardId)
-      if (matches.length === 0 && currentCabinetCards.length > 0) {
-        matches = currentCabinetCards.slice(0, 2).map(c => c.id)
-      }
-
-      // Merge into cell pinned cards
-      updateActiveWorld(prev => ({
-        ...prev,
-        stageCells: prev.stageCells.map(c => {
-          if (c.id === cell.id) {
-            const merged = Array.from(new Set([...c.pinnedCardIds, ...matches]))
-            return { ...c, pinnedCardIds: merged }
-          }
-          return c
-        })
-      }))
-
-      setIsAutoLinking(false)
-      setNotificationMessage(`จัดฉากและผูกการ์ดสำเร็จ (${matches.length} ใบ)`)
-      setJustSavedNotification(true)
-      setTimeout(() => setJustSavedNotification(false), 2400)
-    }, 600)
-  }
-
   // Active items lookup
   const currentNote = activeView.type === 'note'
     ? activeWorld.notes.find(n => n.id === activeView.noteId)
@@ -1301,8 +1250,98 @@ export function WorldStudioView({
     return Array.from(cardMap.values())
   }, [activeWorld.notes, activeWorld.cabinetCards, cabinetCards])
 
-  // Current cabinet cards available for staging (only saved ones)
-  const currentCabinetCards = savedCabinetCards
+  // Pool of all available cards for this cell (Cabinet Cards + World Notes)
+  const allAvailableCardsForCell = useMemo(() => {
+    const cardMap = new Map<string, LoreCard>()
+    // 1. Saved cabinet cards
+    savedCabinetCards.forEach(c => cardMap.set(c.id, c))
+    // 2. World notes (in-progress expansion cards)
+    activeWorld.notes.forEach(n => {
+      if (!cardMap.has(n.id)) {
+        cardMap.set(n.id, {
+          id: n.id,
+          title: n.title,
+          content: n.content,
+          tags: n.tags || [],
+          childCards: [],
+          created_at: n.created_at,
+          isSavedToCabinet: n.isSavedToCabinet,
+        })
+      }
+    })
+    return Array.from(cardMap.values())
+  }, [savedCabinetCards, activeWorld.notes])
+
+  // Clear all pinned cards for this cell
+  const handleClearAllCellCards = (cellId: string) => {
+    updateActiveWorld(prev => ({
+      ...prev,
+      stageCells: prev.stageCells.map(c => (c.id === cellId ? { ...c, pinnedCardIds: [] } : c))
+    }))
+    setNotificationMessage('ล้างการ์ดที่ผูกกับสถานที่นี้ทั้งหมดแล้ว')
+    setJustSavedNotification(true)
+    setTimeout(() => setJustSavedNotification(false), 2000)
+  }
+
+  // Auto-Stage / Auto-Link matching cards into this Stage Cell
+  const handleAutoStageCards = (cell: StageCellItem) => {
+    if (allAvailableCardsForCell.length === 0 || isAutoLinking) return
+    setIsAutoLinking(true)
+
+    setTimeout(() => {
+      // Analyze text context from cell (title + description + core world context)
+      const contextWords = `${cell.title} ${cell.description} ${activeWorld.rawLore.slice(0, 120)}`
+        .toLowerCase()
+        .replace(/[^\u0E00-\u0E7Fa-zA-Z0-9\s]/g, ' ')
+        .split(/\s+/)
+        .filter(w => w.length >= 2)
+
+      // Score each card in the pool
+      const scoredCards = allAvailableCardsForCell.map(card => {
+        let score = 0
+        const cardTitle = (card.title || '').toLowerCase()
+        const cardContent = (card.content || '').toLowerCase()
+        const cardTags = (card.tags || []).map(t => t.toLowerCase())
+
+        contextWords.forEach(word => {
+          if (cardTitle.includes(word)) score += 3.5
+          if (cardTags.some(t => t.includes(word))) score += 2.5
+          if (cardContent.includes(word)) score += 1.0
+        })
+
+        return { cardId: card.id, score, title: card.title }
+      })
+
+      // Sort descending by relevance score
+      scoredCards.sort((a, b) => b.score - a.score)
+
+      // Select top 1-3 matching cards (score > 0, cap at 3)
+      let matches = scoredCards.filter(c => c.score > 0).slice(0, 3).map(c => c.cardId)
+
+      // Fallback: If no strong word match, pick top 1-2 cards from pool
+      if (matches.length === 0 && allAvailableCardsForCell.length > 0) {
+        matches = allAvailableCardsForCell.slice(0, 2).map(c => c.id)
+      }
+
+      // Merge into cell pinned cards without duplicates
+      updateActiveWorld(prev => ({
+        ...prev,
+        stageCells: prev.stageCells.map(c => {
+          if (c.id === cell.id) {
+            const merged = Array.from(new Set([...c.pinnedCardIds, ...matches]))
+            return { ...c, pinnedCardIds: merged }
+          }
+          return c
+        })
+      }))
+
+      setIsAutoLinking(false)
+      setNotificationMessage(`🪄 ผูกการ์ดที่เกี่ยวข้องสำเร็จแล้ว (${matches.length} ใบ)`)
+      setJustSavedNotification(true)
+      setTimeout(() => setJustSavedNotification(false), 2400)
+    }, 450)
+  }
+
   const filteredCabinetCards = useMemo(() => {
     const q = cabinetSearchQuery.trim().toLowerCase()
     if (!q) return savedCabinetCards
@@ -3352,27 +3391,39 @@ ${savedCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(c.
                       <span className="px-1.5 py-0.5 rounded text-[10.5px] font-mono bg-white/[0.06] text-white/50">
                         {currentCell.pinnedCardIds.length}
                       </span>
+
+                      {currentCell.pinnedCardIds.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => handleClearAllCellCards(currentCell.id)}
+                          className="text-[11px] font-mono text-white/40 hover:text-red-400/80 transition-colors ml-1 cursor-pointer"
+                          title="ยกเลิกการผูกการ์ดทั้งหมดในสถานที่นี้"
+                        >
+                          (ล้างทั้งหมด)
+                        </button>
+                      )}
                     </div>
 
-                    {/* Auto-Stage / Auto-Link AI Button (Clean Text - No Emoji) */}
+                    {/* Auto-Stage / Auto-Link AI Button */}
                     <button
                       type="button"
                       onClick={() => handleAutoStageCards(currentCell)}
-                      disabled={isAutoLinking || currentCabinetCards.length === 0}
-                      className="px-3.5 py-1 rounded-full text-[11.5px] font-mono bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 hover:text-sky-200 border border-sky-500/30 hover:border-sky-500/50 transition-all cursor-pointer flex items-center active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_12px_rgba(14,165,233,0.15)]"
-                      title="วิเคราะห์บรรยากาศสถานที่และผูกการ์ดที่เกี่ยวข้องจากตู้ลิ้นชักอัตโนมัติ"
+                      disabled={isAutoLinking || allAvailableCardsForCell.length === 0}
+                      className="px-3.5 py-1 rounded-full text-[11.5px] font-mono bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 hover:text-sky-200 border border-sky-500/30 hover:border-sky-500/50 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_12px_rgba(14,165,233,0.15)]"
+                      title="วิเคราะห์บรรยากาศสถานที่และเลือกผูกการ์ดที่เกี่ยวข้องจากคลังอัตโนมัติ"
                     >
-                      <span>{isAutoLinking ? 'กำลังผูกการ์ด...' : 'ผูกการ์ดอัตโนมัติ'}</span>
+                      <Sparkles size={11} className={isAutoLinking ? 'animate-spin' : ''} />
+                      <span>{isAutoLinking ? 'กำลังเลือกการ์ด...' : 'ผูกการ์ดอัตโนมัติ'}</span>
                     </button>
                   </div>
 
-                  {currentCabinetCards.length === 0 ? (
+                  {allAvailableCardsForCell.length === 0 ? (
                     <div className="p-8 rounded-2xl border border-dashed border-white/[0.06] text-center text-white/30 text-[12px]">
-                      ยังไม่มีการ์ดในตู้ลิ้นชักให้ผูกกับสถานที่นี้
+                      ยังไม่มีการ์ดส่วนขยายในโลกหรือตู้ลิ้นชัก (สามารถสร้างการ์ดในแท็บ "ส่วนขยาย" หรือแตกส่วนขยายก่อนได้)
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {currentCabinetCards.map(card => {
+                      {allAvailableCardsForCell.map(card => {
                         const isLinked = currentCell.pinnedCardIds.includes(card.id)
                         return (
                           <div
@@ -3393,12 +3444,17 @@ ${savedCabinetCards.map(c => `- ID: ${c.id} | Title: "${c.title}" | Tags: #${(c.
                               }`}
                             />
 
-                            <div className="flex items-center gap-2 truncate flex-1 min-w-0">
+                            <div className="flex flex-col gap-0.5 truncate flex-1 min-w-0 text-left">
                               <span className={`text-[13px] truncate font-normal ${
                                 isLinked ? 'text-[#F1F1F1] font-medium' : 'text-white/60 group-hover:text-white'
                               }`}>
                                 {card.title}
                               </span>
+                              {card.tags && card.tags.length > 0 && (
+                                <span className="text-[10px] text-white/35 font-mono truncate">
+                                  #{card.tags.slice(0, 3).join(' #')}
+                                </span>
+                              )}
                             </div>
 
                             <div className="shrink-0">

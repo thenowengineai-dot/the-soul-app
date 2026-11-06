@@ -170,6 +170,7 @@ export interface ExpansionNote {
 export interface StageCellItem {
   id: string
   title: string
+  inputBrief?: string
   description: string
   pinnedCardIds: string[]
   created_at: number

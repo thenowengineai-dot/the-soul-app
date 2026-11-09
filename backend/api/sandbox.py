@@ -3,11 +3,13 @@ import json
 import time
 import asyncio
 import logging
+import uuid
 from typing import Dict, Any, Optional, List
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from agents.actor_agent import ActorAgent
+from engine.postgres_core import get_postgres_core
 
 logger = logging.getLogger("API_SANDBOX")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - \033[93m[SANDBOX]\033[0m - %(message)s")
@@ -1503,5 +1505,82 @@ def forge_world_character(request: WorldCharacterForgeRequest, raw_req: Request 
         latency_ms=latency_ms,
         model=used_model
     )
+
+
+# =========================================================================
+# 🏛️ World Studio Atomic Workspace Endpoints (Neon PostgreSQL)
+# =========================================================================
+
+class SaveStudioWorldRequest(BaseModel):
+    user_id: str
+    workspace: Dict[str, Any]
+
+
+@router.get("/world/workspaces")
+async def list_studio_workspaces(user_id: str):
+    """
+    ดึงรายการ WorldWorkspace ทั้งหมดของผู้เล่นจาก Neon PostgreSQL
+    """
+    try:
+        pg = get_postgres_core()
+        workspaces = await pg.list_studio_worlds(user_id=user_id)
+        return {
+            "status": "success",
+            "workspaces": workspaces
+        }
+    except Exception as e:
+        logger.error(f"Error listing studio workspaces for user {user_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/world/workspaces/save")
+async def save_studio_workspace(req: SaveStudioWorldRequest):
+    """
+    บันทึกก้อน WorldWorkspace ทั้งหมดลงใน Neon PostgreSQL แบบ Atomic (UPSERT)
+    """
+    try:
+        pg = get_postgres_core()
+        ws = req.workspace
+        world_id = ws.get("id") or f"world_{int(time.time() * 1000)}"
+        title = ws.get("title") or "โลกที่ยังไม่มีชื่อ"
+
+        success = await pg.save_studio_world(
+            world_id=world_id,
+            user_id=req.user_id,
+            title=title,
+            workspace_data=ws
+        )
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to persist studio world to Neon database")
+
+        return {
+            "status": "success",
+            "world_id": world_id,
+            "message": "บันทึกโลกเข้าสู่ฐานข้อมูลสำเร็จ"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error saving studio workspace: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/world/workspaces/{world_id}")
+async def delete_studio_workspace(world_id: str, user_id: Optional[str] = None):
+    """
+    ลบ WorldWorkspace ออกจาก Neon PostgreSQL
+    """
+    try:
+        pg = get_postgres_core()
+        success = await pg.delete_studio_world(world_id=world_id, user_id=user_id)
+        return {
+            "status": "success" if success else "not_found",
+            "world_id": world_id,
+            "deleted": success
+        }
+    except Exception as e:
+        logger.error(f"Error deleting studio workspace {world_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 

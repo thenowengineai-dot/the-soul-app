@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import {
   Plus,
   PanelLeft,
@@ -24,6 +24,19 @@ import { StudioMasterView } from './world-studio/views/StudioMasterView'
 import { StudioDashboardView } from './world-studio/views/StudioDashboardView'
 import { StudioPromptInspectorModal } from './world-studio/views/StudioPromptInspectorModal'
 import type { StudioActiveView } from './world-studio/types'
+
+function getStudioUserId(): string {
+  if (typeof window === 'undefined') return 'guest_studio_user'
+  let uid =
+    localStorage.getItem('the_soul_user_id') ||
+    localStorage.getItem('the_soul_guest_id') ||
+    localStorage.getItem('the_soul_studio_user_id')
+  if (!uid) {
+    uid = `gst_studio_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`
+    localStorage.setItem('the_soul_studio_user_id', uid)
+  }
+  return uid
+}
 
 interface WorldStudioViewProps {
   macroWorldLore: string
@@ -57,6 +70,12 @@ export function WorldStudioView({
   onSelectCharacterForStage,
 }: WorldStudioViewProps) {
 
+  // Identity & Neon Database Cloud Sync State
+  const studioUserId = useMemo(() => getStudioUserId(), [])
+  const [cloudSyncStatus, setCloudSyncStatus] = useState<'saved' | 'saving' | 'offline'>('saved')
+  const isInitialLoadDone = useRef(false)
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   // Navigation & Workspace State
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [activeView, setActiveView] = useState<StudioActiveView>({ type: 'welcome' })
@@ -81,6 +100,145 @@ export function WorldStudioView({
   const activeWorld = useMemo(() => {
     return worlds.find(w => w.id === activeWorldId) || worlds[0]
   }, [worlds, activeWorldId])
+
+  // =========================================================================
+  // 1. NEON DATABASE HYDRATION ON MOUNT
+  // =========================================================================
+  useEffect(() => {
+    let isCancelled = false
+    const loadWorkspaces = async () => {
+      try {
+        let res: Response | null = null
+        try {
+          res = await fetch(`http://localhost:8000/api/sandbox/world/workspaces?user_id=${studioUserId}`)
+        } catch {
+          res = await fetch(`https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/workspaces?user_id=${studioUserId}`)
+        }
+        if (res && res.ok) {
+          const data = await res.json()
+          if (!isCancelled && data.workspaces && Array.isArray(data.workspaces) && data.workspaces.length > 0) {
+            setWorlds(data.workspaces)
+            setActiveWorldId(data.workspaces[0].id)
+            setCloudSyncStatus('saved')
+            try {
+              localStorage.setItem('the_soul_studio_workspaces', JSON.stringify(data.workspaces))
+            } catch {}
+            isInitialLoadDone.current = true
+            return
+          }
+        }
+      } catch {
+        // Fallback to local storage if API is unreachable
+        try {
+          const localSaved = localStorage.getItem('the_soul_studio_workspaces')
+          if (localSaved) {
+            const parsed = JSON.parse(localSaved)
+            if (Array.isArray(parsed) && parsed.length > 0 && !isCancelled) {
+              setWorlds(parsed)
+              setActiveWorldId(parsed[0].id)
+              setCloudSyncStatus('offline')
+              isInitialLoadDone.current = true
+              return
+            }
+          }
+        } catch {}
+      }
+      isInitialLoadDone.current = true
+    }
+    loadWorkspaces()
+    return () => {
+      isCancelled = true
+    }
+  }, [studioUserId])
+
+  // =========================================================================
+  // 2. ATOMIC SAVE TO NEON POSTGRESQL (UPSERT)
+  // =========================================================================
+  const saveWorldToDatabase = useCallback(async (workspaceToSave: WorldWorkspace) => {
+    setCloudSyncStatus('saving')
+    try {
+      const payload = {
+        user_id: studioUserId,
+        workspace: workspaceToSave,
+      }
+      let res: Response | null = null
+      try {
+        res = await fetch('http://localhost:8000/api/sandbox/world/workspaces/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      } catch {
+        res = await fetch('https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/workspaces/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      }
+      if (res && res.ok) {
+        setCloudSyncStatus('saved')
+      } else {
+        setCloudSyncStatus('offline')
+      }
+    } catch {
+      setCloudSyncStatus('offline')
+    }
+
+    try {
+      setWorlds(currentWorlds => {
+        const updated = currentWorlds.map(w => (w.id === workspaceToSave.id ? workspaceToSave : w))
+        localStorage.setItem('the_soul_studio_workspaces', JSON.stringify(updated))
+        return currentWorlds
+      })
+    } catch {}
+  }, [studioUserId])
+
+  // Debounced auto-save on activeWorld changes
+  useEffect(() => {
+    if (!isInitialLoadDone.current) return
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
+    setCloudSyncStatus('saving')
+    saveTimeoutRef.current = setTimeout(() => {
+      saveWorldToDatabase(activeWorld)
+    }, 1200)
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
+    }
+  }, [activeWorld, saveWorldToDatabase])
+
+  // Delete World from Neon DB & State
+  const handleDeleteWorld = async (worldId: string) => {
+    const remaining = worlds.filter(x => x.id !== worldId)
+    setWorlds(remaining)
+    if (activeWorldId === worldId) {
+      if (remaining[0]) {
+        handleSwitchWorld(remaining[0].id)
+      } else {
+        setActiveView({ type: 'welcome' })
+      }
+    }
+    try {
+      localStorage.setItem('the_soul_studio_workspaces', JSON.stringify(remaining))
+    } catch {}
+
+    try {
+      let res: Response | null = null
+      try {
+        res = await fetch(`http://localhost:8000/api/sandbox/world/workspaces/${worldId}?user_id=${studioUserId}`, {
+          method: 'DELETE',
+        })
+      } catch {
+        res = await fetch(`https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/workspaces/${worldId}?user_id=${studioUserId}`, {
+          method: 'DELETE',
+        })
+      }
+      if (res?.ok) {
+        setCloudSyncStatus('saved')
+      }
+    } catch (e) {
+      console.warn('Error deleting world from Neon DB:', e)
+    }
+  }
 
   const welcomeTextareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -274,11 +432,15 @@ export function WorldStudioView({
           created_at: c.created_at || Date.now(),
         }
 
-        updateActiveWorld(prev => ({
-          ...prev,
-          characters: [...(prev.characters || []).filter(item => item.id !== newChar.id), newChar],
-          activeCharacterId: newChar.id,
-        }))
+        updateActiveWorld(prev => {
+          const nextWs = {
+            ...prev,
+            characters: [...(prev.characters || []).filter(item => item.id !== newChar.id), newChar],
+            activeCharacterId: newChar.id,
+          }
+          saveWorldToDatabase(nextWs)
+          return nextWs
+        })
 
         setNotificationMessage(`หล่อหลอมตัวละคร "${newChar.name}" สำเร็จ`)
         setJustSavedNotification(true)
@@ -1595,13 +1757,7 @@ export function WorldStudioView({
           handleSwitchWorld(worldId)
           setActiveView({ type: 'dashboard' })
         }}
-        onDeleteWorld={(worldId) => {
-          setWorlds(prev => prev.filter(x => x.id !== worldId))
-          if (activeWorldId === worldId) {
-            const remaining = worlds.filter(x => x.id !== worldId)
-            if (remaining[0]) handleSwitchWorld(remaining[0].id)
-          }
-        }}
+        onDeleteWorld={handleDeleteWorld}
         onSelectDashboard={() => setActiveView({ type: 'dashboard' })}
         onSelectMaster={() => setActiveView({ type: 'master' })}
         onAddNewNote={() => handleAddNewNote()}
@@ -1654,6 +1810,41 @@ export function WorldStudioView({
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Neon Cloud Sync Status Badge */}
+            <div
+              className={`h-7 px-2.5 rounded-full border text-[11px] font-sans flex items-center gap-1.5 transition-all select-none ${
+                cloudSyncStatus === 'saved'
+                  ? 'bg-emerald-500/[0.08] border-emerald-500/25 text-emerald-300/80'
+                  : cloudSyncStatus === 'saving'
+                  ? 'bg-amber-500/[0.08] border-amber-500/25 text-amber-300/80 animate-pulse'
+                  : 'bg-white/[0.04] border-white/10 text-white/40'
+              }`}
+              title={
+                cloudSyncStatus === 'saved'
+                  ? 'บันทึกข้อมูลโลกทั้งหมดลง Neon PostgreSQL เรียบร้อยแล้ว'
+                  : cloudSyncStatus === 'saving'
+                  ? 'กำลังซิงก์ข้อมูลลงฐานข้อมูล...'
+                  : 'บันทึกในหน่วยความจำเครื่อง (ออฟไลน์)'
+              }
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  cloudSyncStatus === 'saved'
+                    ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]'
+                    : cloudSyncStatus === 'saving'
+                    ? 'bg-amber-400'
+                    : 'bg-white/30'
+                }`}
+              />
+              <span>
+                {cloudSyncStatus === 'saved'
+                  ? 'บันทึกแล้ว'
+                  : cloudSyncStatus === 'saving'
+                  ? 'กำลังบันทึก...'
+                  : 'ออฟไลน์'}
+              </span>
+            </div>
+
             {/* Inspector Button (Identical styling to Character view) */}
             <button
               type="button"

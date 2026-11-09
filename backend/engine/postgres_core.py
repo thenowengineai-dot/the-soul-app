@@ -646,6 +646,141 @@ class PostgresCore:
             logger.error(f"Error fetching user sessions for character from Neon: {e}")
             return []
 
+    # -------------------------------------------------------------
+    # 🌍 World Studio Atomic Workspace Operations (Neon PostgreSQL)
+    # -------------------------------------------------------------
+
+    async def _ensure_studio_tables(self, conn) -> None:
+        """Ensures the studio_worlds table and indexes exist in Neon."""
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS studio_worlds (
+                id VARCHAR(100) PRIMARY KEY,
+                user_id VARCHAR(64) NOT NULL,
+                title VARCHAR(255) NOT NULL,
+                workspace_data JSONB NOT NULL DEFAULT '{}'::jsonb,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            );
+            CREATE INDEX IF NOT EXISTS idx_studio_worlds_user 
+            ON studio_worlds(user_id, updated_at DESC);
+        """)
+
+    async def save_studio_world(
+        self,
+        world_id: str,
+        user_id: str,
+        title: str,
+        workspace_data: Dict[str, Any]
+    ) -> bool:
+        """
+        Saves or updates a complete atomic WorldWorkspace document in Neon PostgreSQL.
+        """
+        try:
+            pool = await self.get_pool()
+            clean_title = (title or workspace_data.get("title") or "โลกที่ยังไม่มีชื่อ").strip()
+            ws_json = json.dumps(workspace_data, ensure_ascii=False)
+            async with pool.acquire() as conn:
+                await self._ensure_studio_tables(conn)
+                await conn.execute("""
+                    INSERT INTO studio_worlds (id, user_id, title, workspace_data, created_at, updated_at)
+                    VALUES ($1, $2, $3, $4::jsonb, NOW(), NOW())
+                    ON CONFLICT (id) DO UPDATE SET
+                        user_id = EXCLUDED.user_id,
+                        title = EXCLUDED.title,
+                        workspace_data = EXCLUDED.workspace_data,
+                        updated_at = NOW();
+                """, world_id, user_id, clean_title, ws_json)
+                logger.info(f"💾 [STUDIO_DB] Persisted studio world {world_id} ('{clean_title}') for user {user_id}")
+                return True
+        except Exception as e:
+            logger.error(f"Error saving studio world {world_id} to Neon: {e}", exc_info=True)
+            return False
+
+    async def list_studio_worlds(self, user_id: str) -> List[Dict[str, Any]]:
+        """
+        Retrieves all atomic WorldWorkspace documents for a user, sorted by updated_at DESC.
+        """
+        try:
+            pool = await self.get_pool()
+            async with pool.acquire() as conn:
+                await self._ensure_studio_tables(conn)
+                rows = await conn.fetch("""
+                    SELECT id, user_id, title, workspace_data, created_at, updated_at
+                    FROM studio_worlds
+                    WHERE user_id = $1
+                    ORDER BY updated_at DESC;
+                """, user_id)
+                results = []
+                for r in rows:
+                    ws = r["workspace_data"]
+                    if isinstance(ws, str):
+                        try:
+                            ws = json.loads(ws)
+                        except Exception:
+                            ws = {}
+                    if isinstance(ws, dict):
+                        ws["id"] = r["id"]
+                        if not ws.get("title"):
+                            ws["title"] = r["title"]
+                        results.append(ws)
+                logger.info(f"📂 [STUDIO_DB] Retrieved {len(results)} studio worlds for user {user_id}")
+                return results
+        except Exception as e:
+            logger.error(f"Error listing studio worlds from Neon: {e}", exc_info=True)
+            return []
+
+    async def get_studio_world(self, world_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Retrieves a single WorldWorkspace document by its world_id.
+        """
+        try:
+            pool = await self.get_pool()
+            async with pool.acquire() as conn:
+                await self._ensure_studio_tables(conn)
+                row = await conn.fetchrow("""
+                    SELECT id, user_id, title, workspace_data, created_at, updated_at
+                    FROM studio_worlds
+                    WHERE id = $1;
+                """, world_id)
+                if not row:
+                    return None
+                ws = row["workspace_data"]
+                if isinstance(ws, str):
+                    try:
+                        ws = json.loads(ws)
+                    except Exception:
+                        ws = {}
+                if isinstance(ws, dict):
+                    ws["id"] = row["id"]
+                    if not ws.get("title"):
+                        ws["title"] = row["title"]
+                return ws
+        except Exception as e:
+            logger.error(f"Error getting studio world {world_id} from Neon: {e}", exc_info=True)
+            return None
+
+    async def delete_studio_world(self, world_id: str, user_id: Optional[str] = None) -> bool:
+        """
+        Deletes a WorldWorkspace document from Neon.
+        """
+        try:
+            pool = await self.get_pool()
+            async with pool.acquire() as conn:
+                await self._ensure_studio_tables(conn)
+                if user_id:
+                    res = await conn.execute("""
+                        DELETE FROM studio_worlds WHERE id = $1 AND user_id = $2;
+                    """, world_id, user_id)
+                else:
+                    res = await conn.execute("""
+                        DELETE FROM studio_worlds WHERE id = $1;
+                    """, world_id)
+                logger.info(f"🗑️ [STUDIO_DB] Deleted studio world {world_id}")
+                return "DELETE" in res
+        except Exception as e:
+            logger.error(f"Error deleting studio world {world_id} from Neon: {e}", exc_info=True)
+            return False
+
 
 # Singleton Instance
 _postgres_core_instance: Optional[PostgresCore] = None

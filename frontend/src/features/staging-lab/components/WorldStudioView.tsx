@@ -11,6 +11,8 @@ import type {
   ExpansionNote,
   StageCellItem,
   WorldWorkspace,
+  WorldLoreBlock,
+  GenerateStageCellPayload,
   StageCellGenerateResponse,
   WorldCharacterCard,
 } from '../types'
@@ -51,7 +53,7 @@ interface WorldStudioViewProps {
   onEnterStage: (cards?: LoreCard[], pinnedIds?: string[]) => void
   onBackToHome: () => void
   onSelectStageCell?: (cell: StageCellItem) => void
-  onSelectCharacterForStage?: (character: WorldCharacterCard) => void
+  onSelectCharacterForStage?: (character: WorldCharacterCard, worldCards?: LoreCard[]) => void
 }
 
 export function WorldStudioView({
@@ -90,7 +92,7 @@ export function WorldStudioView({
 
   // Multi-World Sandboxes (Isolated per World)
   const [worlds, setWorlds] = useState<WorldWorkspace[]>(() =>
-    createInitialWorlds(macroWorldLore, sparkText, cabinetCards, pinnedCardIds)
+    createInitialWorlds(macroWorldLore, sparkText, _cabinetCards, pinnedCardIds)
   )
 
   const [activeWorldId, setActiveWorldId] = useState<string>('world_default')
@@ -266,7 +268,9 @@ export function WorldStudioView({
   const [savingNoteToCabinetId, setSavingNoteToCabinetId] = useState<string | null>(null)
   const [sproutingBlockId, setSproutingBlockId] = useState<string | null>(null)
   const [isDissectingNote, setIsDissectingNote] = useState(false)
+  const [isDissectingCharacter, setIsDissectingCharacter] = useState(false)
   const [isAutoLinking, setIsAutoLinking] = useState(false)
+  const [isAutoLinkingCharacterCards, setIsAutoLinkingCharacterCards] = useState(false)
   const [isGeneratingCell5D, setIsGeneratingCell5D] = useState(false)
   const [editingCellOutputId, setEditingCellOutputId] = useState<string | null>(null)
   const [copiedCellId, setCopiedCellId] = useState<string | null>(null)
@@ -521,11 +525,279 @@ export function WorldStudioView({
   }
 
   const handleSendCharacterToStage = (character: WorldCharacterCard) => {
+    const pins = (character.pinnedCardIds && character.pinnedCardIds.length > 0)
+      ? character.pinnedCardIds
+      : activeWorld.pinnedCardIds
     if (onSelectCharacterForStage) {
-      onSelectCharacterForStage(character)
+      onSelectCharacterForStage(character, activeWorld.cabinetCards)
     } else {
-      onEnterStage(activeWorld.cabinetCards, activeWorld.pinnedCardIds)
+      onEnterStage(activeWorld.cabinetCards, pins)
     }
+  }
+
+  // Re-Forge an existing character from updated playerBrief
+  const handleReForgeCharacter = async (character: WorldCharacterCard) => {
+    const brief = (character.playerBrief || character.roleTagline || '').trim()
+    if (!brief || isForgingCharacter) return
+    setIsForgingCharacter(true)
+    try {
+      let res: Response
+      const payload = {
+        brief: brief,
+        world_lore: combinedWorldLore || activeWorld.rawLore,
+        existing_character_name: character.name,
+        world_id: activeWorld.id,
+      }
+      try {
+        res = await fetch('http://localhost:8000/api/sandbox/world/forge-character', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      } catch {
+        res = await fetch('https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/forge-character', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      }
+
+      if (res.ok) {
+        const data = await res.json()
+        const c = data.character
+        updateActiveWorld(prev => ({
+          ...prev,
+          characters: (prev.characters || []).map(item => {
+            if (item.id !== character.id) return item
+            return {
+              ...item,
+              name: c.name || item.name,
+              roleTagline: c.role_tagline || item.roleTagline,
+              playerBrief: brief,
+              appearanceAndCharm: c.appearance_and_charm || item.appearanceAndCharm,
+              matchedArchetypeId: c.matched_archetype_id || item.matchedArchetypeId,
+              matchedArchetypeLabel: c.matched_archetype_label || item.matchedArchetypeLabel,
+              coreWound: c.core_wound || item.coreWound,
+              hiddenCore: c.hidden_core || item.hiddenCore,
+              theMask: c.the_mask || item.theMask,
+              bodyTells: c.body_tells || item.bodyTells,
+              keystoneTether: c.keystone_tether || item.keystoneTether,
+              faultLine: c.fault_line || item.faultLine,
+              polarInversion: c.polar_inversion || item.polarInversion,
+            }
+          })
+        }))
+        setNotificationMessage(`หล่อหลอมตัวละคร "${character.name}" ใหม่เรียบร้อยแล้ว`)
+        setJustSavedNotification(true)
+        setTimeout(() => setJustSavedNotification(false), 2000)
+      }
+    } catch (e) {
+      console.error('Re-forge character failed:', e)
+    } finally {
+      setIsForgingCharacter(false)
+    }
+  }
+
+  // Toggle card pinning to character
+  const handleToggleCharacterCard = (characterId: string, cardId: string) => {
+    updateActiveWorld(prev => ({
+      ...prev,
+      characters: (prev.characters || []).map(char => {
+        if (char.id !== characterId) return char
+        const currentPins = char.pinnedCardIds || []
+        const nextPins = currentPins.includes(cardId)
+          ? currentPins.filter(id => id !== cardId)
+          : [...currentPins, cardId]
+        return { ...char, pinnedCardIds: nextPins }
+      })
+    }))
+  }
+
+  // Clear all pinned cards from character
+  const handleClearAllCharacterCards = (characterId: string) => {
+    updateActiveWorld(prev => ({
+      ...prev,
+      characters: (prev.characters || []).map(char =>
+        char.id === characterId ? { ...char, pinnedCardIds: [] } : char
+      )
+    }))
+    setNotificationMessage('ล้างการ์ดที่ผูกกับตัวละครนี้แล้ว')
+    setJustSavedNotification(true)
+    setTimeout(() => setJustSavedNotification(false), 2000)
+  }
+
+  // AI Dissection of character into atomic sub-cards
+  const handleDissectCharacter = async (character: WorldCharacterCard) => {
+    if (isDissectingCharacter) return
+    setIsDissectingCharacter(true)
+    try {
+      let res: Response
+      const charBriefText = [
+        `ตัวละคร: ${character.name}`,
+        `สายเฉพาะตัว: ${character.matchedArchetypeLabel}`,
+        `บทบาท: ${character.roleTagline}`,
+        character.playerBrief ? `บรีฟตั้งต้น: ${character.playerBrief}` : '',
+        `เสน่ห์และสรีระ: ${character.appearanceAndCharm}`,
+        `ปมฝังใจ: ${character.coreWound}`,
+        `เนื้อแท้: ${character.hiddenCore}`,
+        `หน้ากาก: ${character.theMask}`,
+        `ของประจำตัว: ${character.keystoneTether}`,
+        `จุดสะกิดตาย: ${character.faultLine}`,
+      ].filter(Boolean).join('\n')
+
+      const payload = {
+        raw_text: `${combinedWorldLore ? `[บริบทโลก]\n${combinedWorldLore}\n\n` : ''}[ข้อมูลตัวละคร]\n${charBriefText}`,
+        world_id: activeWorld.id,
+      }
+
+      try {
+        res = await fetch('http://localhost:8000/api/sandbox/world/dissect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      } catch {
+        res = await fetch('https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/dissect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      }
+
+      if (res.ok) {
+        const data = await res.json()
+        const newChildCards: LoreCard[] = (data.cards || []).map((c: LoreCard, idx: number) => ({
+          ...c,
+          id: `char_child_${Date.now()}_${idx}`,
+          isSavedToCabinet: false,
+          tags: Array.from(new Set([character.name, ...(c.tags || [])])),
+          sourceNoteId: character.id,
+        }))
+
+        updateActiveWorld(prev => ({
+          ...prev,
+          characters: (prev.characters || []).map(c => {
+            if (c.id === character.id) {
+              return {
+                ...c,
+                childCards: [...newChildCards, ...(c.childCards || [])]
+              }
+            }
+            return c
+          })
+        }))
+        setNotificationMessage(`สกัดการ์ดย่อยของ ${character.name} สำเร็จ ${newChildCards.length} ใบ`)
+        setJustSavedNotification(true)
+        setTimeout(() => setJustSavedNotification(false), 2000)
+      }
+    } catch (e) {
+      console.error('Character dissection failed:', e)
+    } finally {
+      setIsDissectingCharacter(false)
+    }
+  }
+
+  // Manual Add Child Card to character
+  const handleAddCharacterChildCard = (characterId: string) => {
+    const char = activeWorld.characters?.find(c => c.id === characterId)
+    const newChild: LoreCard = {
+      id: `char_child_manual_${Date.now()}`,
+      title: 'การ์ดย่อยตัวละครใหม่',
+      category: 'lore',
+      content: '',
+      tags: char ? [char.name] : ['ตัวละคร'],
+      isSavedToCabinet: false,
+      sourceNoteId: characterId,
+    }
+    updateActiveWorld(prev => ({
+      ...prev,
+      characters: (prev.characters || []).map(c =>
+        c.id === characterId
+          ? { ...c, childCards: [newChild, ...(c.childCards || [])] }
+          : c
+      )
+    }))
+  }
+
+  // Update Child Card of character
+  const handleUpdateCharacterChildCard = (characterId: string, cardId: string, updates: Partial<LoreCard>) => {
+    updateActiveWorld(prev => ({
+      ...prev,
+      characters: (prev.characters || []).map(char => {
+        if (char.id !== characterId) return char
+        return {
+          ...char,
+          childCards: (char.childCards || []).map(c =>
+            c.id === cardId ? { ...c, ...updates } : c
+          )
+        }
+      })
+    }))
+  }
+
+  // Delete Child Card of character
+  const handleDeleteCharacterChildCard = (characterId: string, cardId: string) => {
+    try {
+      fetch(`http://localhost:8000/api/sandbox/world/cards/${cardId}`, { method: 'DELETE' }).catch(() => {
+        fetch(`https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/cards/${cardId}`, { method: 'DELETE' }).catch(() => {})
+      })
+    } catch {
+      // best effort
+    }
+    updateActiveWorld(prev => ({
+      ...prev,
+      cabinetCards: prev.cabinetCards.filter(c => c.id !== cardId),
+      characters: (prev.characters || []).map(char => {
+        if (char.id !== characterId) return char
+        return {
+          ...char,
+          pinnedCardIds: (char.pinnedCardIds || []).filter(id => id !== cardId),
+          childCards: (char.childCards || []).filter(c => c.id !== cardId)
+        }
+      })
+    }))
+  }
+
+  // Toggle Child Card Save State for character
+  const handleToggleCharacterChildCardSaveState = (characterId: string, card: LoreCard) => {
+    const isCurrentlySaved = Boolean(card.isSavedToCabinet)
+    if (!isCurrentlySaved) {
+      updateActiveWorld(prev => ({
+        ...prev,
+        cabinetCards: [...prev.cabinetCards.filter(c => c.id !== card.id), { ...card, isSavedToCabinet: true }],
+        characters: (prev.characters || []).map(char => {
+          if (char.id !== characterId) return char
+          return {
+            ...char,
+            pinnedCardIds: Array.from(new Set([...(char.pinnedCardIds || []), card.id])),
+            childCards: (char.childCards || []).map(c => c.id === card.id ? { ...c, isSavedToCabinet: true } : c)
+          }
+        })
+      }))
+      setNotificationMessage('บันทึกการ์ดเข้าตู้ลิ้นชักและผูกกับตัวละครเรียบร้อยแล้ว')
+    } else {
+      try {
+        fetch(`http://localhost:8000/api/sandbox/world/cards/${card.id}`, { method: 'DELETE' }).catch(() => {
+          fetch(`https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/cards/${card.id}`, { method: 'DELETE' }).catch(() => {})
+        })
+      } catch {
+        // best effort
+      }
+      updateActiveWorld(prev => ({
+        ...prev,
+        cabinetCards: prev.cabinetCards.filter(c => c.id !== card.id),
+        characters: (prev.characters || []).map(char => {
+          if (char.id !== characterId) return char
+          return {
+            ...char,
+            childCards: (char.childCards || []).map(c => c.id === card.id ? { ...c, isSavedToCabinet: false } : c)
+          }
+        })
+      }))
+      setNotificationMessage('นำการ์ดออกจากตู้ลิ้นชักแล้ว')
+    }
+    setJustSavedNotification(true)
+    setTimeout(() => setJustSavedNotification(false), 2000)
   }
 
   // 3a. Extract / Regenerate / Polish Spark via AI (The Inciting Spark Engine: 1-on-1 Personal Character Collision)
@@ -1331,7 +1603,20 @@ export function WorldStudioView({
       })
     })
 
-    // 2. Also merge any cards stored directly in activeWorld.cabinetCards (or standalone)
+    // 2. Gather all saved child cards from characters
+    activeWorld.characters?.forEach(char => {
+      char.childCards?.forEach(c => {
+        if (c.isSavedToCabinet) {
+          cardMap.set(c.id, {
+            ...c,
+            sourceNoteId: char.id,
+            sourceNoteTitle: char.name,
+          })
+        }
+      })
+    })
+
+    // 3. Also merge any cards stored directly in activeWorld.cabinetCards (or standalone)
     const cabinetSource = activeWorld.cabinetCards || []
     cabinetSource.forEach(c => {
       const existing = cardMap.get(c.id)
@@ -1354,7 +1639,7 @@ export function WorldStudioView({
     })
 
     return Array.from(cardMap.values())
-  }, [activeWorld.notes, activeWorld.cabinetCards])
+  }, [activeWorld.notes, activeWorld.cabinetCards, activeWorld.characters])
 
   const handleEnterStage = () => {
     onEnterStage(savedCabinetCards, activeWorld.pinnedCardIds)
@@ -1371,6 +1656,7 @@ export function WorldStudioView({
         cardMap.set(n.id, {
           id: n.id,
           title: n.title,
+          category: n.category || 'lore',
           content: n.content,
           tags: n.tags || [],
           childCards: [],
@@ -1381,6 +1667,79 @@ export function WorldStudioView({
     })
     return Array.from(cardMap.values())
   }, [savedCabinetCards, activeWorld.notes])
+
+  // Pool of all available cards for character binding (Cabinet Cards + World Notes + Character Sub-Cards)
+  const allAvailableCardsForCharacter = useMemo(() => {
+    const cardMap = new Map<string, LoreCard>()
+    // 1. Saved cabinet cards
+    savedCabinetCards.forEach(c => cardMap.set(c.id, c))
+    // 2. World notes
+    activeWorld.notes.forEach(n => {
+      if (!cardMap.has(n.id)) {
+        cardMap.set(n.id, {
+          id: n.id,
+          title: n.title,
+          category: n.category || 'lore',
+          content: n.content,
+          tags: n.tags || [],
+          childCards: [],
+          created_at: n.created_at,
+          isSavedToCabinet: n.isSavedToCabinet,
+        })
+      }
+    })
+    // 3. Child cards of characters (if not already present)
+    activeWorld.characters?.forEach(char => {
+      char.childCards?.forEach(c => {
+        if (!cardMap.has(c.id)) {
+          cardMap.set(c.id, {
+            ...c,
+            sourceNoteId: char.id,
+            sourceNoteTitle: char.name,
+          })
+        }
+      })
+    })
+    return Array.from(cardMap.values())
+  }, [savedCabinetCards, activeWorld.notes, activeWorld.characters])
+
+  // Auto-link relevant cards to character
+  const handleAutoLinkCharacterCards = (character: WorldCharacterCard) => {
+    setIsAutoLinkingCharacterCards(true)
+    const charKeywords = [
+      character.name.toLowerCase(),
+      (character.matchedArchetypeLabel || '').toLowerCase(),
+      (character.roleTagline || '').toLowerCase(),
+      (character.keystoneTether || '').toLowerCase(),
+      (character.coreWound || '').toLowerCase(),
+    ].filter(Boolean)
+
+    const matches: string[] = []
+    allAvailableCardsForCharacter.forEach(card => {
+      const cardText = `${card.title} ${(card.tags || []).join(' ')} ${card.content}`.toLowerCase()
+      const isRelevant = charKeywords.some(kw => kw.length >= 2 && cardText.includes(kw))
+      if (isRelevant) {
+        matches.push(card.id)
+      }
+    })
+
+    const finalPins = matches.length > 0
+      ? Array.from(new Set([...(character.pinnedCardIds || []), ...matches.slice(0, 3)]))
+      : allAvailableCardsForCharacter.slice(0, 2).map(c => c.id)
+
+    updateActiveWorld(prev => ({
+      ...prev,
+      characters: (prev.characters || []).map(c =>
+        c.id === character.id ? { ...c, pinnedCardIds: finalPins } : c
+      )
+    }))
+    setNotificationMessage(`ผูกการ์ดที่เกี่ยวข้องเข้ากับ ${character.name} เรียบร้อยแล้ว`)
+    setJustSavedNotification(true)
+    setTimeout(() => {
+      setIsAutoLinkingCharacterCards(false)
+      setJustSavedNotification(false)
+    }, 800)
+  }
 
   // Clear all pinned cards for this cell
   const handleClearAllCellCards = (cellId: string) => {
@@ -1630,10 +1989,18 @@ export function WorldStudioView({
         if (clean) tagSet.add(clean)
       })
     })
+    ;(activeWorld.characters || []).forEach(char => {
+      (char.childCards || []).forEach(card => {
+        (card.tags || []).forEach(t => {
+          const clean = t.trim().replace(/^#+/, '')
+          if (clean) tagSet.add(clean)
+        })
+      })
+    })
     const defaultPresets = ['วัตถุดิบ', 'สถานที่', 'ตัวละคร', 'ความลับ', 'ชนวนเหตุ', 'กฎเกณฑ์']
     defaultPresets.forEach(t => tagSet.add(t))
     return Array.from(tagSet)
-  }, [activeWorld.notes, activeWorld.cabinetCards])
+  }, [activeWorld.notes, activeWorld.cabinetCards, activeWorld.characters])
 
   // Reusable Tactile Tag Bar with Discreet Deletion & Floating Capsule Tray
   const renderCardTags = (card: LoreCard, noteId?: string, extraBadge?: React.ReactNode) => {
@@ -2043,13 +2410,27 @@ export function WorldStudioView({
               <StudioDashboardView
                 activeWorld={activeWorld}
                 isForgingCharacter={isForgingCharacter}
+                allAvailableCardsForCharacter={allAvailableCardsForCharacter}
+                activeTagPopoverCardId={activeTagPopoverCardId}
+                isAutoLinkingCharacterCards={isAutoLinkingCharacterCards}
+                isDissectingCharacter={isDissectingCharacter}
+                renderCardTags={renderCardTags}
                 onForgeCharacter={handleForgeCharacter}
+                onReForgeCharacter={handleReForgeCharacter}
                 onUpdateCharacter={handleUpdateCharacter}
                 onDeleteCharacter={handleDeleteCharacter}
                 onSelectCharacter={handleSelectCharacter}
                 onSendCharacterToStage={handleSendCharacterToStage}
                 setActiveView={setActiveView}
                 onAddNewStageCell={handleAddNewStageCell}
+                onToggleCharacterCard={handleToggleCharacterCard}
+                onClearAllCharacterCards={handleClearAllCharacterCards}
+                onAutoLinkCharacterCards={handleAutoLinkCharacterCards}
+                onDissectCharacter={handleDissectCharacter}
+                onAddCharacterChildCard={handleAddCharacterChildCard}
+                onUpdateCharacterChildCard={handleUpdateCharacterChildCard}
+                onDeleteCharacterChildCard={handleDeleteCharacterChildCard}
+                onToggleCharacterChildCardSaveState={handleToggleCharacterChildCardSaveState}
               />
             )}
 
@@ -2184,8 +2565,8 @@ export function WorldStudioView({
         activeWorld={activeWorld}
         combinedWorldLore={combinedWorldLore}
         savedCabinetCards={savedCabinetCards}
-        currentCell={currentCell}
-        currentNote={currentNote}
+        currentCell={currentCell || null}
+        currentNote={currentNote || null}
         isSparkPlayerEdited={isSparkPlayerEdited}
         sparkHistory={sparkHistory}
       />

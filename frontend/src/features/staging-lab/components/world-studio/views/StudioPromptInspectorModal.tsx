@@ -9,7 +9,7 @@ import {
   Archive,
   MapPin,
 } from 'lucide-react'
-import type { ExpansionNote, LoreCard, StageCellItem, WorldWorkspace } from '../../types'
+import type { ExpansionNote, LoreCard, StageCellItem, WorldWorkspace } from '../../../types'
 
 interface StudioPromptInspectorModalProps {
   isOpen: boolean

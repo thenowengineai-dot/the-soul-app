@@ -13,20 +13,35 @@ import {
   Layers,
   HeartHandshake,
   Compass,
+  Save,
 } from 'lucide-react'
-import type { WorldWorkspace, WorldCharacterCard } from '../../../types'
+import type { WorldWorkspace, WorldCharacterCard, LoreCard } from '../../../types'
 import type { StudioActiveView } from '../types'
 
 interface StudioDashboardViewProps {
   activeWorld: WorldWorkspace
   isForgingCharacter: boolean
+  allAvailableCardsForCharacter: LoreCard[]
+  activeTagPopoverCardId: string | null
+  isAutoLinkingCharacterCards?: boolean
+  isDissectingCharacter?: boolean
+  renderCardTags: (card: LoreCard, noteId?: string, extraBadge?: React.ReactNode) => React.ReactNode
   onForgeCharacter: (brief: string) => Promise<void>
+  onReForgeCharacter?: (character: WorldCharacterCard) => Promise<void>
   onUpdateCharacter: (characterId: string, updates: Partial<WorldCharacterCard>) => void
   onDeleteCharacter: (characterId: string) => void
   onSelectCharacter: (characterId: string) => void
   onSendCharacterToStage: (character: WorldCharacterCard) => void
   setActiveView: (view: StudioActiveView) => void
   onAddNewStageCell: () => void
+  onToggleCharacterCard?: (characterId: string, cardId: string) => void
+  onClearAllCharacterCards?: (characterId: string) => void
+  onAutoLinkCharacterCards?: (character: WorldCharacterCard) => void
+  onDissectCharacter?: (character: WorldCharacterCard) => void
+  onAddCharacterChildCard?: (characterId: string) => void
+  onUpdateCharacterChildCard?: (characterId: string, cardId: string, updates: Partial<LoreCard>) => void
+  onDeleteCharacterChildCard?: (characterId: string, cardId: string) => void
+  onToggleCharacterChildCardSaveState?: (characterId: string, card: LoreCard) => void
 }
 
 const BRIEF_PRESETS = [
@@ -47,13 +62,27 @@ const BRIEF_PRESETS = [
 export const StudioDashboardView: React.FC<StudioDashboardViewProps> = ({
   activeWorld,
   isForgingCharacter,
+  allAvailableCardsForCharacter,
+  activeTagPopoverCardId,
+  isAutoLinkingCharacterCards,
+  isDissectingCharacter,
+  renderCardTags,
   onForgeCharacter,
+  onReForgeCharacter,
   onUpdateCharacter,
   onDeleteCharacter,
   onSelectCharacter,
   onSendCharacterToStage,
   setActiveView,
   onAddNewStageCell,
+  onToggleCharacterCard,
+  onClearAllCharacterCards,
+  onAutoLinkCharacterCards,
+  onDissectCharacter,
+  onAddCharacterChildCard,
+  onUpdateCharacterChildCard,
+  onDeleteCharacterChildCard,
+  onToggleCharacterChildCardSaveState,
 }) => {
   const [briefInput, setBriefInput] = useState('')
   const [isBriefExpanded, setIsBriefExpanded] = useState(false)
@@ -445,6 +474,150 @@ export const StudioDashboardView: React.FC<StudioDashboardViewProps> = ({
           </div>
 
           {/* =========================================================================
+              SOCKET 0: CHARACTER ORIGIN BRIEF (บรีฟและไอเดียตั้งต้นของตัวละคร)
+              ========================================================================= */}
+          <div className="relative z-10 rounded-2xl p-4 sm:p-5 bg-black/30 border border-white/[0.08] space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles size={15} className="text-[#EF264C]" />
+                <span className="text-[13px] font-semibold text-white/90">
+                  บรีฟและไอเดียตั้งต้นของตัวละคร (Player Input Brief)
+                </span>
+              </div>
+              <span className="text-[11px] text-white/40">
+                เก็บรักษาไว้ตลอด ไม่ถูกเขียนทับ · ใช้ปรับแต่งหรือหล่อหลอมใหม่
+              </span>
+            </div>
+
+            <textarea
+              rows={2}
+              value={activeCharacter.playerBrief || ''}
+              onInput={(e) => {
+                e.currentTarget.style.height = 'auto'
+                e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`
+              }}
+              onChange={(e) =>
+                onUpdateCharacter(activeCharacter.id, { playerBrief: e.target.value })
+              }
+              placeholder="ไอเดีย สไตล์ นิสัย หรือจุดเด่นของตัวละครนี้..."
+              className="w-full bg-white/[0.02] focus:bg-white/[0.04] p-3 rounded-xl border border-white/[0.08] focus:border-[#EF264C]/40 text-[13.5px] text-[#F1F1F1] placeholder-white/25 focus:outline-none resize-none leading-relaxed font-sans transition-all min-h-[60px]"
+            />
+
+            {/* Re-Forge Character Button */}
+            {onReForgeCharacter && (
+              <div className="flex justify-end pt-1">
+                <button
+                  type="button"
+                  onClick={() => onReForgeCharacter(activeCharacter)}
+                  disabled={isForgingCharacter || !(activeCharacter.playerBrief || '').trim()}
+                  className="px-3.5 py-1.5 rounded-full text-[12px] font-medium bg-white/[0.04] hover:bg-[#EF264C]/20 text-white/70 hover:text-white border border-white/10 hover:border-[#EF264C]/50 flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed select-none"
+                  title="นำบรีฟนี้ไปหล่อหลอม 5 เสาหลักและแกนลาวาของตัวละครนี้ขึ้นใหม่"
+                >
+                  <Sparkles size={12} className={isForgingCharacter ? 'animate-spin text-[#EF264C]' : 'text-white/40'} />
+                  <span>{isForgingCharacter ? 'กำลังหล่อหลอมใหม่...' : '✨ หล่อหลอมตัวละครนี้ใหม่จากบรีฟ'}</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* =========================================================================
+              CHARACTER-BOUND CARDS PANEL (การ์ดที่ผูกติดตัวละครนี้)
+              ========================================================================= */}
+          <div className="relative z-10 rounded-2xl p-4 sm:p-5 bg-black/30 border border-white/[0.08] space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Shield size={15} className="text-[#EF264C]" />
+                <span className="text-[13px] font-semibold text-white/90">
+                  การ์ดที่ผูกติดตัวละครนี้ (Character-Bound Cards)
+                </span>
+                <span className="px-2 py-0.5 rounded text-[10.5px] font-mono bg-white/[0.06] text-white/60">
+                  {(activeCharacter.pinnedCardIds || []).length}
+                </span>
+                {(activeCharacter.pinnedCardIds || []).length > 0 && onClearAllCharacterCards && (
+                  <button
+                    type="button"
+                    onClick={() => onClearAllCharacterCards(activeCharacter.id)}
+                    className="text-[11px] font-mono text-white/40 hover:text-red-400/80 transition-colors ml-1 cursor-pointer"
+                    title="ยกเลิกการผูกการ์ดทั้งหมดกับตัวละครนี้"
+                  >
+                    (ล้างทั้งหมด)
+                  </button>
+                )}
+              </div>
+
+              {onAutoLinkCharacterCards && (
+                <button
+                  type="button"
+                  onClick={() => onAutoLinkCharacterCards(activeCharacter)}
+                  disabled={isAutoLinkingCharacterCards || allAvailableCardsForCharacter.length === 0}
+                  className="px-3 py-1 rounded-full text-[11px] font-mono bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 hover:text-sky-200 border border-sky-500/25 hover:border-sky-500/40 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed select-none"
+                  title="วิเคราะห์สายและปมของตัวละครเพื่อเลือกผูกการ์ดที่เกี่ยวข้องจากคลังอัตโนมัติ"
+                >
+                  <Sparkles size={11} className={isAutoLinkingCharacterCards ? 'animate-spin' : ''} />
+                  <span>{isAutoLinkingCharacterCards ? 'กำลังเลือกการ์ด...' : 'ผูกการ์ดอัตโนมัติ'}</span>
+                </button>
+              )}
+            </div>
+
+            {allAvailableCardsForCharacter.length === 0 ? (
+              <div className="p-4 rounded-xl border border-dashed border-white/[0.06] text-center text-white/30 text-[11.5px]">
+                ยังไม่มีการ์ดในตู้ลิ้นชักหรือส่วนขยาย (สร้างการ์ดย่อยด้านล่างเพื่อผูกเข้ากับตัวละครได้)
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[190px] overflow-y-auto pr-1">
+                {allAvailableCardsForCharacter.map(card => {
+                  const isLinked = (activeCharacter.pinnedCardIds || []).includes(card.id)
+                  return (
+                    <div
+                      key={card.id}
+                      onClick={() => onToggleCharacterCard && onToggleCharacterCard(activeCharacter.id, card.id)}
+                      className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-2.5 group select-none relative overflow-hidden ${
+                        isLinked
+                          ? 'bg-emerald-500/[0.06] border-emerald-500/35 shadow-[0_0_14px_rgba(16,185,129,0.08)]'
+                          : 'bg-[#161618] border-white/[0.07] hover:border-white/[0.16] hover:bg-white/[0.03]'
+                      }`}
+                    >
+                      <div
+                        className={`absolute top-0 left-4 w-7 h-[2px] rounded-b transition-colors ${
+                          isLinked
+                            ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]'
+                            : 'bg-white/20 group-hover:bg-[#EF264C]'
+                        }`}
+                      />
+
+                      <div className="flex flex-col gap-0.5 truncate flex-1 min-w-0 text-left">
+                        <span className={`text-[12.5px] truncate font-normal ${
+                          isLinked ? 'text-[#F1F1F1] font-medium' : 'text-white/60 group-hover:text-white'
+                        }`}>
+                          {card.title}
+                        </span>
+                        {card.tags && card.tags.length > 0 && (
+                          <span className="text-[9.5px] text-white/35 font-mono truncate">
+                            #{card.tags.slice(0, 3).join(' #')}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="shrink-0">
+                        {isLinked ? (
+                          <span className="px-1.5 py-0.5 rounded-full text-[9.5px] font-mono bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                            <CheckCircle2 size={10} />
+                            <span>ผูกแล้ว</span>
+                          </span>
+                        ) : (
+                          <span className="w-4 h-4 rounded-full flex items-center justify-center text-white/30 group-hover:text-white text-[11px] font-mono hover:bg-white/[0.08] transition-colors">
+                            +
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* =========================================================================
               SOCKET 1: PHYSICAL & CHARM SILHOUETTE (สรีระ ทรงผม หน้าอก และเสน่ห์ดึงดูด)
               ========================================================================= */}
           <div className="relative z-10 rounded-2xl p-4 sm:p-5 bg-black/30 border border-white/[0.08] space-y-2.5">
@@ -604,6 +777,136 @@ export const StudioDashboardView: React.FC<StudioDashboardViewProps> = ({
                 />
               </div>
             </div>
+          </div>
+
+          {/* =========================================================================
+              CHARACTER SUB-CARDS SECTION (การ์ดย่อยประจำตัวละคร)
+              ========================================================================= */}
+          <div className="relative z-10 space-y-3.5 pt-4 border-t border-white/[0.08]">
+            <div className="flex items-center justify-between px-1">
+              <div className="flex items-center gap-2">
+                <span className="text-[13px] font-semibold text-white/80">
+                  การ์ดย่อยประจำตัวละคร (ความลับ ปม ของประจำกาย หรือความทรงจำ)
+                </span>
+                {(activeCharacter.childCards || []).length > 0 && (
+                  <span className="px-1.5 py-0.5 rounded text-[10.5px] font-mono bg-white/[0.06] text-white/50">
+                    {(activeCharacter.childCards || []).length}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                {onDissectCharacter && (
+                  <button
+                    type="button"
+                    onClick={() => onDissectCharacter(activeCharacter)}
+                    disabled={isDissectingCharacter}
+                    className="px-3 py-1 rounded-full text-[11.5px] bg-white/[0.04] hover:bg-rose-500/20 text-white/60 hover:text-rose-200 border border-white/[0.09] hover:border-rose-500/40 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed select-none"
+                    title="ให้ AI ช่วยสกัดปม อาวุธ ความลับ หรือความทรงจำของตัวละครนี้ออกมาเป็นการ์ดย่อย"
+                  >
+                    <Sparkles size={11} className={isDissectingCharacter ? 'animate-spin text-rose-300' : 'text-white/40'} />
+                    <span>{isDissectingCharacter ? 'กำลังสกัด...' : 'สกัดการ์ดย่อย'}</span>
+                  </button>
+                )}
+
+                {onAddCharacterChildCard && (
+                  <button
+                    type="button"
+                    onClick={() => onAddCharacterChildCard(activeCharacter.id)}
+                    className="px-3 py-1 rounded-full text-[11.5px] bg-white/[0.04] hover:bg-white/[0.10] text-white/60 hover:text-white border border-white/[0.09] transition-all cursor-pointer flex items-center gap-1 active:scale-95 select-none"
+                    title="เพิ่มการ์ดย่อยใหม่ของตัวละครนี้ด้วยตัวเอง"
+                  >
+                    <Plus size={12} />
+                    <span>เพิ่มการ์ดย่อย</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {(activeCharacter.childCards || []).length === 0 ? (
+              <div className="p-6 rounded-2xl border border-dashed border-white/[0.06] text-center text-white/30 text-[12px]">
+                ยังไม่มีการ์ดย่อยประจำตัวละคร (กด "สกัดการ์ดย่อย" ให้ AI ช่วยคิด หรือกด "เพิ่มการ์ดย่อย" เพื่อพิมพ์เองได้เลยครับ)
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
+                {(activeCharacter.childCards || []).map((card) => {
+                  const isPopoverOpen = activeTagPopoverCardId === card.id
+                  return (
+                    <div
+                      key={card.id}
+                      className={`rounded-2xl p-5 sm:p-5.5 border border-white/[0.09] hover:border-white/[0.18] transition-all flex flex-col justify-between group backdrop-blur-md bg-[#141416]/75 hover:bg-[#141416]/85 relative h-[255px] sm:h-[265px] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_14px_35px_rgba(0,0,0,0.45)] ${
+                        isPopoverOpen ? 'overflow-visible z-30' : 'overflow-hidden z-10'
+                      }`}
+                    >
+                      {/* Top Subtle Accent Bar */}
+                      <div className="absolute top-0 left-6 w-10 sm:w-12 h-[2px] bg-white/20 group-hover:bg-[#EF264C] rounded-b transition-colors" />
+
+                      <div className={`space-y-3 flex-1 flex flex-col h-full ${
+                        isPopoverOpen ? 'overflow-visible' : 'overflow-hidden'
+                      }`}>
+                        {/* Top Bar: Free-form Tags on Left, Status Pill & Delete on Right */}
+                        <div className="flex items-center justify-between gap-2 shrink-0">
+                          {renderCardTags(card, activeCharacter.id)}
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {card.isSavedToCabinet ? (
+                              <button
+                                type="button"
+                                onClick={() => onToggleCharacterChildCardSaveState && onToggleCharacterChildCardSaveState(activeCharacter.id, card)}
+                                className="px-2.5 py-0.5 rounded-full text-[10.5px] font-mono bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 hover:text-emerald-200 border border-emerald-500/30 hover:border-emerald-500/50 flex items-center gap-1 transition-all cursor-pointer active:scale-95"
+                                title="คลิกเพื่อนำออกจากตู้ลิ้นชักกลับเป็นร่าง"
+                              >
+                                <CheckCircle2 size={11} className="text-emerald-400" />
+                                <span>ในตู้ลิ้นชัก</span>
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => onToggleCharacterChildCardSaveState && onToggleCharacterChildCardSaveState(activeCharacter.id, card)}
+                                className="px-2.5 py-0.5 rounded-full text-[10.5px] font-mono bg-white/[0.06] hover:bg-rose-500/20 text-white/50 hover:text-rose-200 border border-white/[0.10] hover:border-rose-500/40 flex items-center gap-1 transition-all cursor-pointer active:scale-95 group/btn"
+                                title="บันทึกเข้าตู้ลิ้นชัก"
+                              >
+                                <Save size={11} className="text-white/40 group-hover/btn:text-rose-300 transition-colors" />
+                                <span className="group-hover/btn:hidden">รอเข้าตู้</span>
+                                <span className="hidden group-hover/btn:inline">เข้าตู้ลิ้นชัก</span>
+                              </button>
+                            )}
+
+                            {onDeleteCharacterChildCard && (
+                              <button
+                                type="button"
+                                onClick={() => onDeleteCharacterChildCard(activeCharacter.id, card.id)}
+                                className="opacity-0 group-hover:opacity-100 text-white/20 hover:text-rose-400 p-1 rounded-md hover:bg-white/[0.04] transition-all cursor-pointer"
+                                title="ลบการ์ดนี้"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Title */}
+                        <input
+                          type="text"
+                          value={card.title}
+                          onChange={(e) => onUpdateCharacterChildCard && onUpdateCharacterChildCard(activeCharacter.id, card.id, { title: e.target.value })}
+                          placeholder="ชื่อการ์ด..."
+                          className="w-full text-[15px] font-medium text-[#F1F1F1] bg-transparent outline-none border-none p-0 placeholder-white/20 shrink-0"
+                        />
+
+                        {/* Content */}
+                        <textarea
+                          value={card.content}
+                          onChange={(e) => onUpdateCharacterChildCard && onUpdateCharacterChildCard(activeCharacter.id, card.id, { content: e.target.value })}
+                          placeholder="เนื้อหาของการ์ดย่อย..."
+                          className="w-full text-[13px] text-white/75 bg-transparent outline-none resize-none leading-relaxed font-sans border-none p-0 placeholder-white/20 flex-1 overflow-y-auto"
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}

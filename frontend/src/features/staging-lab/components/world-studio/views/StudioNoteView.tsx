@@ -8,7 +8,7 @@ import {
   Plus,
   Save,
 } from 'lucide-react'
-import type { ExpansionNote, LoreCard } from '../../types'
+import type { ExpansionNote, LoreCard } from '../../../types'
 
 interface StudioNoteViewProps {
   currentNote: ExpansionNote

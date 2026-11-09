@@ -152,6 +152,8 @@ export interface LoreCard {
   isPinnedToStage?: boolean
   isSavedToCabinet?: boolean
   sourceNoteId?: string
+  sourceNoteTitle?: string
+  childCards?: LoreCard[]
 }
 
 export interface ExpansionNote {
@@ -201,6 +203,8 @@ export interface WorldCharacterCard {
   keystoneTether: string
   faultLine: string
   polarInversion: string
+  pinnedCardIds?: string[]
+  childCards?: LoreCard[]
   created_at: number
 }
 

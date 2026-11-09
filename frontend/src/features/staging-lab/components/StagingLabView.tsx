@@ -23,7 +23,7 @@ import {
   generateKineticPacingPrompt,
   STANCE_PRESETS
 } from '../modules/kineticContinuityModule'
-import type { PromptModule, SandboxSimulateResponse, SandboxSimulateRequest, LoreCard } from '../types'
+import type { PromptModule, SandboxSimulateResponse, SandboxSimulateRequest, LoreCard, WorldCharacterCard } from '../types'
 import { MessageList } from '../../chat/components/chat-room/MessageList'
 import { ChatInputBar } from '../../chat/components/chat-room/ChatInputBar'
 import type { ChatMessage } from '../../chat/types'
@@ -1172,7 +1172,11 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
           setActiveDockTab('actor')
           setWorkspaceMode('stage')
         }}
-        onSelectCharacterForStage={(char) => {
+        onSelectCharacterForStage={(char: WorldCharacterCard, worldCards?: LoreCard[]) => {
+          if (worldCards) setCabinetCards(worldCards)
+          if (char.pinnedCardIds && char.pinnedCardIds.length > 0) {
+            setPinnedCardIds(char.pinnedCardIds)
+          }
           setCurrentArchetype({
             id: char.matchedArchetypeId || `unique_${char.id}`,
             name: char.name,

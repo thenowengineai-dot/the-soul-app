@@ -7,7 +7,7 @@ import {
   RefreshCw,
   ArrowUpRight,
 } from 'lucide-react'
-import type { ExpansionNote, WorldWorkspace } from '../../types'
+import type { ExpansionNote, WorldWorkspace, WorldLoreBlock } from '../../../types'
 import type { StudioActiveView } from '../types'
 
 interface StudioMasterViewProps {
@@ -29,7 +29,7 @@ interface StudioMasterViewProps {
   handleExtractSparkOnly: () => void
   handleGenerateWorldGenesis: (customLore?: string, mode?: 'initial' | 'more', targetWorldId?: string) => Promise<void>
   handleExtractSpark: (forceMode?: 'extract' | 'regenerate' | 'polish', customLore?: string, targetWorldId?: string) => Promise<void>
-  handleSproutFromLoreBlock: (block: { id: string; title?: string; content: string }) => Promise<void>
+  handleSproutFromLoreBlock: (block: WorldLoreBlock) => Promise<void>
   handleAddExtraLoreBlock: () => void
   handleUpdateExtraLoreBlock: (blockId: string, updates: Partial<{ title: string; content: string }>) => void
   handleDeleteExtraLoreBlock: (blockId: string) => void

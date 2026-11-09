@@ -43,12 +43,12 @@ interface WorldStudioViewProps {
   onMacroWorldLoreChange: (lore: string) => void
   sparkText: string
   onSparkChange: (spark: string) => void
-  cabinetCards: LoreCard[]
-  pinnedCardIds: string[]
+  cabinetCards?: LoreCard[]
+  pinnedCardIds?: string[]
   onTogglePin?: (cardId: string) => void
-  onDeleteCabinetCard: (cardId: string) => Promise<void>
-  onSaveCardsToCabinet: (cards: LoreCard[]) => Promise<void>
-  onEnterStage: () => void
+  onDeleteCabinetCard?: (cardId: string) => Promise<void>
+  onSaveCardsToCabinet?: (cards: LoreCard[]) => Promise<void>
+  onEnterStage: (cards?: LoreCard[], pinnedIds?: string[]) => void
   onBackToHome: () => void
   onSelectStageCell?: (cell: StageCellItem) => void
   onSelectCharacterForStage?: (character: WorldCharacterCard) => void
@@ -59,11 +59,11 @@ export function WorldStudioView({
   onMacroWorldLoreChange,
   sparkText,
   onSparkChange,
-  cabinetCards,
+  cabinetCards: _cabinetCards,
   pinnedCardIds,
   onTogglePin: _onTogglePin,
-  onDeleteCabinetCard,
-  onSaveCardsToCabinet,
+  onDeleteCabinetCard: _onDeleteCabinetCard,
+  onSaveCardsToCabinet: _onSaveCardsToCabinet,
   onEnterStage,
   onBackToHome,
   onSelectStageCell,
@@ -443,7 +443,7 @@ export function WorldStudioView({
         })
 
         // Instant Single Card Vault Entry (studio_cards)
-        fetch('http://localhost:8000/api/sandbox/world/cards/save', {
+        fetch('http://localhost:8000/api/sandbox/world/card/save', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -459,7 +459,7 @@ export function WorldStudioView({
             card_data: newChar,
           }),
         }).catch(() => {
-          fetch('https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/cards/save', {
+          fetch('https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/card/save', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -524,7 +524,7 @@ export function WorldStudioView({
     if (onSelectCharacterForStage) {
       onSelectCharacterForStage(character)
     } else {
-      onEnterStage()
+      onEnterStage(activeWorld.cabinetCards, activeWorld.pinnedCardIds)
     }
   }
 
@@ -1069,7 +1069,6 @@ export function WorldStudioView({
         sourceNoteId: note.id,
       }
 
-      await onSaveCardsToCabinet([cardFromNote])
       updateActiveWorld(prev => ({
         ...prev,
         cabinetCards: [...prev.cabinetCards.filter(c => c.id !== note.id), cardFromNote],
@@ -1088,7 +1087,13 @@ export function WorldStudioView({
       }))
       setNotificationMessage(`บันทึก "${resolvedTitle}" เข้าตู้ลิ้นชักเรียบร้อยแล้ว`)
     } else {
-      await onDeleteCabinetCard(note.id)
+      try {
+        fetch(`http://localhost:8000/api/sandbox/world/cards/${note.id}`, { method: 'DELETE' }).catch(() => {
+          fetch(`https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/cards/${note.id}`, { method: 'DELETE' }).catch(() => {})
+        })
+      } catch {
+        // best effort
+      }
       updateActiveWorld(prev => ({
         ...prev,
         cabinetCards: prev.cabinetCards.filter(c => c.id !== note.id),
@@ -1110,7 +1115,6 @@ export function WorldStudioView({
     const isCurrentlySaved = Boolean(card.isSavedToCabinet)
     if (!isCurrentlySaved) {
       // Save to Cabinet
-      await onSaveCardsToCabinet([card])
       updateActiveWorld(prev => ({
         ...prev,
         cabinetCards: [...prev.cabinetCards.filter(c => c.id !== card.id), { ...card, isSavedToCabinet: true }],
@@ -1127,7 +1131,13 @@ export function WorldStudioView({
       setNotificationMessage('บันทึกการ์ดเข้าตู้ลิ้นชักเรียบร้อยแล้ว')
     } else {
       // Revert to Draft: Remove from Cabinet
-      await onDeleteCabinetCard(card.id)
+      try {
+        fetch(`http://localhost:8000/api/sandbox/world/cards/${card.id}`, { method: 'DELETE' }).catch(() => {
+          fetch(`https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/cards/${card.id}`, { method: 'DELETE' }).catch(() => {})
+        })
+      } catch {
+        // best effort
+      }
       updateActiveWorld(prev => ({
         ...prev,
         cabinetCards: prev.cabinetCards.filter(c => c.id !== card.id),
@@ -1181,7 +1191,13 @@ export function WorldStudioView({
 
   // 10. Delete card from cabinet view (both cabinet & note)
   const handleDeleteCardFromCabinetView = async (cardId: string, sourceNoteId?: string) => {
-    await onDeleteCabinetCard(cardId)
+    try {
+      fetch(`http://localhost:8000/api/sandbox/world/cards/${cardId}`, { method: 'DELETE' }).catch(() => {
+        fetch(`https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/cards/${cardId}`, { method: 'DELETE' }).catch(() => {})
+      })
+    } catch {
+      // best effort
+    }
     updateActiveWorld(prev => ({
       ...prev,
       cabinetCards: prev.cabinetCards.filter(c => c.id !== cardId),
@@ -1316,7 +1332,7 @@ export function WorldStudioView({
     })
 
     // 2. Also merge any cards stored directly in activeWorld.cabinetCards (or standalone)
-    const cabinetSource = activeWorld.cabinetCards.length > 0 ? activeWorld.cabinetCards : cabinetCards
+    const cabinetSource = activeWorld.cabinetCards || []
     cabinetSource.forEach(c => {
       const existing = cardMap.get(c.id)
       if (existing) {
@@ -1338,7 +1354,11 @@ export function WorldStudioView({
     })
 
     return Array.from(cardMap.values())
-  }, [activeWorld.notes, activeWorld.cabinetCards, cabinetCards])
+  }, [activeWorld.notes, activeWorld.cabinetCards])
+
+  const handleEnterStage = () => {
+    onEnterStage(savedCabinetCards, activeWorld.pinnedCardIds)
+  }
 
   // Pool of all available cards for this cell (Cabinet Cards + World Notes)
   const allAvailableCardsForCell = useMemo(() => {
@@ -1610,16 +1630,10 @@ export function WorldStudioView({
         if (clean) tagSet.add(clean)
       })
     })
-    ;(cabinetCards || []).forEach(card => {
-      (card.tags || []).forEach(t => {
-        const clean = t.trim().replace(/^#+/, '')
-        if (clean) tagSet.add(clean)
-      })
-    })
     const defaultPresets = ['วัตถุดิบ', 'สถานที่', 'ตัวละคร', 'ความลับ', 'ชนวนเหตุ', 'กฎเกณฑ์']
     defaultPresets.forEach(t => tagSet.add(t))
     return Array.from(tagSet)
-  }, [activeWorld.notes, activeWorld.cabinetCards, cabinetCards])
+  }, [activeWorld.notes, activeWorld.cabinetCards])
 
   // Reusable Tactile Tag Bar with Discreet Deletion & Floating Capsule Tray
   const renderCardTags = (card: LoreCard, noteId?: string, extraBadge?: React.ReactNode) => {
@@ -1777,7 +1791,7 @@ export function WorldStudioView({
         isSidebarOpen={isSidebarOpen}
         onCloseSidebar={() => setIsSidebarOpen(false)}
         onBackToHome={onBackToHome}
-        onEnterStage={onEnterStage}
+        onEnterStage={handleEnterStage}
         onOpenWelcome={() => {
           setWelcomeDraftLore('')
           setIsWelcomeDropdownOpen(false)
@@ -1825,7 +1839,7 @@ export function WorldStudioView({
                 <div className="h-7 p-0.5 rounded-full bg-white/[0.04] border border-white/10 flex items-center gap-0.5 text-[11.5px] font-sans select-none">
                   <button
                     type="button"
-                    onClick={onEnterStage}
+                    onClick={handleEnterStage}
                     className="h-full px-2.5 rounded-full transition-all cursor-pointer active:scale-95 flex items-center gap-1.5 font-medium text-white/45 hover:text-white/85 hover:bg-white/[0.04]"
                     title="สลับไปหน้าตัวละครและหน้าต่างแชทหลัก"
                   >
@@ -1894,7 +1908,7 @@ export function WorldStudioView({
             {/* ปุ่ม ก้าวขึ้นสู่เวที (Pill Style เหมือนปุ่ม Clear ในหน้าตัวละคร) */}
             <button
               type="button"
-              onClick={onEnterStage}
+              onClick={handleEnterStage}
               className="h-7 px-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/40 hover:text-white text-[10px] font-sans transition-all cursor-pointer flex items-center active:scale-95"
               title="สลับไปหน้าตัวละครและหน้าต่างแชทหลัก"
             >
@@ -2135,7 +2149,7 @@ export function WorldStudioView({
                   if (onSelectStageCell) {
                     onSelectStageCell(currentCell)
                   } else {
-                    onEnterStage()
+                    handleEnterStage()
                   }
                 }}
               />

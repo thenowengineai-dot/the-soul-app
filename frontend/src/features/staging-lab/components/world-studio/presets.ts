@@ -19,8 +19,8 @@ export const WELCOME_STORY_PRESETS = [
 export function createInitialWorlds(
   macroWorldLore: string,
   sparkText: string,
-  cabinetCards: LoreCard[],
-  pinnedCardIds: string[]
+  _cabinetCards?: LoreCard[],
+  _pinnedCardIds?: string[]
 ): WorldWorkspace[] {
   return [
     {
@@ -175,9 +175,8 @@ export function createInitialWorlds(
           isSavedToCabinet: true,
           sourceNoteId: 'note_1',
         },
-        ...cabinetCards,
       ],
-      pinnedCardIds: pinnedCardIds,
+      pinnedCardIds: ['card_dorm_1'],
       characters: [],
       created_at: 1700000000000,
     }

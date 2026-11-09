@@ -286,33 +286,6 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     }
   }
 
-  // Initial load of cabinet cards from Redis
-  useEffect(() => {
-    let isCancelled = false
-    const loadCabinet = async () => {
-      try {
-        let res: Response
-        try {
-          res = await fetch('http://localhost:8000/api/sandbox/world/default_world/cards')
-        } catch {
-          res = await fetch('https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/default_world/cards')
-        }
-        if (res.ok && !isCancelled) {
-          const data = await res.json()
-          if (data.cards && Array.isArray(data.cards)) {
-            setCabinetCards(data.cards)
-            if (data.cards.length > 0) {
-              setPinnedCardIds(data.cards.slice(0, 2).map((c: LoreCard) => c.id))
-            }
-          }
-        }
-      } catch (err) {
-        console.warn('Could not load cabinet cards on mount:', err)
-      }
-    }
-    loadCabinet()
-    return () => { isCancelled = true }
-  }, [])
 
   const handleGenerateStageCell = async (prompt: string) => {
     setIsGeneratingStage(true)
@@ -1193,7 +1166,9 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
         onTogglePin={handleTogglePinCard}
         onDeleteCabinetCard={handleDeleteCabinetCard}
         onSaveCardsToCabinet={handleSaveCardsToCabinet}
-        onEnterStage={() => {
+        onEnterStage={(cards, pinnedIds) => {
+          if (cards) setCabinetCards(cards)
+          if (pinnedIds) setPinnedCardIds(pinnedIds)
           setActiveDockTab('actor')
           setWorkspaceMode('stage')
         }}
@@ -1224,6 +1199,9 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
           setWorkspaceMode('stage')
         }}
         onSelectStageCell={(cell) => {
+          if (cell.pinnedCardIds && cell.pinnedCardIds.length > 0) {
+            setPinnedCardIds(cell.pinnedCardIds)
+          }
           const promptText = cell.description?.trim() || cell.title
           // If already generated as 5D, seed directly into stage codex
           if (cell.description && cell.description.includes('THRESHOLD & ARRIVAL')) {

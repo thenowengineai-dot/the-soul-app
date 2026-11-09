@@ -1601,7 +1601,8 @@ class SaveStudioCardRequest(BaseModel):
     embedding: Optional[Any] = None
 
 
-@router.post("/world/cards/save")
+@router.post("/world/card/save")
+@router.post("/world/cards/upsert")
 async def save_studio_card_endpoint(req: SaveStudioCardRequest):
     """
     บันทึกการ์ดเดี่ยวลงในห้องสมุดคลังการ์ด (studio_cards) ใน 1-2ms

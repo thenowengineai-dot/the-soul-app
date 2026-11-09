@@ -651,18 +651,50 @@ class PostgresCore:
     # -------------------------------------------------------------
 
     async def _ensure_studio_tables(self, conn) -> None:
-        """Ensures the studio_worlds table and indexes exist in Neon."""
+        """Ensures studio_worlds and studio_cards tables and indexes exist in Neon."""
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS studio_worlds (
                 id VARCHAR(100) PRIMARY KEY,
                 user_id VARCHAR(64) NOT NULL,
                 title VARCHAR(255) NOT NULL,
+                active_character_id VARCHAR(100),
+                has_lore BOOLEAN NOT NULL DEFAULT FALSE,
+                has_spark BOOLEAN NOT NULL DEFAULT FALSE,
+                character_count INT NOT NULL DEFAULT 0,
+                stage_count INT NOT NULL DEFAULT 0,
+                cabinet_card_count INT NOT NULL DEFAULT 0,
+                lore_data JSONB NOT NULL DEFAULT '{}'::jsonb,
                 workspace_data JSONB NOT NULL DEFAULT '{}'::jsonb,
                 created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
                 updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
             );
-            CREATE INDEX IF NOT EXISTS idx_studio_worlds_user 
-            ON studio_worlds(user_id, updated_at DESC);
+            ALTER TABLE studio_worlds ADD COLUMN IF NOT EXISTS active_character_id VARCHAR(100);
+            ALTER TABLE studio_worlds ADD COLUMN IF NOT EXISTS has_lore BOOLEAN NOT NULL DEFAULT FALSE;
+            ALTER TABLE studio_worlds ADD COLUMN IF NOT EXISTS has_spark BOOLEAN NOT NULL DEFAULT FALSE;
+            ALTER TABLE studio_worlds ADD COLUMN IF NOT EXISTS character_count INT NOT NULL DEFAULT 0;
+            ALTER TABLE studio_worlds ADD COLUMN IF NOT EXISTS stage_count INT NOT NULL DEFAULT 0;
+            ALTER TABLE studio_worlds ADD COLUMN IF NOT EXISTS cabinet_card_count INT NOT NULL DEFAULT 0;
+            ALTER TABLE studio_worlds ADD COLUMN IF NOT EXISTS lore_data JSONB NOT NULL DEFAULT '{}'::jsonb;
+            ALTER TABLE studio_worlds ADD COLUMN IF NOT EXISTS workspace_data JSONB NOT NULL DEFAULT '{}'::jsonb;
+            CREATE INDEX IF NOT EXISTS idx_studio_worlds_user ON studio_worlds(user_id, updated_at DESC);
+
+            CREATE TABLE IF NOT EXISTS studio_cards (
+                id VARCHAR(100) PRIMARY KEY,
+                world_id VARCHAR(100) NOT NULL REFERENCES studio_worlds(id) ON DELETE CASCADE,
+                user_id VARCHAR(64) NOT NULL,
+                card_type VARCHAR(32) NOT NULL,
+                category VARCHAR(32) NOT NULL DEFAULT 'general',
+                title VARCHAR(255) NOT NULL,
+                is_pinned BOOLEAN NOT NULL DEFAULT FALSE,
+                anchor_tags TEXT[] NOT NULL DEFAULT '{}',
+                content_text TEXT NOT NULL DEFAULT '',
+                embedding JSONB DEFAULT NULL,
+                card_data JSONB NOT NULL DEFAULT '{}'::jsonb,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            );
+            CREATE INDEX IF NOT EXISTS idx_studio_cards_world_type ON studio_cards(world_id, card_type, created_at ASC);
+            CREATE INDEX IF NOT EXISTS idx_studio_cards_user_type ON studio_cards(user_id, card_type, updated_at DESC);
         """)
 
     async def save_studio_world(
@@ -673,57 +705,364 @@ class PostgresCore:
         workspace_data: Dict[str, Any]
     ) -> bool:
         """
-        Saves or updates a complete atomic WorldWorkspace document in Neon PostgreSQL.
+        Saves or updates a complete WorldWorkspace into studio_worlds and studio_cards.
+        Decomposes characters, stage cells, cabinet cards, and notes into atomic cards.
         """
         try:
             pool = await self.get_pool()
             clean_title = (title or workspace_data.get("title") or "โลกที่ยังไม่มีชื่อ").strip()
-            ws_json = json.dumps(workspace_data, ensure_ascii=False)
+            raw_lore = str(workspace_data.get("rawLore") or "").strip()
+            spark_text = str(workspace_data.get("sparkText") or "").strip()
+            has_lore = bool(raw_lore)
+            has_spark = bool(spark_text)
+
+            characters = workspace_data.get("characters") or []
+            stage_cells = workspace_data.get("stageCells") or []
+            cabinet_cards = workspace_data.get("cabinetCards") or []
+            notes = workspace_data.get("notes") or []
+            active_char_id = workspace_data.get("activeCharacterId") or (characters[0].get("id") if characters else None)
+
+            lore_data = {
+                "rawLore": raw_lore,
+                "extraLoreBlocks": workspace_data.get("extraLoreBlocks") or [],
+                "sparkText": spark_text,
+                "pinnedCardIds": workspace_data.get("pinnedCardIds") or [],
+            }
+
             async with pool.acquire() as conn:
                 await self._ensure_studio_tables(conn)
-                await conn.execute("""
-                    INSERT INTO studio_worlds (id, user_id, title, workspace_data, created_at, updated_at)
-                    VALUES ($1, $2, $3, $4::jsonb, NOW(), NOW())
-                    ON CONFLICT (id) DO UPDATE SET
-                        user_id = EXCLUDED.user_id,
-                        title = EXCLUDED.title,
-                        workspace_data = EXCLUDED.workspace_data,
-                        updated_at = NOW();
-                """, world_id, user_id, clean_title, ws_json)
-                logger.info(f"💾 [STUDIO_DB] Persisted studio world {world_id} ('{clean_title}') for user {user_id}")
+                async with conn.transaction():
+                    # 1. Upsert header into studio_worlds
+                    await conn.execute("""
+                        INSERT INTO studio_worlds (
+                            id, user_id, title, active_character_id, has_lore, has_spark,
+                            character_count, stage_count, cabinet_card_count, lore_data, workspace_data,
+                            created_at, updated_at
+                        )
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11::jsonb, NOW(), NOW())
+                        ON CONFLICT (id) DO UPDATE SET
+                            user_id = EXCLUDED.user_id,
+                            title = EXCLUDED.title,
+                            active_character_id = EXCLUDED.active_character_id,
+                            has_lore = EXCLUDED.has_lore,
+                            has_spark = EXCLUDED.has_spark,
+                            character_count = EXCLUDED.character_count,
+                            stage_count = EXCLUDED.stage_count,
+                            cabinet_card_count = EXCLUDED.cabinet_card_count,
+                            lore_data = EXCLUDED.lore_data,
+                            workspace_data = EXCLUDED.workspace_data,
+                            updated_at = NOW();
+                    """, world_id, user_id, clean_title, active_char_id, has_lore, has_spark,
+                        len(characters), len(stage_cells), len(cabinet_cards),
+                        json.dumps(lore_data, ensure_ascii=False),
+                        json.dumps(workspace_data, ensure_ascii=False)
+                    )
+
+                    # 2. Synchronize studio_cards (Characters)
+                    for c in characters:
+                        c_id = c.get("id") or f"chr_{uuid.uuid4().hex[:8]}"
+                        c_title = c.get("name") or "ตัวละครยูนีค"
+                        c_content = f"{c_title}: {c.get('roleTagline', '')}. {c.get('appearanceAndCharm', '')} {c.get('coreWound', '')}".strip()
+                        c_tags = [c_title, c.get("matchedArchetypeLabel", "")]
+                        await conn.execute("""
+                            INSERT INTO studio_cards (
+                                id, world_id, user_id, card_type, category, title, is_pinned,
+                                anchor_tags, content_text, card_data, created_at, updated_at
+                            )
+                            VALUES ($1, $2, $3, 'character', 'persona', $4, FALSE, $5, $6, $7::jsonb, NOW(), NOW())
+                            ON CONFLICT (id) DO UPDATE SET
+                                title = EXCLUDED.title,
+                                anchor_tags = EXCLUDED.anchor_tags,
+                                content_text = EXCLUDED.content_text,
+                                card_data = EXCLUDED.card_data,
+                                updated_at = NOW();
+                        """, c_id, world_id, user_id, c_title, c_tags, c_content, json.dumps(c, ensure_ascii=False))
+
+                    # 3. Synchronize studio_cards (Stage Cells - 1 cell = 1 card)
+                    for cell in stage_cells:
+                        cell_id = cell.get("id") or f"cel_{uuid.uuid4().hex[:8]}"
+                        cell_title = cell.get("title") or "ฉากเวที"
+                        cell_desc = cell.get("description") or ""
+                        cell_tags = [cell_title]
+                        await conn.execute("""
+                            INSERT INTO studio_cards (
+                                id, world_id, user_id, card_type, category, title, is_pinned,
+                                anchor_tags, content_text, card_data, created_at, updated_at
+                            )
+                            VALUES ($1, $2, $3, 'stage_cell', 'location', $4, FALSE, $5, $6, $7::jsonb, NOW(), NOW())
+                            ON CONFLICT (id) DO UPDATE SET
+                                title = EXCLUDED.title,
+                                anchor_tags = EXCLUDED.anchor_tags,
+                                content_text = EXCLUDED.content_text,
+                                card_data = EXCLUDED.card_data,
+                                updated_at = NOW();
+                        """, cell_id, world_id, user_id, cell_title, cell_tags, cell_desc, json.dumps(cell, ensure_ascii=False))
+
+                    # 4. Synchronize studio_cards (Cabinet Cards)
+                    for card in cabinet_cards:
+                        card_id = card.get("id") or f"crd_{uuid.uuid4().hex[:8]}"
+                        card_title = card.get("title") or "การ์ดข้อมูล"
+                        card_cat = card.get("category") or "lore"
+                        card_content = card.get("content") or ""
+                        card_tags = card.get("tags") or []
+                        is_pinned = bool(card.get("isPinnedToStage"))
+                        await conn.execute("""
+                            INSERT INTO studio_cards (
+                                id, world_id, user_id, card_type, category, title, is_pinned,
+                                anchor_tags, content_text, card_data, created_at, updated_at
+                            )
+                            VALUES ($1, $2, $3, 'cabinet_card', $4, $5, $6, $7, $8, $9::jsonb, NOW(), NOW())
+                            ON CONFLICT (id) DO UPDATE SET
+                                category = EXCLUDED.category,
+                                title = EXCLUDED.title,
+                                is_pinned = EXCLUDED.is_pinned,
+                                anchor_tags = EXCLUDED.anchor_tags,
+                                content_text = EXCLUDED.content_text,
+                                card_data = EXCLUDED.card_data,
+                                updated_at = NOW();
+                        """, card_id, world_id, user_id, card_cat, card_title, is_pinned, card_tags, card_content, json.dumps(card, ensure_ascii=False))
+
+                    # 5. Synchronize studio_cards (Notes)
+                    for note in notes:
+                        note_id = note.get("id") or f"not_{uuid.uuid4().hex[:8]}"
+                        note_title = note.get("title") or "โน้ตขยายความ"
+                        note_content = note.get("content") or ""
+                        note_tags = note.get("tags") or []
+                        await conn.execute("""
+                            INSERT INTO studio_cards (
+                                id, world_id, user_id, card_type, category, title, is_pinned,
+                                anchor_tags, content_text, card_data, created_at, updated_at
+                            )
+                            VALUES ($1, $2, $3, 'note', 'general', $4, FALSE, $5, $6, $7::jsonb, NOW(), NOW())
+                            ON CONFLICT (id) DO UPDATE SET
+                                title = EXCLUDED.title,
+                                anchor_tags = EXCLUDED.anchor_tags,
+                                content_text = EXCLUDED.content_text,
+                                card_data = EXCLUDED.card_data,
+                                updated_at = NOW();
+                        """, note_id, world_id, user_id, note_title, note_tags, note_content, json.dumps(note, ensure_ascii=False))
+
+                logger.info(f"💾 [UNIVERSAL_VAULT] Persisted world {world_id} ('{clean_title}') with {len(characters)} chars, {len(stage_cells)} cells, {len(cabinet_cards)} cards")
                 return True
         except Exception as e:
             logger.error(f"Error saving studio world {world_id} to Neon: {e}", exc_info=True)
             return False
 
-    async def list_studio_worlds(self, user_id: str) -> List[Dict[str, Any]]:
+    async def upsert_studio_card(
+        self,
+        card_id: str,
+        world_id: str,
+        user_id: str,
+        card_type: str,
+        title: str,
+        content_text: str,
+        card_data: Dict[str, Any],
+        category: str = "general",
+        anchor_tags: Optional[List[str]] = None,
+        is_pinned: bool = False,
+        embedding: Optional[Any] = None
+    ) -> bool:
         """
-        Retrieves all atomic WorldWorkspace documents for a user, sorted by updated_at DESC.
+        Saves or updates a single card directly into studio_cards in 1-2ms.
+        Updates card counters in studio_worlds atomically.
+        """
+        try:
+            pool = await self.get_pool()
+            tags = anchor_tags or []
+            embed_json = json.dumps(embedding) if embedding else None
+            async with pool.acquire() as conn:
+                await self._ensure_studio_tables(conn)
+                async with conn.transaction():
+                    await conn.execute("""
+                        INSERT INTO studio_cards (
+                            id, world_id, user_id, card_type, category, title, is_pinned,
+                            anchor_tags, content_text, embedding, card_data, created_at, updated_at
+                        )
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11::jsonb, NOW(), NOW())
+                        ON CONFLICT (id) DO UPDATE SET
+                            card_type = EXCLUDED.card_type,
+                            category = EXCLUDED.category,
+                            title = EXCLUDED.title,
+                            is_pinned = EXCLUDED.is_pinned,
+                            anchor_tags = EXCLUDED.anchor_tags,
+                            content_text = EXCLUDED.content_text,
+                            embedding = COALESCE(EXCLUDED.embedding, studio_cards.embedding),
+                            card_data = EXCLUDED.card_data,
+                            updated_at = NOW();
+                    """, card_id, world_id, user_id, card_type, category, title, is_pinned,
+                        tags, content_text, embed_json, json.dumps(card_data, ensure_ascii=False))
+
+                    # Update counter in studio_worlds
+                    if card_type == "character":
+                        await conn.execute("""
+                            UPDATE studio_worlds SET 
+                                character_count = (SELECT COUNT(*) FROM studio_cards WHERE world_id = $1 AND card_type = 'character'),
+                                updated_at = NOW()
+                            WHERE id = $1;
+                        """, world_id)
+                    elif card_type == "stage_cell":
+                        await conn.execute("""
+                            UPDATE studio_worlds SET 
+                                stage_count = (SELECT COUNT(*) FROM studio_cards WHERE world_id = $1 AND card_type = 'stage_cell'),
+                                updated_at = NOW()
+                            WHERE id = $1;
+                        """, world_id)
+                    elif card_type == "cabinet_card":
+                        await conn.execute("""
+                            UPDATE studio_worlds SET 
+                                cabinet_card_count = (SELECT COUNT(*) FROM studio_cards WHERE world_id = $1 AND card_type = 'cabinet_card'),
+                                updated_at = NOW()
+                            WHERE id = $1;
+                        """, world_id)
+
+                logger.info(f"🃏 [CARD_VAULT] Upserted card {card_id} ({card_type}: '{title}') for world {world_id}")
+                return True
+        except Exception as e:
+            logger.error(f"Error upserting card {card_id} to studio_cards: {e}", exc_info=True)
+            return False
+
+    async def get_studio_cards(
+        self,
+        world_id: str,
+        card_type: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Retrieves cards from studio_cards for a world, optionally filtered by card_type.
         """
         try:
             pool = await self.get_pool()
             async with pool.acquire() as conn:
                 await self._ensure_studio_tables(conn)
-                rows = await conn.fetch("""
-                    SELECT id, user_id, title, workspace_data, created_at, updated_at
+                if card_type:
+                    rows = await conn.fetch("""
+                        SELECT id, world_id, user_id, card_type, category, title, is_pinned,
+                               anchor_tags, content_text, card_data, created_at, updated_at
+                        FROM studio_cards
+                        WHERE world_id = $1 AND card_type = $2
+                        ORDER BY created_at ASC;
+                    """, world_id, card_type)
+                else:
+                    rows = await conn.fetch("""
+                        SELECT id, world_id, user_id, card_type, category, title, is_pinned,
+                               anchor_tags, content_text, card_data, created_at, updated_at
+                        FROM studio_cards
+                        WHERE world_id = $1
+                        ORDER BY created_at ASC;
+                    """, world_id)
+
+                cards = []
+                for r in rows:
+                    cd = r["card_data"]
+                    if isinstance(cd, str):
+                        try:
+                            cd = json.loads(cd)
+                        except Exception:
+                            cd = {}
+                    cards.append({
+                        "id": r["id"],
+                        "world_id": r["world_id"],
+                        "card_type": r["card_type"],
+                        "category": r["category"],
+                        "title": r["title"],
+                        "is_pinned": r["is_pinned"],
+                        "anchor_tags": r["anchor_tags"] or [],
+                        "content_text": r["content_text"],
+                        "card_data": cd,
+                        "created_at": r["created_at"].isoformat() if r["created_at"] else None,
+                        "updated_at": r["updated_at"].isoformat() if r["updated_at"] else None,
+                    })
+                return cards
+        except Exception as e:
+            logger.error(f"Error getting studio cards for world {world_id}: {e}", exc_info=True)
+            return []
+
+    async def delete_studio_card(self, card_id: str, user_id: Optional[str] = None) -> bool:
+        """Deletes a single card from studio_cards."""
+        try:
+            pool = await self.get_pool()
+            async with pool.acquire() as conn:
+                await self._ensure_studio_tables(conn)
+                if user_id:
+                    res = await conn.execute("DELETE FROM studio_cards WHERE id = $1 AND user_id = $2;", card_id, user_id)
+                else:
+                    res = await conn.execute("DELETE FROM studio_cards WHERE id = $1;", card_id)
+                logger.info(f"🗑️ [CARD_VAULT] Deleted card {card_id}")
+                return "DELETE" in res
+        except Exception as e:
+            logger.error(f"Error deleting studio card {card_id}: {e}", exc_info=True)
+            return False
+
+    async def list_studio_worlds(self, user_id: str) -> List[Dict[str, Any]]:
+        """
+        Retrieves all worlds for a user, assembled with their cards into WorldWorkspace format.
+        """
+        try:
+            pool = await self.get_pool()
+            async with pool.acquire() as conn:
+                await self._ensure_studio_tables(conn)
+                world_rows = await conn.fetch("""
+                    SELECT id, user_id, title, active_character_id, has_lore, has_spark,
+                           character_count, stage_count, cabinet_card_count, lore_data, workspace_data,
+                           created_at, updated_at
                     FROM studio_worlds
                     WHERE user_id = $1
                     ORDER BY updated_at DESC;
                 """, user_id)
+
                 results = []
-                for r in rows:
-                    ws = r["workspace_data"]
-                    if isinstance(ws, str):
+                for w in world_rows:
+                    w_id = w["id"]
+                    # Fetch all cards for this world
+                    card_rows = await conn.fetch("""
+                        SELECT id, card_type, card_data FROM studio_cards
+                        WHERE world_id = $1 ORDER BY created_at ASC;
+                    """, w_id)
+
+                    chars = []
+                    cells = []
+                    cab_cards = []
+                    notes = []
+                    for cr in card_rows:
+                        cd = cr["card_data"]
+                        if isinstance(cd, str):
+                            try:
+                                cd = json.loads(cd)
+                            except Exception:
+                                cd = {}
+                        ctype = cr["card_type"]
+                        if ctype == "character":
+                            chars.append(cd)
+                        elif ctype == "stage_cell":
+                            cells.append(cd)
+                        elif ctype == "cabinet_card":
+                            cab_cards.append(cd)
+                        elif ctype == "note":
+                            notes.append(cd)
+
+                    lore_data = w["lore_data"]
+                    if isinstance(lore_data, str):
                         try:
-                            ws = json.loads(ws)
+                            lore_data = json.loads(lore_data)
                         except Exception:
-                            ws = {}
-                    if isinstance(ws, dict):
-                        ws["id"] = r["id"]
-                        if not ws.get("title"):
-                            ws["title"] = r["title"]
-                        results.append(ws)
-                logger.info(f"📂 [STUDIO_DB] Retrieved {len(results)} studio worlds for user {user_id}")
+                            lore_data = {}
+
+                    # Assemble into WorldWorkspace structure
+                    ws = {
+                        "id": w["id"],
+                        "title": w["title"],
+                        "rawLore": lore_data.get("rawLore", ""),
+                        "extraLoreBlocks": lore_data.get("extraLoreBlocks", []),
+                        "sparkText": lore_data.get("sparkText", ""),
+                        "pinnedCardIds": lore_data.get("pinnedCardIds", []),
+                        "characters": chars,
+                        "stageCells": cells,
+                        "cabinetCards": cab_cards,
+                        "notes": notes,
+                        "activeCharacterId": w["active_character_id"],
+                        "created_at": int(w["created_at"].timestamp() * 1000) if w["created_at"] else int(time.time() * 1000)
+                    }
+                    results.append(ws)
+                logger.info(f"📂 [UNIVERSAL_VAULT] Assembled {len(results)} worlds with cards for user {user_id}")
                 return results
         except Exception as e:
             logger.error(f"Error listing studio worlds from Neon: {e}", exc_info=True)
@@ -731,51 +1070,81 @@ class PostgresCore:
 
     async def get_studio_world(self, world_id: str) -> Optional[Dict[str, Any]]:
         """
-        Retrieves a single WorldWorkspace document by its world_id.
+        Retrieves a single WorldWorkspace assembled with its cards from studio_cards.
         """
         try:
             pool = await self.get_pool()
             async with pool.acquire() as conn:
                 await self._ensure_studio_tables(conn)
-                row = await conn.fetchrow("""
-                    SELECT id, user_id, title, workspace_data, created_at, updated_at
+                w = await conn.fetchrow("""
+                    SELECT id, user_id, title, active_character_id, has_lore, has_spark,
+                           character_count, stage_count, cabinet_card_count, lore_data, workspace_data,
+                           created_at, updated_at
                     FROM studio_worlds
                     WHERE id = $1;
                 """, world_id)
-                if not row:
+                if not w:
                     return None
-                ws = row["workspace_data"]
-                if isinstance(ws, str):
+
+                card_rows = await conn.fetch("""
+                    SELECT id, card_type, card_data FROM studio_cards
+                    WHERE world_id = $1 ORDER BY created_at ASC;
+                """, world_id)
+
+                chars, cells, cab_cards, notes = [], [], [], []
+                for cr in card_rows:
+                    cd = cr["card_data"]
+                    if isinstance(cd, str):
+                        try:
+                            cd = json.loads(cd)
+                        except Exception:
+                            cd = {}
+                    ctype = cr["card_type"]
+                    if ctype == "character":
+                        chars.append(cd)
+                    elif ctype == "stage_cell":
+                        cells.append(cd)
+                    elif ctype == "cabinet_card":
+                        cab_cards.append(cd)
+                    elif ctype == "note":
+                        notes.append(cd)
+
+                lore_data = w["lore_data"]
+                if isinstance(lore_data, str):
                     try:
-                        ws = json.loads(ws)
+                        lore_data = json.loads(lore_data)
                     except Exception:
-                        ws = {}
-                if isinstance(ws, dict):
-                    ws["id"] = row["id"]
-                    if not ws.get("title"):
-                        ws["title"] = row["title"]
-                return ws
+                        lore_data = {}
+
+                return {
+                    "id": w["id"],
+                    "title": w["title"],
+                    "rawLore": lore_data.get("rawLore", ""),
+                    "extraLoreBlocks": lore_data.get("extraLoreBlocks", []),
+                    "sparkText": lore_data.get("sparkText", ""),
+                    "pinnedCardIds": lore_data.get("pinnedCardIds", []),
+                    "characters": chars,
+                    "stageCells": cells,
+                    "cabinetCards": cab_cards,
+                    "notes": notes,
+                    "activeCharacterId": w["active_character_id"],
+                    "created_at": int(w["created_at"].timestamp() * 1000) if w["created_at"] else int(time.time() * 1000)
+                }
         except Exception as e:
             logger.error(f"Error getting studio world {world_id} from Neon: {e}", exc_info=True)
             return None
 
     async def delete_studio_world(self, world_id: str, user_id: Optional[str] = None) -> bool:
-        """
-        Deletes a WorldWorkspace document from Neon.
-        """
+        """Deletes a world (cascades to all studio_cards in that world)."""
         try:
             pool = await self.get_pool()
             async with pool.acquire() as conn:
                 await self._ensure_studio_tables(conn)
                 if user_id:
-                    res = await conn.execute("""
-                        DELETE FROM studio_worlds WHERE id = $1 AND user_id = $2;
-                    """, world_id, user_id)
+                    res = await conn.execute("DELETE FROM studio_worlds WHERE id = $1 AND user_id = $2;", world_id, user_id)
                 else:
-                    res = await conn.execute("""
-                        DELETE FROM studio_worlds WHERE id = $1;
-                    """, world_id)
-                logger.info(f"🗑️ [STUDIO_DB] Deleted studio world {world_id}")
+                    res = await conn.execute("DELETE FROM studio_worlds WHERE id = $1;", world_id)
+                logger.info(f"🗑️ [UNIVERSAL_VAULT] Deleted studio world {world_id} (and all attached cards)")
                 return "DELETE" in res
         except Exception as e:
             logger.error(f"Error deleting studio world {world_id} from Neon: {e}", exc_info=True)

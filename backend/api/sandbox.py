@@ -1583,4 +1583,93 @@ async def delete_studio_workspace(world_id: str, user_id: Optional[str] = None):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# -------------------------------------------------------------
+# 🃏 Universal Card Vault Endpoints (Single Card & RAG Ready)
+# -------------------------------------------------------------
+
+class SaveStudioCardRequest(BaseModel):
+    user_id: str
+    world_id: str
+    card_id: str
+    card_type: str
+    title: str
+    content_text: str = ""
+    category: str = "general"
+    anchor_tags: List[str] = Field(default_factory=list)
+    is_pinned: bool = False
+    card_data: Dict[str, Any]
+    embedding: Optional[Any] = None
+
+
+@router.post("/world/cards/save")
+async def save_studio_card_endpoint(req: SaveStudioCardRequest):
+    """
+    บันทึกการ์ดเดี่ยวลงในห้องสมุดคลังการ์ด (studio_cards) ใน 1-2ms
+    """
+    try:
+        pg = get_postgres_core()
+        success = await pg.upsert_studio_card(
+            card_id=req.card_id,
+            world_id=req.world_id,
+            user_id=req.user_id,
+            card_type=req.card_type,
+            title=req.title,
+            content_text=req.content_text,
+            card_data=req.card_data,
+            category=req.category,
+            anchor_tags=req.anchor_tags,
+            is_pinned=req.is_pinned,
+            embedding=req.embedding
+        )
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to upsert card to studio_cards")
+        return {
+            "status": "success",
+            "card_id": req.card_id,
+            "message": f"บันทึกการ์ด '{req.title}' เข้าคลังการ์ดสำเร็จ"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error saving studio card {req.card_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/world/cards")
+async def list_studio_cards_endpoint(world_id: str, card_type: Optional[str] = None):
+    """
+    ดึงการ์ดทั้งหมดในโลกจาก studio_cards (สามารถกรองตาม card_type เช่น 'character', 'stage_cell' ได้)
+    """
+    try:
+        pg = get_postgres_core()
+        cards = await pg.get_studio_cards(world_id=world_id, card_type=card_type)
+        return {
+            "status": "success",
+            "world_id": world_id,
+            "cards": cards
+        }
+    except Exception as e:
+        logger.error(f"Error getting studio cards for world {world_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/world/cards/{card_id}")
+async def delete_studio_card_endpoint(card_id: str, user_id: Optional[str] = None):
+    """
+    ลบการ์ดเดี่ยวออกจาก studio_cards
+    """
+    try:
+        pg = get_postgres_core()
+        success = await pg.delete_studio_card(card_id=card_id, user_id=user_id)
+        return {
+            "status": "success" if success else "not_found",
+            "card_id": card_id,
+            "deleted": success
+        }
+    except Exception as e:
+        logger.error(f"Error deleting studio card {card_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
 

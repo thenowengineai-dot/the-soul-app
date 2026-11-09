@@ -442,6 +442,41 @@ export function WorldStudioView({
           return nextWs
         })
 
+        // Instant Single Card Vault Entry (studio_cards)
+        fetch('http://localhost:8000/api/sandbox/world/cards/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: studioUserId,
+            world_id: activeWorld.id,
+            card_id: newChar.id,
+            card_type: 'character',
+            title: newChar.name,
+            content_text: `${newChar.name}: ${newChar.roleTagline}. ${newChar.appearanceAndCharm} ${newChar.coreWound}`.trim(),
+            category: 'persona',
+            anchor_tags: [newChar.name, newChar.matchedArchetypeLabel || ''],
+            is_pinned: false,
+            card_data: newChar,
+          }),
+        }).catch(() => {
+          fetch('https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/cards/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              user_id: studioUserId,
+              world_id: activeWorld.id,
+              card_id: newChar.id,
+              card_type: 'character',
+              title: newChar.name,
+              content_text: `${newChar.name}: ${newChar.roleTagline}. ${newChar.appearanceAndCharm} ${newChar.coreWound}`.trim(),
+              category: 'persona',
+              anchor_tags: [newChar.name, newChar.matchedArchetypeLabel || ''],
+              is_pinned: false,
+              card_data: newChar,
+            }),
+          }).catch(() => {})
+        })
+
         setNotificationMessage(`หล่อหลอมตัวละคร "${newChar.name}" สำเร็จ`)
         setJustSavedNotification(true)
         setTimeout(() => setJustSavedNotification(false), 2000)

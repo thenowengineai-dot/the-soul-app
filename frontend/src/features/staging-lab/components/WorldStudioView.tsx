@@ -16,6 +16,8 @@ import type {
   StageCellGenerateResponse,
   WorldCharacterCard,
   CharacterSkinBlueprint,
+  StageCellAttireConfig,
+  AttireZoneId,
 } from '../types'
 import { WELCOME_STORY_PRESETS, createInitialWorlds } from './world-studio/presets'
 import { StudioStageCellView } from './world-studio/views/StudioStageCellView'
@@ -264,6 +266,7 @@ export function WorldStudioView({
   const [isExtractingSpark, setIsExtractingSpark] = useState(false)
   const [isForgingCharacter, setIsForgingCharacter] = useState(false)
   const [isForgingCharacterSkin, setIsForgingCharacterSkin] = useState(false)
+  const [isForgingSceneAttire, setIsForgingSceneAttire] = useState(false)
   const [isSparkPlayerEdited, setIsSparkPlayerEdited] = useState(false)
   const [sparkHistory, setSparkHistory] = useState<string[]>([])
   const [generatingNoteId, setGeneratingNoteId] = useState<string | null>(null)
@@ -684,6 +687,151 @@ export function WorldStudioView({
             skinBlueprint: {
               ...currentSkin,
               ...updates,
+              updated_at: Date.now(),
+            },
+          }
+        }),
+      }
+      saveWorldToDatabase(nextWs)
+      return nextWs
+    })
+  }
+
+  // Pillar 3: Forge Scene Attire from 3D Skin Blueprint & 5D Stage Cell
+  const handleForgeSceneAttire = async (
+    cell: StageCellItem,
+    character: WorldCharacterCard,
+    customAttireBrief?: string
+  ) => {
+    if (!cell || !character || isForgingSceneAttire) return
+    setIsForgingSceneAttire(true)
+    try {
+      const skin = character.skinBlueprint
+      const payload = {
+        world_lore: combinedWorldLore || activeWorld.rawLore,
+        character_name: character.name,
+        role_tagline: character.roleTagline,
+        appearance_and_charm: character.appearanceAndCharm,
+        the_mask: character.theMask,
+        hidden_core: character.hiddenCore,
+        core_wound: character.coreWound,
+        bare_anatomy_and_volume: skin?.bareAnatomyAndVolume || '',
+        skin_surface_and_intimate_marks: skin?.skinSurfaceAndIntimateMarks || '',
+        somatic_motion_physics: skin?.somaticMotionPhysics || '',
+        intimate_dna_and_wearing_habit: skin?.intimateDnaAndWearingHabit || '',
+        scene_title: cell.title,
+        scene_input_brief: cell.inputBrief || '',
+        scene_5d_description: cell.description || '',
+        attire_brief: customAttireBrief || '',
+      }
+
+      let res: Response
+      try {
+        res = await fetch('http://localhost:8000/api/sandbox/world/forge-scene-attire', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      } catch {
+        res = await fetch(
+          'https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/forge-scene-attire',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          }
+        )
+      }
+
+      if (res.ok) {
+        const data = await res.json()
+        const normalizeZone = (raw: any, defaultSlot: string, zoneKey: AttireZoneId) => {
+          const rawLayers = Array.isArray(raw?.layers) ? raw.layers : []
+          const layers = rawLayers.map((l: any, idx: number) => ({
+            id: l.id || `layer_${zoneKey}_${idx}_${Date.now()}`,
+            slotLabel: l.slotLabel || defaultSlot,
+            description: l.description || '',
+            layerOrder: (l.layerOrder as any) || 'outer',
+            isInnerHidden: Boolean(l.isInnerHidden),
+            layerCondition: l.layerCondition || '',
+            layerLifecycle: l.layerLifecycle || 'DORMANT',
+            isRemoved: Boolean(l.isRemoved),
+          }))
+          return {
+            layers,
+            condition: raw?.condition || '',
+            lifecycle: raw?.lifecycle || 'DORMANT',
+          }
+        }
+
+        const config: StageCellAttireConfig = {
+          characterId: character.id,
+          characterName: character.name,
+          attireBrief: customAttireBrief,
+          attireSummary: data.attire_summary || '',
+          actorProfile: {
+            head_hair_face: normalizeZone(data.head_hair_face, 'ศีรษะ & ผม', 'head_hair_face'),
+            upper_body: normalizeZone(data.upper_body, 'เสื้อตัวนอก', 'upper_body'),
+            lower_body: normalizeZone(data.lower_body, 'กางเกง / กระโปรง', 'lower_body'),
+            feet_footwear: normalizeZone(data.feet_footwear, 'รองเท้า', 'feet_footwear'),
+          },
+          updated_at: Date.now(),
+        }
+
+        updateActiveWorld(prev => {
+          const nextWs = {
+            ...prev,
+            stageCells: prev.stageCells.map(c => {
+              if (c.id !== cell.id) return c
+              return {
+                ...c,
+                attireCustomState: config,
+              }
+            }),
+          }
+          saveWorldToDatabase(nextWs)
+          return nextWs
+        })
+
+        setNotificationMessage(`หล่อหลอมชุดประจำฉาก "${cell.title}" ของ ${character.name} สำเร็จแล้ว`)
+        setJustSavedNotification(true)
+        setTimeout(() => setJustSavedNotification(false), 2000)
+      }
+    } catch (e) {
+      console.error('Forge scene attire failed:', e)
+    } finally {
+      setIsForgingSceneAttire(false)
+    }
+  }
+
+  // Update Scene Attire in place & auto-save
+  const handleUpdateSceneAttire = (
+    cellId: string,
+    updater: (prevConfig: StageCellAttireConfig) => StageCellAttireConfig
+  ) => {
+    updateActiveWorld(prev => {
+      const nextWs = {
+        ...prev,
+        stageCells: prev.stageCells.map(c => {
+          if (c.id !== cellId) return c
+          const prevConfig = (c.attireCustomState as StageCellAttireConfig) || {
+            characterId: undefined,
+            characterName: undefined,
+            attireBrief: '',
+            attireSummary: '',
+            actorProfile: {
+              head_hair_face: { layers: [], condition: '', lifecycle: 'DORMANT' },
+              upper_body: { layers: [], condition: '', lifecycle: 'DORMANT' },
+              lower_body: { layers: [], condition: '', lifecycle: 'DORMANT' },
+              feet_footwear: { layers: [], condition: '', lifecycle: 'DORMANT' },
+            },
+            updated_at: Date.now(),
+          }
+          const nextConfig = updater(prevConfig)
+          return {
+            ...c,
+            attireCustomState: {
+              ...nextConfig,
               updated_at: Date.now(),
             },
           }
@@ -1669,6 +1817,15 @@ export function WorldStudioView({
     ? activeWorld.stageCells.find(c => c.id === activeView.cellId)
     : null
 
+  const activeCharacter = useMemo(() => {
+    if (!activeWorld.characters || activeWorld.characters.length === 0) return null
+    if (activeWorld.activeCharacterId) {
+      const found = activeWorld.characters.find(c => c.id === activeWorld.activeCharacterId)
+      if (found) return found
+    }
+    return activeWorld.characters[0]
+  }, [activeWorld.characters, activeWorld.activeCharacterId])
+
   // Only cards saved to the cabinet in this world (isSavedToCabinet === true)
   const savedCabinetCards = useMemo(() => {
     const cardMap = new Map<string, LoreCard & { sourceNoteTitle?: string }>()
@@ -2589,6 +2746,11 @@ export function WorldStudioView({
             {activeView.type === 'cell' && currentCell && (
               <StudioStageCellView
                 cell={currentCell}
+                activeCharacter={activeCharacter}
+                allCharacters={activeWorld.characters || []}
+                isForgingSceneAttire={isForgingSceneAttire}
+                onForgeSceneAttire={handleForgeSceneAttire}
+                onUpdateSceneAttire={handleUpdateSceneAttire}
                 allAvailableCardsForCell={allAvailableCardsForCell}
                 isGeneratingCell5D={isGeneratingCell5D}
                 isAutoLinking={isAutoLinking}
@@ -2628,6 +2790,16 @@ export function WorldStudioView({
                 onEnterStage={() => {
                   if (onSelectStageCell) {
                     onSelectStageCell(currentCell)
+                  } else {
+                    handleEnterStage()
+                  }
+                }}
+                onEnterStageWithAttire={(cellToEnter, attireConfig) => {
+                  if (onSelectStageCell) {
+                    onSelectStageCell({
+                      ...cellToEnter,
+                      attireCustomState: attireConfig || cellToEnter.attireCustomState,
+                    })
                   } else {
                     handleEnterStage()
                   }

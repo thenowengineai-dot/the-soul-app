@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import time
 import asyncio
@@ -1700,6 +1701,327 @@ def forge_world_character_skin(request: WorldCharacterSkinForgeRequest, raw_req:
         skin_surface_and_intimate_marks=str(parsed_json.get("skin_surface_and_intimate_marks", "")).strip(),
         somatic_motion_physics=str(parsed_json.get("somatic_motion_physics", "")).strip(),
         intimate_dna_and_wearing_habit=str(parsed_json.get("intimate_dna_and_wearing_habit", "")).strip(),
+        latency_ms=latency_ms,
+        model=used_model
+    )
+
+
+# =========================================================================
+# PILLAR 3: SCENE ATTIRE GENERATOR (FROM 3D SKIN & 5D STAGE CELL)
+# =========================================================================
+
+class WorldSceneAttireForgeRequest(BaseModel):
+    world_lore: str = ""
+    character_name: str = ""
+    role_tagline: str = ""
+    appearance_and_charm: str = ""
+    the_mask: str = ""
+    hidden_core: str = ""
+    core_wound: str = ""
+    bare_anatomy_and_volume: str = ""
+    skin_surface_and_intimate_marks: str = ""
+    somatic_motion_physics: str = ""
+    intimate_dna_and_wearing_habit: str = ""
+    scene_title: str = ""
+    scene_input_brief: str = ""
+    scene_5d_description: str = ""
+    attire_brief: str = ""
+
+
+class WorldSceneAttireForgeResponse(BaseModel):
+    attire_summary: str = ""
+    head_hair_face: dict = {}
+    upper_body: dict = {}
+    lower_body: dict = {}
+    feet_footwear: dict = {}
+    latency_ms: int = 0
+    model: str = ""
+
+
+SCENE_ATTIRE_FORGE_SYSTEM_PROMPT = """คุณคือ 'Master 3D Flesh-to-Fabric Scene Tailor' (สถาปนิกผู้ออกแบบเครื่องแต่งกายหลายชั้นและฟิสิกส์เนื้อผ้าบนเรือนร่าง 3 มิติของ The Soul)
+หน้าที่ของคุณคือการนำ:
+1. [CHARACTER & 3D SKIN BLUEPRINT] (เรือนร่างเปลือยเปล่า 3 มิติ สัดส่วนจุดรับแรงดึงผ้า ความลับใต้ร่มผ้า รสนิยมชั้นใน และนิสัยการแต่งกายของตัวละคร)
+2. [5D SCENE / LOCATION CONTEXT] (ชื่อสถานที่ บรีฟสถานที่ และบรรยากาศมโนทัศน์ 5 มิติ)
+3. [OPTIONAL ATTIRE FOCUS] (ความต้องการชุดเฉพาะเจาะจงของผู้เล่นในฉากนี้ ถ้ามี)
+
+มาตัดเย็บและจัดวางเป็น **"ผังร่างกายและชุดประจำสถานที่ 4 โซนแบบแยกเลเยอร์ (4-Zone Multi-Layer Scene Attire)"** ที่สะท้อนทั้งบรรยากาศของสถานที่ นิสัยตัวละคร และความเร่าร้อน/เอกลักษณ์ของสรีระข้างใต้อย่างถึงพริกถึงขิง
+
+====================================================================
+[กฎเหล็กของการตัดชุดเข้ากับหุ่น 3 มิติ (3D FLESH-TO-FABRIC RULES)]
+====================================================================
+1. ห้ามเขียนชื่อเสื้อผ้าลอยๆ แบบไร้สรีระรองรับ! ทุกเลเยอร์ต้องระบุ **"การปะทะกันระหว่างเนื้อผ้ากับเรือนร่าง 3 มิติของตัวละครนี้ (Drape, Tension & Fit)"** เสมอ:
+   - หากตัวละครมีหน้าอกอวบอิ่ม/ซ่อนรูป: ระบุว่าเสื้อชั้นในหรือสาบเสื้อชั้นนอกโอบอุ้มหรือถูกดันจนตึงปริแค่ไหน หรือเวลาสวมชุดเว้าลึก/บิกินี่ เนื้อเนินอกล้นขอบผ้าออกมาอย่างไร
+   - หากตัวละครมีสะโพกผายและก้นกลมเด้ง: ระบุว่ากางเกง กระโปรง ชุดชั้นใน หรือชุดว่ายน้ำ รัดตึงไปกับส่วนโค้งสะโพกอย่างไร ขอบผ้าด้านหลังรัดจมลึกเข้าไปในร่องก้นหรือเผยแก้มก้นมากน้อยเพียงใด
+   - หากตัวละครตัวเล็กบอบบางหรือผอมเก้งก้าง: ระบุความหลวมของคอเสื้อที่เลื่อนหลุดเห็นลาดไหล่/ไหปลาร้า หรือแขนเสื้อตัวโคร่งที่ยาวคลุมข้อมือและชายเสื้อที่รุ่ยตามนิสัย
+
+2. สะท้อนนิสัยการจัดระเบียบเสื้อผ้า (Somatic Wearing Habit) แม้ใส่ชุดธรรมดาหรือยูนิฟอร์ม:
+   - ดึง `intimate_dna_and_wearing_habit` ของตัวละครมาใช้จริง เช่น สายเจ้าระเบียบติดกระดุมครบแต่เสื้อตึงรั้งอก, สายขบถปลดกระดุมบนพับแขนเสื้อถลกเอว, หรือสายลุยโนบราสวมเสื้อยืดบางกับจีสตริง
+
+3. จัดเรียงเลเยอร์จากในสุดออกนอกสุด (`layerOrder`) ในแต่ละโซนให้ชัดเจน:
+   - `"intimate"`: ชั้นแนบเนื้อ/ชุดชั้นใน (เช่น บราลูกไม้สีครามเข้ม, จีสตริงเส้นดำรัดร่องก้น, โนบราเปลือยอกใต้เสื้อ, หรือชุดว่ายน้ำวันพีซเว้าหลังลึก) -> ตั้ง `isInnerHidden: true` หากถูกเสื้อตัวนอกบังมิดชิด หรือ `false` หากเป็นชุดว่ายน้ำ/เปิดโชว์
+   - `"inner"`: เสื้อหรือกางเกงตัวใน (เช่น เสื้อสายเดี่ยวผ้าคอตตอนบาง, เสื้อกล้ามซับใน, เสื้อเชิ้ตนักเรียนตัวใน)
+   - `"outer"`: เสื้อตัวนอก กระโปรง กางเกง หรือเสื้อคลุมสวมทับ (เช่น เสื้อเชิ้ตขาวพับแขน, เสื้อคลุมพ่อมดตัวโคร่ง, กระโปรงพลีทสั้น, กางเกงลินินถกขา)
+   - `"accessory"`: เครื่องประดับ ที่ผูกผม ถุงเท้า รองเท้า หรือเท้าเปล่า
+
+4. รองรับสภาพสดแยกตามเลเยอร์ (`layerCondition`) และสภาพรวมของโซน (`condition`):
+   - หากบริบทสถานที่มีน้ำ ลำธาร ฝน เหงื่อจากการออกกำลังกาย/ปีนผา หรือผู้เล่นระบุในบรีฟ:
+     • สามารถกำหนด `layerCondition` แยกชิ้นได้ เช่น เสื้อตัวใน `"เปียกชุ่มน้ำแนบลู่ติดผิวเนื้อจนโปร่งแสงเห็นเงาชั้นใน/ยอดอก"` ในขณะที่เสื้อคลุมตัวนอก `"แห้งสนิทสวมคลุมไหล่"`
+   - หากเป็นสถานการณ์เริ่มต้นตามธรรมชาติของฉาก (เช่น ถอดรองเท้าสานวางไว้ริมตลิ่งเดินเท้าเปล่าลุยน้ำ หรือชายกางเกงชื้นน้ำ): ให้ใส่ใน `condition` ของโซนนั้นพร้อม `lifecycle: "LINGERING"` (หรือ `"DORMANT"` หากชุดแห้งปกติ)
+
+====================================================================
+[OUTPUT JSON SCHEMA FORMAT]
+====================================================================
+ต้องส่งออกเป็น JSON Object ตามโครงสร้าง 4 โซนต่อไปนี้เท่านั้น:
+{
+  "attire_summary": "สรุปชุดประจำฉากสั้นๆ 1 บรรทัด (เช่น 'เชิ้ตขาวบางพับแขน + บราลูกไม้สีครามเข้ม + ถอดรองเท้าสานลุยน้ำ')",
+  "head_hair_face": {
+    "layers": [
+      {
+        "slotLabel": "ทรงผม",
+        "description": "รายละเอียดทรงผมและปอยผมตามธรรมชาติของตัวละครในฉากนี้",
+        "layerOrder": "outer",
+        "isInnerHidden": false,
+        "layerCondition": ""
+      }
+    ],
+    "condition": "สภาพสดของผมและใบหน้าในฉากนี้ (หรือเว้นว่าง '' หากปกติ)",
+    "lifecycle": "DORMANT"
+  },
+  "upper_body": {
+    "layers": [
+      {
+        "slotLabel": "ชั้นในสุด",
+        "description": "รายละเอียดเสื้อชั้นใน/บรา/โนบรา ที่สะท้อนรสนิยมและรับกับหน้าอกของตัวละคร",
+        "layerOrder": "intimate",
+        "isInnerHidden": true,
+        "layerCondition": ""
+      },
+      {
+        "slotLabel": "เสื้อตัวใน / เสื้อหลัก",
+        "description": "รายละเอียดเสื้อพร้อมฟิสิกส์ความตึง/หลวม/แนบเนื้อตามสรีระและนิสัยการใส่",
+        "layerOrder": "inner",
+        "isInnerHidden": false,
+        "layerCondition": ""
+      }
+    ],
+    "condition": "สภาพสดของโซนลำตัวบน (หรือเว้นว่าง '' หากปกติ)",
+    "lifecycle": "DORMANT"
+  },
+  "lower_body": {
+    "layers": [
+      {
+        "slotLabel": "ชั้นในล่าง",
+        "description": "รายละเอียดกางเกงชั้นใน/จีสตริง และการรัดรับกับสะโพกและก้นของตัวละคร",
+        "layerOrder": "intimate",
+        "isInnerHidden": true,
+        "layerCondition": ""
+      },
+      {
+        "slotLabel": "กางเกง / กระโปรง",
+        "description": "รายละเอียดท่อนล่างพร้อมการถกขา/ความสั้น/ความรัดรูปตามสรีระ",
+        "layerOrder": "outer",
+        "isInnerHidden": false,
+        "layerCondition": ""
+      }
+    ],
+    "condition": "สภาพสดของโซนลำตัวล่าง (หรือเว้นว่าง '' หากปกติ)",
+    "lifecycle": "DORMANT"
+  },
+  "feet_footwear": {
+    "layers": [
+      {
+        "slotLabel": "รองเท้า & เท้า",
+        "description": "รายละเอียดรองเท้า ถุงเท้า หรือการถอดรองเท้าเปลือยเท้าเปล่าตามบริบทสถานที่",
+        "layerOrder": "accessory",
+        "isInnerHidden": false,
+        "layerCondition": ""
+      }
+    ],
+    "condition": "สภาพสดของเท้าและรองเท้า (หรือเว้นว่าง '' หากปกติ)",
+    "lifecycle": "DORMANT"
+  }
+}
+"""
+
+
+@router.post("/world/forge-scene-attire", response_model=WorldSceneAttireForgeResponse)
+def forge_world_scene_attire(request: WorldSceneAttireForgeRequest, raw_req: Request = None):
+    """
+    หล่อหลอมชุดประจำสถานที่ 4 โซนหลายเลเยอร์ (Scene Attire Generator)
+    โดยนำ 3D Skin Blueprint + 5D Stage Cell + Optional Attire Brief มาตัดเย็บเข้าด้วยกัน
+    """
+    start_time = time.time()
+    prompt_content = f"""[บริบทเนื้อหาโลกหลัก (WORLD LORE)]:
+{request.world_lore.strip() or 'โลกแฟนตาซีร่วมสมัย'}
+
+[ข้อมูลตัวละคร (CHARACTER PROFILE)]:
+- ชื่อ: {request.character_name.strip() or 'ตัวละคร'}
+- บทบาท: {request.role_tagline.strip() or 'ตัวละครหลัก'}
+- รูปลักษณ์และเสน่ห์ดึงดูด (APPEARANCE & CHARM): {request.appearance_and_charm.strip() or 'ไม่มี'}
+- หน้ากาก (THE MASK): {request.the_mask.strip() or 'ไม่มี'}
+- ตัวตนลึก (HIDDEN CORE): {request.hidden_core.strip() or 'ไม่มี'}
+- ปมในใจ (CORE WOUND): {request.core_wound.strip() or 'ไม่มี'}
+
+[พิมพ์เขียวเรือนร่าง 3 มิติ (3D SKIN BLUEPRINT)]:
+- มิติที่ 1 โครงสร้างหุ่น 3 มิติ & จุดรับแรงดึงผ้า (BARE ANATOMY & VOLUME): {request.bare_anatomy_and_volume.strip() or 'ไม่มี - ให้คาดคะเนจากข้อมูลรูปลักษณ์'}
+- มิติที่ 2 พื้นผิวหนัง เส้นผม & ความลับใต้ร่มผ้า (SKIN & INTIMATE MARKS): {request.skin_surface_and_intimate_marks.strip() or 'ไม่มี'}
+- มิติที่ 3 ฟิสิกส์การเคลื่อนไหว (SOMATIC MOTION PHYSICS): {request.somatic_motion_physics.strip() or 'ไม่มี'}
+- มิติที่ 4 รสนิยมชั้นใน & นิสัยการจัดระเบียบเสื้อผ้า (INTIMATE DNA & WEARING HABIT): {request.intimate_dna_and_wearing_habit.strip() or 'ไม่มี'}
+
+[บริบทสถานที่ 5 มิติ (5D STAGE CELL CONTEXT)]:
+- ชื่อสถานที่ (SCENE TITLE): {request.scene_title.strip() or 'สถานที่ปัจจุบัน'}
+- บรีฟสถานที่ตั้งต้น (SCENE INPUT BRIEF): {request.scene_input_brief.strip() or 'ไม่มี'}
+- มโนทัศน์และบรรยากาศ 5 มิติ (5D SCENE DESCRIPTION): {request.scene_5d_description.strip() or 'ไม่มี'}
+
+[ความต้องการเน้นชุดเฉพาะฉากนี้ของผู้เล่น (OPTIONAL ATTIRE FOCUS)]:
+{request.attire_brief.strip() or 'ไม่มี - ให้ตัดเย็บชุดตามธรรมชาติของสถานที่และนิสัยตัวละครโดยอัตโนมัติ'}
+
+โปรดตัดเย็บและจัดวางเป็น "ผังร่างกายและชุดประจำสถานที่ 4 โซนแบบแยกเลเยอร์ (4-Zone Multi-Layer Scene Attire)" ครบทุกมิติตามกฎเหล็ก และส่งออกเป็น JSON Object ตาม Schema ที่กำหนด"""
+
+    model_name = os.getenv("ACTOR_MODEL", "gemini-3.8-flash")
+    fallback_model = os.getenv("ACTOR_FALLBACK_MODEL", "gemini-2.5-flash")
+    project_id = os.getenv("VERTEX_PROJECT", "project-de5847cd-022d-40ca-ad7")
+    location = os.getenv("VERTEX_LOCATION", "global")
+
+    used_model = model_name
+    parsed_json: Dict[str, Any] = {}
+
+    try:
+        from google import genai
+        from google.genai import types
+
+        api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+        if api_key:
+            client = genai.Client(api_key=api_key)
+        else:
+            client = genai.Client(vertexai=True, project=project_id, location=location)
+
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt_content,
+                config=types.GenerateContentConfig(
+                    system_instruction=SCENE_ATTIRE_FORGE_SYSTEM_PROMPT,
+                    temperature=0.75,
+                    response_mime_type="application/json",
+                    thinking_config=types.ThinkingConfig(thinking_budget=1024),
+                )
+            )
+            raw_text = (response.text or "").strip()
+        except Exception as primary_err:
+            logger.warning(f"[FORGE_SCENE_ATTIRE] Primary model {model_name} failed: {primary_err}. Falling back to {fallback_model}")
+            response = client.models.generate_content(
+                model=fallback_model,
+                contents=prompt_content,
+                config=types.GenerateContentConfig(
+                    system_instruction=SCENE_ATTIRE_FORGE_SYSTEM_PROMPT,
+                    temperature=0.75,
+                    response_mime_type="application/json",
+                    thinking_config=types.ThinkingConfig(thinking_budget=1024),
+                )
+            )
+            raw_text = (response.text or "").strip()
+            used_model = fallback_model
+
+        try:
+            parsed_json = json.loads(raw_text)
+        except Exception:
+            match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", raw_text, re.DOTALL)
+            if match:
+                parsed_json = json.loads(match.group(1))
+            else:
+                s = raw_text.find("{")
+                e = raw_text.rfind("}")
+                if s != -1 and e != -1:
+                    parsed_json = json.loads(raw_text[s:e+1])
+                else:
+                    raise ValueError(f"Could not parse JSON from model output: {raw_text[:100]}")
+
+    except Exception as e:
+        logger.error(f"[FORGE_SCENE_ATTIRE] Failed to forge scene attire with AI: {e}")
+        used_model = "fallback-heuristic"
+        char_name = request.character_name or "ตัวละคร"
+        scene_title = request.scene_title or "ฉากปัจจุบัน"
+        custom_brief = request.attire_brief.strip()
+        summary_text = custom_brief if custom_brief else f"ชุดลำลองสบายๆ รับกับบรรยากาศ {scene_title}"
+
+        parsed_json = {
+            "attire_summary": f"{summary_text} ของ {char_name}",
+            "head_hair_face": {
+                "layers": [
+                    {
+                        "slotLabel": "ทรงผม",
+                        "description": "ปล่อยผมตามธรรมชาติ ปอยผมเคลียข้างแก้มและระลำคอเข้ากับบรรยากาศของสถานที่",
+                        "layerOrder": "outer",
+                        "isInnerHidden": False,
+                        "layerCondition": ""
+                    }
+                ],
+                "condition": "",
+                "lifecycle": "DORMANT"
+            },
+            "upper_body": {
+                "layers": [
+                    {
+                        "slotLabel": "ชั้นในสุด",
+                        "description": "บราผ้านุ่มกระชับแนบเนื้อ รับกับสรีระช่วงอกและจุดรับแรงดึงของเนื้อผ้า",
+                        "layerOrder": "intimate",
+                        "isInnerHidden": True,
+                        "layerCondition": ""
+                    },
+                    {
+                        "slotLabel": "เสื้อตัวใน / เสื้อหลัก",
+                        "description": f"เสื้อที่สวมใส่สบายรับกับบรรยากาศ {scene_title} เนื้อผ้าทิ้งตัวตามทรวดทรงและนิสัยการแต่งกาย",
+                        "layerOrder": "inner",
+                        "isInnerHidden": False,
+                        "layerCondition": ""
+                    }
+                ],
+                "condition": "",
+                "lifecycle": "DORMANT"
+            },
+            "lower_body": {
+                "layers": [
+                    {
+                        "slotLabel": "ชั้นในล่าง",
+                        "description": "กางเกงชั้นในเนื้อผ้ายืดหยุ่นกระชับร่องสะโพกและก้นอย่างเป็นระเบียบ",
+                        "layerOrder": "intimate",
+                        "isInnerHidden": True,
+                        "layerCondition": ""
+                    },
+                    {
+                        "slotLabel": "กางเกง / กระโปรง",
+                        "description": "ท่อนล่างที่เข้าชุด คล่องตัวและรองรับการเคลื่อนไหวตามสรีระอย่างพอดีตัว",
+                        "layerOrder": "outer",
+                        "isInnerHidden": False,
+                        "layerCondition": ""
+                    }
+                ],
+                "condition": "",
+                "lifecycle": "DORMANT"
+            },
+            "feet_footwear": {
+                "layers": [
+                    {
+                        "slotLabel": "รองเท้า & เท้า",
+                        "description": f"รองเท้าที่เหมาะกับการเดินใน {scene_title} สวมใส่กระชับหรือถอดวางตามบรรยากาศ",
+                        "layerOrder": "accessory",
+                        "isInnerHidden": False,
+                        "layerCondition": ""
+                    }
+                ],
+                "condition": "",
+                "lifecycle": "DORMANT"
+            }
+        }
+
+    latency_ms = int((time.time() - start_time) * 1000)
+    return WorldSceneAttireForgeResponse(
+        attire_summary=str(parsed_json.get("attire_summary", "")).strip(),
+        head_hair_face=parsed_json.get("head_hair_face") if isinstance(parsed_json.get("head_hair_face"), dict) else {},
+        upper_body=parsed_json.get("upper_body") if isinstance(parsed_json.get("upper_body"), dict) else {},
+        lower_body=parsed_json.get("lower_body") if isinstance(parsed_json.get("lower_body"), dict) else {},
+        feet_footwear=parsed_json.get("feet_footwear") if isinstance(parsed_json.get("feet_footwear"), dict) else {},
         latency_ms=latency_ms,
         model=used_model
     )

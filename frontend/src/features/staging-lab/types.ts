@@ -169,6 +169,32 @@ export interface ExpansionNote {
   created_at: number
 }
 
+export interface StageCellAttireLayer {
+  id: string
+  slotLabel: string
+  description: string
+  layerOrder?: 'intimate' | 'inner' | 'outer' | 'accessory'
+  isInnerHidden?: boolean
+  layerCondition?: string
+  layerLifecycle?: AttireLifecycleStage
+  isRemoved?: boolean
+}
+
+export interface StageCellAttireZone {
+  layers: StageCellAttireLayer[]
+  condition: string
+  lifecycle: AttireLifecycleStage
+}
+
+export interface StageCellAttireConfig {
+  characterId?: string
+  characterName?: string
+  attireBrief?: string
+  attireSummary?: string
+  actorProfile: Record<AttireZoneId, StageCellAttireZone>
+  updated_at: number
+}
+
 export interface StageCellItem {
   id: string
   title: string
@@ -177,7 +203,7 @@ export interface StageCellItem {
   pinnedCardIds: string[]
   created_at: number
   attirePresetId?: string
-  attireCustomState?: any
+  attireCustomState?: StageCellAttireConfig | Record<string, StageCellAttireConfig> | any
 }
 
 

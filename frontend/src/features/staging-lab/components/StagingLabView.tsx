@@ -30,6 +30,7 @@ import type {
   LoreCard,
   WorldCharacterCard,
   CharacterSkinBlueprint,
+  StageCellAttireConfig,
 } from '../types'
 import { MessageList } from '../../chat/components/chat-room/MessageList'
 import { ChatInputBar } from '../../chat/components/chat-room/ChatInputBar'
@@ -61,6 +62,9 @@ import { FloatingStageHud, DEFAULT_WINGARDIUM_CODEX } from './FloatingStageHud'
 import { LivingAttireCard } from './LivingAttireCard'
 import {
   type LivingAttireState,
+  type PersonAttireProfile,
+  ATTIRE_ZONE_META,
+  ATTIRE_ZONE_ORDER,
   createIndigoStreamAttireState,
   generateLivingAttirePrompt,
   reconcilePostTurnAttireState,
@@ -1227,9 +1231,45 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
             handleGenerateStageCell(promptText)
           }
 
-          // Auto-configure matching attire: prioritize custom attire state, then keywords
+          // Auto-configure matching attire: prioritize custom 4-zone attire state (Pillar 4), then keywords
           if (cell.attireCustomState) {
-            setLivingAttireState(cell.attireCustomState)
+            const rawCustom = cell.attireCustomState as StageCellAttireConfig
+            if (rawCustom.actorProfile) {
+              const defaultState = createIndigoStreamAttireState()
+              const convertedActor: PersonAttireProfile = { ...defaultState.actor }
+
+              ATTIRE_ZONE_ORDER.forEach((zk) => {
+                const zoneData = rawCustom.actorProfile[zk]
+                if (zoneData) {
+                  const meta = ATTIRE_ZONE_META[zk]
+                  convertedActor[zk] = {
+                    zoneId: zk,
+                    label: meta.label,
+                    shortLabel: meta.shortLabel,
+                    layers: (zoneData.layers || []).map((l: any, idx: number) => ({
+                      id: l.id || `layer_${zk}_${idx}_${Date.now()}`,
+                      slotLabel: l.slotLabel || meta.shortLabel,
+                      description: l.description || '',
+                      layerOrder: l.layerOrder || 'outer',
+                      isInnerHidden: Boolean(l.isInnerHidden),
+                      layerCondition: l.layerCondition || '',
+                      layerLifecycle: l.layerLifecycle || 'DORMANT',
+                      isRemoved: Boolean(l.isRemoved),
+                    })),
+                    condition: zoneData.condition || '',
+                    lifecycle: zoneData.lifecycle || (zoneData.condition ? 'LINGERING' : 'DORMANT'),
+                  }
+                }
+              })
+
+              setLivingAttireState({
+                activePresetId: `custom_cell_${cell.id}`,
+                actor: convertedActor,
+                player: defaultState.player,
+              })
+            } else if ((rawCustom as any).actor && (rawCustom as any).player) {
+              setLivingAttireState(rawCustom as any)
+            }
           } else if (promptText.includes('คราม') || promptText.includes('ลำธาร') || cell.title.includes('คราม')) {
             setLivingAttireState(createIndigoStreamAttireState())
           }

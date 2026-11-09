@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   MapPin,
   Trash2,
@@ -8,11 +8,38 @@ import {
   Copy,
   Check,
   Shirt,
+  Layers,
+  ChevronDown,
+  Dna,
+  RefreshCw,
+  Eye,
+  EyeOff,
 } from 'lucide-react'
-import type { LoreCard, StageCellItem } from '../../../types'
+import type {
+  LoreCard,
+  StageCellItem,
+  WorldCharacterCard,
+  StageCellAttireConfig,
+  StageCellAttireLayer,
+  AttireZoneId,
+} from '../../../types'
+import { ATTIRE_ZONE_ORDER, ATTIRE_ZONE_META } from '../../../modules/livingAttireModule'
 
 interface StudioStageCellViewProps {
   cell: StageCellItem
+  activeCharacter?: WorldCharacterCard | null
+  allCharacters?: WorldCharacterCard[]
+  isForgingSceneAttire?: boolean
+  onForgeSceneAttire?: (
+    cell: StageCellItem,
+    character: WorldCharacterCard,
+    customAttireBrief?: string
+  ) => Promise<void>
+  onUpdateSceneAttire?: (
+    cellId: string,
+    updater: (prevConfig: StageCellAttireConfig) => StageCellAttireConfig
+  ) => void
+  onEnterStageWithAttire?: (cell: StageCellItem, attireConfig?: StageCellAttireConfig) => void
   allAvailableCardsForCell: LoreCard[]
   isGeneratingCell5D: boolean
   isAutoLinking: boolean
@@ -33,6 +60,12 @@ interface StudioStageCellViewProps {
 
 export const StudioStageCellView: React.FC<StudioStageCellViewProps> = ({
   cell,
+  activeCharacter,
+  allCharacters = [],
+  isForgingSceneAttire = false,
+  onForgeSceneAttire,
+  onUpdateSceneAttire,
+  onEnterStageWithAttire,
   allAvailableCardsForCell,
   isGeneratingCell5D,
   isAutoLinking,
@@ -50,6 +83,95 @@ export const StudioStageCellView: React.FC<StudioStageCellViewProps> = ({
   onCopyDescription,
   onEnterStage,
 }) => {
+  // Attire brief state
+  const [attireBriefInput, setAttireBriefInput] = useState('')
+  const [selectedCharId, setSelectedCharId] = useState<string>(
+    activeCharacter?.id || (allCharacters[0]?.id ?? '')
+  )
+  const [editingLayerId, setEditingLayerId] = useState<string | null>(null)
+  const [editingLayerText, setEditingLayerText] = useState('')
+
+  // Derive chosen character
+  const chosenCharacter =
+    allCharacters.find(c => c.id === selectedCharId) ||
+    activeCharacter ||
+    allCharacters[0] ||
+    null
+
+  // Attire configuration from cell
+  const attireConfig: StageCellAttireConfig | null =
+    cell.attireCustomState && cell.attireCustomState.actorProfile
+      ? (cell.attireCustomState as StageCellAttireConfig)
+      : null
+
+  const hasForgedAttire = Boolean(attireConfig && attireConfig.actorProfile)
+  const hasSkinBlueprint = Boolean(
+    chosenCharacter?.skinBlueprint &&
+      (chosenCharacter.skinBlueprint.bareAnatomyAndVolume ||
+        chosenCharacter.skinBlueprint.skinSurfaceAndIntimateMarks)
+  )
+
+  const handleTriggerForgeAttire = async () => {
+    if (!chosenCharacter || !onForgeSceneAttire || isForgingSceneAttire) return
+    await onForgeSceneAttire(cell, chosenCharacter, attireBriefInput.trim() || undefined)
+  }
+
+  const handleSaveLayerEdit = (zoneKey: AttireZoneId, layerId: string) => {
+    if (!onUpdateSceneAttire) return
+    onUpdateSceneAttire(cell.id, prev => ({
+      ...prev,
+      actorProfile: {
+        ...prev.actorProfile,
+        [zoneKey]: {
+          ...prev.actorProfile[zoneKey],
+          layers: (prev.actorProfile[zoneKey]?.layers || []).map(l =>
+            l.id === layerId ? { ...l, description: editingLayerText } : l
+          ),
+        },
+      },
+    }))
+    setEditingLayerId(null)
+  }
+
+  const handleUpdateZoneCondition = (zoneKey: AttireZoneId, condition: string) => {
+    if (!onUpdateSceneAttire) return
+    onUpdateSceneAttire(cell.id, prev => ({
+      ...prev,
+      actorProfile: {
+        ...prev.actorProfile,
+        [zoneKey]: {
+          ...prev.actorProfile[zoneKey],
+          condition,
+          lifecycle: condition.trim() ? 'LINGERING' : 'DORMANT',
+        },
+      },
+    }))
+  }
+
+  const handleToggleInnerHidden = (zoneKey: AttireZoneId, layerId: string) => {
+    if (!onUpdateSceneAttire) return
+    onUpdateSceneAttire(cell.id, prev => ({
+      ...prev,
+      actorProfile: {
+        ...prev.actorProfile,
+        [zoneKey]: {
+          ...prev.actorProfile[zoneKey],
+          layers: (prev.actorProfile[zoneKey]?.layers || []).map(l =>
+            l.id === layerId ? { ...l, isInnerHidden: !l.isInnerHidden } : l
+          ),
+        },
+      },
+    }))
+  }
+
+  const handleFastEnterStage = () => {
+    if (onEnterStageWithAttire && attireConfig) {
+      onEnterStageWithAttire(cell, attireConfig)
+    } else {
+      onEnterStage()
+    }
+  }
+
   return (
     <div className="space-y-6 sm:space-y-7 animate-in fade-in duration-200">
       {/* ════════════════════════════════════════════════════════════════════
@@ -226,9 +348,9 @@ export const StudioStageCellView: React.FC<StudioStageCellViewProps> = ({
       </div>
 
       {/* ════════════════════════════════════════════════════════════════════
-          CARD 2: 5D STAGE OUTPUT CARD (การ์ดสถานที่ 5 มิติที่เจนเสร็จ)
+          CARD 2: 5D STAGE OUTPUT & PILLAR 3 SCENE ATTIRE FORGE
          ════════════════════════════════════════════════════════════════════ */}
-      <div className="rounded-2xl p-6 sm:p-7 backdrop-blur-xl bg-[#141416]/90 hover:bg-[#141416]/95 border border-white/[0.12] hover:border-white/[0.18] space-y-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_20px_45px_rgba(0,0,0,0.6)] relative group transition-all">
+      <div className="rounded-2xl p-6 sm:p-7 backdrop-blur-xl bg-[#141416]/90 hover:bg-[#141416]/95 border border-white/[0.12] hover:border-white/[0.18] space-y-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_20px_45px_rgba(0,0,0,0.6)] relative group transition-all">
         {/* Card 2 Header Bar */}
         <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
           <div className="flex items-center gap-2">
@@ -283,10 +405,9 @@ export const StudioStageCellView: React.FC<StudioStageCellViewProps> = ({
           )}
         </div>
 
-        {/* Card 2 Content Area */}
+        {/* Card 2 Content Area: 5D Stage Description */}
         {!cell.description?.trim() ? (
-          // Empty Sanctuary Placeholder before generation
-          <div className="py-12 px-6 rounded-xl border border-dashed border-white/[0.08] text-center space-y-3 bg-white/[0.01]">
+          <div className="py-10 px-6 rounded-xl border border-dashed border-white/[0.08] text-center space-y-3 bg-white/[0.01]">
             <div className="w-10 h-10 rounded-full bg-sky-500/10 border border-sky-400/20 text-sky-300 flex items-center justify-center mx-auto">
               <Sparkles size={18} />
             </div>
@@ -300,7 +421,6 @@ export const StudioStageCellView: React.FC<StudioStageCellViewProps> = ({
             </div>
           </div>
         ) : editingCellOutputId === cell.id ? (
-          // Edit Mode: Textarea
           <div className="space-y-2">
             <div className="text-[11px] font-mono text-white/40">
               แก้ไขเนื้อหามโนทัศน์ 5 มิติ (Markdown):
@@ -314,11 +434,10 @@ export const StudioStageCellView: React.FC<StudioStageCellViewProps> = ({
               }}
               onChange={(e) => onUpdateDescription(e.target.value)}
               placeholder="เนื้อหามโนทัศน์ 5 มิติ..."
-              className="w-full text-[14px] sm:text-[14.5px] text-[#F1F1F1] bg-white/[0.02] p-4 rounded-xl border border-white/[0.1] focus:border-white/25 outline-none resize-none leading-relaxed font-sans placeholder-white/20 min-h-[260px] overflow-hidden"
+              className="w-full text-[14px] sm:text-[14.5px] text-[#F1F1F1] bg-white/[0.02] p-4 rounded-xl border border-white/[0.1] focus:border-white/25 outline-none resize-none leading-relaxed font-sans placeholder-white/20 min-h-[240px] overflow-hidden"
             />
           </div>
         ) : (
-          // Formatted Preview Mode
           <div className="space-y-3 text-left">
             <div className="text-[14px] sm:text-[14.5px] text-[#F1F1F1]/90 leading-relaxed font-sans whitespace-pre-line bg-white/[0.015] p-5 sm:p-6 rounded-xl border border-white/[0.06] select-text">
               {cell.description}
@@ -326,35 +445,276 @@ export const StudioStageCellView: React.FC<StudioStageCellViewProps> = ({
           </div>
         )}
 
-        {/* Scene Attire & Fast Enter Stage Action Bar */}
-        <div className="pt-4 border-t border-white/[0.08] flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-400/20 text-sky-300 flex items-center justify-center shrink-0">
-              <Shirt size={15} />
+        {/* ════════════════════════════════════════════════════════════════════
+            PILLAR 3: INTERACTIVE 4-ZONE SCENE ATTIRE FORGE PANEL
+           ════════════════════════════════════════════════════════════════════ */}
+        <div className="pt-6 border-t border-white/[0.08] space-y-5">
+          {/* Section Header with Character Selector */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-400/20 text-sky-300 flex items-center justify-center shrink-0">
+                <Shirt size={16} />
+              </div>
+              <div className="text-left">
+                <div className="flex items-center gap-2">
+                  <span className="text-[13px] font-semibold text-white/90">
+                    ชุดประจำสถานที่ (4-Zone Multi-Layer Scene Attire)
+                  </span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-sky-500/15 text-sky-300 border border-sky-500/30">
+                    Pillar 3
+                  </span>
+                </div>
+                <div className="text-[11px] text-white/45">
+                  หล่อหลอมชุด 4 โซนหลายเลเยอร์จาก 3D Skin เข้ากับบริบทสถานที่ 5D
+                </div>
+              </div>
             </div>
-            <div className="text-left">
-              <div className="text-[12px] font-medium text-white/90">
-                ชุดประจำสถานที่ (Scene Attire):
-              </div>
-              <div className="text-[10.5px] text-white/45 font-mono">
-                {cell.title.includes('คราม') || cell.description?.includes('คราม') || cell.description?.includes('ลำธาร') || (cell.inputBrief && (cell.inputBrief.includes('คราม') || cell.inputBrief.includes('ลำธาร')))
-                  ? 'โรงย้อมผ้าครามริมลำธาร (เชิ้ตขาว + ถอดรองเท้าสาน)'
-                  : cell.title.includes('ฝน') || cell.description?.includes('ฝน') || (cell.inputBrief && cell.inputBrief.includes('ฝน'))
-                  ? 'เสื้อ 2 ชั้นหลบฝน (คาร์ดิแกนเปียก + เสื้อในแห้ง)'
-                  : 'ชุดและสรีระ 4 โซนตามธรรมชาติ'}
-              </div>
+
+            {/* Character Selector & 3D Skin Indicator Badge */}
+            <div className="flex items-center gap-2">
+              {allCharacters.length > 1 ? (
+                <div className="relative">
+                  <select
+                    value={chosenCharacter?.id || ''}
+                    onChange={(e) => setSelectedCharId(e.target.value)}
+                    className="appearance-none bg-white/[0.05] hover:bg-white/[0.08] text-white/80 text-[11.5px] font-mono py-1.5 pl-3 pr-7 rounded-lg border border-white/10 outline-none cursor-pointer transition-all"
+                  >
+                    {allCharacters.map(char => (
+                      <option key={char.id} value={char.id} className="bg-[#141416] text-white">
+                        {char.name} ({char.roleTagline || 'ตัวละคร'})
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" />
+                </div>
+              ) : chosenCharacter ? (
+                <span className="px-2.5 py-1 rounded-lg text-[11.5px] font-mono bg-white/[0.04] text-white/70 border border-white/[0.08]">
+                  {chosenCharacter.name}
+                </span>
+              ) : null}
+
+              {/* 3D Skin Status Badge */}
+              {hasSkinBlueprint ? (
+                <span className="px-2 py-1 rounded-lg text-[10.5px] font-mono bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5" title="ตัวละครนี้มี 3D Skin Blueprint พร้อมสำหรับการตัดเย็บ">
+                  <Dna size={12} />
+                  <span>3D Skin เชื่อมต่อ</span>
+                </span>
+              ) : (
+                <span className="px-2 py-1 rounded-lg text-[10.5px] font-mono bg-amber-500/10 text-amber-300/80 border border-amber-500/25 flex items-center gap-1.5" title="ยังไม่มี 3D Skin เต็มรูปแบบ (AI จะคาดคะเนจากข้อมูลรูปลักษณ์)">
+                  <Dna size={12} />
+                  <span>สรีระพื้นฐาน</span>
+                </span>
+              )}
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={onEnterStage}
-            className="px-4 py-2 rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 hover:from-sky-400 hover:to-indigo-400 text-white text-[12px] font-medium transition-all cursor-pointer flex items-center gap-2 active:scale-95 shadow-[0_0_20px_rgba(56,189,248,0.35)]"
-            title="ก้าวขึ้นสู่เวทีแสดงสดพร้อมพิกัดสถานที่และชุดประจำฉากนี้ทันที"
-          >
-            <Sparkles size={13} />
-            <span>ก้าวขึ้นสู่เวทีด้วยสถานที่นี้ ↵</span>
-          </button>
+          {/* Attire Brief Input & Forge Button */}
+          <div className="space-y-2.5 bg-white/[0.015] p-4 rounded-xl border border-white/[0.06]">
+            <div className="flex flex-col sm:flex-row gap-2.5">
+              <input
+                type="text"
+                value={attireBriefInput}
+                onChange={(e) => setAttireBriefInput(e.target.value)}
+                placeholder="ระบุสไตล์ชุดหรือสภาพชุดในฉากนี้เพิ่มเติม (เช่น 'ชุดว่ายน้ำวันพีซเว้าหลังลึก', 'เสื้อยืดชมพูถลกเอวเปียกน้ำ', หรือเว้นว่างให้ AI จัดให้)..."
+                className="flex-1 text-[12.5px] text-[#F1F1F1] bg-white/[0.03] focus:bg-white/[0.06] px-3.5 py-2 rounded-xl border border-white/[0.08] focus:border-sky-400/40 outline-none placeholder-white/25 transition-all font-sans"
+              />
+
+              <button
+                type="button"
+                onClick={handleTriggerForgeAttire}
+                disabled={isForgingSceneAttire || !chosenCharacter}
+                className="px-4 py-2 rounded-xl text-[12px] font-medium bg-gradient-to-r from-sky-500/25 via-indigo-500/25 to-sky-500/25 hover:from-sky-500/35 hover:via-indigo-500/35 hover:to-sky-500/35 text-sky-200 border border-sky-400/40 hover:border-sky-400/60 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed shrink-0 shadow-[0_0_15px_rgba(56,189,248,0.2)]"
+              >
+                {isForgingSceneAttire ? (
+                  <>
+                    <RefreshCw size={13} className="animate-spin text-sky-300" />
+                    <span>กำลังตัดเย็บชุด 3D...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={13} className="text-sky-300" />
+                    <span>{hasForgedAttire ? '✨ หล่อหลอมชุดใหม่' : '✨ เจนชุดประจำฉากจาก 3D Skin'}</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {attireConfig?.attireSummary && (
+              <div className="flex items-center gap-2 text-[11.5px] font-mono text-white/70 pt-1">
+                <span className="text-sky-300">สรุปชุดฉากนี้:</span>
+                <span className="text-[#F1F1F1] font-sans font-medium">{attireConfig.attireSummary}</span>
+              </div>
+            )}
+          </div>
+
+          {/* 4-Zone Multi-Layer Grid Display & In-Place Editor */}
+          {hasForgedAttire && attireConfig && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 animate-in fade-in duration-300">
+              {ATTIRE_ZONE_ORDER.map((zoneKey) => {
+                const zone = attireConfig.actorProfile[zoneKey]
+                const meta = ATTIRE_ZONE_META[zoneKey]
+                const layers = zone?.layers || []
+
+                return (
+                  <div
+                    key={zoneKey}
+                    className="p-4 rounded-xl border border-white/[0.08] bg-white/[0.015] hover:bg-white/[0.025] space-y-3 transition-all text-left"
+                  >
+                    {/* Zone Header */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-sky-400" />
+                        <span className="text-[12px] font-semibold text-white/90">
+                          {meta.label}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono text-white/35">
+                        {layers.length} เลเยอร์
+                      </span>
+                    </div>
+
+                    {/* Zone Live Condition Input */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10.5px] font-mono text-white/40 shrink-0">สภาพสด:</span>
+                      <input
+                        type="text"
+                        value={zone?.condition || ''}
+                        onChange={(e) => handleUpdateZoneCondition(zoneKey, e.target.value)}
+                        placeholder="สภาพสดของโซนนี้ (เช่น เปียกชุ่มน้ำ, โคลนเกาะ, หรือเว้นว่าง)..."
+                        className="w-full text-[11.5px] text-white/80 bg-white/[0.02] focus:bg-white/[0.05] px-2.5 py-1 rounded-lg border border-white/[0.06] focus:border-sky-400/30 outline-none placeholder-white/20 font-sans"
+                      />
+                    </div>
+
+                    {/* Layers List */}
+                    <div className="space-y-2 pt-1 border-t border-white/[0.05]">
+                      {layers.map((layer: StageCellAttireLayer) => {
+                        const isEditingThisLayer = editingLayerId === layer.id
+                        const orderBadgeColor =
+                          layer.layerOrder === 'intimate'
+                            ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+                            : layer.layerOrder === 'inner'
+                            ? 'bg-sky-500/15 text-sky-300 border-sky-500/30'
+                            : layer.layerOrder === 'accessory'
+                            ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                            : 'bg-white/[0.06] text-white/70 border-white/10'
+
+                        return (
+                          <div
+                            key={layer.id}
+                            className="p-2.5 rounded-lg bg-black/20 border border-white/[0.04] space-y-1.5"
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className={`px-1.5 py-0.5 rounded text-[9.5px] font-mono border ${orderBadgeColor}`}>
+                                  {layer.layerOrder || 'outer'}
+                                </span>
+                                <span className="text-[11px] font-medium text-white/80 font-mono">
+                                  {layer.slotLabel}
+                                </span>
+                                {layer.layerCondition && (
+                                  <span className="px-1.5 py-0.2 rounded text-[9.5px] font-mono bg-sky-500/10 text-sky-300 border border-sky-400/20">
+                                    {layer.layerCondition}
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="flex items-center gap-1 shrink-0">
+                                {/* Toggle Hidden Badge (for intimate layers) */}
+                                {layer.layerOrder === 'intimate' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleToggleInnerHidden(zoneKey, layer.id)}
+                                    className={`p-1 rounded text-[10px] font-mono transition-all cursor-pointer ${
+                                      layer.isInnerHidden
+                                        ? 'text-white/40 hover:text-white/70'
+                                        : 'text-amber-300 bg-amber-500/10'
+                                    }`}
+                                    title={layer.isInnerHidden ? 'ชั้นในถูกเสื้อบัง (คลิกเพื่อเปิดเผย)' : 'ชั้นในเปิดเผย/สวมเดี่ยว'}
+                                  >
+                                    {layer.isInnerHidden ? <EyeOff size={11} /> : <Eye size={11} />}
+                                  </button>
+                                )}
+
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (isEditingThisLayer) {
+                                      handleSaveLayerEdit(zoneKey, layer.id)
+                                    } else {
+                                      setEditingLayerId(layer.id)
+                                      setEditingLayerText(layer.description)
+                                    }
+                                  }}
+                                  className="text-[10px] font-mono text-white/40 hover:text-sky-300 p-1 rounded hover:bg-white/[0.04] transition-all cursor-pointer"
+                                  title={isEditingThisLayer ? 'บันทึก' : 'แก้ไขคำบรรยายเลเยอร์'}
+                                >
+                                  {isEditingThisLayer ? <Check size={11} className="text-emerald-400" /> : <Edit3 size={11} />}
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Description Preview or In-Place Edit */}
+                            {isEditingThisLayer ? (
+                              <div className="space-y-1.5 pt-1">
+                                <textarea
+                                  rows={2}
+                                  value={editingLayerText}
+                                  onChange={(e) => setEditingLayerText(e.target.value)}
+                                  className="w-full text-[12px] text-white bg-white/[0.04] p-2 rounded border border-sky-400/40 outline-none leading-relaxed font-sans"
+                                />
+                                <div className="flex justify-end gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditingLayerId(null)}
+                                    className="px-2 py-0.5 rounded text-[10px] font-mono text-white/40 hover:text-white"
+                                  >
+                                    ยกเลิก
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSaveLayerEdit(zoneKey, layer.id)}
+                                    className="px-2.5 py-0.5 rounded text-[10px] font-mono bg-sky-500/20 text-sky-300 border border-sky-400/30"
+                                  >
+                                    บันทึก
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="text-[12px] text-white/75 leading-relaxed font-sans">
+                                {layer.description}
+                              </p>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Action Bar: Fast Enter Live Stage */}
+          <div className="pt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.06]">
+            <div className="text-[11px] text-white/40 font-mono flex items-center gap-2">
+              <Layers size={13} className="text-sky-400" />
+              <span>
+                {hasForgedAttire
+                  ? `พร้อมก้าวขึ้นเวทีพร้อมชุด 4 โซนของ ${attireConfig?.characterName || chosenCharacter?.name}`
+                  : 'ก้าวขึ้นเวทีด้วยชุดเริ่มต้นประจำฉาก'}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleFastEnterStage}
+              className="px-5 py-2.5 rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 hover:from-sky-400 hover:to-indigo-400 text-white text-[12.5px] font-medium transition-all cursor-pointer flex items-center gap-2 active:scale-95 shadow-[0_0_20px_rgba(56,189,248,0.35)]"
+              title="ก้าวขึ้นสู่เวทีแสดงสดพร้อมพิกัดสถานที่และชุดประจำฉากนี้ทันที"
+            >
+              <Sparkles size={13} />
+              <span>ก้าวขึ้นสู่เวทีด้วยสถานที่นี้ ↵</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -188,6 +188,15 @@ export interface WorldLoreBlock {
   created_at: number
 }
 
+export interface CharacterSkinBlueprint {
+  skinBrief?: string
+  bareAnatomyAndVolume: string
+  skinSurfaceAndIntimateMarks: string
+  somaticMotionPhysics: string
+  intimateDnaAndWearingHabit: string
+  updated_at?: number
+}
+
 export interface WorldCharacterCard {
   id: string
   name: string
@@ -203,6 +212,7 @@ export interface WorldCharacterCard {
   keystoneTether: string
   faultLine: string
   polarInversion: string
+  skinBlueprint?: CharacterSkinBlueprint
   pinnedCardIds?: string[]
   childCards?: LoreCard[]
   created_at: number

@@ -15,6 +15,7 @@ import type {
   GenerateStageCellPayload,
   StageCellGenerateResponse,
   WorldCharacterCard,
+  CharacterSkinBlueprint,
 } from '../types'
 import { WELCOME_STORY_PRESETS, createInitialWorlds } from './world-studio/presets'
 import { StudioStageCellView } from './world-studio/views/StudioStageCellView'
@@ -262,6 +263,7 @@ export function WorldStudioView({
   const [isSprouting, setIsSprouting] = useState(false)
   const [isExtractingSpark, setIsExtractingSpark] = useState(false)
   const [isForgingCharacter, setIsForgingCharacter] = useState(false)
+  const [isForgingCharacterSkin, setIsForgingCharacterSkin] = useState(false)
   const [isSparkPlayerEdited, setIsSparkPlayerEdited] = useState(false)
   const [sparkHistory, setSparkHistory] = useState<string[]>([])
   const [generatingNoteId, setGeneratingNoteId] = useState<string | null>(null)
@@ -596,6 +598,100 @@ export function WorldStudioView({
     } finally {
       setIsForgingCharacter(false)
     }
+  }
+
+  // Pillar 1: Forge Character 3D Skin & Somatic Blueprint
+  const handleForgeCharacterSkin = async (character: WorldCharacterCard, skinBrief?: string) => {
+    if (!character || isForgingCharacterSkin) return
+    setIsForgingCharacterSkin(true)
+    try {
+      let res: Response
+      const payload = {
+        world_lore: combinedWorldLore || activeWorld.rawLore,
+        player_brief: character.playerBrief || '',
+        character_name: character.name,
+        role_tagline: character.roleTagline,
+        appearance_and_charm: character.appearanceAndCharm,
+        the_mask: character.theMask,
+        hidden_core: character.hiddenCore,
+        core_wound: character.coreWound,
+        skin_brief: skinBrief || '',
+      }
+      try {
+        res = await fetch('http://localhost:8000/api/sandbox/world/forge-character-skin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      } catch {
+        res = await fetch('https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/forge-character-skin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      }
+
+      if (res.ok) {
+        const data = await res.json()
+        const nextSkin: CharacterSkinBlueprint = {
+          skinBrief,
+          bareAnatomyAndVolume: data.bare_anatomy_and_volume || '',
+          skinSurfaceAndIntimateMarks: data.skin_surface_and_intimate_marks || '',
+          somaticMotionPhysics: data.somatic_motion_physics || '',
+          intimateDnaAndWearingHabit: data.intimate_dna_and_wearing_habit || '',
+          updated_at: Date.now(),
+        }
+        updateActiveWorld(prev => {
+          const nextWs = {
+            ...prev,
+            characters: (prev.characters || []).map(item => {
+              if (item.id !== character.id) return item
+              return {
+                ...item,
+                skinBlueprint: nextSkin,
+              }
+            }),
+          }
+          saveWorldToDatabase(nextWs)
+          return nextWs
+        })
+        setNotificationMessage(`หล่อหลอมเรือนร่าง 3 มิติของ "${character.name}" สำเร็จแล้ว`)
+        setJustSavedNotification(true)
+        setTimeout(() => setJustSavedNotification(false), 2000)
+      }
+    } catch (e) {
+      console.error('Forge character skin failed:', e)
+    } finally {
+      setIsForgingCharacterSkin(false)
+    }
+  }
+
+  // Update Character Skin in place & auto-save
+  const handleUpdateCharacterSkin = (characterId: string, updates: Partial<CharacterSkinBlueprint>) => {
+    updateActiveWorld(prev => {
+      const nextWs = {
+        ...prev,
+        characters: (prev.characters || []).map(item => {
+          if (item.id !== characterId) return item
+          const currentSkin = item.skinBlueprint || {
+            bareAnatomyAndVolume: '',
+            skinSurfaceAndIntimateMarks: '',
+            somaticMotionPhysics: '',
+            intimateDnaAndWearingHabit: '',
+          }
+          return {
+            ...item,
+            skinBlueprint: {
+              ...currentSkin,
+              ...updates,
+              updated_at: Date.now(),
+            },
+          }
+        }),
+      }
+      saveWorldToDatabase(nextWs)
+      return nextWs
+    })
   }
 
   // Toggle card pinning to character
@@ -2410,6 +2506,7 @@ export function WorldStudioView({
               <StudioDashboardView
                 activeWorld={activeWorld}
                 isForgingCharacter={isForgingCharacter}
+                isForgingCharacterSkin={isForgingCharacterSkin}
                 allAvailableCardsForCharacter={allAvailableCardsForCharacter}
                 activeTagPopoverCardId={activeTagPopoverCardId}
                 isAutoLinkingCharacterCards={isAutoLinkingCharacterCards}
@@ -2417,6 +2514,8 @@ export function WorldStudioView({
                 renderCardTags={renderCardTags}
                 onForgeCharacter={handleForgeCharacter}
                 onReForgeCharacter={handleReForgeCharacter}
+                onForgeCharacterSkin={handleForgeCharacterSkin}
+                onUpdateCharacterSkin={handleUpdateCharacterSkin}
                 onUpdateCharacter={handleUpdateCharacter}
                 onDeleteCharacter={handleDeleteCharacter}
                 onSelectCharacter={handleSelectCharacter}

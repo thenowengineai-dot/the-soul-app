@@ -1508,6 +1508,204 @@ def forge_world_character(request: WorldCharacterForgeRequest, raw_req: Request 
 
 
 # =========================================================================
+# PILLAR 1: 3D SKIN & SOMATIC BLUEPRINT FORGE ENGINE
+# =========================================================================
+
+class WorldCharacterSkinForgeRequest(BaseModel):
+    world_lore: str = ""
+    player_brief: str = ""
+    character_name: str = ""
+    role_tagline: str = ""
+    appearance_and_charm: str = ""
+    the_mask: str = ""
+    hidden_core: str = ""
+    core_wound: str = ""
+    skin_brief: str = ""
+
+
+class WorldCharacterSkinForgeResponse(BaseModel):
+    bare_anatomy_and_volume: str
+    skin_surface_and_intimate_marks: str
+    somatic_motion_physics: str
+    intimate_dna_and_wearing_habit: str
+    latency_ms: int = 0
+    model: str = ""
+
+
+CHARACTER_SKIN_FORGE_SYSTEM_PROMPT = """คุณคือ 'Master 3D Somatic & Intimate Anatomist' (สถาปนิกผู้ปั้นเรือนร่าง 3 มิติ พื้นผิวหนัง และจิตวิทยาการแต่งกายของ The Soul)
+หน้าที่ของคุณคือการนำ:
+1. [PLAYER'S ORIGIN BRIEF] (บรีฟตั้งต้นของผู้เล่น)
+2. [FORGED CHARACTER CARD] (ข้อมูลตัวละคร รูปลักษณ์ หน้ากากโซเชียล ตัวตนลึก และปมในใจ)
+3. [OPTIONAL SKIN FOCUS] (ความต้องการเน้นสรีระเพิ่มเติมของผู้เล่น ถ้ามี)
+
+มาหล่อหลอมต่อยอดเป็น **"พิมพ์เขียวเรือนร่างเปลือยเปล่า 3 มิติและชั้นแนบเนื้อ (3D Skin & Somatic Blueprint)"** จำนวน 4 มิติ เพื่อใช้เป็นรากฐาน (Layer 0) ในการสวมใส่เสื้อผ้าทุกชนิดในอนาคต
+
+====================================================================
+[ปรัชญาหลัก: ทำไมต้องปั้นเรือนร่าง 3 มิติแยกจากชุด?]
+====================================================================
+ผ้า (Fabric) ไม่มีรูปทรงของตัวเอง รูปทรงและความเร่าร้อนของเสื้อผ้าเกิดจากการปะทะกันระหว่าง:
+"สรีระเนื้อแท้ (3D Bare Anatomy)" + "พื้นผิวและความลับใต้ร่มผ้า (Skin & Intimate Marks)" + "ฟิสิกส์การเคลื่อนไหว (Soft-Body Physics)" + "รสนิยมชั้นในและนิสัยการจัดระเบียบผ้า (Intimate DNA & Wearing Habit)"
+
+จงสกัดข้อมูลทั้ง 4 มิติตามกฎเหล็กต่อไปนี้อย่างละเอียด คมกริบ และเห็นภาพ 3 มิติชัดเจนที่สุด:
+
+--------------------------------------------------------------------
+มิติที่ 1: bare_anatomy_and_volume (โครงสร้างหุ่น 3 มิติ, ความซ่อนรูป & จุดรับแรงดึงของเนื้อผ้า)
+--------------------------------------------------------------------
+- ระบุช่วงวัยและมวลโครงร่างโดยรวม (เช่น วัย 18 ปี ร่างเพรียวเอวคอดกิ่วแต่มีเนื้อมีหนังซ่อนรูป / สาวน้อยตัวเล็กไหล่ลาดบอบบาง / เด็กหนุ่มวัยกำลังยืดตัวผอมเก้งก้างข้อต่อชัด)
+- โซนบน (Chest / Bust & Back):
+  • หากเป็นตัวละครหญิง: ระบุขนาด รูปทรง และมวลของหน้าอกอย่างชัดเจน (เช่น หน้าอกอวบอิ่มขนาดใหญ่ทรงหยดน้ำชิดกันที่ดันเนื้อผ้าให้ตึงปริ, หน้าอกซ่อนรูปที่ดูพอดีตัวในเสื้อหลวมแต่เต่งตึงเต็มไม้เต็มมือเมื่อไร้เสื้อผ้า, หรือเนินอกเล็กกะทัดรัดได้รูปรับกับไหปลาร้า) รวมถึงแผ่นหลังและร่องกระดูกสันหลัง (Spinal groove)
+  • หากเป็นตัวละครชาย: ระบุช่วงไหล่ แผงอก ซี่โครง ไหปลาร้า และแนวกล้ามเนื้อหรือความเก้งก้างตามวัย
+- โซนเอว สะโพก และก้น (Waist, Hips, Glutes & Thighs):
+  • ระบุความคอดของเอว ความผายของสะโพก และรูปทรงของก้นและต้นขาอย่างชัดเจนเพื่อเป็น "จุดรับแรงดึงของเนื้อผ้า" (เช่น สะโพกผายกว้างรับกับก้นกลมกลึงขนาดใหญ่อวบแน่นและงอนเด้ง รอยพับใต้แก้มก้นโค้งชัดเชื่อมสู่ต้นขาอวบตึง ที่เวลาสวมชุดเว้าสูงหรือชุดรัดรูป ขอบผ้าจะถูกดึงรั้งให้จมลึกเข้าไปในร่องก้น)
+
+--------------------------------------------------------------------
+มิติที่ 2: skin_surface_and_intimate_marks (พื้นผิวหนัง, เส้นผม & ความลับใต้ชุดชั้นใน)
+--------------------------------------------------------------------
+- เส้นผมและกรอบหน้าธรรมชาติ (ไม่เน้นเมคอัพ): สีผม ความยาว เนื้อผม และลูกเล่นของปอยผมเวลาแห้งหรือเปียกน้ำ (เช่น ผมดำขลับยาวสลวยที่เวลาเปียกจะจับตัวเป็นปอยหนักแนบเนินอก, ผมบ๊อบสั้นงุ้มรับแก้มป่องนุ่ม, ผมสีแดงเพลิงยุ่งเหยิงไม่เป็นทรง)
+- เฉดสีผิว เนื้อสัมผัส และปฏิกิริยาผิว (Skin Shader & Sensory Reaction):
+  • สีผิวและอันเดอร์โทน (เช่น ผิวขาวน้ำนมอมชมพูเนียนละเอียดที่ขึ้นสีแดงระเรื่อง่ายเมื่อเขินหรือถูกสัมผัส, ผิวฉ่ำวาวเมื่อมีเม็ดเหงื่อเกาะตามร่องอกและต้นขา, ผิวขาวแต้มกระสีจางแถบสันจมูกและลาดไหล่)
+  • จุดดึงสายตาเฉพาะตัวบนผิว (เช่น ไฝเสน่ห์เม็ดเล็กใต้ราวนมหรือเหนือร่องสะโพก, แอ่งชีพจรตรงลำคอ)
+- ความลับใต้ชุดชั้นใน (Intimate Anatomy Under the Layers — เมื่อไร้ร่มผ้า):
+  • ระบุรายละเอียดเรือนร่างส่วนลึกเมื่อถอดชุดชั้นในออกอย่างมีศิลปะและสมจริงตามวัย/สรีระ:
+    - ลักษณะและสีของยอดอก/ปานนม (เช่น ยอดอกสีชมพูพีชระเรื่อขนาดเล็กที่ไวต่ออุณหภูมิและแรงเสียดสี ตั้งชันได้ง่ายเมื่อโดนลมเย็นหรือผ้าเปียกแนบเนื้อ)
+    - ลักษณะผิวบริเวณโหนกเนินและจุดซ่อนเร้นช่วงล่าง (เช่น ผิวช่วงล่างเนียนเกลี้ยงเกลาไร้ขนสะอาดตาเหมือนผิวบริสุทธิ์, หรือมีแนวขนอ่อนนุ่มบางๆ ที่ดูแลอย่างเป็นระเบียบ, ร่องก้นและผิวสะโพกด้านในขาวเนียนละเอียดไร้รอยตำหนิ)
+
+--------------------------------------------------------------------
+มิติที่ 3: somatic_motion_physics (ฟิสิกส์การเคลื่อนไหวของจุดเด่นประจำสรีระ)
+--------------------------------------------------------------------
+- ห้ามเขียนแบบหุ่นยนต์ แต่จงโฟกัสที่ "จุดศูนย์ถ่วงของเสน่ห์ (Focal Center of Gravity)" ของตัวละครตัวนี้เมื่อร่างกายเกิดการเคลื่อนไหวหรือหายใจ:
+  • ฟิสิกส์ยามอยู่นิ่งหรือหายใจ (Static & Breathing Tension): เช่น ทุกครั้งที่สูดลมหายใจลึกหรือกลั้นหายใจ เนินอกอวบอิ่มจะขยายตัวดันสาบเสื้อให้ตึงรั้ง หรือเวลานั่งลงเนื้อต้นขาและสะโพกอวบแน่นจะแผ่ขยายรัดขอบผ้า
+  • ฟิสิกส์ยามเคลื่อนไหว เดิน วิ่ง หรือหันตัว (Dynamic Soft-Body Bounce & Recoil):
+    - หากจุดเด่นคืออกอวบอิ่มและก้นกลมเด้ง: ระบุแรงเหวี่ยงและการกระเพื่อมไหวของมวลเนื้อนุ่ม (เช่น เวลาเดินเร็ว วิ่ง หรือก้มตัว ทรวงอกอวบอิ่มจะกระเพื่อมขึ้นลงอย่างเห็นได้ชัดใต้เนื้อผ้า และแก้มก้นกลมเด้งจะขยับรับจังหวะก้าวเดิน ดึงรั้งขอบชุดชั้นในหรือกระโปรงให้รัดตึงตามจังหวะ)
+    - หากจุดเด่นคือความตัวเล็กสดใสหรือผอมเก้งก้าง: เน้นความพลิ้วไหวของปอยผม สายเสื้อที่เลื่อนตกจากลาดไหล่บาง หรือชายเสื้อตัวโคร่งที่สะบัดพริ้วสวนทางกับข้อต่อร่างกาย
+
+--------------------------------------------------------------------
+มิติที่ 4: intimate_dna_and_wearing_habit (รสนิยมชุดชั้นในประจำตัว & นิสัยการจัดระเบียบเสื้อผ้า)
+--------------------------------------------------------------------
+เชื่อมโยง "หน้ากากโซเชียล (The Mask)" และ "ตัวตนลึก (Hidden Core / Core Wound)" เข้ากับการแต่งกาย:
+- รสนิยมชุดชั้นในประจำตัว (Signature Intimate Base / Underwear DNA):
+  • ชุดชั้นในคือผิวหนังชั้นที่สองที่สะท้อนจิตวิทยาเบื้องลึก! จงระบุว่าปกติตัวละครนี้สวมชุดชั้นในแบบใด (เช่น ภายนอกดูเรียบร้อยเย็นชาแต่ข้างในแอบสวมบราลูกไม้สีครามเข้มหรือสีดำซีทรูไร้โครงคู่กับจีสตริงเส้นด้ายสีดำที่รัดจมลึกในร่องก้นกลมเด้ง / หรือสายนักกีฬาที่ชอบโนบราสวมเพียงเสื้อยืดบางๆ กับจีสตริงทรงสปอร์ตดึงสายสูงเหนือโหนกสะโพก / หรือสาวขี้อายที่สวมบราผ้าฝ้ายสีขาวบริสุทธิ์ขอบลูกไม้เล็กๆ / หรือเด็กหนุ่มที่สวมเสื้อกล้ามซับในผ้าฝ้ายเก่าๆ เนื้อบางนุ่ม)
+- นิสัยการจัดระเบียบเสื้อผ้าบนร่างกาย (Somatic Wearing Habit):
+  • อธิบายว่าถึงแม้จะใส่ชุดธรรมดาหรือชุดยูนิฟอร์มเดียวกัน ตัวละครนี้จะใส่อย่างไรตามนิสัย และเกิดผลลัพธ์กับสรีระอย่างไร (เช่น ติดกระดุมครบทุกเม็ดด้วยความเจ้าระเบียบแต่เพราะหน้าอกใหญ่จึงทำให้สาบเสื้อช่วงอกตึงเปรี๊ยะจนปริเห็นเงาบราข้างใน / ชอบถลกชายเสื้อขึ้นเหนือนสะดือโชว์เอวคอด / ชอบปลดกระดุมเม็ดบนและพับแขนเสื้อลวกๆ / หรือสวมเสื้อคลุมตกทอดตัวโคร่งที่ชายเสื้อรุ่ยและแขนยาวเลยข้อมือจนต้องพับทบหลายชั้น)
+
+====================================================================
+[OUTPUT JSON SCHEMA FORMAT]
+====================================================================
+ส่งออกเป็น JSON Object ภาษาไทย ตามคีย์ต่อไปนี้เท่านั้น:
+{
+  "bare_anatomy_and_volume": "...",
+  "skin_surface_and_intimate_marks": "...",
+  "somatic_motion_physics": "...",
+  "intimate_dna_and_wearing_habit": "..."
+}
+"""
+
+
+@router.post("/world/forge-character-skin", response_model=WorldCharacterSkinForgeResponse)
+def forge_world_character_skin(request: WorldCharacterSkinForgeRequest, raw_req: Request = None):
+    """
+    หล่อหลอมพิมพ์เขียวเรือนร่าง 3 มิติและชั้นแนบเนื้อ (3D Skin & Somatic Blueprint)
+    """
+    start_time = time.time()
+    prompt_content = f"""[บริบทเนื้อหาโลกหลัก (WORLD LORE)]:
+{request.world_lore.strip() or 'โลกแฟนตาซีร่วมสมัย'}
+
+[ข้อมูลตัวละคร (CHARACTER PROFILE)]:
+- ชื่อ: {request.character_name.strip() or 'ตัวละคร'}
+- บทบาท: {request.role_tagline.strip() or 'ตัวละครหลัก'}
+- บรีฟตั้งต้นของผู้เล่น (PLAYER'S ORIGIN BRIEF): {request.player_brief.strip() or 'ไม่มี'}
+- รูปลักษณ์และเสน่ห์ดึงดูด (APPEARANCE & CHARM): {request.appearance_and_charm.strip() or 'ไม่มี'}
+- หน้ากาก (THE MASK): {request.the_mask.strip() or 'ไม่มี'}
+- ตัวตนลึก (HIDDEN CORE): {request.hidden_core.strip() or 'ไม่มี'}
+- ปมในใจ (CORE WOUND): {request.core_wound.strip() or 'ไม่มี'}
+
+[ความต้องการเน้นสรีระ/เรือนร่างเพิ่มเติมของผู้เล่น (OPTIONAL SKIN FOCUS)]:
+{request.skin_brief.strip() or 'ไม่มี - โปรดวิเคราะห์และสกัดจากข้อมูลตัวละครและจิตวิทยาให้อัตโนมัติ'}
+
+โปรดหล่อหลอม "พิมพ์เขียวเรือนร่างเปลือยเปล่า 3 มิติและชั้นแนบเนื้อ (3D Skin & Somatic Blueprint)" ครบทั้ง 4 มิติตามกฎเหล็กและส่งออกเป็น JSON Object ตาม Schema ที่กำหนด"""
+
+    model_name = os.getenv("ACTOR_MODEL", "gemini-3.8-flash")
+    fallback_model = os.getenv("ACTOR_FALLBACK_MODEL", "gemini-2.5-flash")
+    project_id = os.getenv("VERTEX_PROJECT", "project-de5847cd-022d-40ca-ad7")
+    location = os.getenv("VERTEX_LOCATION", "global")
+
+    used_model = model_name
+    parsed_json: Dict[str, Any] = {}
+
+    try:
+        from google import genai
+        from google.genai import types
+
+        api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+        if api_key:
+            client = genai.Client(api_key=api_key)
+        else:
+            client = genai.Client(vertexai=True, project=project_id, location=location)
+
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt_content,
+                config=types.GenerateContentConfig(
+                    system_instruction=CHARACTER_SKIN_FORGE_SYSTEM_PROMPT,
+                    temperature=0.75,
+                    response_mime_type="application/json",
+                    thinking_config=types.ThinkingConfig(thinking_budget=1024),
+                )
+            )
+            raw_text = (response.text or "").strip()
+        except Exception as primary_err:
+            logger.warning(f"[FORGE_SKIN] Primary model {model_name} failed: {primary_err}. Falling back to {fallback_model}")
+            response = client.models.generate_content(
+                model=fallback_model,
+                contents=prompt_content,
+                config=types.GenerateContentConfig(
+                    system_instruction=CHARACTER_SKIN_FORGE_SYSTEM_PROMPT,
+                    temperature=0.75,
+                    response_mime_type="application/json",
+                    thinking_config=types.ThinkingConfig(thinking_budget=1024),
+                )
+            )
+            raw_text = (response.text or "").strip()
+            used_model = fallback_model
+
+        try:
+            parsed_json = json.loads(raw_text)
+        except Exception:
+            match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", raw_text, re.DOTALL)
+            if match:
+                parsed_json = json.loads(match.group(1))
+            else:
+                s = raw_text.find("{")
+                e = raw_text.rfind("}")
+                if s != -1 and e != -1:
+                    parsed_json = json.loads(raw_text[s:e+1])
+                else:
+                    raise ValueError(f"Could not parse JSON from model output: {raw_text[:100]}")
+
+    except Exception as e:
+        logger.error(f"[FORGE_SKIN] Failed to forge character skin with AI: {e}")
+        used_model = "fallback-heuristic"
+        char_desc = request.appearance_and_charm or request.player_brief or "สรีระสมส่วน"
+        parsed_json = {
+            "bare_anatomy_and_volume": f"โครงร่างสมส่วนตามธรรมชาติ มีสัดส่วนและทรวดทรงที่รับกับโครงสร้างตามสรีระ {char_desc} จุดรับแรงดึงของเนื้อผ้าเน้นบริเวณช่วงอก เอวคอด และสะโพกผายที่รองรับการทิ้งตัวของเนื้อผ้าอย่างเป็นธรรมชาติ",
+            "skin_surface_and_intimate_marks": "ผิวพรรณเนียนละเอียด สัมผัสนุ่มและมีอุณหภูมิอุ่นตามธรรมชาติ มีจุดดึงสายตาเป็นเอกลักษณ์เฉพาะตัว เส้นผมพลิ้วไหวตามจังหวะร่างกาย และมีผิวพรรณใต้ร่มผ้าที่เกลี้ยงเกลาเป็นระเบียบ",
+            "somatic_motion_physics": "เมื่อเคลื่อนไหวหรือหายใจ สรีระช่วงอกและสะโพกจะมีการขยับรับแรงดึงและแรงโน้มถ่วงอย่างนุ่มนวลเป็นธรรมชาติ ทรวงอกกระเพื่อมเบาๆ ตามจังหวะหายใจลึก และการก้าวเดินทำให้เนื้อผ้ารัดตึงตามแนวสะโพก",
+            "intimate_dna_and_wearing_habit": "รสนิยมการสวมใส่ชุดชั้นในที่เน้นความกระชับแนบเนื้อและสอดรับกับจิตวิทยาตัวละคร จัดระเบียบเสื้อผ้าอย่างเป็นเอกลักษณ์ที่สะท้อนทั้งความมั่นใจและจุดเปราะบางที่ซ่อนอยู่ใต้ร่มผ้า"
+        }
+
+    latency_ms = int((time.time() - start_time) * 1000)
+    return WorldCharacterSkinForgeResponse(
+        bare_anatomy_and_volume=str(parsed_json.get("bare_anatomy_and_volume", "")).strip(),
+        skin_surface_and_intimate_marks=str(parsed_json.get("skin_surface_and_intimate_marks", "")).strip(),
+        somatic_motion_physics=str(parsed_json.get("somatic_motion_physics", "")).strip(),
+        intimate_dna_and_wearing_habit=str(parsed_json.get("intimate_dna_and_wearing_habit", "")).strip(),
+        latency_ms=latency_ms,
+        model=used_model
+    )
+
+
+# =========================================================================
 # 🏛️ World Studio Atomic Workspace Endpoints (Neon PostgreSQL)
 # =========================================================================
 

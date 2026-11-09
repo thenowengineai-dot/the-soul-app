@@ -14,13 +14,16 @@ import {
   HeartHandshake,
   Compass,
   Save,
+  Loader2,
+  Scan,
 } from 'lucide-react'
-import type { WorldWorkspace, WorldCharacterCard, LoreCard } from '../../../types'
+import type { WorldWorkspace, WorldCharacterCard, LoreCard, CharacterSkinBlueprint } from '../../../types'
 import type { StudioActiveView } from '../types'
 
 interface StudioDashboardViewProps {
   activeWorld: WorldWorkspace
   isForgingCharacter: boolean
+  isForgingCharacterSkin?: boolean
   allAvailableCardsForCharacter: LoreCard[]
   activeTagPopoverCardId: string | null
   isAutoLinkingCharacterCards?: boolean
@@ -28,6 +31,8 @@ interface StudioDashboardViewProps {
   renderCardTags: (card: LoreCard, noteId?: string, extraBadge?: React.ReactNode) => React.ReactNode
   onForgeCharacter: (brief: string) => Promise<void>
   onReForgeCharacter?: (character: WorldCharacterCard) => Promise<void>
+  onForgeCharacterSkin?: (character: WorldCharacterCard, skinBrief?: string) => Promise<void>
+  onUpdateCharacterSkin?: (characterId: string, updates: Partial<CharacterSkinBlueprint>) => void
   onUpdateCharacter: (characterId: string, updates: Partial<WorldCharacterCard>) => void
   onDeleteCharacter: (characterId: string) => void
   onSelectCharacter: (characterId: string) => void
@@ -62,6 +67,7 @@ const BRIEF_PRESETS = [
 export const StudioDashboardView: React.FC<StudioDashboardViewProps> = ({
   activeWorld,
   isForgingCharacter,
+  isForgingCharacterSkin = false,
   allAvailableCardsForCharacter,
   activeTagPopoverCardId,
   isAutoLinkingCharacterCards,
@@ -69,6 +75,8 @@ export const StudioDashboardView: React.FC<StudioDashboardViewProps> = ({
   renderCardTags,
   onForgeCharacter,
   onReForgeCharacter,
+  onForgeCharacterSkin,
+  onUpdateCharacterSkin,
   onUpdateCharacter,
   onDeleteCharacter,
   onSelectCharacter,
@@ -86,12 +94,23 @@ export const StudioDashboardView: React.FC<StudioDashboardViewProps> = ({
 }) => {
   const [briefInput, setBriefInput] = useState('')
   const [isBriefExpanded, setIsBriefExpanded] = useState(false)
+  const [characterSkinBriefs, setCharacterSkinBriefs] = useState<Record<string, string>>({})
 
   const characters = activeWorld.characters || []
   const activeCharacter =
     characters.find((c) => c.id === activeWorld.activeCharacterId) ||
     characters[0] ||
     null
+
+  const currentSkinBrief =
+    (activeCharacter ? characterSkinBriefs[activeCharacter.id] : undefined) ??
+    activeCharacter?.skinBlueprint?.skinBrief ??
+    ''
+
+  const handleForgeSkin = async () => {
+    if (!activeCharacter || isForgingCharacterSkin) return
+    await onForgeCharacterSkin?.(activeCharacter, currentSkinBrief)
+  }
 
   const hasLore = Boolean(activeWorld.rawLore && activeWorld.rawLore.trim().length > 0)
   const hasSpark = Boolean(activeWorld.sparkText && activeWorld.sparkText.trim().length > 0)
@@ -641,6 +660,163 @@ export const StudioDashboardView: React.FC<StudioDashboardViewProps> = ({
               placeholder="ระบุสรีระ ทรงผม สัดส่วนหุ่น หน้าอก และเสน่ห์ดึงดูด..."
               className="w-full bg-transparent text-[13.5px] text-[#F1F1F1] placeholder-white/20 focus:outline-none resize-none leading-relaxed font-sans border-none p-0"
             />
+          </div>
+
+          {/* =========================================================================
+              SOCKET 1.5 / PILLAR 1: 3D SKIN & SOMATIC BLUEPRINT (พิมพ์เขียวเรือนร่าง 3 มิติ & ชั้นแนบเนื้อ)
+              ========================================================================= */}
+          <div className="relative z-10 rounded-2xl p-4 sm:p-5 bg-black/35 border border-white/[0.09] space-y-4">
+            {/* Header with Title, Badge, and Action Button */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Scan size={15} className="text-[#EF264C]" />
+                <span className="text-[13.5px] font-semibold text-white/95">
+                  พิมพ์เขียวเรือนร่าง 3 มิติ & ชั้นแนบเนื้อ (3D Skin & Somatic Blueprint)
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-[#EF264C]/15 border border-[#EF264C]/30 text-[10.5px] font-medium text-[#EF264C] tracking-wide">
+                  Layer 0 · Permanent Body
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleForgeSkin}
+                disabled={isForgingCharacterSkin}
+                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[12px] font-medium transition-all bg-[#EF264C] hover:bg-[#d81e42] text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+              >
+                {isForgingCharacterSkin ? (
+                  <>
+                    <Loader2 size={13} className="animate-spin" />
+                    <span>กำลังหล่อหลอมเรือนร่าง 3 มิติ...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={13} />
+                    <span>
+                      {activeCharacter.skinBlueprint?.bareAnatomyAndVolume
+                        ? '✨ หล่อหลอมเรือนร่าง 3 มิติใหม่'
+                        : '✨ เจนเรือนร่าง 3 มิติ & ชั้นแนบเนื้อ'}
+                    </span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Optional skin focus brief input */}
+            <div className="space-y-1">
+              <input
+                type="text"
+                value={currentSkinBrief}
+                onChange={(e) => {
+                  const val = e.target.value
+                  setCharacterSkinBriefs((prev) => ({ ...prev, [activeCharacter.id]: val }))
+                }}
+                placeholder="ระบุจุดเน้นเรือนร่าง/ผิว/ชั้นในเพิ่มเติม (ถ้าเว้นว่าง ระบบจะวิเคราะห์จากบรีฟและนิสัยให้อัตโนมัติ)..."
+                className="w-full px-3.5 py-2 rounded-xl bg-black/45 border border-white/10 text-[12.5px] text-[#F1F1F1] placeholder-white/25 focus:outline-none focus:border-[#EF264C]/60 transition-colors font-sans"
+              />
+              <p className="text-[11px] text-white/40 px-1">
+                สรีระเนื้อแท้ (Layer 0) รากฐานฟิสิกส์การสวมใส่เสื้อผ้าและชุดชั้นในทุกชนิด ไม่หลุดทรงตามกาลเวลา
+              </p>
+            </div>
+
+            {/* Bento Grid 2x2 of the 4 dimensions */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+              {/* Dimension 1: Bare Anatomy & Volume */}
+              <div className="rounded-xl p-3.5 bg-black/25 border border-white/[0.07] hover:border-white/[0.14] transition-colors space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11.5px] font-medium text-[#EF264C]">
+                    1. โครงสร้างหุ่น 3 มิติ & จุดรับแรงดึงผ้า
+                  </span>
+                  <span className="text-[10px] text-white/35">bareAnatomyAndVolume</span>
+                </div>
+                <p className="text-[10.5px] text-white/40 leading-snug">
+                  ช่วงวัย, มวลโครงร่าง, อก, เอวคอด, สะโพกผาย & ก้นกลมเด้ง
+                </p>
+                <textarea
+                  rows={3}
+                  value={activeCharacter.skinBlueprint?.bareAnatomyAndVolume || ''}
+                  onChange={(e) =>
+                    onUpdateCharacterSkin?.(activeCharacter.id, {
+                      bareAnatomyAndVolume: e.target.value,
+                    })
+                  }
+                  placeholder="ยังไม่ได้หล่อหลอมโครงสร้างหุ่น 3 มิติ (กดปุ่มด้านบนเพื่อเจน หรือพิมพ์กำหนดได้ทันที)..."
+                  className="w-full bg-transparent text-[12.5px] text-[#F1F1F1]/90 placeholder-white/20 focus:outline-none resize-none leading-relaxed font-sans border-none p-0"
+                />
+              </div>
+
+              {/* Dimension 2: Skin Surface & Intimate Marks */}
+              <div className="rounded-xl p-3.5 bg-black/25 border border-white/[0.07] hover:border-white/[0.14] transition-colors space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11.5px] font-medium text-[#EF264C]">
+                    2. พื้นผิวหนัง, เส้นผม & ความลับใต้ร่มผ้า
+                  </span>
+                  <span className="text-[10px] text-white/35">skinSurfaceAndIntimateMarks</span>
+                </div>
+                <p className="text-[10.5px] text-white/40 leading-snug">
+                  สีผิว, สัมผัส, จุดดึงสายตา, ยอดอก & ผิวพรรณใต้ชั้นใน
+                </p>
+                <textarea
+                  rows={3}
+                  value={activeCharacter.skinBlueprint?.skinSurfaceAndIntimateMarks || ''}
+                  onChange={(e) =>
+                    onUpdateCharacterSkin?.(activeCharacter.id, {
+                      skinSurfaceAndIntimateMarks: e.target.value,
+                    })
+                  }
+                  placeholder="ยังไม่ได้กำหนดพื้นผิวหนังและความลับใต้ร่มผ้า..."
+                  className="w-full bg-transparent text-[12.5px] text-[#F1F1F1]/90 placeholder-white/20 focus:outline-none resize-none leading-relaxed font-sans border-none p-0"
+                />
+              </div>
+
+              {/* Dimension 3: Somatic Motion Physics */}
+              <div className="rounded-xl p-3.5 bg-black/25 border border-white/[0.07] hover:border-white/[0.14] transition-colors space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11.5px] font-medium text-[#EF264C]">
+                    3. ฟิสิกส์การเคลื่อนไหวของสรีระ
+                  </span>
+                  <span className="text-[10px] text-white/35">somaticMotionPhysics</span>
+                </div>
+                <p className="text-[10.5px] text-white/40 leading-snug">
+                  การกระเพื่อมไหว, แรงเหวี่ยง, ลมหายใจ & การเคลื่อนไหว
+                </p>
+                <textarea
+                  rows={3}
+                  value={activeCharacter.skinBlueprint?.somaticMotionPhysics || ''}
+                  onChange={(e) =>
+                    onUpdateCharacterSkin?.(activeCharacter.id, {
+                      somaticMotionPhysics: e.target.value,
+                    })
+                  }
+                  placeholder="ยังไม่ได้กำหนดฟิสิกส์การเคลื่อนไหวของสรีระ..."
+                  className="w-full bg-transparent text-[12.5px] text-[#F1F1F1]/90 placeholder-white/20 focus:outline-none resize-none leading-relaxed font-sans border-none p-0"
+                />
+              </div>
+
+              {/* Dimension 4: Intimate DNA & Wearing Habit */}
+              <div className="rounded-xl p-3.5 bg-black/25 border border-white/[0.07] hover:border-white/[0.14] transition-colors space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11.5px] font-medium text-[#EF264C]">
+                    4. รสนิยมชั้นในประจำตัว & นิสัยการสวมใส่
+                  </span>
+                  <span className="text-[10px] text-white/35">intimateDnaAndWearingHabit</span>
+                </div>
+                <p className="text-[10.5px] text-white/40 leading-snug">
+                  แบบชุดชั้นในประจำตัว (Intimate DNA) & นิสัยการจัดระเบียบเสื้อผ้า
+                </p>
+                <textarea
+                  rows={3}
+                  value={activeCharacter.skinBlueprint?.intimateDnaAndWearingHabit || ''}
+                  onChange={(e) =>
+                    onUpdateCharacterSkin?.(activeCharacter.id, {
+                      intimateDnaAndWearingHabit: e.target.value,
+                    })
+                  }
+                  placeholder="ยังไม่ได้กำหนดรสนิยมชุดชั้นในและนิสัยการสวมใส่..."
+                  className="w-full bg-transparent text-[12.5px] text-[#F1F1F1]/90 placeholder-white/20 focus:outline-none resize-none leading-relaxed font-sans border-none p-0"
+                />
+              </div>
+            </div>
           </div>
 
           {/* =========================================================================

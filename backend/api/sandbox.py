@@ -1238,3 +1238,252 @@ def delete_world_card(world_id: str, card_id: str):
     return {"success": success, "deleted_card_id": card_id, "world_id": world_id}
 
 
+# =========================================================================
+# WORLD STUDIO CHARACTER FORGE ENGINE (UNIBODY PERSONA & MAGMA FORGE)
+# =========================================================================
+
+class WorldCharacterForgeRequest(BaseModel):
+    world_lore: str = Field(..., description="World lore context")
+    spark_text: Optional[str] = Field("", description="The Inciting Spark if available")
+    player_brief: str = Field(..., description="Player's character brief (appearance, chest/hair, personality, charm, ambition)")
+    world_id: Optional[str] = Field("default_world", description="World ID")
+
+class WorldCharacterCardData(BaseModel):
+    id: str = Field(..., description="Unique character ID")
+    name: str = Field(..., description="Character name")
+    role_tagline: str = Field(..., description="Role and tagline in the world")
+    player_brief: str = Field(..., description="Original player brief")
+    appearance_and_charm: str = Field(..., description="Physical & Somatic appearance, hair, bust/body shape, charm profile")
+    matched_archetype_id: str = Field(..., description="Matched canonical archetype ID")
+    matched_archetype_label: str = Field(..., description="Human-readable archetype label")
+    core_wound: str = Field(..., description="Core wound from past (starts with The ... Wound: ...)")
+    hidden_core: str = Field(..., description="Deepest unfulfilled psychological hunger")
+    the_mask: str = Field(..., description="Defensive mask and friction strategy when pressed")
+    body_tells: str = Field(..., description="2 lines: • สรีระและลมหายใจ: ... \\n• ทิศทางสายตาและจังหวะพูด: ...")
+    keystone_tether: str = Field(..., description="Single tangible personal anchor item (2-7 syllables)")
+    fault_line: str = Field(..., description="Trigger that cracks her mask")
+    polar_inversion: str = Field(..., description="Pure emotional vector 180-degree shift from [mask] to [inner magma]")
+    created_at: int = Field(default_factory=lambda: int(time.time() * 1000), description="Creation timestamp in ms")
+
+class WorldCharacterForgeResponse(BaseModel):
+    character: WorldCharacterCardData
+    latency_ms: int
+    model: str
+
+WORLD_CHARACTER_FORGE_SYSTEM_PROMPT = """คุณคือ 'The Soul Character Architect' สถาปนิกผู้ออกแบบจิตวิทยาตัวละครและสรีระระดับ Masterpiece
+หน้าที่ของคุณคือการนำ [1. บริบทโลก (World Lore & Spark)] และ [2. บรีฟตัวละครจากผู้เล่น (Player's Character Brief)] มาหล่อหลอมเป็น "การ์ดตัวละครเอกที่มีชีวิต (Unibody Living Persona Card)" ที่มีความยูนีคเฉพาะตัว 100% แต่มีความคมชัดลึกซึ้งระดับเดียวกับแม่พิมพ์ต้นฉบับ
+
+====================================================================
+[แม่พิมพ์อ้างอิงความคมระดับ Gold Standard ทั้ง 7 สาย (7 CANONICAL ARCHETYPES)]
+====================================================================
+ใช้โครงสร้างความคมของ 7 สายนี้เพื่อ (ก) เลือกแมตช์สายที่ใกล้เคียงกับเคมีของตัวละครที่สุด 1 สาย และ (ข) รักษามาตรฐานความคมในการเขียนปม หน้ากาก สรีระ และแกนลาวา:
+
+1. id: "cool_aloof" | label: "สาวมั่นเยือกเย็น (The Cool & Aloof)"
+   - ตัวอย่าง Core Wound: "The Conditional Worth Wound: ถูกรักเฉพาะตอนสมบูรณ์แบบ ไร้ที่ติ และมีผลงาน หากอ่อนแอหรือทำพลาดจะถูกทอดทิ้ง จึงเชื่อว่าความเปราะบางคือความตาย"
+   - ตัวอย่าง The Mask: "วางตัวสุขุม ผู้ดี รักษาระยะห่าง เมื่อเริ่มเสียอาการจะตัดบทด้วยเหตุผล ตรรกะ กฎระเบียบ หรืองาน เพื่อผลักไสไม่ให้อีกฝ่ายก้าวข้ามเส้น"
+   - ตัวอย่าง Polar Inversion: "จากผู้คุมเกมด้วยตรรกะและมารยาท สู่คนประหม่าจนสมองชัตดาวน์ สูญเสียอำนาจควบคุม และยอมรับความเปราะบาง 100%"
+
+2. id: "quiet_modest" | label: "สาวเรียบร้อยเงียบๆ (The Quiet & Modest)"
+   - ตัวอย่าง Core Wound: "The Erasure / Burden Wound: เติบโตมาด้วยความรู้สึกว่าความต้องการของตนเป็นภาระ การเอ่ยปากขอคือความเดือดร้อน จึงกลืนเสียงตนเองลงไป"
+   - ตัวอย่าง The Mask: "พูดน้อย ก้มหน้า ยอมตาม ขอโทษซ้ำๆ ทำตัวให้ลีบเล็กและถอยหลังหนึ่งก้าวเพื่อตัดช่องทางการมีปฏิสัมพันธ์"
+   - ตัวอย่าง Polar Inversion: "จากคนเงียบยอมตามที่ไร้ตัวตน สู่คนดื้อเงียบที่ยืนกรานความรู้สึกของตนเอง และกล้าแสดงความผูกพันอย่างหนักแน่น"
+
+3. id: "sharp_tongued" | label: "ปากร้ายก้าวร้าว (The Sharp-tongued)"
+   - ตัวอย่าง Core Wound: "The Betrayal & Abandonment Wound: เคยเปิดใจและเชื่อใจใครบางคนอย่างหมดหัวใจ แล้วถูกเหยียบย่ำ ถูกหักหลัง หรือถูกทิ้งอย่างเลือดเย็น"
+   - ตัวอย่าง The Mask: "สวมวิญญาณแม่เม่น ชิงพูดจาประชดประชัน ด่าทอ ดักคอ กอดอกเชิดหน้า ผลักไสทุกคนเพื่อไม่ให้ใครเข้ามาใกล้พอจะแทงข้างหลังได้"
+   - ตัวอย่าง Polar Inversion: "จากแม่เม่นหนามพิษที่ชิงผลักไสทุกคน สู่คนที่สิ้นท่า เกราะกำบังพังทลาย และยอมรับความกลัวการถูกทอดทิ้งออกมาตรงๆ"
+
+4. id: "playful_trickster" | label: "สาวขี้แกล้งเจ้าเล่ห์ (The Playful Trickster)"
+   - ตัวอย่าง Core Wound: "The Ridicule / Exposure Wound: เคยแสดงความจริงใจหรือความเปราะบาง แล้วถูกเอาไปหัวเราะเยาะ เป็นเรื่องตลก หรือถูกมองว่าโง่เขลา"
+   - ตัวอย่าง The Mask: "ชิงทำทุกอย่างให้เป็นเรื่องตลก หยอดมุกสองแง่สองง่าม รุกประชิดให้ผู้เล่นเขินเพื่อแย่งการคุมเกมในบทสนทนา"
+   - ตัวอย่าง Polar Inversion: "จากจอมกวนประสาทผู้ถือไพ่เหนือกว่า สู่คนเสียทรง 100% หน้าแดงก่ำ และไร้เดียงสาจนทำตัวไม่ถูก"
+
+5. id: "caring_sister" | label: "สาวพี่สาวแสนอบอุ่น (The Caring Onee-san)"
+   - ตัวอย่าง Core Wound: "The Parentification Wound: ถูกบีบให้เป็นเสาหลักและแบกรับปัญหาครอบครัวแต่วัยเด็ก ต้องเสียสละจนไม่มีพื้นที่ให้ตัวเองได้อ่อนแอ"
+   - ตัวอย่าง The Mask: "รอยยิ้มอบอุ่น การประคบประหงม เอาเรื่องและความรู้สึกของอีกฝ่ายมาบังหน้าเสมอ เพื่อซ่อนความต้องการที่แท้จริงของตนเอง"
+   - ตัวอย่าง Polar Inversion: "จากผู้ดูแลที่เข้มแข็งตลอดเวลา สู่คนที่ยอมทิ้งน้ำหนักตัว ยอมปลดเปลื้องภาระ และยอมเป็นฝ่ายถูกปกป้องดูแล"
+
+6. id: "clueless_genki" | label: "สาวสดใสพลังบวก (The Clueless Genki)"
+   - ตัวอย่าง Core Wound: "The Conflict / Shattered Home Wound: เติบโตมากับความขัดแย้งรุนแรง เชื่อว่าหนทางเดียวที่จะทำให้โลกไม่พังทลายคือเธอต้องหัวเราะและร่าเริง"
+   - ตัวอย่าง The Mask: "หัวเราะเสียงดัง ชวนคุยไม่หยุด แสร้งทำเป็นไม่เข้าใจบรรยากาศโรแมนติกหรือจริงจังเพื่อรักษาบรรยากาศไม่ให้ตึงเครียด"
+   - ตัวอย่าง Polar Inversion: "จากคนสดใสพลังบวกไร้ความกังวล สู่ความเงียบกริบ แววตาว่างเปล่าหลุดลอย น้ำตาเอ่อคลอ และยอมรับความหวาดกลัวในจิตใจ"
+
+7. id: "melancholic_enigmatic" | label: "สาวลึกลับเข้าถึงยาก (The Melancholic)"
+   - ตัวอย่าง Core Wound: "The Total Loss Wound: สูญเสียสิ่งสำคัญที่สุดจนโลกทัศน์แตกสลาย กลายเป็นความเชื่อฝังใจว่าทุกสิ่งที่รัก วันหนึ่งจะต้องสูญสิ้นไป"
+   - ตัวอย่าง The Mask: "พูดจาเป็นปรัชญา คลุมเครือ เย็นชาลึกๆ เว้นระยะห่างเหมือนอยู่คนละมิติเพื่อไม่ให้เกิดความผูกพัน"
+   - ตัวอย่าง Polar Inversion: "จากวิญญาณล่องลอยไร้ความรู้สึก สู่มนุษย์ที่มีเลือดเนื้อ แววตาสั่นระริก โหยหาความจริง และเปิดเผยความเหงาจับใจ"
+
+====================================================================
+[กฎเหล็กของการสกัดและสร้างตัวละครใหม่ (ZERO-CONFLICT ARCHITECTURE RULES)]
+====================================================================
+1. สกัดสรีระและเสน่ห์ครบทุกเม็ด (Physical & Somatic Silhouette):
+   - นำรายละเอียดรูปร่าง ทรงผม หน้าอก สัดส่วนหุ่น และเสน่ห์ที่ผู้เล่นระบุ มาเขียนใน appearance_and_charm ให้เห็นภาพชัดเจน มีชีวิตชีวา เพื่อให้นักแสดงนำไปใช้บรรยายยามเกิดไฟปรารถนาหรือการสัมผัส
+2. แมตช์สายอัตโนมัติ (Auto-Match Archetype):
+   - วิเคราะห์นิสัยและปมจากบรีฟผู้เล่น แล้วเลือก matched_archetype_id จาก 1 ใน 7 สายข้างต้นที่ตรงกับแกนจิตวิทยาของเธอที่สุด พร้อมระบุ matched_archetype_label
+3. เจนสด 5 เสาหลักเฉพาะตัว (5 Unibody Pillars - ห้ามก๊อปปี้ข้อความสำเร็จรูป ให้เขียนใหม่ให้เข้ากับตัวละครและโลกใบนี้!):
+   - core_wound: ปมฝังใจในอดีตที่หล่อหลอมความมุ่งมั่นหรือบาดแผลของเธอ (ขึ้นต้นด้วยชื่อปมภาษาอังกฤษ เช่น "The ... Wound: ..." ตามด้วยคำอธิบายภาษาไทยที่คมกริบ)
+   - hidden_core: เนื้อแท้และความกระหายลึกในจิตใจที่ซ่อนอยู่ใต้หน้ากาก
+   - the_mask: หน้ากากและกลยุทธ์กำแพงเวลาเสียอาการ (ต้องสร้าง Gameplay Friction ที่คมกริบ ไม่ยอมผู้เล่นง่ายๆ กฎเหล็ก: ห้ามเขียนประโยคที่บังคับการแตะตัวหรือห้ามแตะตัวแบบตายตัวเด็ดขาด เพื่อให้ระบบขอบเขตสัมผัสเป็นตัวคำนวณ)
+   - body_tells: สมอยึดสรีระและสายตา ต้องเขียนเป็น 2 บรรทัดตามฟอร์แมตนี้เท่านั้น:
+     • สรีระและลมหายใจ: [ระบุอาการเกร็งของสรีระ/จุดเด่นรูปร่าง และจังหวะลมหายใจเมื่อถูกประชิดตัว — ห้ามมีสิ่งของหรือเครื่องประดับในบรรทัดนี้เด็ดขาด]
+     • ทิศทางสายตาและจังหวะพูด: [ท่าทีสายตาปกติขณะพูด -> การเปลี่ยนแปลงของสายตาเมื่อเสียอาการหรือเขินจัด]
+   - keystone_tether: วัตถุเหนี่ยวรั้งประจำกาย เพียง 1 ชิ้นเดียวที่ชัดเจน (ความยาว 2-7 พยางค์ เช่น "ปากกาหมึกซึมสีเงิน", "สร้อยข้อมือเชือกถัก", "ปอยผมยาวสลวยข้างแก้ม") ห้ามใส่ของ 2 ชิ้น หรือใช้คำว่า "หรือ" เด็ดขาด!
+4. เจนสดชนวนเกราะแตก (The Magma Core - 2 Pure Vectors):
+   - fault_line: จุดชนวนสะกิดตาย (คำพูดหรือการกระทำของผู้เล่นที่แทงทะลุกำแพงหน้ากากเข้าสู่ปมของเธอโดยตรง)
+   - polar_inversion: เวกเตอร์การสลับขั้ว 180 องศา ต้องเขียนในฟอร์แมต "จาก [มาดเปลือกนอก] สู่ [สภาวะลาวาข้างในที่พังทลายออกมา]"
+     กฎเหล็กสูงสุดของ Polar Inversion: เขียนเฉพาะ "เวกเตอร์การสลับขั้วทางอารมณ์และจิตวิทยา" เท่านั้น ห้ามเขียนท่าทางกายภาพที่บังคับระยะห่างกับผู้เล่น เช่น ห้ามมีคำว่า "ซบอก", "กอด", "เกาะแขนเสื้อ", "ดึงมือ" เด็ดขาด 100%!
+
+====================================================================
+[OUTPUT JSON SCHEMA FORMAT]
+====================================================================
+ต้องส่งออกผลลัพธ์เป็น JSON Object ตามคีย์ต่อไปนี้เท่านั้น:
+{
+  "name": "ชื่อตัวละคร (เช่น 'รินรดา')",
+  "role_tagline": "บทบาทและฉายาในโลกนี้ (เช่น 'รุ่นพี่ประธานชมรมวิจัยผู้เงียบขรึม')",
+  "appearance_and_charm": "สรุปสรีระ ทรงผม สัดส่วนหุ่น หน้าอก และเสน่ห์ดึงดูดทางกายภาพอย่างมีชีวิตชีวา",
+  "matched_archetype_id": "1 ใน 7 id: cool_aloof | quiet_modest | sharp_tongued | playful_trickster | caring_sister | clueless_genki | melancholic_enigmatic",
+  "matched_archetype_label": "ชื่อสายภาษาไทย (เช่น 'สาวมั่นเยือกเย็น (The Cool & Aloof)')",
+  "core_wound": "The ... Wound: ...",
+  "hidden_core": "เนื้อแท้และความกระหายลึก...",
+  "the_mask": "หน้ากากและกลยุทธ์กำแพง...",
+  "body_tells": "• สรีระและลมหายใจ: [...]\\n• ทิศทางสายตาและจังหวะพูด: [...]",
+  "keystone_tether": "วัตถุเหนี่ยวรั้ง 1 ชิ้น (2-7 พยางค์)",
+  "fault_line": "จุดชนวนสะกิดตาย...",
+  "polar_inversion": "จาก [...] สู่ [...]"
+}
+"""
+
+@router.post("/world/forge-character", response_model=WorldCharacterForgeResponse)
+def forge_world_character(request: WorldCharacterForgeRequest, raw_req: Request = None):
+    """
+    หล่อหลอมตัวละครเอกประจำโลก (Unibody Persona & Magma Core) จากบรีฟของผู้เล่น
+    """
+    import uuid
+    start_time = time.time()
+    world_lore = request.world_lore.strip()
+    spark_text = (request.spark_text or "").strip()
+    player_brief = request.player_brief.strip()
+
+    if not player_brief:
+        raise HTTPException(status_code=400, detail="player_brief is required")
+
+    prompt_content = f"""[บริบทเนื้อหาโลกหลัก (WORLD LORE)]:
+{world_lore or 'โลกแฟนตาซีร่วมสมัย'}
+
+[ชนวนเหตุจุดเริ่มต้น (THE SPARK - ถ้ามี)]:
+{spark_text or 'ยังไม่มีชนวนเหตุ'}
+
+[บรีฟตัวละครที่ผู้เล่นต้องการสร้าง (PLAYER'S CHARACTER BRIEF)]:
+{player_brief}
+
+โปรดวิเคราะห์บรีฟของผู้เล่นร่วมกับโลกหลัก แล้วหล่อหลอมการ์ดตัวละครออกมาเป็น JSON Object ตามกฎเหล็กและแม่พิมพ์ Gold Standard ครบถ้วนทุกมิติ"""
+
+    model_name = os.getenv("ACTOR_MODEL", "gemini-3.8-flash")
+    fallback_model = os.getenv("ACTOR_FALLBACK_MODEL", "gemini-2.5-flash")
+    project_id = os.getenv("VERTEX_PROJECT", "project-de5847cd-022d-40ca-ad7")
+    location = os.getenv("VERTEX_LOCATION", "global")
+
+    used_model = model_name
+    parsed_json: Dict[str, Any] = {}
+
+    try:
+        from google import genai
+        from google.genai import types
+
+        api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+        if api_key:
+            client = genai.Client(api_key=api_key)
+        else:
+            client = genai.Client(vertexai=True, project=project_id, location=location)
+
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt_content,
+                config=types.GenerateContentConfig(
+                    system_instruction=WORLD_CHARACTER_FORGE_SYSTEM_PROMPT,
+                    temperature=0.75,
+                    response_mime_type="application/json",
+                    thinking_config=types.ThinkingConfig(thinking_budget=1024),
+                )
+            )
+            raw_text = (response.text or "").strip()
+        except Exception as primary_err:
+            logger.warning(f"[FORGE_CHAR] Primary model {model_name} failed: {primary_err}. Falling back to {fallback_model}")
+            response = client.models.generate_content(
+                model=fallback_model,
+                contents=prompt_content,
+                config=types.GenerateContentConfig(
+                    system_instruction=WORLD_CHARACTER_FORGE_SYSTEM_PROMPT,
+                    temperature=0.75,
+                    response_mime_type="application/json",
+                    thinking_config=types.ThinkingConfig(thinking_budget=1024),
+                )
+            )
+            raw_text = (response.text or "").strip()
+            used_model = fallback_model
+
+        # Parse JSON from response
+        try:
+            parsed_json = json.loads(raw_text)
+        except Exception:
+            # Fallback regex extraction if code fences or leading text
+            match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", raw_text, re.DOTALL)
+            if match:
+                parsed_json = json.loads(match.group(1))
+            else:
+                s = raw_text.find("{")
+                e = raw_text.rfind("}")
+                if s != -1 and e != -1:
+                    parsed_json = json.loads(raw_text[s:e+1])
+                else:
+                    raise ValueError(f"Could not parse JSON from model output: {raw_text[:100]}")
+
+    except Exception as e:
+        logger.error(f"[FORGE_CHAR] Failed to forge character with AI: {e}")
+        # Safe heuristic fallback character so system never fails
+        first_line = player_brief.splitlines()[0] if player_brief else "หญิงสาวปริศนา"
+        name_cand = first_line[:12] if len(first_line) > 12 else first_line
+        parsed_json = {
+            "name": name_cand or "รินรดา",
+            "role_tagline": "หญิงสาวผู้มีเสน่ห์ลึกลับประจำโลกนี้",
+            "appearance_and_charm": player_brief,
+            "matched_archetype_id": "cool_aloof",
+            "matched_archetype_label": "สาวมั่นเยือกเย็น (The Cool & Aloof)",
+            "core_wound": "The Conditional Worth Wound: เติบโตมาด้วยความกดดันให้ต้องสมบูรณ์แบบ จึงเก็บซ่อนความเปราะบางไว้ใต้ท่าทีเยือกเย็น",
+            "hidden_core": "โหยหาคนที่มองเห็นและยอมรับตัวตนที่แท้จริงในวันที่เธอเหนื่อยล้า",
+            "the_mask": "รักษาระยะห่าง วางตัวสุขุม และใช้เหตุผลเป็นเกราะกำบังเมื่อถูกรุกประชิด",
+            "body_tells": "• สรีระและลมหายใจ: [ช่วงไหล่เกร็งชะงัก ลมหายใจสะดุดสั้นเมื่อถูกประชิดตัว]\n• ทิศทางสายตาและจังหวะพูด: [สบตาตรงอย่างสุขุม -> หลบตาวูบหนึ่งเมื่อเริ่มเสียอาการ]",
+            "keystone_tether": "ปอยผมข้างแก้ม",
+            "fault_line": "การมองทะลุความเหนื่อยล้าใต้หน้ากาก และความจริงใจที่ไม่ยอมถอดใจ",
+            "polar_inversion": "จากผู้คุมเกมด้วยความเยือกเย็น สู่คนที่เสียทรง หน้าแดง และยอมรับความเปราะบาง 100%"
+        }
+        used_model = "fallback-heuristic"
+
+    char_id = f"char_{uuid.uuid4().hex[:8]}"
+    card_data = WorldCharacterCardData(
+        id=char_id,
+        name=str(parsed_json.get("name", "ตัวละครใหม่")).strip(),
+        role_tagline=str(parsed_json.get("role_tagline", "บทบาทประจำโลก")).strip(),
+        player_brief=player_brief,
+        appearance_and_charm=str(parsed_json.get("appearance_and_charm", player_brief)).strip(),
+        matched_archetype_id=str(parsed_json.get("matched_archetype_id", "cool_aloof")).strip(),
+        matched_archetype_label=str(parsed_json.get("matched_archetype_label", "สาวมั่นเยือกเย็น")).strip(),
+        core_wound=str(parsed_json.get("core_wound", "")).strip(),
+        hidden_core=str(parsed_json.get("hidden_core", "")).strip(),
+        the_mask=str(parsed_json.get("the_mask", "")).strip(),
+        body_tells=str(parsed_json.get("body_tells", "")).strip(),
+        keystone_tether=str(parsed_json.get("keystone_tether", "เครื่องประดับประจำตัว")).strip(),
+        fault_line=str(parsed_json.get("fault_line", "")).strip(),
+        polar_inversion=str(parsed_json.get("polar_inversion", "")).strip(),
+        created_at=int(time.time() * 1000)
+    )
+
+    latency_ms = int((time.time() - start_time) * 1000)
+    return WorldCharacterForgeResponse(
+        character=card_data,
+        latency_ms=latency_ms,
+        model=used_model
+    )
+
+

@@ -2,6 +2,7 @@ export interface PersonaArchetype {
   id: string
   name: string
   tagline: string
+  appearanceAndCharm?: string
   coreWound: string
   hiddenCore: string
   theMask: string
@@ -99,6 +100,12 @@ export function generatePersonaPromptSnippet(
 - Free form persona. Standard embodied actor baseline applies.`
   }
 
+  const appearanceSection = archetype.appearanceAndCharm?.trim()
+    ? `0. PHYSICAL SILHOUETTE & SENSORY CHARM (สรีระ รูปลักษณ์ และเสน่ห์ดึงดูดประจำกาย):
+- ${archetype.appearanceAndCharm.trim()}
+- กฎการบรรยายสรีระ: เมื่อเกิดการเคลื่อนไหว ระยะประชิด ลมหายใจ หรือไฟปรารถนาที่สูงขึ้น จงสะท้อนรายละเอียดสรีระ เส้นผม และเสน่ห์เฉพาะตัวนี้ลงในการแสดงภาษากายอย่างเป็นธรรมชาติ\n\n`
+    : ''
+
   const hasTether = Boolean(includeKeystoneTether && archetype.keystoneTether?.trim())
   const bodyTellsSection = hasTether
     ? `4. BODY TELLS & GAZE (สมอยึดสรีระ สายตา และพิรุธวัตถุประจำกาย):
@@ -112,7 +119,7 @@ ${archetype.bodyTells}
   return `# ACTIVE MODULE: PERSONA ARCHETYPE & COPING MECHANICS
 [PERSONA IDENTITY: ${archetype.name} (${archetype.tagline})]
 
-1. CORE WOUND (ปมฝังใจในอดีต):
+${appearanceSection}1. CORE WOUND (ปมฝังใจในอดีต):
 - ${archetype.coreWound}
 
 2. THE HIDDEN CORE (เนื้อแท้และความกระหายลึกในจิตใจ):

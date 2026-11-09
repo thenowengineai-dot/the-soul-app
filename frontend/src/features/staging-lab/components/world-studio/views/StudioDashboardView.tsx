@@ -317,7 +317,7 @@ export const StudioDashboardView: React.FC<StudioDashboardViewProps> = ({
 
               <div className="flex items-center justify-between pt-2 border-t border-white/[0.05]">
                 <span className="text-[11.5px] text-white/40">
-                  ระบบจะแมตช์เข้า 1 ใน 7 สายอัตโนมัติ และเจน 5 เสาหลัก + 2 เวกเตอร์แกนลาวาให้ทันที
+                  ระบบจะหล่อหลอมสายตัวละครเฉพาะตัวขึ้นใหม่สดๆ (ไม่ซ้ำใคร) พร้อมเจนสรีระ 5 เสาหลัก และ 2 เวกเตอร์แกนลาวา
                 </span>
 
                 <button
@@ -394,11 +394,21 @@ export const StudioDashboardView: React.FC<StudioDashboardViewProps> = ({
                   placeholder="ชื่อตัวละคร..."
                   className="text-[22px] sm:text-[26px] font-bold text-[#F1F1F1] bg-transparent focus:outline-none placeholder-white/20 border-none p-0 tracking-tight"
                 />
-                {/* Matched Archetype Badge */}
-                <span className="px-2.5 py-0.5 rounded-full text-[11.5px] font-medium bg-[#EF264C]/15 border border-[#EF264C]/40 text-[#EF264C] flex items-center gap-1 shadow-[0_0_12px_rgba(239,38,76,0.2)]">
-                  <span>🎯 แมตช์สาย:</span>
-                  <strong>{activeCharacter.matchedArchetypeLabel || activeCharacter.matchedArchetypeId}</strong>
-                </span>
+                {/* Unique Archetype Badge */}
+                <div className="px-2.5 py-0.5 rounded-full text-[11.5px] font-medium bg-[#EF264C]/15 border border-[#EF264C]/40 text-[#EF264C] flex items-center gap-1.5 shadow-[0_0_12px_rgba(239,38,76,0.2)]">
+                  <span className="shrink-0">✨ สายเฉพาะตัว:</span>
+                  <input
+                    type="text"
+                    value={activeCharacter.matchedArchetypeLabel || ''}
+                    onChange={(e) =>
+                      onUpdateCharacter(activeCharacter.id, {
+                        matchedArchetypeLabel: e.target.value,
+                      })
+                    }
+                    placeholder="ระบุสายเฉพาะตัว..."
+                    className="font-bold bg-transparent text-[#EF264C] focus:outline-none placeholder-[#EF264C]/40 border-none p-0 w-auto min-w-[70px] max-w-[200px]"
+                  />
+                </div>
               </div>
               <input
                 type="text"

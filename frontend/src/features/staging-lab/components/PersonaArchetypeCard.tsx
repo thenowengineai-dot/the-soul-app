@@ -24,6 +24,10 @@ export function PersonaArchetypeCard({
   isExpanded,
   onToggleExpand,
 }: PersonaArchetypeCardProps) {
+  const isCustomArchetype = !CANONICAL_PERSONA_PRESETS.some(
+    (preset) => preset.id === currentArchetype.id
+  )
+
   const handleSelectPreset = (preset: PersonaArchetype) => {
     onArchetypeChange({ ...preset })
   }
@@ -59,6 +63,11 @@ export function PersonaArchetypeCard({
           <span className="text-[16px] sm:text-[17px] font-semibold text-[#F1F1F1] tracking-tight">
             สายตัวละคร
           </span>
+          {isCustomArchetype && (
+            <span className="px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-[#EF264C]/15 border border-[#EF264C]/35 text-[#EF264C] truncate max-w-[150px]">
+              {currentArchetype.name || 'ตัวละครยูนีค'}
+            </span>
+          )}
         </div>
 
         {/* Right Header: Tactile ENGAGED / BYPASS Switch + Chevron */}
@@ -97,30 +106,70 @@ export function PersonaArchetypeCard({
       {/* 2. Expanded Content Body */}
       {isExpanded && (
         <div className="px-4 pb-4 pt-1 space-y-3 select-none animate-in fade-in duration-150">
+          {/* Unique Soul from World Studio Banner */}
+          {isCustomArchetype && (
+            <div className="rounded-2xl p-3 sm:p-3.5 bg-gradient-to-br from-[#EF264C]/12 via-black/40 to-black/20 border border-[#EF264C]/30 space-y-2.5">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] font-semibold text-[#EF264C] uppercase tracking-wider">
+                    ✨ ตัวละครยูนีคจากโลก
+                  </span>
+                  <span className="text-white/25">•</span>
+                  <span className="text-[13px] font-bold text-[#F1F1F1]">
+                    {currentArchetype.name}
+                  </span>
+                </div>
+                <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-white/[0.06] text-white/70 border border-white/10">
+                  {currentArchetype.tagline || 'The Unique Soul'}
+                </span>
+              </div>
+
+              {currentArchetype.appearanceAndCharm && (
+                <div className="rounded-xl p-2.5 bg-black/40 border border-white/[0.06] space-y-1">
+                  <span className="text-[10.5px] font-medium text-white/45 block">
+                    สรีระและเสน่ห์ดึงดูด (Physical & Charm):
+                  </span>
+                  <p className="text-[11.5px] text-white/80 leading-relaxed font-sans line-clamp-3">
+                    {currentArchetype.appearanceAndCharm}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Preset Selector Grid */}
-          <div className="flex flex-wrap gap-1.5 pt-1">
-            {CANONICAL_PERSONA_PRESETS.map((preset) => {
-              const isSelected = preset.id === currentArchetype.id
-              return (
-                <button
-                  key={preset.id}
-                  type="button"
-                  onClick={() => handleSelectPreset(preset)}
-                  className={`py-1.5 px-3 rounded-xl text-[12px] sm:text-[12.5px] font-sans transition-all cursor-pointer flex items-center gap-1.5 ${
-                    isSelected
-                      ? 'bg-[#818cf8]/20 border border-[#818cf8]/45 text-[#F1F1F1] font-medium shadow-[inset_0_1px_0_rgba(129,140,248,0.3)]'
-                      : 'bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/60 hover:text-white'
-                  }`}
-                >
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      isSelected ? 'bg-[#818cf8]' : 'bg-white/20'
+          <div className="space-y-1.5">
+            <div className="text-[11px] text-white/40 flex items-center justify-between">
+              <span>
+                {isCustomArchetype
+                  ? 'หรือสลับใช้ 7 แม่พิมพ์ความคมมาตรฐาน:'
+                  : '7 แม่พิมพ์ความคมมาตรฐาน:'}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-1.5 pt-0.5">
+              {CANONICAL_PERSONA_PRESETS.map((preset) => {
+                const isSelected = preset.id === currentArchetype.id
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => handleSelectPreset(preset)}
+                    className={`py-1.5 px-3 rounded-xl text-[12px] sm:text-[12.5px] font-sans transition-all cursor-pointer flex items-center gap-1.5 ${
+                      isSelected
+                        ? 'bg-[#818cf8]/20 border border-[#818cf8]/45 text-[#F1F1F1] font-medium shadow-[inset_0_1px_0_rgba(129,140,248,0.3)]'
+                        : 'bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/60 hover:text-white'
                     }`}
-                  />
-                  <span>{preset.name}</span>
-                </button>
-              )
-            })}
+                  >
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        isSelected ? 'bg-[#818cf8]' : 'bg-white/20'
+                      }`}
+                    />
+                    <span>{preset.name}</span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
           {/* The Keystone Tether (Wearable Prop / Tactile Anchor) */}

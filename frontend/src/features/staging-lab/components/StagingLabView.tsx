@@ -1199,9 +1199,10 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
         }}
         onSelectCharacterForStage={(char) => {
           setCurrentArchetype({
-            id: char.matchedArchetypeId || 'custom_persona',
+            id: char.matchedArchetypeId || `unique_${char.id}`,
             name: char.name,
-            tagline: char.roleTagline || char.matchedArchetypeLabel || 'The Unique Soul',
+            tagline: char.matchedArchetypeLabel || char.roleTagline || 'The Unique Soul',
+            appearanceAndCharm: char.appearanceAndCharm,
             coreWound: char.coreWound,
             hiddenCore: char.hiddenCore,
             theMask: char.theMask,

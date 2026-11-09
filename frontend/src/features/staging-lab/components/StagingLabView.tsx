@@ -1197,6 +1197,31 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
           setActiveDockTab('actor')
           setWorkspaceMode('stage')
         }}
+        onSelectCharacterForStage={(char) => {
+          setCurrentArchetype({
+            id: char.matchedArchetypeId || 'custom_persona',
+            name: char.name,
+            tagline: char.roleTagline || char.matchedArchetypeLabel || 'The Unique Soul',
+            coreWound: char.coreWound,
+            hiddenCore: char.hiddenCore,
+            theMask: char.theMask,
+            keystoneTether: char.keystoneTether,
+            bodyTells: char.bodyTells,
+          })
+          setIsArchetypeActive(true)
+
+          setMagmaConfig(prev => ({
+            ...prev,
+            enabled: true,
+            phase: 'sealed',
+            faultLine: char.faultLine,
+            polarInversion: char.polarInversion,
+          }))
+          setIsMagmaActive(true)
+
+          setActiveDockTab('actor')
+          setWorkspaceMode('stage')
+        }}
         onSelectStageCell={(cell) => {
           const promptText = cell.description?.trim() || cell.title
           // If already generated as 5D, seed directly into stage codex

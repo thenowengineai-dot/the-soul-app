@@ -12,6 +12,7 @@ import type {
   StageCellItem,
   WorldWorkspace,
   StageCellGenerateResponse,
+  WorldCharacterCard,
 } from '../types'
 import { WELCOME_STORY_PRESETS, createInitialWorlds } from './world-studio/presets'
 import { StudioStageCellView } from './world-studio/views/StudioStageCellView'
@@ -20,6 +21,7 @@ import { StudioSidebar } from './world-studio/views/StudioSidebar'
 import { StudioWelcomeView } from './world-studio/views/StudioWelcomeView'
 import { StudioNoteView } from './world-studio/views/StudioNoteView'
 import { StudioMasterView } from './world-studio/views/StudioMasterView'
+import { StudioDashboardView } from './world-studio/views/StudioDashboardView'
 import { StudioPromptInspectorModal } from './world-studio/views/StudioPromptInspectorModal'
 import type { StudioActiveView } from './world-studio/types'
 
@@ -36,6 +38,7 @@ interface WorldStudioViewProps {
   onEnterStage: () => void
   onBackToHome: () => void
   onSelectStageCell?: (cell: StageCellItem) => void
+  onSelectCharacterForStage?: (character: WorldCharacterCard) => void
 }
 
 export function WorldStudioView({
@@ -51,6 +54,7 @@ export function WorldStudioView({
   onEnterStage,
   onBackToHome,
   onSelectStageCell,
+  onSelectCharacterForStage,
 }: WorldStudioViewProps) {
 
   // Navigation & Workspace State
@@ -97,6 +101,7 @@ export function WorldStudioView({
   // AI Operation States
   const [isSprouting, setIsSprouting] = useState(false)
   const [isExtractingSpark, setIsExtractingSpark] = useState(false)
+  const [isForgingCharacter, setIsForgingCharacter] = useState(false)
   const [isSparkPlayerEdited, setIsSparkPlayerEdited] = useState(false)
   const [sparkHistory, setSparkHistory] = useState<string[]>([])
   const [generatingNoteId, setGeneratingNoteId] = useState<string | null>(null)
@@ -219,7 +224,111 @@ export function WorldStudioView({
     setIsSparkDraftOpen(false)
     setIsSparkPlayerEdited(false)
     setSparkHistory(target.sparkText.trim() ? [target.sparkText.trim()] : [])
-    setActiveView({ type: 'master' })
+    setActiveView({ type: 'dashboard' })
+  }
+
+  // 2b. Character Operations (World Character Forge Engine)
+  const handleForgeCharacter = async (brief: string) => {
+    if (!brief.trim() || isForgingCharacter) return
+    setIsForgingCharacter(true)
+    try {
+      const payload = {
+        world_lore: combinedWorldLore || activeWorld.rawLore,
+        spark_text: activeWorld.sparkText,
+        player_brief: brief.trim(),
+        world_id: activeWorld.id,
+      }
+      let res: Response
+      try {
+        res = await fetch('http://localhost:8000/api/sandbox/world/forge-character', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      } catch {
+        res = await fetch('https://the-soul-backend-330377476882.asia-southeast1.run.app/api/sandbox/world/forge-character', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      }
+
+      if (res.ok) {
+        const data = await res.json()
+        const c = data.character
+        const newChar: WorldCharacterCard = {
+          id: c.id,
+          name: c.name,
+          roleTagline: c.role_tagline,
+          playerBrief: c.player_brief,
+          appearanceAndCharm: c.appearance_and_charm,
+          matchedArchetypeId: c.matched_archetype_id,
+          matchedArchetypeLabel: c.matched_archetype_label,
+          coreWound: c.core_wound,
+          hiddenCore: c.hidden_core,
+          theMask: c.the_mask,
+          bodyTells: c.body_tells,
+          keystoneTether: c.keystone_tether,
+          faultLine: c.fault_line,
+          polarInversion: c.polar_inversion,
+          created_at: c.created_at || Date.now(),
+        }
+
+        updateActiveWorld(prev => ({
+          ...prev,
+          characters: [...(prev.characters || []).filter(item => item.id !== newChar.id), newChar],
+          activeCharacterId: newChar.id,
+        }))
+
+        setNotificationMessage(`หล่อหลอมตัวละคร "${newChar.name}" สำเร็จ`)
+        setJustSavedNotification(true)
+        setTimeout(() => setJustSavedNotification(false), 2000)
+      } else {
+        setNotificationMessage('ไม่สามารถสร้างตัวละครได้ กรุณาลองใหม่อีกครั้ง')
+        setJustSavedNotification(true)
+        setTimeout(() => setJustSavedNotification(false), 2000)
+      }
+    } catch (err) {
+      console.error('[FORGE_CHAR] Error:', err)
+    } finally {
+      setIsForgingCharacter(false)
+    }
+  }
+
+  const handleUpdateCharacter = (characterId: string, updates: Partial<WorldCharacterCard>) => {
+    updateActiveWorld(prev => ({
+      ...prev,
+      characters: (prev.characters || []).map(c => c.id === characterId ? { ...c, ...updates } : c),
+    }))
+  }
+
+  const handleDeleteCharacter = (characterId: string) => {
+    updateActiveWorld(prev => {
+      const remaining = (prev.characters || []).filter(c => c.id !== characterId)
+      return {
+        ...prev,
+        characters: remaining,
+        activeCharacterId: remaining[0]?.id,
+      }
+    })
+    setNotificationMessage('ลบตัวละครเรียบร้อยแล้ว')
+    setJustSavedNotification(true)
+    setTimeout(() => setJustSavedNotification(false), 2000)
+  }
+
+  const handleSelectCharacter = (characterId: string) => {
+    updateActiveWorld(prev => ({
+      ...prev,
+      activeCharacterId: characterId,
+    }))
+  }
+
+  const handleSendCharacterToStage = (character: WorldCharacterCard) => {
+    if (onSelectCharacterForStage) {
+      onSelectCharacterForStage(character)
+    } else {
+      onEnterStage()
+    }
   }
 
   // 3a. Extract / Regenerate / Polish Spark via AI (The Inciting Spark Engine: 1-on-1 Personal Character Collision)
@@ -1484,7 +1593,7 @@ export function WorldStudioView({
         onAddNewWorld={handleAddNewWorld}
         onSwitchWorld={(worldId) => {
           handleSwitchWorld(worldId)
-          setActiveView({ type: 'master' })
+          setActiveView({ type: 'dashboard' })
         }}
         onDeleteWorld={(worldId) => {
           setWorlds(prev => prev.filter(x => x.id !== worldId))
@@ -1493,6 +1602,8 @@ export function WorldStudioView({
             if (remaining[0]) handleSwitchWorld(remaining[0].id)
           }
         }}
+        onSelectDashboard={() => setActiveView({ type: 'dashboard' })}
+        onSelectMaster={() => setActiveView({ type: 'master' })}
         onAddNewNote={() => handleAddNewNote()}
         onSelectNote={(noteId) => setActiveView({ type: 'note', noteId })}
         onDeleteNote={(noteId) => handleDeleteNote(noteId)}
@@ -1684,6 +1795,21 @@ export function WorldStudioView({
                   handleAddNewNote(true)
                   setActiveView({ type: 'master' })
                 }}
+              />
+            )}
+
+            {/* VIEW 0: WORLD READINESS DASHBOARD & CHARACTER FORGE */}
+            {activeView.type === 'dashboard' && (
+              <StudioDashboardView
+                activeWorld={activeWorld}
+                isForgingCharacter={isForgingCharacter}
+                onForgeCharacter={handleForgeCharacter}
+                onUpdateCharacter={handleUpdateCharacter}
+                onDeleteCharacter={handleDeleteCharacter}
+                onSelectCharacter={handleSelectCharacter}
+                onSendCharacterToStage={handleSendCharacterToStage}
+                setActiveView={setActiveView}
+                onAddNewStageCell={handleAddNewStageCell}
               />
             )}
 

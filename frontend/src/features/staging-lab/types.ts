@@ -186,6 +186,24 @@ export interface WorldLoreBlock {
   created_at: number
 }
 
+export interface WorldCharacterCard {
+  id: string
+  name: string
+  roleTagline: string
+  playerBrief: string
+  appearanceAndCharm: string
+  matchedArchetypeId: string
+  matchedArchetypeLabel: string
+  coreWound: string
+  hiddenCore: string
+  theMask: string
+  bodyTells: string
+  keystoneTether: string
+  faultLine: string
+  polarInversion: string
+  created_at: number
+}
+
 export interface WorldWorkspace {
   id: string
   title: string
@@ -196,6 +214,8 @@ export interface WorldWorkspace {
   stageCells: StageCellItem[]
   cabinetCards: LoreCard[]
   pinnedCardIds: string[]
+  characters?: WorldCharacterCard[]
+  activeCharacterId?: string
   created_at: number
 }
 

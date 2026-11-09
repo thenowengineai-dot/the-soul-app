@@ -178,6 +178,7 @@ export function createInitialWorlds(
         ...cabinetCards,
       ],
       pinnedCardIds: pinnedCardIds,
+      characters: [],
       created_at: 1700000000000,
     }
   ]

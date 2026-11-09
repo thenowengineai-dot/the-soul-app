@@ -8,6 +8,8 @@ import {
   FileText,
   MapPin,
   Archive,
+  Compass,
+  BookOpen,
 } from 'lucide-react'
 import type { WorldWorkspace } from '../../../types'
 import type { StudioActiveView } from '../types'
@@ -25,6 +27,8 @@ interface StudioSidebarProps {
   onAddNewWorld: () => void
   onSwitchWorld: (worldId: string) => void
   onDeleteWorld: (worldId: string) => void
+  onSelectDashboard: () => void
+  onSelectMaster: () => void
   onAddNewNote: () => void
   onSelectNote: (noteId: string) => void
   onDeleteNote: (noteId: string) => void
@@ -47,6 +51,8 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
   onAddNewWorld,
   onSwitchWorld,
   onDeleteWorld,
+  onSelectDashboard,
+  onSelectMaster,
   onAddNewNote,
   onSelectNote,
   onDeleteNote,
@@ -171,6 +177,44 @@ export const StudioSidebar: React.FC<StudioSidebarProps> = ({
               )
             })}
           </div>
+
+          {/* Active World Sub-Navigation (Dashboard & Master Story) */}
+          {activeWorld && activeView.type !== 'welcome' && (
+            <div className="pt-1 pl-2.5 space-y-0.5 border-l border-white/[0.08] ml-2">
+              <button
+                type="button"
+                onClick={onSelectDashboard}
+                className={`w-full px-2 py-1.5 rounded-lg text-left text-[12.5px] transition-all cursor-pointer flex items-center justify-between group ${
+                  activeView.type === 'dashboard'
+                    ? 'bg-white/[0.08] text-[#F1F1F1] font-medium'
+                    : 'text-white/55 hover:text-white hover:bg-white/[0.03]'
+                }`}
+              >
+                <div className="flex items-center gap-2 truncate">
+                  <Compass size={13} className="shrink-0 text-[#EF264C]" />
+                  <span className="truncate">ภาพรวม & ตัวละคร</span>
+                </div>
+                {activeWorld.characters && activeWorld.characters.length > 0 && (
+                  <span className="px-1.5 py-0.2 rounded text-[9.5px] font-mono bg-[#EF264C]/15 text-[#EF264C]">
+                    {activeWorld.characters.length}
+                  </span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={onSelectMaster}
+                className={`w-full px-2 py-1.5 rounded-lg text-left text-[12.5px] transition-all cursor-pointer flex items-center gap-2 group ${
+                  activeView.type === 'master'
+                    ? 'bg-white/[0.08] text-[#F1F1F1] font-medium'
+                    : 'text-white/55 hover:text-white hover:bg-white/[0.03]'
+                }`}
+              >
+                <BookOpen size={13} className="shrink-0 text-white/50 group-hover:text-white/80" />
+                <span className="truncate">เนื้อหาโลก & สปาร์ค</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* หมวดที่ 2: ส่วนขยาย */}

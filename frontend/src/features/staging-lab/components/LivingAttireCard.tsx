@@ -9,12 +9,17 @@ import {
   Zap,
   Clock,
   Lock,
+  Plus,
+  Trash2,
+  Dna,
 } from 'lucide-react'
-import type { AttireZoneId, AttireLifecycleStage } from '../types'
+import type { AttireZoneId, AttireLifecycleStage, CharacterSkinBlueprint } from '../types'
 import type {
   LivingAttireState,
   SensoryCatalystCue,
   PersonAttireProfile,
+  AttireLayerItem,
+  AttireLayerOrder,
 } from '../modules/livingAttireModule'
 import {
   ATTIRE_ZONE_ORDER,
@@ -22,8 +27,16 @@ import {
   ATTIRE_TEST_CUES,
   applyZoneCondition,
   createIndigoStreamAttireState,
+  addZoneLayer,
+  updateZoneLayer,
+  removeZoneLayer,
 } from '../modules/livingAttireModule'
 
+let layerCounter = 0
+function createLayerId(): string {
+  layerCounter += 1
+  return `layer_${layerCounter}`
+}
 
 interface LivingAttireCardProps {
   isActive: boolean
@@ -33,6 +46,7 @@ interface LivingAttireCardProps {
   attireState: LivingAttireState
   onChangeAttireState: (next: LivingAttireState) => void
   onPreFillAction?: (text: string) => void
+  actorSkin?: CharacterSkinBlueprint | null
 }
 
 export function LivingAttireCard({
@@ -43,13 +57,18 @@ export function LivingAttireCard({
   attireState,
   onChangeAttireState,
   onPreFillAction,
+  actorSkin,
 }: LivingAttireCardProps) {
   const [activePerson, setActivePerson] = useState<'actor' | 'player'>('actor')
   const [editingZone, setEditingZone] = useState<AttireZoneId | null>(null)
   const [editInput, setEditInput] = useState<string>('')
+  const [editingLayerInfo, setEditingLayerInfo] = useState<{
+    zoneId: AttireZoneId
+    layerId: string
+  } | null>(null)
+  const [layerConditionInput, setLayerConditionInput] = useState<string>('')
 
   const currentProfile: PersonAttireProfile = attireState[activePerson]
-
 
   const handleSelectPreset = (presetId: string) => {
     const found = LIVING_ATTIRE_PRESETS.find((p) => p.id === presetId)
@@ -81,6 +100,58 @@ export function LivingAttireCard({
 
   const handleClearZone = (zoneId: AttireZoneId) => {
     const next = applyZoneCondition(attireState, activePerson, zoneId, '', 'DORMANT')
+    onChangeAttireState(next)
+  }
+
+  const handleToggleLayerRemoved = (zoneId: AttireZoneId, layer: AttireLayerItem) => {
+    const next = updateZoneLayer(attireState, activePerson, zoneId, layer.id, {
+      isRemoved: !layer.isRemoved,
+    })
+    onChangeAttireState(next)
+  }
+
+  const handleStartEditLayer = (zoneId: AttireZoneId, layer: AttireLayerItem) => {
+    setEditingLayerInfo({ zoneId, layerId: layer.id })
+    setLayerConditionInput(layer.layerCondition || '')
+  }
+
+  const handleSaveLayerCondition = (explicitLifecycle: AttireLifecycleStage = 'FRESH') => {
+    if (!editingLayerInfo) return
+    const next = updateZoneLayer(
+      attireState,
+      activePerson,
+      editingLayerInfo.zoneId,
+      editingLayerInfo.layerId,
+      {
+        layerCondition: layerConditionInput.trim(),
+        layerLifecycle: layerConditionInput.trim() ? explicitLifecycle : 'DORMANT',
+      }
+    )
+    onChangeAttireState(next)
+    setEditingLayerInfo(null)
+  }
+
+  const handleRemoveLayer = (zoneId: AttireZoneId, layerId: string) => {
+    const next = removeZoneLayer(attireState, activePerson, zoneId, layerId)
+    onChangeAttireState(next)
+  }
+
+  const handleAddQuickLayer = (zoneId: AttireZoneId, defaultOrder: AttireLayerOrder = 'inner') => {
+    const id = createLayerId()
+    const label =
+      defaultOrder === 'intimate'
+        ? 'ชั้นใน'
+        : defaultOrder === 'inner'
+        ? 'เสื้อตัวใน'
+        : 'เสื้อคลุมนอก'
+    const newLayer: AttireLayerItem = {
+      id,
+      slotLabel: label,
+      description: 'เสื้อผ้าชิ้นใหม่',
+      layerOrder: defaultOrder,
+      isInnerHidden: defaultOrder === 'intimate',
+    }
+    const next = addZoneLayer(attireState, activePerson, zoneId, newLayer)
     onChangeAttireState(next)
   }
 
@@ -180,11 +251,17 @@ export function LivingAttireCard({
       {/* 2. Expandable Body Content */}
       {isExpanded && (
         <div className="px-4 pb-4 pt-1 space-y-3 select-none animate-in fade-in duration-150">
-          {/* Micro Subtitle Description */}
-          <div className="text-[12px] sm:text-[12.5px] font-sans text-white/60 flex items-center justify-between gap-1.5 pt-0.5">
+          {/* Micro Subtitle Description & 3D Skin Indicator */}
+          <div className="text-[12px] sm:text-[12.5px] font-sans text-white/60 flex items-center justify-between gap-1.5 pt-0.5 flex-wrap">
             <div className="flex items-center gap-1.5">
               <span className="text-[#38bdf8]">✦</span>
-              <span>ระบบชุดไร้ขีดจำกัด สลับป้ายเพิ่งเกิด ⚡ สู่ค้างคา ⏳ กันพูดซ้ำ</span>
+              <span>ระบบชุดไร้ขีดจำกัด สลับป้ายเพิ่งเกิด ⚡ สู่ค้างคา ⏳</span>
+              {actorSkin && (
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 shadow-sm">
+                  <Dna size={10} className="text-emerald-400" />
+                  <span>3D Skin เชื่อมต่อ</span>
+                </span>
+              )}
             </div>
             <button
               type="button"
@@ -327,22 +404,112 @@ export function LivingAttireCard({
                   </div>
 
                   {/* Layers Inventory List */}
-                  <div className="flex flex-wrap gap-1 mb-2">
-                    {zone.layers.map((l) => (
-                      <span
-                        key={l.id}
-                        className={`text-[10px] px-2 py-0.5 rounded-lg border flex items-center gap-1 ${
-                          l.isInnerHidden
-                            ? 'bg-purple-500/10 border-purple-500/20 text-purple-200'
-                            : 'bg-white/[0.04] border-white/10 text-white/70'
-                        }`}
-                        title={l.description}
-                      >
-                        <span className="opacity-40">{l.slotLabel}:</span>
-                        <span className="font-medium truncate max-w-[150px]">{l.description}</span>
-                      </span>
-                    ))}
+                  <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                    {zone.layers.map((l) => {
+                      const orderBg =
+                        l.layerOrder === 'intimate'
+                          ? 'bg-rose-500/10 border-rose-500/25 text-rose-200'
+                          : l.layerOrder === 'inner'
+                          ? 'bg-sky-500/10 border-sky-500/25 text-sky-200'
+                          : l.layerOrder === 'outer'
+                          ? 'bg-white/[0.08] border-white/20 text-[#F1F1F1]'
+                          : 'bg-white/[0.04] border-white/10 text-white/70'
+
+                      return (
+                        <div
+                          key={l.id}
+                          className={`text-[10px] px-2 py-0.5 rounded-lg border flex items-center gap-1.5 transition-all select-none ${
+                            l.isRemoved
+                              ? 'opacity-40 line-through bg-black/40 border-white/5 text-white/40'
+                              : orderBg
+                          }`}
+                        >
+                          <span
+                            onClick={() => handleToggleLayerRemoved(zoneId, l)}
+                            className="cursor-pointer hover:opacity-80 font-mono text-[9px] px-1 rounded bg-black/30"
+                            title={l.isRemoved ? 'คลิกเพื่อสวมใส่กลับ' : 'คลิกเพื่อถอดออก'}
+                          >
+                            {l.isRemoved ? 'ถอดแล้ว' : l.slotLabel}
+                          </span>
+                          <span
+                            onClick={() => handleStartEditLayer(zoneId, l)}
+                            className="cursor-pointer hover:underline truncate max-w-[130px]"
+                            title="คลิกเพื่อแก้ไขสภาพเฉพาะชิ้น"
+                          >
+                            {l.description}
+                          </span>
+                          {l.layerCondition && (
+                            <span className="text-[8.5px] font-mono px-1 rounded bg-amber-500/20 text-amber-200 truncate max-w-[80px]">
+                              {l.layerCondition}
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveLayer(zoneId, l.id)}
+                            className="text-white/20 hover:text-rose-400 p-0.5 rounded cursor-pointer"
+                            title="ลบเลเยอร์นี้"
+                          >
+                            <Trash2 size={9} />
+                          </button>
+                        </div>
+                      )
+                    })}
+
+                    {/* Add Layer Quick Action */}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleAddQuickLayer(
+                          zoneId,
+                          zoneId === 'lower_body' ? 'outer' : 'inner'
+                        )
+                      }
+                      className="text-[9.5px] font-mono text-white/40 hover:text-white px-1.5 py-0.5 rounded-md border border-dashed border-white/15 hover:border-white/30 flex items-center gap-0.5 transition-all cursor-pointer"
+                      title="เพิ่มชั้นเสื้อผ้าใหม่ในโซนนี้"
+                    >
+                      <Plus size={9} />
+                      <span>เพิ่มชั้น</span>
+                    </button>
                   </div>
+
+                  {/* Per-Layer Inline Condition Editor if open */}
+                  {editingLayerInfo?.zoneId === zoneId && (
+                    <div className="p-2 rounded-xl bg-black/40 border border-sky-400/30 space-y-1.5 mb-2">
+                      <div className="text-[10px] font-mono text-sky-200">
+                        สภาพเฉพาะชิ้นนี้ (เช่น 'เปียกชุ่มน้ำแนบลู่เห็นยอดอก', 'แห้งสนิทคลุมทับ'):
+                      </div>
+                      <input
+                        type="text"
+                        value={layerConditionInput}
+                        onChange={(e) => setLayerConditionInput(e.target.value)}
+                        placeholder="ระบุสภาพเฉพาะชิ้นนี้..."
+                        className="w-full text-[11px] p-1.5 rounded-lg bg-black/50 border border-white/10 text-white focus:outline-none focus:border-sky-400 font-sans"
+                      />
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setEditingLayerInfo(null)}
+                          className="px-2 py-0.5 rounded text-[10px] text-white/40 hover:text-white cursor-pointer"
+                        >
+                          ยกเลิก
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleSaveLayerCondition('LINGERING')}
+                          className="px-2 py-0.5 rounded text-[10px] bg-sky-500/20 text-sky-200 border border-sky-400/30 cursor-pointer"
+                        >
+                          ค้างคา ⏳
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleSaveLayerCondition('FRESH')}
+                          className="px-2 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-200 border border-amber-400/30 font-semibold cursor-pointer"
+                        >
+                          เพิ่งเกิด ⚡
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Live Condition Editor */}
                   {isEditing ? (

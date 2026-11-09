@@ -1,13 +1,23 @@
-import type { AttireZoneId, AttireLifecycleStage, SurfaceMutationItem } from '../types'
+import type {
+  AttireZoneId,
+  AttireLifecycleStage,
+  SurfaceMutationItem,
+  CharacterSkinBlueprint,
+} from '../types'
 
 export type { AttireZoneId, AttireLifecycleStage, SurfaceMutationItem }
 
+export type AttireLayerOrder = 'intimate' | 'inner' | 'outer' | 'accessory'
 
 export interface AttireLayerItem {
   id: string
   slotLabel: string
   description: string
+  layerOrder?: AttireLayerOrder
   isInnerHidden?: boolean
+  layerCondition?: string
+  layerLifecycle?: AttireLifecycleStage
+  isRemoved?: boolean
 }
 
 export interface AttireZoneState {
@@ -325,7 +335,99 @@ export const LIVING_ATTIRE_PRESETS: LivingAttirePreset[] = [
       return base
     })(),
   },
+  {
+    id: 'wet_inner_dry_outer_shirt',
+    title: 'สายเดี่ยวเปียกแนบผิว + เสื้อเชิ้ตนอกแห้งคลุมไหล่',
+    subtitle: 'เสื้อสายเดี่ยวชั้นในเปียกชุ่มน้ำจนโปร่งแสง แต่เสื้อเชิ้ตตัวนอกที่คลุมทับแห้งสนิท',
+    locationContext:
+      'ริมลำธารหลังขึ้นจากน้ำ สวมเสื้อเชิ้ตแห้งคลุมไหล่ทับเสื้อสายเดี่ยวที่เปียกชุ่มแนบลู่ติดผิวเนื้อ',
+    state: (() => {
+      const base = createIndigoStreamAttireState()
+      base.activePresetId = 'wet_inner_dry_outer_shirt'
+      base.actor.upper_body.layers = [
+        {
+          id: 'a_bra_hidden',
+          slotLabel: 'ชั้นในสุด',
+          description: 'โนบรา (ไม่ได้สวมเสื้อชั้นใน)',
+          layerOrder: 'intimate',
+          layerCondition: 'ยอดอกตั้งชันจากความเย็นของผ้าเปียกแนบเนื้อ',
+          layerLifecycle: 'FRESH',
+          isInnerHidden: true,
+        },
+        {
+          id: 'a_inner_camisole',
+          slotLabel: 'เสื้อตัวใน',
+          description: 'เสื้อสายเดี่ยวผ้าคอตตอนสีขาวบางแนบเนื้อ',
+          layerOrder: 'inner',
+          layerCondition:
+            'เปียกชุ่มน้ำลำธารแนบลู่ติดผิวเนื้อช่วงอกจนโปร่งแสงเห็นรอยนูนยอดอกสีชมพูระเรื่อ',
+          layerLifecycle: 'FRESH',
+        },
+        {
+          id: 'a_outer_shirt',
+          slotLabel: 'เสื้อตัวนอก',
+          description: 'เสื้อเชิ้ตแขนยาวสีเข้มตัวโคร่ง สวมทับแบบไม่ติดกระดุม',
+          layerOrder: 'outer',
+          layerCondition: 'แห้งสนิท คลุมลาดไหล่และแผ่นหลังไว้ แต่แหวกสาบเสื้อด้านหน้าออก',
+          layerLifecycle: 'DORMANT',
+        },
+      ]
+      base.actor.upper_body.condition =
+        'เสื้อสายเดี่ยวสีขาวข้างในเปียกชุ่มน้ำแนบลู่ติดผิวเนื้อจนโปร่งแสง แต่เสื้อเชิ้ตตัวนอกที่คลุมทับแห้งสนิท'
+      base.actor.upper_body.lifecycle = 'FRESH'
+      return base
+    })(),
+  },
 ]
+
+/**
+ * เพิ่มชั้นเสื้อผ้าใหม่ในโซนที่กำหนด
+ */
+export function addZoneLayer(
+  state: LivingAttireState,
+  target: 'actor' | 'player',
+  zoneId: AttireZoneId,
+  newLayer: AttireLayerItem
+): LivingAttireState {
+  const profile = { ...state[target] }
+  const zone = { ...profile[zoneId] }
+  zone.layers = [...zone.layers, newLayer]
+  profile[zoneId] = zone
+  return { ...state, [target]: profile }
+}
+
+/**
+ * อัปเดตข้อมูลของชั้นเสื้อผ้าเฉพาะชิ้น (เช่น แก้ไขสภาพเฉพาะชิ้น, ปลดกระดุม, หรือสลับถอดออก)
+ */
+export function updateZoneLayer(
+  state: LivingAttireState,
+  target: 'actor' | 'player',
+  zoneId: AttireZoneId,
+  layerId: string,
+  updates: Partial<AttireLayerItem>
+): LivingAttireState {
+  const profile = { ...state[target] }
+  const zone = { ...profile[zoneId] }
+  zone.layers = zone.layers.map((l) => (l.id === layerId ? { ...l, ...updates } : l))
+  profile[zoneId] = zone
+  return { ...state, [target]: profile }
+}
+
+/**
+ * ลบชั้นเสื้อผ้าออกจากโซน
+ */
+export function removeZoneLayer(
+  state: LivingAttireState,
+  target: 'actor' | 'player',
+  zoneId: AttireZoneId,
+  layerId: string
+): LivingAttireState {
+  const profile = { ...state[target] }
+  const zone = { ...profile[zoneId] }
+  zone.layers = zone.layers.filter((l) => l.id !== layerId)
+  profile[zoneId] = zone
+  return { ...state, [target]: profile }
+}
 
 /**
  * ชุดคิวทดสอบ 3 จังหวะ (3-Step Verification Choreography):
@@ -482,11 +584,13 @@ export function reconcilePostTurnAttireState(
 
 /**
  * สร้าง Lean Modular Prompt Snippet สำหรับฉีดเข้าสู่ Actor
- * แยกศักดิ์ศรีของข้อมูลออกเป็น 3 ตะกร้าอย่างเด็ดขาด (FRESH vs LINGERING vs DORMANT)
+ * ผสาน Layer 0 (3D Skin & Somatic Physics) เข้ากับ Layer 1-4 (Multi-Layer Attire)
+ * และแยกศักดิ์ศรีของข้อมูลออกเป็น 3 ตะกร้าอย่างเด็ดขาด (FRESH vs LINGERING vs DORMANT)
  */
 export function generateLivingAttirePrompt(
   state: LivingAttireState,
-  isEnabled: boolean = true
+  isEnabled: boolean = true,
+  actorSkin?: CharacterSkinBlueprint | null
 ): string {
   if (!isEnabled) {
     return `# LIVING ATTIRE & SOMATIC SURFACE MODULE: BYPASSED`
@@ -497,17 +601,35 @@ export function generateLivingAttirePrompt(
   const dormantActorLines: string[] = []
   const dormantPlayerLines: string[] = []
 
+  const ORDER_WEIGHT: Record<string, number> = {
+    intimate: 1,
+    inner: 2,
+    outer: 3,
+    accessory: 4,
+  }
+
   const collectPersonZones = (
     profile: PersonAttireProfile,
     ownerLabel: string,
-    dormantBucket: string[]
+    dormantBucket: string[],
+    _isActor?: boolean
   ) => {
     for (const zoneId of ATTIRE_ZONE_ORDER) {
       const zone = profile[zoneId]
-      const layerDesc = zone.layers
+      // Sort layers by order: intimate -> inner -> outer -> accessory
+      const sortedLayers = [...zone.layers].sort((a, b) => {
+        const wa = a.layerOrder ? ORDER_WEIGHT[a.layerOrder] || 3 : 3
+        const wb = b.layerOrder ? ORDER_WEIGHT[b.layerOrder] || 3 : 3
+        return wa - wb
+      })
+
+      const layerDesc = sortedLayers
         .map((l) => {
-          const hiddenTag = l.isInnerHidden ? ' [ชั้นในซ่อนอยู่ใต้ชุดนอก]' : ''
-          return `${l.slotLabel}: ${l.description}${hiddenTag}`
+          const removedTag = l.isRemoved ? ' [ถอดออกแล้ว]' : ''
+          const hiddenTag = l.isInnerHidden && !l.isRemoved ? ' [ชั้นในซ่อนอยู่ใต้ชุดนอก]' : ''
+          const condTag = l.layerCondition ? ` (สภาพ: ${l.layerCondition})` : ''
+          const orderTag = l.layerOrder ? `[${l.layerOrder.toUpperCase()}] ` : ''
+          return `${orderTag}${l.slotLabel}: ${l.description}${hiddenTag}${removedTag}${condTag}`
         })
         .join(' | ')
 
@@ -515,6 +637,23 @@ export function generateLivingAttirePrompt(
         dormantBucket.push(`- [${zone.shortLabel}]: ${layerDesc}`)
       }
 
+      // Check per-layer fresh/lingering conditions
+      for (const l of sortedLayers) {
+        if (l.layerCondition && l.layerCondition.trim()) {
+          const lCond = l.layerCondition.trim()
+          if (l.layerLifecycle === 'FRESH') {
+            freshLines.push(
+              `- ⚡ [${ownerLabel} - ${zone.shortLabel} -> ${l.slotLabel}]: ${lCond} (${l.description})`
+            )
+          } else if (l.layerLifecycle === 'LINGERING') {
+            lingeringLines.push(
+              `- ⏳ [${ownerLabel} - ${zone.shortLabel} -> ${l.slotLabel}]: ${lCond}`
+            )
+          }
+        }
+      }
+
+      // Check zone-level condition
       const cond = zone.condition.trim()
       if (cond) {
         if (zone.lifecycle === 'FRESH') {
@@ -526,21 +665,54 @@ export function generateLivingAttirePrompt(
     }
   }
 
-  collectPersonZones(state.actor, 'ตัวคุณ (Actor)', dormantActorLines)
-  collectPersonZones(state.player, 'ผู้เล่น (Player)', dormantPlayerLines)
+  collectPersonZones(state.actor, 'ตัวคุณ (Actor)', dormantActorLines, true)
+  collectPersonZones(state.player, 'ผู้เล่น (Player)', dormantPlayerLines, false)
 
   const sections: string[] = [
-    `# ACTIVE MODULE: LIVING ATTIRE & SOMATIC SURFACE (ระบบชุดไร้ขีดจำกัดและผัสสะพื้นผิวกาย 4 โซน)`,
+    `# ACTIVE MODULE: 3D SOMATIC SKIN & MULTI-LAYER LIVING ATTIRE (ระบบเรือนร่าง 3 มิติและชุดหลายชั้นแยกสถานะ)`,
   ]
+
+  // ตะกร้าที่ 0: 🧬 BARE SKIN, ANATOMY & MOTION PHYSICS (ถ้ามี Skin Blueprint ของตัวละคร)
+  const hasSkin =
+    actorSkin &&
+    (actorSkin.bareAnatomyAndVolume ||
+      actorSkin.skinSurfaceAndIntimateMarks ||
+      actorSkin.somaticMotionPhysics ||
+      actorSkin.intimateDnaAndWearingHabit)
+
+  if (hasSkin) {
+    const skinLines: string[] = []
+    if (actorSkin.bareAnatomyAndVolume) {
+      skinLines.push(`• โครงสร้างหุ่น 3 มิติ & จุดรับแรงดึงผ้า: ${actorSkin.bareAnatomyAndVolume}`)
+    }
+    if (actorSkin.skinSurfaceAndIntimateMarks) {
+      skinLines.push(`• พื้นผิวหนัง เส้นผม & ความลับใต้ชุดชั้นใน: ${actorSkin.skinSurfaceAndIntimateMarks}`)
+    }
+    if (actorSkin.somaticMotionPhysics) {
+      skinLines.push(`• ฟิสิกส์การเคลื่อนไหว (Soft-Body Physics): ${actorSkin.somaticMotionPhysics}`)
+    }
+    if (actorSkin.intimateDnaAndWearingHabit) {
+      skinLines.push(`• รสนิยมชั้นใน & นิสัยการสวมใส่ผ้า: ${actorSkin.intimateDnaAndWearingHabit}`)
+    }
+
+    sections.push(
+      `[🧬 0. BARE SKIN, ANATOMY & MOTION PHYSICS — เรือนร่างเปลือยเปล่า ชั้นใต้ร่มผ้า และฟิสิกส์สรีระประจำตัวคุณ]
+${skinLines.join('\n')}
+👉 กฎเหล็กของฟิสิกส์เรือนร่าง 3 มิติ (3D Flesh-to-Fabric Physics Rule):
+- เสื้อผ้าทุกชิ้นด้านล่างนี้สวมทับอยู่บนเรือนร่าง 3 มิติด้านบน! เมื่อบรรยายท่าทาง การหายใจ การก้มตัว เดิน วิ่ง หรือถูกสัมผัส จงคำนวณแรงดึงของเนื้อผ้ากับสรีระจริงเสมอ (เช่น เนินอกอวบอิ่มดันสาบเสื้อ, ขอบชุดที่รัดจมลึกในร่องก้นกลมเด้ง, หรือการกระเพื่อมไหวของมวลเนื้อนุ่มใต้ผ้าบาง)
+- หากเสื้อผ้าเปียกน้ำจนโปร่งแสง แหวกออก หรือถูกปลด/ถอดออก จงอ้างอิงสีผิว ยอดอก และลักษณะใต้ร่มผ้าจาก [0. BARE SKIN] ด้านบนนี้โดยตรง 100%`
+    )
+  }
 
   // ตะกร้าที่ 1: ⚡ FRESH IMPACT (เพิ่งเปลี่ยนสดๆ ในเทิร์นนี้ — ต้องบรรยายผัสสะแรก!)
   if (freshLines.length > 0) {
     sections.push(
-      `[⚡ 1. FRESH SURFACE IMPACT — เพิ่งเกิดสดๆ ในเทิร์นนี้ (จงบรรยายผัสสะแรก!)]
+      `[⚡ 1. FRESH SURFACE & LAYER IMPACT — เพิ่งเกิดสดๆ ในเทิร์นนี้ (จงบรรยายผัสสะแรก!)]
 ${freshLines.join('\n')}
-👉 คำสั่งการแสดงสำหรับจุดที่เพิ่งเกิด (Fresh Impact Directive):
+👉 คำสั่งการแสดงสำหรับจุดที่เพิ่งเกิด (Per-Layer Contrast Directive):
 - เหตุการณ์ด้านบนนี้เพิ่งเกิดขึ้นสดๆ ในเทิร์นนี้! จงบรรยายปฏิกิริยาทางสรีระ (Somatic Reaction) ในท่อน action ของคุณอย่างมีชีวิตชีวา
-- เน้นผัสสะจริงตามเลเยอร์ของชุด: ความเย็นวาบที่ซึมผ่านเนื้อผ้า, น้ำหนักของผ้าที่อมน้ำจนถ่วงลงหรือแนบลู่ติดผิวเนื้อ (Wet Cling), ความโปร่งแสงของผ้าสีอ่อนเมื่อเปียกที่เผยให้เห็นเงาชั้นในข้างใต้ หรือหยดน้ำที่เกาะพวงแก้มและปอยผม`
+- เน้นความตัดกันของแต่ละเลเยอร์ตามจริง: หากชั้นในเปียกชุ่มแนบเนื้อแต่ชั้นนอกแห้งสนิท ให้บรรยายความเย็นของผ้าเปียกที่ทาบติดผิวเนื้อช่วงอก ตัดกับสัมผัสของเสื้อตัวนอกที่ยังแห้งและคลุมทับอยู่
+- เน้นผัสสะจริง: ความเย็นวาบที่ซึมผ่านเนื้อผ้า, น้ำหนักของผ้าที่อมน้ำจนถ่วงลงหรือแนบลู่ติดผิวเนื้อ (Wet Cling), ความโปร่งแสงของผ้าสีอ่อนเมื่อเปียกที่เผยให้เห็นเงาชั้นในข้างใต้ หรือหยดน้ำที่เกาะพวงแก้มและปอยผม`
     )
   }
 
@@ -560,17 +732,18 @@ ${lingeringLines.join('\n')}
     )
   }
 
-  // ตะกร้าที่ 3: 🔒 DORMANT INVENTORY (คลังชุดและเลเยอร์ทั้งหมด — รู้แต่ไม่พูดเรียงชิ้น)
+  // ตะกร้าที่ 3: 🔒 DORMANT INVENTORY (คลังชุดและเลเยอร์ทั้งหมด — เรียงจากในออกนอก)
   sections.push(
-    `[🔒 3. DORMANT ATTIRE & LAYER INVENTORY — คลังชุดและเครื่องประดับที่สวมใส่อยู่จริง]
+    `[🔒 3. INSIDE-OUT LAYER STACK INVENTORY — คลังชุดและเลเยอร์เรียงจากในออกนอก]
 ชุดของตัวคุณ (Actor):
 ${dormantActorLines.join('\n')}
 ชุดของผู้เล่น (Player):
 ${dormantPlayerLines.join('\n')}
 👉 กฎการรับรู้คลังชุด (NO CHECKLIST SYNDROME):
-- นี่คือชุดทุกเลเยอร์และเครื่องประดับที่สวมใส่อยู่จริงในฉาก **ห้ามนำมาบรรยายเรียงชิ้นโดยไร้เหตุผลเด็ดขาด!**
+- นี่คือชุดทุกเลเยอร์และเครื่องประดับที่สวมใส่อยู่จริงในฉาก เรียงลำดับจากชั้นแนบเนื้อออกสู่ชั้นนอกสุด **ห้ามนำมาบรรยายเรียงชิ้นโดยไร้เหตุผลเด็ดขาด!**
 - ชิ้นที่มีป้าย [ชั้นในซ่อนอยู่ใต้ชุดนอก] จะถูกมองเห็นได้ก็ต่อเมื่อเสื้อชั้นนอกเปียกชุ่มจนโปร่งแสง ปลดกระดุม หรือเลิกออกเท่านั้น
-- หากการกระทำของผู้เล่นหรือของคุณในเทิร์นนี้ทำให้ชุดหรือร่างกายโซนใดเปลี่ยนสภาพใหม่ (เช่น โดนสาดน้ำเปียก, ถอดรองเท้า, พับแขนเสื้อ, ปอยผมเปียกน้ำ) ให้บรรยายผัสสะนั้นอย่างเป็นธรรมชาติ และรายงานโซนที่เพิ่งเปลี่ยนในฟิลด์ "surface_mutations" ของ JSON Output`
+- ชิ้นที่มีป้าย [ถอดออกแล้ว] หมายถึงถูกปลดเปลื้องออกแล้ว ผิวเนื้อในโซนนั้นจึงสัมผัสกับบรรยากาศโดยตรง
+- หากการกระทำทำให้ชุดหรือร่างกายโซนใดเปลี่ยนสภาพใหม่ (เช่น โดนสาดน้ำเปียก, ถอดรองเท้า, ปลดกระดุม, พับแขนเสื้อ) ให้บรรยายผัสสะนั้นอย่างเป็นธรรมชาติ และรายงานโซนที่เพิ่งเปลี่ยนในฟิลด์ "surface_mutations" ของ JSON Output`
   )
 
   return sections.join('\n\n')

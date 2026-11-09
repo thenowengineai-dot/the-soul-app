@@ -23,7 +23,14 @@ import {
   generateKineticPacingPrompt,
   STANCE_PRESETS
 } from '../modules/kineticContinuityModule'
-import type { PromptModule, SandboxSimulateResponse, SandboxSimulateRequest, LoreCard, WorldCharacterCard } from '../types'
+import type {
+  PromptModule,
+  SandboxSimulateResponse,
+  SandboxSimulateRequest,
+  LoreCard,
+  WorldCharacterCard,
+  CharacterSkinBlueprint,
+} from '../types'
 import { MessageList } from '../../chat/components/chat-room/MessageList'
 import { ChatInputBar } from '../../chat/components/chat-room/ChatInputBar'
 import type { ChatMessage } from '../../chat/types'
@@ -156,6 +163,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
   const [livingAttireState, setLivingAttireState] = useState<LivingAttireState>(() =>
     createIndigoStreamAttireState()
   )
+  const [currentActorSkin, setCurrentActorSkin] = useState<CharacterSkinBlueprint | null>(null)
 
   // 3.5 World & Stage Cell Controls (The Mind Stage Architecture)
 
@@ -673,7 +681,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
 
     // 7.5 Living Attire & 4-Zone Surface Matrix
     if (isAttireActive) {
-      const attireSnippet = generateLivingAttirePrompt(livingAttireState, isAttireActive)
+      const attireSnippet = generateLivingAttirePrompt(livingAttireState, isAttireActive, currentActorSkin)
       if (attireSnippet.trim()) {
         layers.push({
           id: 'living_attire_surface',
@@ -771,6 +779,7 @@ export function StagingLabView({ onBackToHome }: StagingLabViewProps) {
     currentPosture,
     isAttireActive,
     livingAttireState,
+    currentActorSkin,
   ])
 
 
@@ -1174,6 +1183,7 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
         }}
         onSelectCharacterForStage={(char: WorldCharacterCard, worldCards?: LoreCard[]) => {
           if (worldCards) setCabinetCards(worldCards)
+          setCurrentActorSkin(char.skinBlueprint || null)
           if (char.pinnedCardIds && char.pinnedCardIds.length > 0) {
             setPinnedCardIds(char.pinnedCardIds)
           }
@@ -1584,6 +1594,7 @@ ${isSparkActive && sparkText.trim() ? `[THE INCITING SPARK: ชนวนเห�
                   onToggleExpand={() => setIsAttireExpanded(prev => !prev)}
                   attireState={livingAttireState}
                   onChangeAttireState={setLivingAttireState}
+                  actorSkin={currentActorSkin}
                   onPreFillAction={(actionText) => {
                     setPlayerInput(actionText)
                   }}
